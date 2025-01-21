@@ -4,6 +4,7 @@ The data is taken from https://data.bis.org
 """
 
 import json
+import logging
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Iterable
@@ -26,6 +27,8 @@ from tsosi.models.date import (
     DATE_PRECISION_YEAR,
     Date,
 )
+
+logger = logging.getLogger(__name__)
 
 CURRENCY_API_URL = (
     "https://stats.bis.org/api/v2/data/dataflow/BIS/WS_XRU/1.0/D.."
@@ -105,7 +108,7 @@ def check_currency(currency: str, error=False) -> bool:
     if currency not in SUPPORTED_CURRENCIES:
         if error:
             raise Exception(f"Currency {currency} is not supported")
-        print(f"Currency {currency} is not supported")
+        logger.warning(f"Currency {currency} is not supported")
         check = False
     return check
 
@@ -173,7 +176,9 @@ def fetch_currency_rates(
         data = pd.read_csv(url)
     except (RequestException, HTTPError) as e:
         data = pd.DataFrame()
-        print(f"Error while fetching currency rates for URL {url}:" f"\n{e}")
+        logger.error(
+            f"Error while fetching currency rates for URL {url}:" f"\n{e}"
+        )
     return data
 
 
@@ -266,7 +271,7 @@ def update_currency_rate(
 
     # Fetch data for each interval
     for interval in intervals:
-        print(
+        logger.info(
             f"Updating currency rates for `{currency}` from {interval.min} to {interval.max}"
         )
         current_start = interval.min
@@ -293,6 +298,7 @@ def compute_average_rates():
     """
     Compute average rates per month and year based on existing data.
     """
+    logger.info("Computing average currency rates.")
     columns = [
         "currency_id",
         "date",
@@ -334,6 +340,7 @@ def compute_average_rates():
     )
     CurrencyRate.objects.filter(date__precision=DATE_PRECISION_MONTH).delete()
     bulk_create_from_df(CurrencyRate, month_avg, columns)
+    logger.info("Successfully computed average currency rates.")
 
 
 def update_currency_rates():
@@ -342,9 +349,10 @@ def update_currency_rates():
 
     TODO: Figure out the rate limit of the currency API ?
     """
+    logger.info("Updating currency rate data.")
     currencies = Currency.objects.all().values_list("id", flat=True)
     if len(currencies) == 0:
-        print("No currency to update.")
+        logger.info("No currency to update.")
         return
 
     # Get the time period for which we need to fetch the rates.
@@ -359,7 +367,7 @@ def update_currency_rates():
         Transfert.objects.filter(amount__isnull=False), date_fields
     )[0]["_extremas"]
     if t_extremas.min is None:
-        print("No transferts to fetch currency rates for.")
+        logger.info("No transferts to fetch currency rates for.")
         return
 
     today = date.today()
@@ -395,19 +403,20 @@ def compute_transfert_amounts():
     The correct rate to use is derived according to the transfert's date
     precision.
     """
+    logger.info("Computing transfert amounts in available currencies.")
     transferts = pd.DataFrame.from_records(
         Transfert.objects.filter(amount__isnull=False).values(
             "id", "amount", "date_clc", "currency_id"
         )
     )
     if transferts.empty:
-        print("No transferts to compute amounts for.")
+        logger.info("No transferts to compute amounts for.")
         return
     rates = pd.DataFrame.from_records(
         CurrencyRate.objects.all().values("currency_id", "date", "value")
     )
     if rates.empty:
-        print("No currency rates to compute amounts.")
+        logger.info("No currency rates to compute amounts.")
 
     # This adds the columns date_value and date_precision
     date_extract = pd.json_normalize(rates["date"]).add_prefix("date_")
@@ -501,10 +510,15 @@ def compute_transfert_amounts():
     transferts["amounts_clc"] = transferts.to_dict(orient="index").values()
     transferts.reset_index(inplace=True)
     bulk_update_from_df(Transfert, transferts, ["id", "amounts_clc"])
+    logger.info(
+        "Successfully computed transfert amounts in available currencies."
+    )
 
 
 def currency_rates_workflow():
     """Execute the whole currency rate workflow."""
+    logger.info("Starting currency rate workflow.")
     update_currency_rates()
     compute_average_rates()
     compute_transfert_amounts()
+    logger.info("Ending currency rate workflow.")

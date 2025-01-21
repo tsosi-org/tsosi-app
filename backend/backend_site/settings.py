@@ -16,9 +16,12 @@ from .settings_local import (
     ALLOWED_HOSTS,
     DATABASES,
     DEBUG,
+    DJANGO_LOG_LEVEL,
     MEDIA_ROOT,
     MEDIA_URL,
     SECRET_KEY,
+    TSOSI_DATA_LOG_FILE,
+    TSOSI_MAIN_LOG_FILE,
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -78,6 +81,59 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "backend_site.wsgi.application"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "tsosi_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": TSOSI_MAIN_LOG_FILE,
+            "formatter": "default",
+        },
+        "tsosi_data_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": TSOSI_DATA_LOG_FILE,
+            "formatter": "default",
+        },
+    },
+    "formatters": {
+        "default": {
+            "format": "[{asctime}] {levelname} {filename} {funcName} - {message}",
+            "style": "{",
+        },
+        "simple": {"format": "{levelname} {module} - {message}", "style": "{"},
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "propagate": True,
+            "level": DJANGO_LOG_LEVEL,
+        },
+        "tsosi": {
+            "handlers": ["console", "tsosi_file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "tsosi.data": {
+            "handlers": ["console", "tsosi_data_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "console_only": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

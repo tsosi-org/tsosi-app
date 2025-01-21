@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, ClassVar, Type
+import logging
 
 import pandas as pd
 import pycountry
@@ -22,6 +23,8 @@ from tsosi.models.date import (
 
 from .exceptions import DataValidationError
 from .utils import clean_null_values
+
+logger = logging.getLogger(__name__)
 
 CUSTOM_COUNTRY_MAPPING = {
     "USA": "United States",
@@ -584,7 +587,7 @@ def currency_iso_from_value[T](val: T, error: bool = False) -> str | None:
         msg = f"Currency ISO code could not be derived from input value `{val}`"
         if error:
             raise DataValidationError(msg)
-        print(msg)
+        logger.error(msg)
         return None
 
     match = re.search(r"[A-Z]{3}", val)
@@ -602,7 +605,7 @@ def currency_iso_from_value[T](val: T, error: bool = False) -> str | None:
     msg = f"Currency ISO code could not be derived from input value `{val}`"
     if error:
         raise DataValidationError(msg)
-    print(msg)
+    logger.error(msg)
     return None
 
 
@@ -621,7 +624,7 @@ def country_check_iso[T](val: T, error: bool = False) -> None:
     msg = f"The provided country ISO code `{val}` does not exist."
     if error:
         raise DataValidationError(msg)
-    print(msg)
+    logger.error(msg)
 
 
 def country_iso_from_name[T](val: T, error: bool = False) -> str | None:
@@ -634,7 +637,7 @@ def country_iso_from_name[T](val: T, error: bool = False) -> str | None:
         msg = f"The provided country name `{val}` is not valid."
         if error:
             raise DataValidationError(msg)
-        print(msg)
+        logger.error(msg)
         return None
     val = CUSTOM_COUNTRY_MAPPING.get(val, val)
 
@@ -648,7 +651,7 @@ def country_iso_from_name[T](val: T, error: bool = False) -> str | None:
     msg = f"The provided country name `{val}` is non-standard."
     if error:
         raise DataValidationError(msg)
-    print(msg)
+    logger.error(msg)
     return None
 
 
@@ -660,7 +663,7 @@ def country_name_from_iso[T](code: T) -> T:
         return code
     if code in COUNTRY_ALPHA_2_MAPPING.keys():
         return COUNTRY_ALPHA_2_MAPPING[code].name
-    print(f"WARNING: the provided country ISO code `{code}` does not exist.")
+    logger.warning(f"The provided country ISO code `{code}` does not exist.")
     return code
 
 
@@ -718,7 +721,7 @@ def extract_currency_amount[
         msg = f"Could not parse currency and amount from `{val}`"
         if error:
             raise DataValidationError(msg)
-        print(msg)
+        logger.error(msg)
         return None, None
 
     match = re.match(r"([^0-9]*)([0-9]+[\s0-9.,]*)([^0-9]*)", val)
@@ -738,7 +741,7 @@ def extract_currency_amount[
         msg = f"Could not parse currency and amount from `{val}`"
         if error:
             raise DataValidationError(msg)
-        print(msg)
+        logger.error(msg)
     return amount, currency
 
 
@@ -764,7 +767,8 @@ def prepare_data(
     :param error:   Whether to raise error while cleaning the data. This should
                     be True when the data is prepared before ingestion.
     """
-    print(f"Ingesting data with config `{config.id}`.")
+    logger.info(f"Preparing data with config `{config.id}`.")
+
     # Get raw data
     origin = ""
     if config.input_type == ".xlsx":
@@ -884,10 +888,10 @@ def prepare_data(
     ) | (~df[FieldCurrency.NAME].isnull() & df[FieldAmount.NAME].isnull())
     df_warn = df[mask]
     if not df_warn.empty:
-        print(
+        logger.warning(
             f"{len(df_warn)} items contain an amount without currency or "
             "a currency without an amount. "
-            "it will be ingested without amount/currency data."
+            "They will be ingested without both amount and currency data with the current config."
         )
         df.loc[df_warn.index, FieldAmount.NAME] = None
         df.loc[df_warn.index, FieldCurrency.NAME] = None
@@ -911,3 +915,5 @@ def prepare_data(
     df.loc[:, FieldOriginalId.NAME] = f"{origin}_" + df.index.astype(str)
 
     config.processed_data = df
+
+    logger.info(f"Successfully prepared the data for config {config.id}")

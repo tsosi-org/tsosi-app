@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import date
 
 import pandas as pd
@@ -15,6 +16,8 @@ from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 
 from .data_preparation import clean_cell_value, country_name_from_iso
 from .enrichment import ingest_entity_identifier_relations
+
+logger = logging.getLogger("console_only")
 
 
 def entities_with_no_ror() -> pd.DataFrame:
@@ -107,6 +110,8 @@ def prepare_manual_matching(
     The following empty com
     """
     df = data.head(limit).copy() if limit else data.copy()
+    logger.info(f"Preparing manual matching for {len(df)} entities.")
+
     initial_columns = list(df.columns)
 
     df["__name_clean"] = df[name_column].apply(clean_cell_value)
@@ -160,6 +165,9 @@ def prepare_manual_matching(
             columns_ordered += other_manual_columns
             columns_ordered += ror_columns
 
+    logger.info(
+        f"Successfully prepared manual matching for {len(df)} entities."
+    )
     return df[columns_ordered]
 
 
@@ -170,6 +178,8 @@ def process_enriched_data(
     Outputs a clean, prepared Dataframe from enriched data
     (outputed from `prepare_manual_matching`).
     """
+    logger.info("Processing enriched data.")
+
     df = data.copy(deep=True)
     allowed_entity_types = [
         TRANSFERT_ENTITY_TYPE_EMITTER,
@@ -230,4 +240,5 @@ def process_enriched_data(
         if c == name_column:
             final_columns = final_columns + final_enriched_columns
 
+    logger.info("Processed enriched data.")
     return df[final_columns].copy()

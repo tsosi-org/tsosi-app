@@ -9,6 +9,7 @@ WARNING:
     at popular times like midnight UTC."
 """
 
+import logging
 import re
 from dataclasses import asdict, dataclass, field
 from json import JSONDecodeError
@@ -19,6 +20,9 @@ import aiohttp
 import pandas as pd
 
 from .common import ApiResult, HTTPStatusError, perform_http_func_batch
+
+logger = logging.getLogger(__name__)
+logger_console = logging.getLogger("console_only")
 
 # doc: https://ror.readme.io/v2/docs/api-affiliation
 ROR_API_ENDPOINT = "https://api.ror.org/v2/organizations"
@@ -93,12 +97,13 @@ async def match_ror_record(
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         msg = "\n".join(
             [
-                f"Error while querying ROR API for value {value} with url {request_url}:",
+                f"Error while querying ROR affiliation API for value {value} with url {request_url}:",
                 str(e),
             ]
         )
         ror_result.error = True
         ror_result.error_message = msg
+        logger_console.warning(msg)
         return ror_result
 
     query_results = query_response.get("number_of_results", 0)
@@ -137,12 +142,13 @@ async def match_ror_record(
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         msg = "\n".join(
             [
-                f"Error while querying ROR API for value {value} with url {request_url}:",
+                f"Error while querying ROR affiliation API for value {value} with url {request_url}:",
                 str(e),
             ]
         )
         ror_result.error = True
         ror_result.error_message = msg
+        logger_console.warning(msg)
         return ror_result
 
     query_results = query_response.get("number_of_results", 0)
@@ -169,7 +175,7 @@ async def match_ror_records(names: Iterable[str]) -> pd.DataFrame:
     :returns:       The dataframe of the results for each input name.
     """
     if len(names) == 0:
-        print("Empty names passed to match ror records.")
+        logger_console.warning("Empty names passed to match ror records.")
         return pd.DataFrame()
 
     results = await perform_http_func_batch(names, match_ror_record)
@@ -211,6 +217,7 @@ async def get_ror_record(
             ]
         )
         result.error = True
+        logger.warning(result.error_message)
     return result
 
 
@@ -283,7 +290,7 @@ def get_ror_country(record: dict) -> str | None:
     ]
     country_codes = set(country_codes)
     if len(country_codes) > 1:
-        print(
+        logger.warning(
             "Found more than 1 country code in ROR registry "
             + f"for PID {record["id"]}: {country_codes}"
         )

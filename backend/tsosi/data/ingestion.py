@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 
 import pandas as pd
 from django.db import transaction
@@ -55,6 +56,8 @@ from .db_utils import (
 from .enrichment import update_entity_roles_clc, update_transfert_date_clc
 from .entity_matching import match_entities, matchable_entities
 from .utils import drop_duplicates_keep_index
+
+logger = logging.getLogger("__name__")
 
 TRANSFERT_ENTITY_TYPE = "transfert_entity_type"
 ENTITY_TO_CREATE_ID = "entity_to_create_id"
@@ -246,7 +249,7 @@ def create_identifiers(identifiers: pd.DataFrame, datetime: datetime):
     bulk_create_from_df(
         IdentifierEntityMatching, identifiers, IDENTIFIER_MATCHING_CREATE_FIELDS
     )
-    print(
+    logger.info(
         f"Created {len(identifiers)} Identifier and IdentifierEntityMatching records."
     )
 
@@ -282,7 +285,7 @@ def create_entities(entities: pd.DataFrame, datetime: datetime):
         "date_last_updated",
     ]
     bulk_create_from_df(Entity, entities, fields, "entity_id")
-    print(f"Created {len(entities)} Entity records")
+    logger.info(f"Created {len(entities)} Entity records")
 
     # Create Identifier & IdentifierEntityMatching records
     ror_identifiers = (
@@ -351,7 +354,7 @@ def create_transferts(transferts: pd.DataFrame, datetime: datetime):
         "original_id",
     ]
     bulk_create_from_df(Transfert, transferts, fields, "transfert_id")
-    print(f"Created {len(transferts)} Transfert records")
+    logger.info(f"Created {len(transferts)} Transfert records")
 
 
 def create_transfert_entity_matching(
@@ -371,7 +374,7 @@ def create_transfert_entity_matching(
         "date_last_updated",
     ]
     bulk_create_from_df(TransfertEntityMatching, transfert_entities, fields)
-    print(f"Created {len(transfert_entities)} TransfertEntityMatching records")
+    logger.info(f"Created {len(transfert_entities)} TransfertEntityMatching records")
 
 
 @transaction.atomic
@@ -389,6 +392,7 @@ def ingest_new_records(transferts: pd.DataFrame):
     :param data:    Data formatted to TSOSI format, ie. using
                     `data_preparation.prepare_data method`
     """
+    logger.info(f"Ingesting {len(transferts)} transfert records.")
     now = timezone.now()
 
     create_pid_registries()
@@ -451,3 +455,5 @@ def ingest_new_records(transferts: pd.DataFrame):
     # These are enrichment methods.
     update_transfert_date_clc()
     update_entity_roles_clc()
+
+    logger.info(f"Successfully ingested {len(transferts)} records.")

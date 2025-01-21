@@ -24,6 +24,7 @@ WIKIMEDIA COMMONS:
 
 """
 
+import logging
 import re
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
@@ -41,6 +42,8 @@ from .common import (
     HTTPStatusError,
     perform_http_func_batch,
 )
+
+logger = logging.getLogger(__name__)
 
 WIKIDATA_ID_REGEX = r"Q[0-9]+"
 WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
@@ -97,6 +100,9 @@ async def fetch_wikidata_sparql_query(
             results: dict = await response.json()
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         # Log the error
+        logger.warning(
+            f"Failed to query the wikipedia sparql endpoint with query:\n {query}"
+        )
         return []
     return results.get("results", {}).get("bindings", [])
 
@@ -216,6 +222,7 @@ async def fetch_wikipedia_page_extract(
         result.error = True
         result.error_message = f"Error while querying Wikipedia with url {url}"
         result.error_message += f"\nOriginal exception:\n{e}"
+        logger.warning(result.error_message)
 
     return result
 
@@ -246,6 +253,7 @@ async def fetch_wikimedia_file(
         result.error = True
         result.error_message = f"Error while querying {url}"
         result.error_message += f"Original exception:\n{e}"
+        logger.warning(result.error_message)
 
     return result
 
