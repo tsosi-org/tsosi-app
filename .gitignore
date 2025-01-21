@@ -1,0 +1,17 @@
+# Virtual envs
+.venv/
+
+# Django app
+backend/backend_site/settings_local.py
+__pycache__/
+.pytest_cache
+backend/static/
+
+
+# Vue app
+frontend/node_modules
+frontend/dist
+frontend/dist-ssr
+coverage
+*.log
+npm-debug.log*

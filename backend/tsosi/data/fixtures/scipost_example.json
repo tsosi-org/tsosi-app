@@ -1,0 +1,29 @@
+[
+  {
+    "amount": 1000,
+    "date_from": "2024-01-01",
+    "date_until": "2024-12-31",
+    "organization_orgtype": "UniversityLibrary",
+    "organization_name": "University Z",
+    "organization_country": "CH",
+    "organization_ror_id": "012345678"
+  },
+  {
+    "amount": 15000,
+    "date_from": "2024-01-01",
+    "date_until": "2024-12-31",
+    "organization_orgtype": "UniversityLibrary",
+    "organization_name": "University ZZ",
+    "organization_country": "AU",
+    "organization_ror_id": null
+  },
+  {
+    "amount": 1000,
+    "date_from": "2023-01-01",
+    "date_until": "2023-12-31",
+    "organization_orgtype": "UniversityLibrary",
+    "organization_name": "University Z",
+    "organization_country": "CH",
+    "organization_ror_id": "012345678"
+  }
+]

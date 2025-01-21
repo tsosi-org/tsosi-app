@@ -1,0 +1,19 @@
+[Unit]
+Description=gunicorn daemon for TSOSI Django back-end
+Requires=tsosi_gunicorn.socket
+After=network.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=deployer
+Group=deployer
+WorkingDirectory=/var/www/current/backend
+ExecStart=/home/deployer/.local/bin/poetry run gunicorn --workers 5 backend_site.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

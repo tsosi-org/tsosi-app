@@ -1,0 +1,90 @@
+{
+    "git.openRepositoryInParentFolders": "never",
+    "workbench.iconTheme": "material-icon-theme",
+    "explorer.confirmPasteNative": false,
+    "editor.tabSize": 4,
+    "editor.rulers": [80],
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+    },
+    
+    // #### Python settings ####
+	"[toml]":{
+        "editor.tabSize": 2
+	},
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "always"
+        }
+    },
+    "black-formatter.args": ["--line-length", "80"],
+    "black-formatter.interpreter": ["${workspaceFolder}/backend/.venv/bin/python"],
+    "black-formatter.path": ["${workspaceFolder}/backend/.venv/bin/black"],
+    
+    "isort.interpreter": ["${workspaceFolder}/backend/.venv/bin/python3"],
+    "isort.path": ["${workspaceFolder}/backend/.venv/bin/isort"],
+    
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.variableTypes": false,
+    
+    "notebook.editorOptionsCustomizations": {
+        "editor.tabSize": 4,
+        "editor.indentSize": 4
+    },
+    "notebook.defaultFormatter": "ms-python.black-formatter",
+    "notebook.formatOnSave.enabled": true,
+    "notebook.formatOnCellExecution": true,
+    "notebook.cellExecutionTimeVerbosity": "verbose",
+    "jupyter.askForKernelRestart": false,
+    
+    // Pyton test
+    "python.testing.pytestEnabled": true,
+    "python.poetryPath": "poetry",
+    "python.testing.pytestArgs": [
+        "backend"
+    ],
+    
+    
+    // #### Front settings ####
+    "[vue]": {
+        "editor.tabSize": 2,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+        "editor.tabSize": 2,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[html]": {
+        "editor.tabSize": 2
+    },
+    "[json]": {
+        "editor.tabSize": 2,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[yaml]": {
+        "editor.tabSize": 2
+    },
+    "[css]": {
+        "editor.tabSize": 2
+    },
+    "[scss]": {
+        "editor.tabSize": 2
+    },
+    "[sass]": {
+        "editor.tabSize": 2
+    },
+    "workbench.externalBrowser": "firefox",
+    "vue.inlayHints.missingProps": true,
+    "vue.inlayHints.vBindShorthand": true,
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "tsconfig.json": "tsconfig.*.json, env.d.ts",
+        "vite.config.*": "jsconfig*, vitest.config.*, cypress.config.*, playwright.config.*",
+        "package.json": "package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .prettier*, prettier*, .editorconfig"
+    },
+}

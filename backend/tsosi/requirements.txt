@@ -1,0 +1,12 @@
+Django==5.1.2
+djangorestframework==3.15.2
+django-filter==24.3 
+psycopg==3.2.3
+pandas==2.2.3
+openpyxl~=3.1.5 # Pandas requires this package but it's not in the dependencies - WTF ??
+aiohttp==3.10.9
+pycountry~=24.6.1
+ipython~=8.28
+requests~=2.32
+ipykernel~=6.29
+pillow==11.0.0

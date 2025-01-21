@@ -1,0 +1,16 @@
+[
+  {
+    "Emitter": "Institute X",
+    "Country": "Belgium",
+    "Value": 3500,
+    "Currency": "EUR",
+    "Date": "2024"
+  },
+  {
+    "Emitter": "University X",
+    "Country": "Australia",
+    "Value": 1200,
+    "Currency": "EUR",
+    "Date": "2024"
+  }
+]

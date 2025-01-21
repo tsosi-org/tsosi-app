@@ -1,0 +1,70 @@
+@import "./base.css";
+
+#app {
+  font-weight: normal;
+}
+
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+}
+
+.page-content {
+  margin-top: var(--header-height);
+
+  .regular-content {
+    width: 100%;
+    padding: 2rem;
+    background-color: var(--color-background-component);
+    border-radius: 10px;
+    display: inline-block;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  /* CSS property not allowed in media queries */
+  .page-content {
+    .regular-content {
+      margin: 1rem 0;
+    }
+  }
+}
+
+.d-flex {
+  --gap: 0.2em;
+  --row-gap: var(--gap);
+  --column-gap: var(--gap);
+  display: flex;
+  row-gap: var(--row-gap);
+  column-gap: var(--column-gap);
+  flex-wrap: wrap;
+}
+.d-none {
+  display: none !important;
+}
+
+.d-grid-two-col {
+  --grid-template: 1fr 1fr;
+  display: grid;
+  grid-template-columns: var(--grid-template);
+  gap: 0.2em;
+  place-items: center;
+  place-content: center;
+}
+
+a,
+.chip-link-label {
+  color: var(--color-link);
+  text-decoration: underline;
+}
+
+.chip-link:hover {
+  background-color: var(--p-surface-200);
+}
+
+h1 {
+  text-transform: uppercase;
+  color: var(--color-heading);
+  font-weight: 900;
+  font-size: 28px;
+}

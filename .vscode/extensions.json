@@ -1,0 +1,19 @@
+{
+    "recommendations": [
+        // Dev ops
+        "ms-vscode-remote.remote-containers",
+        "ms-azuretools.vscode-docker",
+        
+        // Python extensions
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-toolsai.jupyter",
+
+        // Front-end extensions
+        "vue.volar",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "vitest.explorer"
+    ]
+}

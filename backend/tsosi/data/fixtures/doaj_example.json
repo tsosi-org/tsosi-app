@@ -1,0 +1,42 @@
+[
+  {
+    "Company": "University X",
+    "Country": "Australia",
+    "Support amount": 1000,
+    "Currency": "Euro (€)",
+    "Agent": "Consortium Y",
+    "Invoice date": "10/05/2023",
+    "Support end date": "31/12/2023",
+    "Paid up until": "31/12/2023"
+  },
+  {
+    "Company": "University X",
+    "Country": "Australia",
+    "Support amount": 1000,
+    "Currency": "Euro (€)",
+    "Agent": "Consortium Y",
+    "Invoice date": "10/05/2024",
+    "Support end date": "31/12/2024",
+    "Paid up until": "31/12/2024"
+  },
+  {
+    "Company": "Library X",
+    "Country": "Canada",
+    "Support amount": 1000,
+    "Currency": "CAD",
+    "Agent": null,
+    "Invoice date": "10/08/2023",
+    "Support end date": "31/12/2023",
+    "Paid up until": "31/12/2023"
+  },
+  {
+    "Company": "University Y",
+    "Country": "USA",
+    "Support amount": 2500,
+    "Currency": "USDs ($)",
+    "Agent": null,
+    "Invoice date": "01/03/2023",
+    "Support end date": "31/12/2023",
+    "Paid up until": "31/12/2023"
+  }
+]

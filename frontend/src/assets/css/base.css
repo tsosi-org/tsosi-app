@@ -1,0 +1,63 @@
+/*
+The color palette comes from PrimeVue
+https://primevue.org/theming/styled/#colors
+*/
+
+/* semantic color variables for this project */
+:root {
+  --color-background: white;
+
+  --color-heading: var(--p-primary-800);
+  --color-text: var(--p-neutral-950);
+  --color-link: var(--c-indigo);
+  --color-background-component: white;
+
+  --container-width: 1280px;
+  --header-height: 50px;
+  --font-size: 14px;
+  font-size: var(--font-size);
+}
+
+/* DARK MODE */
+@media (prefers-color-scheme: dark) {
+  /* :root {
+    --color-background: var(--c-black);
+    --color-background-soft: var(--c-black-soft);
+    --color-background-mute: var(--c-black-mute);
+
+    --color-border: var(--c-divider-dark-2);
+    --color-border-hover: var(--c-divider-dark-1);
+
+    --color-heading: var(--vt-c-text-dark-1);
+    --color-text: var(--vt-c-text-dark-2);
+  } */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: inherit;
+}
+
+body {
+  min-height: 100vh - var(--header-height);
+  color: var(--color-text);
+  background: var(--color-background);
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Fira Sans",
+    "Droid Sans",
+    "Helvetica Neue",
+    sans-serif;
+  text-rendering: optimizeLegibility;
+}
