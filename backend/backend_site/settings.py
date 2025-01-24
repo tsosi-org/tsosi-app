@@ -20,8 +20,13 @@ from .settings_local import (
     MEDIA_ROOT,
     MEDIA_URL,
     SECRET_KEY,
+    TSOSI_CELERY_BROKER_URL,
     TSOSI_DATA_LOG_FILE,
+    TSOSI_DJANGO_LOG_FILE,
     TSOSI_MAIN_LOG_FILE,
+    TSOSI_REDIS_DB,
+    TSOSI_REDIS_HOST,
+    TSOSI_REDIS_PORT,
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -85,6 +90,14 @@ WSGI_APPLICATION = "backend_site.wsgi.application"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
     "handlers": {
         "console": {
             "level": "DEBUG",
@@ -93,14 +106,30 @@ LOGGING = {
         },
         "tsosi_file": {
             "level": "DEBUG",
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.TimedRotatingFileHandler",
             "filename": TSOSI_MAIN_LOG_FILE,
+            "when": "midnight",
+            "interval": 1,
+            "backupCount": 10,
             "formatter": "default",
         },
         "tsosi_data_file": {
             "level": "DEBUG",
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.TimedRotatingFileHandler",
             "filename": TSOSI_DATA_LOG_FILE,
+            "when": "midnight",
+            "interval": 1,
+            "backupCount": 10,
+            "formatter": "default",
+        },
+        "django_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": TSOSI_DJANGO_LOG_FILE,
+            "filters": ["require_debug_false"],
+            "when": "midnight",
+            "interval": 1,
+            "backupCount": 10,
             "formatter": "default",
         },
     },
@@ -113,7 +142,7 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["console"],
+            "handlers": ["console", "django_file"],
             "propagate": True,
             "level": DJANGO_LOG_LEVEL,
         },
@@ -184,3 +213,8 @@ REST_FRAMEWORK = {
 }
 
 API_BYPASS_PAGINATION_ALLOWED_ORIGINS = []
+
+
+TSOSI_CELERY_ACCEPT_CONTENT = ["json"]
+TSOSI_CELERY_TASK_SERIALIZER = "json"
+TSOSI_CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True

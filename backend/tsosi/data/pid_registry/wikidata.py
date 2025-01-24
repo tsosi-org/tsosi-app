@@ -188,6 +188,8 @@ async def fetch_wikidata_records_data(
 
     clean_null_values(df)
     df["record"] = df.apply(lambda row: row.to_dict(), axis=1)
+    # Add no error for compatibility
+    df["error"] = False
 
     return df[["id", "record"]].copy()
 

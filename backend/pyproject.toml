@@ -18,6 +18,8 @@ pillow = "~11.0.0"
 django-cors-headers = "~4.6.0"
 gunicorn = "^23.0.0"
 scp = "^0.15.0"
+redis = "^5.2.1"
+celery = {extras = ["redis"], version = "^5.4.0"}
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.28"

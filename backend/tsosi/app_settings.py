@@ -29,5 +29,21 @@ class AppSettings:
         """
         return self._setting("BYPASS_PAGINATION_ALLOWED_ORIGINS", ["*"])
 
+    @property
+    def REDIS_HOST(self) -> str:
+        return self._setting("REDIS_HOST", mandatory=True)
+
+    @property
+    def REDIS_PORT(self) -> str:
+        return self._setting("REDIS_PORT", mandatory=True)
+
+    @property
+    def REDIS_DB(self) -> str:
+        return self._setting("REDIS_DB", mandatory=True)
+
+    @property
+    def CELERY_BROKER(self) -> str:
+        return self._setting("CELERY_BROKER", mandatory=True)
+
 
 app_settings = AppSettings()
