@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from dataclasses import dataclass
 from datetime import datetime
 from urllib.parse import unquote
 
@@ -23,6 +22,7 @@ from tsosi.models.identifier import (
 from tsosi.models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
 from tsosi.models.transfert import MATCH_CRITERIA_MERGED, TRANSFERT_ENTITY_TYPES
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
+from tsosi.signals import new_identifiers_fetched
 
 from .data_preparation import clean_url
 from .db_utils import (
@@ -38,6 +38,7 @@ from .pid_registry.wikidata import (
     fetch_wikimedia_files,
     fetch_wikipedia_page_extracts,
 )
+from .task_result import TaskResult
 from .token_bucket import (
     ROR_TOKEN_BUCKET,
     WIKIDATA_TOKEN_BUCKET,
@@ -47,12 +48,6 @@ from .token_bucket import (
 from .utils import chunk_df, clean_null_values
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class TaskResult:
-    partial: bool
-    countdown: int
 
 
 @transaction.atomic
@@ -326,6 +321,7 @@ def fetch_empty_identifier_records_for_registry(
 
     records = asyncio.run(func(identifiers["value"]))
     records = records if records.empty else records[records["error"] == False]
+    result.partial = result.partial or len(records) != len(identifiers)
     if records.empty:
         logger.info(f"No identifier fetched for registry {registry_id}.")
         return result
@@ -377,10 +373,13 @@ def fetch_empty_identifier_records_for_registry(
     bulk_update_from_df(Identifier, identifiers_for_udpate, cols_map.values())
 
     logger.info(f"Fetched {len(identifier_versions)} empty PID records.")
+    new_identifiers_fetched.send(
+        None, registry_id=registry_id, count=len(identifier_versions)
+    )
+    result.data_modified = True
     return result
 
 
-@transaction.atomic
 def fetch_empty_identifier_records(
     date_update: datetime | None = None,
     use_tokens: bool = True,
@@ -396,10 +395,7 @@ def fetch_empty_identifier_records(
         REGISTRY_WIKIDATA, use_tokens=use_tokens
     )
 
-    return TaskResult(
-        partial=result_ror.partial or result_wikidata.partial,
-        countdown=max(result_ror.countdown, result_wikidata.countdown),
-    )
+    return TaskResult.from_tasks(result_ror, result_wikidata)
     # logger.info("Fetching empty identifier records.")
     # partial = False
     # identifiers = empty_identifiers()
@@ -571,7 +567,7 @@ def entities_with_identifier_data() -> pd.DataFrame:
     return entities
 
 
-def update_entity_from_pid_records():
+def update_entity_from_pid_records() -> TaskResult:
     """
     Retrieve useful data from PID records and update the referenced entity
     accordingly.
@@ -579,10 +575,11 @@ def update_entity_from_pid_records():
     wikipedia_url.
     """
     logger.info("Updating entity from PID records.")
+    result = TaskResult(partial=False)
 
     entities = entities_with_identifier_data()
     if entities.empty:
-        return
+        return result
     clean_null_values(entities)
     clc_field_priority = {
         "name": ["ror_name", "wikidata_name", "raw_name"],
@@ -617,17 +614,21 @@ def update_entity_from_pid_records():
     logger.info(
         f"Updated {len(entities_to_update)} Entity record from PID data."
     )
+    result.data_modified = True
+    return result
 
 
-def new_identifiers_from_records() -> pd.DataFrame:
+def new_identifiers_from_records() -> TaskResult:
     """
     Retrieve and ingest new entity <-> identifier relationships from PID data.
     """
     logger.info("Creating new identifiers from existing records.")
+    result = TaskResult(partial=False)
 
     entities = entities_with_identifier_data()
     if entities.empty:
-        return pd.DataFrame()
+        return result
+
     entities = entities[
         [
             "id",
@@ -692,7 +693,7 @@ def new_identifiers_from_records() -> pd.DataFrame:
         entities.drop(mismatching_wikis.index, inplace=True)
 
     if entities.empty:
-        return pd.DataFrame()
+        return result
 
     # Build new relations to ingest
     now = timezone.now()
@@ -710,6 +711,7 @@ def new_identifiers_from_records() -> pd.DataFrame:
         ror_rels["match_source"] = MATCH_SOURCE_AUTOMATIC
         ror_rels["match_criteria"] = MATCH_CRITERIA_FROM_WIKIDATA
         ingest_entity_identifier_relations(ror_rels, REGISTRY_ROR, now)
+        result.data_modified = True
 
     entities["new_wikidata"] = (
         entities["wikidata_id"].isnull() & ~entities["ror_wikidata_id"].isnull()
@@ -727,6 +729,9 @@ def new_identifiers_from_records() -> pd.DataFrame:
         ingest_entity_identifier_relations(
             wikidata_rels, REGISTRY_WIKIDATA, now
         )
+        result.data_modified = True
+
+    return result
 
 
 def update_null_wikipedia_url(date_update: datetime) -> None:
@@ -794,6 +799,7 @@ def update_wikipedia_extract(use_tokens: bool = True) -> TaskResult:
         )
     )
     extracts = results[~results["error"]]
+    result.partial = result.partial or len(extracts) != len(results)
     if extracts.empty:
         logger.info("No extracts returned via the wikipedia API.")
         return result
@@ -904,7 +910,7 @@ def update_logos(
     instances = entities_for_logo_update()
     if len(instances) == 0:
         logger.info("No entity logo to update.")
-        return
+        return result
 
     entity_mapping = {e.id: e for e in instances}
 
@@ -924,6 +930,7 @@ def update_logos(
             logo_results, left_on="logo_url", right_on="url", how="left"
         )
         chunk = chunk[~chunk["error"]]
+
         if chunk.empty:
             continue
         chunk["entity"] = chunk["id"].map(entity_mapping)
@@ -931,11 +938,13 @@ def update_logos(
         chunk.apply(update_entity_logo_file, axis=1)
         updates += len(chunk)
 
+    result.partial = result.partial or updates != len(df)
+    result.data_modified = updates > 0
     logger.info(f"Downloaded {updates} entity logo files.")
     return result
 
 
-def update_registry_data():
+def update_registry_data() -> TaskResult:
     """
     TODO: Routine to work with the external registry data.
     1 - For every active identifiers, fetch the record and compare with
@@ -952,7 +961,9 @@ def update_registry_data():
     pass
 
 
-def update_transfert_date_clc(instances: QuerySet[Transfert] | None = None):
+def update_transfert_date_clc(
+    instances: QuerySet[Transfert] | None = None,
+):
     """
     Update the `date_clc` field for transferts based on the various
     date fields.
@@ -983,6 +994,7 @@ def update_entity_roles_clc():
     to the transfert data.
     """
     logger.info("Updating entity roles.")
+
     transfert_cols = [f"{t}_id" for t in TRANSFERT_ENTITY_TYPES]
     transferts = pd.DataFrame.from_records(
         Transfert.objects.all().values("id", *transfert_cols)

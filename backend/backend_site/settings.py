@@ -135,7 +135,7 @@ LOGGING = {
     },
     "formatters": {
         "default": {
-            "format": "[{asctime}] {levelname} {filename} {funcName} - {message}",
+            "format": "[{asctime}] {levelname} {pathname} - {message}",
             "style": "{",
         },
         "simple": {"format": "{levelname} {module} - {message}", "style": "{"},
@@ -152,6 +152,15 @@ LOGGING = {
             "propagate": True,
         },
         "tsosi.data": {
+            "handlers": ["console", "tsosi_data_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        # The celery tasks are logged in the data file as they correspond
+        # to tsosi.data code.
+        # TODO: Implement the tasks in the tsosi.data module and import them
+        # in tsosi.tasks
+        "tsosi.tasks": {
             "handlers": ["console", "tsosi_data_file"],
             "level": "DEBUG",
             "propagate": False,

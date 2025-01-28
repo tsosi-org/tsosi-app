@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 
 import pandas as pd
 from django.db import transaction
@@ -26,6 +26,7 @@ from tsosi.models.transfert import (
     TRANSFERT_ENTITY_TYPE_RECIPIENT,
 )
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC, MATCH_SOURCE_MANUAL
+from tsosi.signals import transferts_created
 
 from .currencies.currency_rates import insert_currencies
 from .data_preparation import (
@@ -374,7 +375,9 @@ def create_transfert_entity_matching(
         "date_last_updated",
     ]
     bulk_create_from_df(TransfertEntityMatching, transfert_entities, fields)
-    logger.info(f"Created {len(transfert_entities)} TransfertEntityMatching records")
+    logger.info(
+        f"Created {len(transfert_entities)} TransfertEntityMatching records"
+    )
 
 
 @transaction.atomic
@@ -452,8 +455,5 @@ def ingest_new_records(transferts: pd.DataFrame):
 
     update_infrastructures()
 
-    # These are enrichment methods.
-    update_transfert_date_clc()
-    update_entity_roles_clc()
-
     logger.info(f"Successfully ingested {len(transferts)} records.")
+    transferts_created.send_robust(None)

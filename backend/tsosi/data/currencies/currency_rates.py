@@ -20,6 +20,7 @@ from tsosi.data.db_utils import (
     bulk_update_from_df,
     date_extremas_from_queryset,
 )
+from tsosi.data.task_result import TaskResult
 from tsosi.models import Currency, CurrencyRate, Transfert
 from tsosi.models.date import (
     DATE_PRECISION_DAY,
@@ -522,3 +523,4 @@ def currency_rates_workflow():
     compute_average_rates()
     compute_transfert_amounts()
     logger.info("Ending currency rate workflow.")
+    return TaskResult(partial=False)
