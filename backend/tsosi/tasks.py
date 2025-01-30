@@ -1,27 +1,25 @@
-import asyncio
 import logging
-import time
 from typing import Callable
 
 import redis
-from celery import Task, shared_task
-from django.dispatch import receiver
+from celery import shared_task
+from celery.contrib.django.task import DjangoTask
+from celery.exceptions import Ignore
+from celery.utils.log import get_task_logger
 from redis.lock import Lock
 
 from .app_settings import app_settings
 from .data import enrichment
 from .data.currencies import currency_rates
 from .data.task_result import TaskResult
-from .signals import (
-    identifiers_created,
-    identifiers_fetched,
-    transferts_created,
-)
+from .models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
 
+# logger = logging.getLogger("tsosi.data")
 logger = logging.getLogger(__name__)
+task_logger = get_task_logger(__name__)
 
 
-class TsosiTask(Task):
+class TsosiTask(DjangoTask):
     """
     Custom Celery task for Tsosi app:
         - It logs error to the `tsosi.data` logger
@@ -31,27 +29,30 @@ class TsosiTask(Task):
         in parallel.
     """
 
-    def __call__(self, *args, **kwargs):
-        logger.info(f"Running task: {self.name}")
-        result = super().__call__(*args, **kwargs)
+    def before_start(self, task_id, args, kwargs):
+        super().before_start(task_id, args, kwargs)
+        task_logger.info(f"Running task: {self.name}")
+
+    def on_success(self, retval, task_id, args, kwargs):
+        super().on_success(retval, task_id, args, kwargs)
         if (
-            isinstance(result, TaskResult)
-            and (result.partial or result.re_schedule)
-            and result.countdown is not None
+            isinstance(retval, TaskResult)
+            and (retval.partial or retval.re_schedule)
+            and retval.countdown is not None
         ):
             self.re_schedule(
-                result.countdown,
+                retval.countdown,
                 msg="Only partial update was performed.",
                 args=args,
                 kwargs=kwargs,
             )
-        return result
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         """
         Manually add a log entry to the tsosi data logger when a task fails.
         """
-        logger.error(
+
+        task_logger.error(
             f"Celery task failed with exception: {exc}, args: {args}, kwargs: {kwargs}",
             exc_info=einfo,
         )
@@ -67,7 +68,7 @@ class TsosiTask(Task):
         log_info = f"Rescheduling task: {self.name} in {countdown} seconds."
         if msg is not None:
             log_info += f"\n{msg}"
-        logger.info(log_info)
+        task_logger.info(log_info)
         self.apply_async(args=args, kwargs=kwargs, countdown=countdown)
 
 
@@ -82,64 +83,74 @@ class TsosiLockedTask(TsosiTask):
     """
     Same as TsosiTask with an additional lock used to prevent the same task
     from being run concurrently.
-    This class should be used for every task involving external data fetching.
+    This class should be used for every task involving database
+    records insertion/deletion.
     """
 
-    def __call__(self, *args, **kwargs):
+    lock: Lock | None = None
+
+    def before_start(self, task_id, args, kwargs):
+        super().before_start(task_id, args, kwargs)
         lock_name = f"{self.name}_lock"
 
         lock: Lock = redis_client.lock(
             lock_name, timeout=10 * 60, blocking=False
         )
-        result = None
-        try:
-            if lock.acquire():
-                result = super().__call__(*args, **kwargs)
-            else:
-                self.re_schedule(
-                    countdown=30,
-                    msg=f"Task {self.name} is already running.",
-                    args=args,
-                    kwargs=kwargs,
-                )
-        finally:
-            if lock.owned():
-                lock.release()
-            return result
+        if not lock.acquire():
+            self.re_schedule(
+                countdown=10,
+                msg=f"Task {self.name} is already running.",
+                args=args,
+                kwargs=kwargs,
+            )
+            raise Ignore("Task is arleady running.")
+        self.lock = lock
+
+    def after_return(self, status, retval, task_id, args, kwargs, einfo):
+        super().after_return(status, retval, task_id, args, kwargs, einfo)
+        if self.lock is not None and self.lock.owned():
+            self.lock.release()
+            self.lock = None
 
 
-@shared_task(bind=True, base=TsosiLockedTask)
-def update_logos(self: TsosiLockedTask):
+@shared_task(base=TsosiLockedTask)
+def update_logos():
     return enrichment.update_logos()
 
 
-@shared_task(bind=True, base=TsosiLockedTask)
-def update_wikipedia_extract(self: TsosiLockedTask):
+@shared_task(base=TsosiLockedTask)
+def update_wikipedia_extract():
     return enrichment.update_wikipedia_extract()
 
 
-@shared_task(bind=True, base=TsosiLockedTask)
-def currency_rates_workflow(self):
+@shared_task(base=TsosiLockedTask)
+def currency_rates_workflow():
     return currency_rates.currency_rates_workflow()
 
 
-@shared_task(bind=True, base=TsosiTask)
-def update_wiki_data(self: TsosiTask):
+@shared_task(base=TsosiTask)
+def update_wiki_data():
     """
     Pipeline to fetch wikipedia extract and wikimedia files.
     """
     update_wikipedia_extract.delay()
     update_logos.delay()
-    return TaskResult(partial=False)
 
 
-@shared_task(bind=True, base=TsosiLockedTask)
-def fetch_empty_identifier_records(self):
-    return enrichment.fetch_empty_identifier_records()
+@shared_task(base=TsosiLockedTask)
+def fetch_empty_ror_records():
+    return enrichment.fetch_empty_identifier_records_for_registry(REGISTRY_ROR)
 
 
-@shared_task(bind=True, base=TsosiTask)
-def post_ingestion_pipeline(self):
+@shared_task(base=TsosiTask)
+def fetch_empty_wikidata_records():
+    return enrichment.fetch_empty_identifier_records_for_registry(
+        REGISTRY_WIKIDATA
+    )
+
+
+@shared_task(base=TsosiTask)
+def post_ingestion_pipeline():
     """
     Pipeline to be run after ingesting new records:
     1 - Update CLC fields
@@ -150,43 +161,54 @@ def post_ingestion_pipeline(self):
         enrichment.update_entity_roles_clc,
     ]
     results = [task() for task in tasks]
-    fetch_empty_identifier_records.delay()
     currency_rates_workflow.delay()
     return TaskResult(partial=False, data_modified=True)
 
 
-@shared_task(bind=True, base=TsosiTask)
-def process_identifier_data(self):
+@shared_task(base=TsosiLockedTask)
+def process_identifier_data():
     """
     Pipeline to process the identifier data when some identifiers are
     updated.
     """
-    enrichment.new_identifiers_from_records()
     enrichment.update_entity_from_pid_records()
-    update_wiki_data.delay()
+    enrichment.new_identifiers_from_records()
 
 
-@shared_task(bind=True, base=TsosiLockedTask)
-def identifier_update(self):
+@shared_task(base=TsosiLockedTask)
+def identifier_update():
     """
     Periodic task to update identifier records.
     """
-    pass
+    task_logger.info("Not implemented")
 
 
 ## Signal handlers to trigger related tasks
-@receiver(transferts_created)
 def trigger_post_ingestion_pipeline(sender, **kwargs):
     logger.info("Triggering post-ingestion pipeline.")
-    post_ingestion_pipeline.delay()
+    post_ingestion_pipeline.delay_on_commit()
 
 
-@receiver(identifiers_fetched)
 def trigger_identifier_data_processing(sender, **kwargs):
     logger.info("Triggering identifier data processing.")
-    process_identifier_data.delay()
+    process_identifier_data.delay_on_commit()
 
 
-@receiver(identifiers_created)
+def trigger_wiki_data_update(sender, **kwargs):
+    registry_id = kwargs.get("registry_id")
+    if registry_id == REGISTRY_WIKIDATA:
+        logger.info("Triggering update of wiki related data.")
+        update_wiki_data.delay_on_commit()
+
+
 def trigger_new_identifier_fetching(sender, **kwargs):
-    logger.info("Triggering new identifier fetching.")
+    registries = kwargs.get("registries")
+    if isinstance(registries, list):
+        logger.info(
+            f"Triggering new identifier fetching for registries: {registries}"
+        )
+        for registry in registries:
+            if registry == REGISTRY_ROR:
+                fetch_empty_ror_records.delay_on_commit()
+            elif registry == REGISTRY_WIKIDATA:
+                fetch_empty_wikidata_records.delay_on_commit()

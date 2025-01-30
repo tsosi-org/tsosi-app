@@ -18,7 +18,7 @@ fi
  
 # Make migration files
 cd $SCRIPT_DIR
-cd ../tsosi/migrations
+cd ../backend/tsosi/migrations
 FILE_PATTERN="0*_*.py"
 if ls $FILE_PATTERN 1> /dev/null 2>&1; then
     rm $FILE_PATTERN

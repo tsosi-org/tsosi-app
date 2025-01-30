@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 
 import pandas as pd
 from django.db import transaction
@@ -9,6 +9,7 @@ from tsosi.models.transfert import TRANSFERT_ENTITY_TYPES
 from .db_utils import bulk_create_from_df, bulk_update_from_df
 
 logger = logging.getLogger(__name__)
+
 
 @transaction.atomic
 def merge_entities(entities: pd.DataFrame, date_update: datetime):
@@ -78,7 +79,7 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
     if len(e_to_update) == 0:
         logger.info("No entity to merge.")
         return
-    
+
     e_to_update["id"] = e_to_update["id"].apply(str)
     e_to_update["merged_with_id"] = e_to_update["id"].map(
         mapping["merged_with_id"]

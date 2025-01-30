@@ -191,7 +191,7 @@ async def fetch_wikidata_records_data(
     # Add no error for compatibility
     df["error"] = False
 
-    return df[["id", "record"]].copy()
+    return df[["id", "record", "error"]].copy()
 
 
 def format_wikipedia_page_title(title: str) -> str:

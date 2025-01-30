@@ -1,10 +1,17 @@
-[tool.poetry]
-name = "backend"
-package-mode = false
+[project]
+name = "tsosi-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+description = "TSOSI application backend code."
+readme = "README.md"
 
+[tool.poetry]
+package-mode = false
+homepage = "https://tsosi.org/"
+repository = "https://github.com/tsosi-org/tsosi-app/"
 
 [tool.poetry.dependencies]
-python = ">=3.12"
+python = ">=3.12,<4.0"
 Django = "~5.1.2"
 djangorestframework = "~3.15.2"
 django-filter = "~24.3"
@@ -20,6 +27,7 @@ gunicorn = "^23.0.0"
 scp = "^0.15.0"
 redis = "^5.2.1"
 celery = {extras = ["redis"], version = "^5.4.0"}
+django-celery-beat = "^2.7.0"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.28"

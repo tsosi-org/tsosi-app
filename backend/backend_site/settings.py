@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
+from celery.schedules import crontab
+
 from .settings_local import (
     ALLOWED_HOSTS,
     DATABASES,
@@ -21,8 +23,11 @@ from .settings_local import (
     MEDIA_URL,
     SECRET_KEY,
     TSOSI_CELERY_BROKER_URL,
+    TSOSI_CELERY_LOG_FILE,
+    TSOSI_CELERY_WORKER_LOG_FILE,
     TSOSI_DATA_LOG_FILE,
     TSOSI_DJANGO_LOG_FILE,
+    TSOSI_LOG_LEVEL,
     TSOSI_MAIN_LOG_FILE,
     TSOSI_REDIS_DB,
     TSOSI_REDIS_HOST,
@@ -44,6 +49,7 @@ CORS_ALLOWED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
+    ## Default apps
     # 'django.contrib.admin',
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -51,8 +57,11 @@ INSTALLED_APPS = [
     "corsheaders",
     # 'django.contrib.messages',
     "django.contrib.staticfiles",
+    ## Additional apps
+    "django_celery_beat",
     "rest_framework",
     "django_filters",
+    ## Custom code
     "tsosi",
 ]
 
@@ -106,68 +115,59 @@ LOGGING = {
         },
         "tsosi_file": {
             "level": "DEBUG",
-            "class": "logging.handlers.TimedRotatingFileHandler",
+            "class": "logging.handlers.WatchedFileHandler",
             "filename": TSOSI_MAIN_LOG_FILE,
-            "when": "midnight",
-            "interval": 1,
-            "backupCount": 10,
             "formatter": "default",
         },
         "tsosi_data_file": {
             "level": "DEBUG",
-            "class": "logging.handlers.TimedRotatingFileHandler",
+            "class": "logging.handlers.WatchedFileHandler",
             "filename": TSOSI_DATA_LOG_FILE,
-            "when": "midnight",
-            "interval": 1,
-            "backupCount": 10,
             "formatter": "default",
         },
         "django_file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.TimedRotatingFileHandler",
+            "level": "INFO",
+            "class": "logging.handlers.WatchedFileHandler",
             "filename": TSOSI_DJANGO_LOG_FILE,
             "filters": ["require_debug_false"],
-            "when": "midnight",
-            "interval": 1,
-            "backupCount": 10,
             "formatter": "default",
         },
     },
     "formatters": {
         "default": {
-            "format": "[{asctime}] {levelname} {pathname} - {message}",
+            "format": "[{asctime}: {processName}] {levelname} {filename} - {message}",
             "style": "{",
         },
         "simple": {"format": "{levelname} {module} - {message}", "style": "{"},
+        "celery": {
+            "format": "[{asctime}: {processName}] {levelname} {message}",
+            "style": "{",
+        },
     },
     "loggers": {
         "django": {
             "handlers": ["console", "django_file"],
-            "propagate": True,
+            "propagate": False,
             "level": DJANGO_LOG_LEVEL,
         },
         "tsosi": {
             "handlers": ["console", "tsosi_file"],
-            "level": "DEBUG",
-            "propagate": True,
+            "level": TSOSI_LOG_LEVEL,
+            "propagate": False,
         },
         "tsosi.data": {
             "handlers": ["console", "tsosi_data_file"],
-            "level": "DEBUG",
+            "level": TSOSI_LOG_LEVEL,
             "propagate": False,
         },
-        # The celery tasks are logged in the data file as they correspond
-        # to tsosi.data code.
-        # TODO: Implement the tasks in the tsosi.data module and import them
-        # in tsosi.tasks
         "tsosi.tasks": {
             "handlers": ["console", "tsosi_data_file"],
-            "level": "DEBUG",
+            "level": TSOSI_LOG_LEVEL,
             "propagate": False,
         },
         "console_only": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": TSOSI_LOG_LEVEL,
             "propagate": False,
         },
     },
@@ -227,3 +227,18 @@ API_BYPASS_PAGINATION_ALLOWED_ORIGINS = []
 TSOSI_CELERY_ACCEPT_CONTENT = ["json"]
 TSOSI_CELERY_TASK_SERIALIZER = "json"
 TSOSI_CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+TSOSI_CELERY_BEAT_SCHEDULER = "tsosi.scheduler:DatabaseSchedulerWithCleanup"
+TSOSI_CELERY_BEAT_SCHEDULE = {
+    "periodic-identifier-update": {
+        "task": "tsosi.tasks.identifier_update",
+        "schedule": crontab(minute="0", hour="21"),
+    },
+    "periodic-wiki-data-update": {
+        "task": "tsosi.tasks.update_wiki_data",
+        "schedule": crontab(minute="0", hour="23"),
+    },
+    "periodic-currency-update": {
+        "task": "tsosi.tasks.currency_rates_workflow",
+        "schedule": crontab(minute="0", hour="21", day_of_week="sun"),
+    },
+}

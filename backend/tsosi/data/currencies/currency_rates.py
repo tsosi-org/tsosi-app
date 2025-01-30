@@ -178,7 +178,7 @@ def fetch_currency_rates(
     except (RequestException, HTTPError) as e:
         data = pd.DataFrame()
         logger.error(
-            f"Error while fetching currency rates for URL {url}:" f"\n{e}"
+            f"Error while fetching currency rates for URL {url}.", exc_info=e
         )
     return data
 
@@ -348,7 +348,8 @@ def update_currency_rates():
     """
     Update the currency rates to cover the Transfert timespan.
 
-    TODO: Figure out the rate limit of the currency API ?
+    TODO: Figure out the rate limit of the currency API and use a token
+    bucket ?
     """
     logger.info("Updating currency rate data.")
     currencies = Currency.objects.all().values_list("id", flat=True)
@@ -371,6 +372,10 @@ def update_currency_rates():
         logger.info("No transferts to fetch currency rates for.")
         return
 
+    # Make sure the interval spans full years so that we can make proper avg
+    # rates.
+    t_extremas.min = date(t_extremas.min.year, 1, 1)
+    t_extremas.max = date(t_extremas.max.year, 12, 31)
     today = date.today()
     if t_extremas.max > today:
         t_extremas.max = today
@@ -418,6 +423,7 @@ def compute_transfert_amounts():
     )
     if rates.empty:
         logger.info("No currency rates to compute amounts.")
+        return
 
     # This adds the columns date_value and date_precision
     date_extract = pd.json_normalize(rates["date"]).add_prefix("date_")
@@ -522,5 +528,6 @@ def currency_rates_workflow():
     update_currency_rates()
     compute_average_rates()
     compute_transfert_amounts()
+    raise Exception("PROUT!")
     logger.info("Ending currency rate workflow.")
     return TaskResult(partial=False)

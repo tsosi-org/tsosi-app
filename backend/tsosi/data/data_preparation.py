@@ -1,13 +1,14 @@
+import logging
 import re
 from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, ClassVar, Type
-import logging
 
 import pandas as pd
 import pycountry
+from tsosi.app_settings import app_settings
 from tsosi.data.currencies.currency_rates import (
     SUPPORTED_CURRENCIES,
     check_currency,
@@ -507,6 +508,46 @@ CONFIG_DOAJ_PUBLISHER_2023 = {
         ),
     ],
 }
+CONFIG_DOAJ_PUBLISHER_2022 = {
+    "id": "doaj_publisher_2022",
+    "fields": [
+        FieldRecipientName(constant="Directory of Open Access Journals"),
+        FieldRecipientRorId(constant="05amyt365"),
+        FieldEmitterName(field="Institution name"),
+        FieldEmitterUrl(field="emitter_website"),
+        FieldEmitterRorId(field="emitter_ror_id"),
+        FieldEmitterWikidataId(field="emitter_wikidata_id"),
+        FieldEmitterCountry(field="country"),
+        FieldAmount(field="amount"),
+        FieldCurrency(field="currency"),
+        FieldDateInvoice(
+            constant=Date(
+                value=date(year=2022, month=1, day=1),
+                precision=DATE_PRECISION_YEAR,
+            ).serialize()
+        ),
+    ],
+}
+CONFIG_DOAJ_PUBLISHER_2021 = {
+    "id": "doaj_publisher_2021",
+    "fields": [
+        FieldRecipientName(constant="Directory of Open Access Journals"),
+        FieldRecipientRorId(constant="05amyt365"),
+        FieldEmitterName(field="Institution name"),
+        FieldEmitterUrl(field="emitter_website"),
+        FieldEmitterRorId(field="emitter_ror_id"),
+        FieldEmitterWikidataId(field="emitter_wikidata_id"),
+        FieldEmitterCountry(field="country"),
+        FieldAmount(field="amount"),
+        FieldCurrency(field="currency"),
+        FieldDateInvoice(
+            constant=Date(
+                value=date(year=2021, month=1, day=1),
+                precision=DATE_PRECISION_YEAR,
+            ).serialize()
+        ),
+    ],
+}
 
 CONFIGS = [
     CONFIG_SCIPOST,
@@ -516,6 +557,8 @@ CONFIGS = [
     CONFIG_DOAJ_2023,
     CONFIG_DOAJ_2022,
     CONFIG_DOAJ_2021,
+    CONFIG_DOAJ_PUBLISHER_2021,
+    CONFIG_DOAJ_PUBLISHER_2022,
     CONFIG_DOAJ_PUBLISHER_2023,
     CONFIG_DOAJ_PUBLISHER_2024,
 ]
@@ -524,7 +567,7 @@ FILE_TYPES = [".xlsx", ".xls", ".json"]
 
 
 def get_input_config(
-    name: str, file_abs_path: str, sheet_name: str | None = None
+    name: str, file_name: str, sheet_name: str | None = None
 ) -> RawDataConfig:
     config_mapping = {c["id"]: c for c in CONFIGS}
     if name not in config_mapping.keys():
@@ -532,7 +575,7 @@ def get_input_config(
             f"Config {name} is not supported. "
             f"Available config options are: {list(config_mapping.keys())}."
         )
-    file_path = Path(file_abs_path)
+    file_path = app_settings.TSOSI_APP_TO_INGEST_DIR / file_name
     if not file_path.exists() or not file_path.is_file():
         raise ValueError(
             f"The provided file path {file_path} does not exist "
@@ -555,7 +598,7 @@ def get_input_config(
         config["input_sheet_name"] = sheet_name
 
     config["input_type"] = input_type
-    config["input_file_name"] = file_abs_path
+    config["input_file_name"] = str(file_path)
 
     source_str = f"{name.capitalize()} - {file_path.name}"
     config["fields"].append(FieldSource(constant=source_str))

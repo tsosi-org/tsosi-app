@@ -26,7 +26,6 @@ from tsosi.models.transfert import (
     TRANSFERT_ENTITY_TYPE_RECIPIENT,
 )
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC, MATCH_SOURCE_MANUAL
-from tsosi.signals import transferts_created
 
 from .currencies.currency_rates import insert_currencies
 from .data_preparation import (
@@ -54,11 +53,11 @@ from .db_utils import (
     IDENTIFIER_MATCHING_CREATE_FIELDS,
     bulk_create_from_df,
 )
-from .enrichment import update_entity_roles_clc, update_transfert_date_clc
 from .entity_matching import match_entities, matchable_entities
+from .signals import identifiers_created, transferts_created
 from .utils import drop_duplicates_keep_index
 
-logger = logging.getLogger("__name__")
+logger = logging.getLogger(__name__)
 
 TRANSFERT_ENTITY_TYPE = "transfert_entity_type"
 ENTITY_TO_CREATE_ID = "entity_to_create_id"
@@ -415,6 +414,16 @@ def ingest_new_records(transferts: pd.DataFrame):
     e_to_create = entities_to_create(entities_new)
     create_entities(e_to_create, now)
 
+    # Store registries with newly created identifiers
+    new_identifier_registries = []
+    registry_columns = {
+        "ror_id": REGISTRY_ROR,
+        "wikidata_id": REGISTRY_WIKIDATA,
+    }
+    for col, registry in registry_columns.items():
+        if e_to_create[col].any():
+            new_identifier_registries.append(registry)
+
     # Map back the entity data to the transfert dataframe.
     # First complete the entites DF with the created Entity's ID.
     transfert_entities.loc[entities_new.index, "entity_id"] = entities_new[
@@ -456,4 +465,5 @@ def ingest_new_records(transferts: pd.DataFrame):
     update_infrastructures()
 
     logger.info(f"Successfully ingested {len(transferts)} records.")
-    transferts_created.send_robust(None)
+    transferts_created.send(None)
+    identifiers_created.send(None, registries=new_identifier_registries)

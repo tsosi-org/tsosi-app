@@ -22,7 +22,6 @@ from tsosi.models.identifier import (
 from tsosi.models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
 from tsosi.models.transfert import MATCH_CRITERIA_MERGED, TRANSFERT_ENTITY_TYPES
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
-from tsosi.signals import new_identifiers_fetched
 
 from .data_preparation import clean_url
 from .db_utils import (
@@ -38,6 +37,7 @@ from .pid_registry.wikidata import (
     fetch_wikimedia_files,
     fetch_wikipedia_page_extracts,
 )
+from .signals import identifiers_created, identifiers_fetched
 from .task_result import TaskResult
 from .token_bucket import (
     ROR_TOKEN_BUCKET,
@@ -291,7 +291,7 @@ def check_identifier_version_conflict():
 
 @transaction.atomic
 def fetch_empty_identifier_records_for_registry(
-    date_update: datetime, registry_id: str, use_tokens: bool = True
+    registry_id: str, use_tokens: bool = True
 ) -> TaskResult:
     """
     Fetch the registry's record of every Identifier without a version.
@@ -299,7 +299,6 @@ def fetch_empty_identifier_records_for_registry(
     logger.info(
         f"Fetching emtpy identifier records for registry {registry_id}."
     )
-
     if registry_id == REGISTRY_ROR:
         func = fetch_ror_records
         token_bucket = ROR_TOKEN_BUCKET
@@ -307,10 +306,11 @@ def fetch_empty_identifier_records_for_registry(
         func = fetch_wikidata_records_data
         token_bucket = WIKIDATA_TOKEN_BUCKET
     else:
+        logger.error(f"Unkwown identifier registry {registry_id}")
         raise ValueError(f"Unknown identifier registry {registry_id}")
 
     result = TaskResult(partial=False, countdown=token_bucket.refill_period)
-    identifiers = empty_identifiers()
+    identifiers = empty_identifiers(registry_id)
     if use_tokens:
         identifiers, result.partial = token_bucket.consume_for_df(identifiers)
     if identifiers.empty:
@@ -346,6 +346,7 @@ def fetch_empty_identifier_records_for_registry(
         },
         inplace=True,
     )
+    date_update = timezone.now()
     identifier_versions["date_start"] = date_update
     identifier_versions["date_created"] = date_update
     identifier_versions["date_last_updated"] = date_update
@@ -373,7 +374,7 @@ def fetch_empty_identifier_records_for_registry(
     bulk_update_from_df(Identifier, identifiers_for_udpate, cols_map.values())
 
     logger.info(f"Fetched {len(identifier_versions)} empty PID records.")
-    new_identifiers_fetched.send(
+    identifiers_fetched.send(
         None, registry_id=registry_id, count=len(identifier_versions)
     )
     result.data_modified = True
@@ -396,88 +397,6 @@ def fetch_empty_identifier_records(
     )
 
     return TaskResult.from_tasks(result_ror, result_wikidata)
-    # logger.info("Fetching empty identifier records.")
-    # partial = False
-    # identifiers = empty_identifiers()
-    # if len(identifiers) == 0:
-    #     logger.info("There are no empty identifiers.")
-    #     return partial
-
-    # # ROR
-    # ror_pids = identifiers[identifiers["registry_id"] == REGISTRY_ROR].copy()
-    # if use_tokens:
-    #     ror_pids, partial = ROR_TOKEN_BUCKET.consume_for_df(ror_pids)
-    # ror_records = asyncio.run(fetch_ror_records(ror_pids["value"]))
-    # # Remove error queries.
-    # ror_records = (
-    #     ror_records
-    #     if ror_records.empty
-    #     else ror_records[ror_records["error"] == False]
-    # )
-    # if not ror_records.empty:
-    #     ror_pids["record"] = ror_pids["value"].map(
-    #         ror_records.set_index("id")["record"]
-    #     )
-    #     identifiers.loc[ror_pids.index, "record"] = ror_pids["record"]
-
-    # # Wikidata
-    # wikidata_pids = identifiers[
-    #     identifiers["registry_id"] == REGISTRY_WIKIDATA
-    # ].copy()
-    # wikidata_records = asyncio.run(
-    #     fetch_wikidata_records_data(wikidata_pids["value"])
-    # )
-    # if not wikidata_records.empty:
-    #     wikidata_pids["record"] = wikidata_pids["value"].map(
-    #         wikidata_records.set_index("id")["record"]
-    #     )
-    #     identifiers.loc[wikidata_pids.index, "record"] = wikidata_pids["record"]
-
-    # # Create IdentifierVersion
-    # identifier_versions = identifiers[~identifiers["record"].isnull()].copy()
-    # if identifier_versions.empty:
-    #     logger.info(
-    #         f"No records found for the queried {len(identifiers)} identifiers."
-    #     )
-    #     return pd.DataFrame()
-
-    # identifier_versions.rename(
-    #     columns={
-    #         "id": "identifier_id",
-    #         "value": "identifier_value",
-    #         "record": "value",
-    #     },
-    #     inplace=True,
-    # )
-    # identifier_versions["date_start"] = date_update
-    # identifier_versions["date_created"] = date_update
-    # identifier_versions["date_last_updated"] = date_update
-    # identifier_versions["date_last_fetched"] = date_update
-
-    # fields = [
-    #     "identifier_id",
-    #     "value",
-    #     "date_start",
-    #     "date_last_fetched",
-    #     "date_created",
-    #     "date_last_updated",
-    # ]
-    # bulk_create_from_df(
-    #     IdentifierVersion, identifier_versions, fields, "identifier_version_id"
-    # )
-
-    # # Update identifiers' current_version
-    # cols_map = {
-    #     "identifier_id": "id",
-    #     "identifier_version_id": "current_version_id",
-    #     "date_last_updated": "date_last_updated",
-    # }
-    # identifiers_for_udpate = identifier_versions.rename(columns=cols_map)
-    # bulk_update_from_df(Identifier, identifiers_for_udpate, cols_map.values())
-
-    # logger.info(f"Fetched {len(identifier_versions)} empty PID records.")
-
-    # return identifier_versions
 
 
 def entities_with_identifier_data() -> pd.DataFrame:
@@ -696,6 +615,7 @@ def new_identifiers_from_records() -> TaskResult:
         return result
 
     # Build new relations to ingest
+    new_identifier_registries = []
     now = timezone.now()
     entities["new_ror"] = (
         entities["ror_id"].isnull() & ~entities["wikidata_ror_id"].isnull()
@@ -712,6 +632,7 @@ def new_identifiers_from_records() -> TaskResult:
         ror_rels["match_criteria"] = MATCH_CRITERIA_FROM_WIKIDATA
         ingest_entity_identifier_relations(ror_rels, REGISTRY_ROR, now)
         result.data_modified = True
+        new_identifier_registries.append(REGISTRY_ROR)
 
     entities["new_wikidata"] = (
         entities["wikidata_id"].isnull() & ~entities["ror_wikidata_id"].isnull()
@@ -730,7 +651,9 @@ def new_identifiers_from_records() -> TaskResult:
             wikidata_rels, REGISTRY_WIKIDATA, now
         )
         result.data_modified = True
+        new_identifier_registries.append(REGISTRY_WIKIDATA)
 
+    identifiers_created.send(None, registries=new_identifier_registries)
     return result
 
 

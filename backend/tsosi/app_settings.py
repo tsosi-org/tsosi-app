@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from django.conf import settings
+
+TSOSI_DIR = Path(__file__).resolve().parent
 
 
 class AppSettings:
@@ -44,6 +48,22 @@ class AppSettings:
     @property
     def CELERY_BROKER(self) -> str:
         return self._setting("CELERY_BROKER", mandatory=True)
+
+    @property
+    def DATA_FOLDER_PATH(self) -> str:
+        return self._setting("DATA_FOLDER_PATH", mandatory=True)
+
+    @property
+    def TSOSI_APP_DIR(self) -> Path:
+        return TSOSI_DIR
+
+    @property
+    def TSOSI_APP_DATA_DIR(self) -> Path:
+        return TSOSI_DIR / "data"
+
+    @property
+    def TSOSI_APP_TO_INGEST_DIR(self) -> Path:
+        return TSOSI_DIR / "data" / "to_ingest"
 
 
 app_settings = AppSettings()

@@ -3,15 +3,24 @@
 You can use the deploy.py script to deploy a specific server.
 It expects the target server to have been prepared with by following the **Server preparation** section below.
 
+The preparation process is basically to install and enable all services used by the application:
+* Nginx - web server
+* Gunicorn - WSGI http server
+* PostgreSQL - Relational database
+* Redis - In-memory datastore
+* Celery - Python automated task queue & scheduler
+
 
 ## Server preparation
 
 * Linux with Python 3.12 installed
 
-* `deployer` user created for deployment process. You must enable ssh login with your SSH key. The user will need access to the /var/www folder for deployment along with sudo rights for a few service commands. You can add the following permissions by running `sudo visudo`:
+* `deployer` user created for deployment process. This user will execute all necessary commands on the server to run the Tsosi app, such as updating files and starting services. You must enable SSH login with your SSH key. The user will need access to the /var/www folder for deployment along with sudo rights for a few service commands. You can add the following permissions by running `sudo visudo`:
     ```
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart nginx, /usr/bin/systemctl start nginx, /usr/bin/systemctl stop nginx, /usr/bin/systemctl status nginx 
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart tsosi_gunicorn, /usr/bin/systemctl start tsosi_gunicorn, /usr/bin/systemctl stop tsosi_gunicorn, /usr/bin/systemctl status tsosi_gunicorn
+    deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart redis-server, /usr/bin/systemctl start redis-server, /usr/bin/systemctl stop redis-server, /usr/bin/systemctl status redis-server
+    deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart tsosi_celery, /usr/bin/systemctl start tsosi_celery, /usr/bin/systemctl stop tsosi_celery, /usr/bin/systemctl status tsosi_celery
     ```
 
 * Poetry package manager installed:
@@ -41,6 +50,11 @@ It expects the target server to have been prepared with by following the **Serve
 
     Example configuration can be found at [tsosi-app.nginx.config](./tsosi-app.nginx.config).
     
+
+* Create a `tsosi_celery` service to run celery worker(s). If you're using our common setup, just copy the file [tsosi_celery.service](./tsosi_celery.service) in `/etc/systemd/system/` and enable the service:
+    ```bash
+    sudo systemctl enable tsosi_celery.service
+    ```
 
 * Folder or dedicated storage volume for storing images.
 

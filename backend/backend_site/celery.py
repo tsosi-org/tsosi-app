@@ -11,6 +11,7 @@ django.setup()
 app = Celery("backend_site")
 app.config_from_object("django.conf:settings", namespace="TSOSI_CELERY")
 
+
 app.autodiscover_tasks()
 
 
