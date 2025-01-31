@@ -59,19 +59,33 @@ class RorRecordApiResult(ApiResult):
 
 
 @dataclass(kw_only=True)
+class RorMatchingResult(ApiResult):
+    """ """
+
+    # Custom information
+    search_value: str
+    matched_status: str | None = None
+    perfect_match: bool = False
+    # Matching result from ROR API
+    match_score: float | None = None
+    match_type: str | None = None
+    match_substring: str | None = None
+    match_chosen: bool = False
+    # Matched record info
+    matched_id: str | None = None
+    matched_name: str | None = None
+    matched_country: str | None = None
+
+
+@dataclass(kw_only=True)
 class RorAffiliationApiResult(ApiResult):
     """
     Dataclass to store the result of a ROR affiliation API request.
     """
 
     search_value: str
-    matched_id: str | None = None
-    matched_name: str | None = None
     matched_status: str | None = None
-    matched_substring: str | None = None
-    has_chosen_match: bool = False
-    match_score: float | None = None
-    match_type: str | None = None
+    full_results: list = field(default_factory=list)
 
 
 async def match_ror_record(
@@ -109,23 +123,8 @@ async def match_ror_record(
     query_results = query_response.get("number_of_results", 0)
 
     if query_results > 0:
-        item = query_response["items"][0]
-
         ror_result.matched_status = "active"
-        ror_result.matched_id = item["organization"]["id"]
-        ror_result.match_score = item["score"]
-        ror_result.match_type = item["matching_type"]
-        ror_result.matched_substring = item["substring"]
-
-        names = item["organization"]["names"]
-        for name in names:
-            if "ror_display" in name["types"]:
-                ror_result.matched_name = name["value"]
-                break
-
-        if item["chosen"] == True:
-            ror_result.has_chosen_match = True
-
+        ror_result.full_results = query_response["items"]
         return ror_result
 
     ## Try inactive records when no record was found within the active ones
@@ -156,36 +155,115 @@ async def match_ror_record(
         return ror_result
 
     ror_result.matched_status = "inactive"
-    item = query_response["items"][0]
-    ror_result.matched_id = item["id"]
-    for name in item["names"]:
-        if "ror_display" in name["types"]:
-            ror_result.matched_name = name["value"]
-
+    ror_result.full_results = query_response["items"]
     return ror_result
 
 
-async def match_ror_records(names: Iterable[str]) -> pd.DataFrame:
+async def match_ror_records(
+    names: Iterable[str], countries: Iterable[str | None] | None = None
+) -> pd.DataFrame:
     """
     Performs the single `match_ror_record` for every given value.
     This uses async http handling to speed up the process (12 times
     faster for ~1K http requests).
 
-    :param data:          The iterable of organization names.
-    :returns:       The dataframe of the results for each input name.
+    :param names:       The iterable of organization names.
+    :param countries:   The iterable of organization's countries (optional).
+                        It is used to determine a perfect match.
+    :returns:           The dataframe of the results for each input name.
     """
     if len(names) == 0:
         logger_console.warning("Empty names passed to match ror records.")
         return pd.DataFrame()
+    if len(countries) != len(names):
+        raise ValueError(
+            f"The length of the `names` and `countries` iterables don't match."
+        )
+    elif countries is None:
+        countries = [None for _ in names]
 
     results = await perform_http_func_batch(names, match_ror_record)
-    results = pd.DataFrame.from_records([asdict(r) for r in results])
-    results["matched_id"] = results["matched_id"].apply(
+
+    # Process results
+    # TODO: Vectorize somehow ?
+    processed_results = [
+        process_ror_matching_result(result, country)
+        for result, country in zip(results, countries)
+    ]
+
+    processed_results = pd.DataFrame.from_records(
+        [asdict(r) for r in processed_results]
+    )
+    processed_results["matched_id"] = processed_results["matched_id"].apply(
         lambda url: (url[-9:] if not pd.isnull(url) else url)
     )
 
-    columns = {col: f"ror_{col}" for col in results.columns}
-    return results.rename(columns=columns)
+    columns = {col: f"ror_{col}" for col in processed_results.columns}
+    return processed_results.rename(columns=columns)
+
+
+def process_ror_matching_result(
+    result: RorAffiliationApiResult, country: str | None = None
+) -> RorMatchingResult:
+    """
+    Extract useful information from the result of the ROR affiliation API.
+    The method extracts what we think is the best match for the input value and
+    country.
+
+    1 - Select the best match
+        a - There are exact matches - take the one with same country as
+            the provided one, else the first.
+        b - There are None, take the first one
+    2 - Extract the matching information & the match's base data
+    (id, name, country)
+    """
+    processed_result = RorMatchingResult(
+        search_value=result.search_value, matched_status=result.matched_status
+    )
+    if result.error or len(result.full_results) == 0:
+        processed_result.error = result.error
+        processed_result.error_message = result.error_message
+        return processed_result
+
+    matched_org = None
+    # For active organizations API, the result contains the keys:
+    # substring, score, matching_type, chosen & organization (the ROR record)
+    if result.matched_status == "active":
+        exact_matches = [
+            res
+            for res in result.full_results
+            if res["matching_type"] == "EXACT" and res["score"] == 1
+        ]
+        if len(exact_matches) > 0:
+            matching_result = exact_matches[0]
+            if country is not None:
+                for m in exact_matches:
+                    matched_country = get_ror_country(m["organization"])
+                    if matched_country == country:
+                        matching_result = m
+                        processed_result.perfect_match = True
+                        break
+        else:
+            matching_result = result.full_results[0]
+
+        processed_result.match_substring = matching_result["substring"]
+        processed_result.match_score = matching_result["score"]
+        processed_result.match_type = matching_result["matching_type"]
+        processed_result.match_chosen = matching_result["chosen"]
+        matched_org = matching_result["organization"]
+    # If the result comes from the inactive API, there's no matching metrics
+    # and the results are the matched records themselves
+    elif result.matched_status == "inactive":
+        matched_org = result.full_results[0]
+    else:
+        raise ValueError(
+            f"Unsupported ROR matching status: {result.matched_status}"
+        )
+
+    processed_result.matched_id = matched_org["id"]
+    processed_result.matched_name = get_ror_name(matched_org)
+    processed_result.matched_country = get_ror_country(matched_org)
+    return processed_result
 
 
 async def get_ror_record(

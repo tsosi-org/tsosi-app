@@ -689,8 +689,6 @@ def country_iso_from_name[T](val: T, error: bool = False) -> str | None:
         return results[0].alpha_2
     except LookupError:
         pass
-    # if val in COUNTRY_NAME_MAPPING.keys():
-    #     return COUNTRY_NAME_MAPPING[val].alpha_2
     msg = f"The provided country name `{val}` is non-standard."
     if error:
         raise DataValidationError(msg)

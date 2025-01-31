@@ -36,12 +36,7 @@ import aiohttp
 import pandas as pd
 from tsosi.data.utils import chunk_sequence, clean_null_values
 
-from .common import (
-    ApiRateLimit,
-    ApiResult,
-    HTTPStatusError,
-    perform_http_func_batch,
-)
+from .common import ApiResult, HTTPStatusError, perform_http_func_batch
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +46,6 @@ WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 WIKIPEDIA_SUMMARY_API_ENDPOINT = (
     "https://en.wikipedia.org/api/rest_v1/page/summary"
 )
-WIKIMEDIA_RATE_LIMIT = ApiRateLimit(max_requests=100, time=1)
 
 ALLOWED_IMG_FILE_FORMATS = [
     ".jpg",

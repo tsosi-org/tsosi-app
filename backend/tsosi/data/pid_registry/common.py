@@ -18,12 +18,6 @@ class ApiResult:
     error_message: str | None = None
 
 
-@dataclass(kw_only=True)
-class ApiRateLimit:
-    max_requests: int  # The maximum number of requests
-    time: int  # The time-base for the maximum nb of requests
-
-
 async def perform_http_func_batch[
     T, P
 ](
