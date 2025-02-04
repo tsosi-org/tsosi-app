@@ -23,8 +23,7 @@ from .settings_local import (
     MEDIA_URL,
     SECRET_KEY,
     TSOSI_CELERY_BROKER_URL,
-    TSOSI_CELERY_LOG_FILE,
-    TSOSI_CELERY_WORKER_LOG_FILE,
+    TSOSI_DATA_EXPORT_FOLDER,
     TSOSI_DATA_LOG_FILE,
     TSOSI_DJANGO_LOG_FILE,
     TSOSI_LOG_LEVEL,
@@ -32,6 +31,7 @@ from .settings_local import (
     TSOSI_REDIS_DB,
     TSOSI_REDIS_HOST,
     TSOSI_REDIS_PORT,
+    TSOSI_TRIGGER_JOBS,
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

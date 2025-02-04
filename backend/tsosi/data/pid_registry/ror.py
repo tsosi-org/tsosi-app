@@ -209,10 +209,12 @@ def process_ror_matching_result(
     Extract useful information from the result of the ROR affiliation API.
     The method extracts what we think is the best match for the input value and
     country.
+    We additionally flag the result as a perfect match when the labels match
+    exactly and the given country is the same as the matched record.
 
     1 - Select the best match
         a - There are exact matches - take the one with same country as
-            the provided one, else the first.
+            the provided one and exact same label, else the first.
         b - There are None, take the first one
     2 - Extract the matching information & the match's base data
     (id, name, country)
@@ -238,11 +240,29 @@ def process_ror_matching_result(
             matching_result = exact_matches[0]
             if country is not None:
                 for m in exact_matches:
-                    matched_country = get_ror_country(m["organization"])
-                    if matched_country == country:
-                        matching_result = m
-                        processed_result.perfect_match = True
-                        break
+                    record: dict = m["organization"]
+                    # Check that the country is the same as the input
+                    matched_country = get_ror_country(record)
+                    if matched_country != country:
+                        continue
+                    # Additionally enforce that the given string exactly matches
+                    # one of the labels.
+                    # The exact match from ROR just check whether the provided
+                    # string exactly matches a substring of a label of the
+                    # ROR record...
+                    name_match = False
+                    for name in record.get("names", []):
+                        if (
+                            "label" in name["types"]
+                            and name["value"] == result.search_value
+                        ):
+                            name_match = True
+                            break
+                    if not name_match:
+                        continue
+                    matching_result = m
+                    processed_result.perfect_match = True
+                    break
         else:
             matching_result = result.full_results[0]
 

@@ -6,6 +6,7 @@ from .identifier import (
     IdentifierVersion,
     Registry,
 )
+from .source import DataLoadSource, DataSource
 from .transfert import Transfert, TransfertEntityMatching
 
 
@@ -19,3 +20,4 @@ def empty_db():
     Entity.objects.all().delete()
     Registry.objects.all().delete()
     Currency.objects.all().delete()
+    DataSource.objects.all().delete()

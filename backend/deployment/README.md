@@ -68,6 +68,12 @@ The preparation process is basically to install and enable all services used by 
 
 * Prepared `settings_local.py` with specific environment settings for the Django application.
 
+* Prepare a folder for logs with rights for the user running the Django app and the Celery services, example:
+    ```bash
+    mkdir /var/log/tsosi
+    sudo chown -R deployer:deployer /var/log/tsosi
+    ```
+
 
 
 ## Deployment

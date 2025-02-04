@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Any, Iterable, Type
+from typing import Iterable, Type
 
 import pandas as pd
 from django.db import models

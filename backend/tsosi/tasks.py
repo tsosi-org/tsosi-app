@@ -185,16 +185,25 @@ def identifier_update():
 
 ## Signal handlers to trigger related tasks
 def trigger_post_ingestion_pipeline(sender, **kwargs):
+    if not app_settings.TRIGGER_JOBS:
+        logger.info("Skipped triggering of post-ingestion pipeline")
+        return
     logger.info("Triggering post-ingestion pipeline.")
     post_ingestion_pipeline.delay_on_commit()
 
 
 def trigger_identifier_data_processing(sender, **kwargs):
+    if not app_settings.TRIGGER_JOBS:
+        logger.info("Skipped triggering of identifier data processing")
+        return
     logger.info("Triggering identifier data processing.")
     process_identifier_data.delay_on_commit()
 
 
 def trigger_wiki_data_update(sender, **kwargs):
+    if not app_settings.TRIGGER_JOBS:
+        logger.info("Skipped triggering of wiki related data")
+        return
     registry_id = kwargs.get("registry_id")
     if registry_id == REGISTRY_WIKIDATA:
         logger.info("Triggering update of wiki related data.")
@@ -202,6 +211,9 @@ def trigger_wiki_data_update(sender, **kwargs):
 
 
 def trigger_new_identifier_fetching(sender, **kwargs):
+    if not app_settings.TRIGGER_JOBS:
+        logger.info("Skipped triggering of new identifier fetching.")
+        return
     registries = kwargs.get("registries")
     if isinstance(registries, list):
         logger.info(

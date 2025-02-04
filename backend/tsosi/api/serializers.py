@@ -74,7 +74,6 @@ class TransfertSerializer(serializers.ModelSerializer):
             "currency",
             "date_clc",
             "description",
-            "source",
             "amounts_clc",
         ]
 
@@ -92,12 +91,10 @@ class TransfertDetailsSerializer(serializers.ModelSerializer):
             "amount",
             "currency",
             "date_clc",
-            "date_agreement",
             "date_invoice",
             "date_payment",
             "date_start",
             "date_end",
-            "source",
             "amounts_clc",
             "raw_data",
         ]

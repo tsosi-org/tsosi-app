@@ -1,6 +1,5 @@
 import logging
 import time
-from asyncio import sleep
 
 import pandas as pd
 import redis

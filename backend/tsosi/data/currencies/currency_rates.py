@@ -359,7 +359,6 @@ def update_currency_rates():
 
     # Get the time period for which we need to fetch the rates.
     date_fields = [
-        "date_agreement",
         "date_invoice",
         "date_payment",
         "date_start",
@@ -528,6 +527,5 @@ def currency_rates_workflow():
     update_currency_rates()
     compute_average_rates()
     compute_transfert_amounts()
-    raise Exception("PROUT!")
     logger.info("Ending currency rate workflow.")
     return TaskResult(partial=False)

@@ -23,7 +23,6 @@ from tsosi.models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
 from tsosi.models.transfert import MATCH_CRITERIA_MERGED, TRANSFERT_ENTITY_TYPES
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 
-from .data_preparation import clean_url
 from .db_utils import (
     IDENTIFIER_CREATE_FIELDS,
     IDENTIFIER_MATCHING_CREATE_FIELDS,
@@ -37,6 +36,7 @@ from .pid_registry.wikidata import (
     fetch_wikimedia_files,
     fetch_wikipedia_page_extracts,
 )
+from .preparation.cleaning_utils import clean_url
 from .signals import identifiers_created, identifiers_fetched
 from .task_result import TaskResult
 from .token_bucket import (
@@ -894,7 +894,7 @@ def update_transfert_date_clc(
     logger.info("Updating transfert CLC date.")
     if instances is None:
         instances = Transfert.objects.all().values(
-            "id", "date_agreement", "date_invoice", "date_payment", "date_start"
+            "id", "date_invoice", "date_payment", "date_start"
         )
     if len(instances) == 0:
         logger.info("No transfert to update CLC date for.")
@@ -902,7 +902,7 @@ def update_transfert_date_clc(
 
     data = pd.DataFrame.from_records(instances)
     data["date_clc"] = (
-        data[["date_payment", "date_invoice", "date_agreement", "date_start"]]
+        data[["date_payment", "date_invoice", "date_start"]]
         .bfill(axis=1)
         .iloc[:, 0]
     )

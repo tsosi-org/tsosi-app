@@ -9,8 +9,9 @@ from tsosi.models.transfert import (
     TRANSFERT_ENTITY_TYPE_AGENT,
     TRANSFERT_ENTITY_TYPE_EMITTER,
 )
+from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC, MATCH_SOURCE_MANUAL
 
-from .data_preparation import (
+from .preparation.cleaning_utils import (
     clean_cell_value,
     country_iso_from_name,
     country_name_from_iso,
@@ -107,8 +108,8 @@ def prepare_manual_matching(
         right_index=True,
     )
     # Add other columns used for manual completion
+    df["_processed"] = df["_ror_perfect_match"].map({True: True, False: None})
     other_manual_columns = [
-        "_processed",
         "_remark",
         "_found_url",
         "_wikidata_id",
@@ -124,6 +125,7 @@ def prepare_manual_matching(
         if col not in ror_columns:
             columns_ordered.append(col)
         if col == name_column:
+            columns_ordered.append("_processed")
             columns_ordered += other_manual_columns
             columns_ordered += ror_columns
 
@@ -139,6 +141,14 @@ def prepare_manual_matching(
         f"Successfully prepared manual matching for {len(df)} entities."
     )
     return result
+
+
+def is_true(val) -> bool:
+    if isinstance(val, str):
+        return val.strip().lower() == "true"
+    elif isinstance(val, bool):
+        return val
+    return False
 
 
 def process_enriched_data(
@@ -161,6 +171,17 @@ def process_enriched_data(
             f"Only {allowed_entity_types} types are allowed."
         )
 
+    df["_match_source"] = MATCH_SOURCE_MANUAL
+    # Fill manual ROR ID from the matched ID when it's a perfect match.
+    perfect_match_col = "_ror_perfect_match"
+    if perfect_match_col in df.columns:
+        mask = df[perfect_match_col].apply(is_true)
+        df_filtered = df[mask]
+        df.loc[df_filtered.index, "_manual_ror_id"] = df_filtered[
+            "_ror_matched_id"
+        ]
+        df.loc[df_filtered.index, "_match_source"] = MATCH_SOURCE_AUTOMATIC
+
     # Discard useless columns
     discard_columns = [
         "_name_from_wikidata",
@@ -168,33 +189,27 @@ def process_enriched_data(
         "_ror_matched_id",
         "_ror_matched_name",
         "_ror_exact_match",
+        "_ror_perfect_match",
     ]
     for c in discard_columns:
         if c not in df.columns:
             continue
         del df[c]
-
     # Useful columns
     enriched_columns = {
         "_remark": "matching_remark",
         "_found_url": "website",
         "_wikidata_id": "wikidata_id",
         "_manual_ror_id": "ror_id",
+        "_match_source": "match_source",
     }
 
-    def is_processed[T](val: T) -> bool:
-        if isinstance(val, str):
-            return val.strip().lower() == "true"
-        elif isinstance(val, bool):
-            return val
-        return False
-
-    mask = df["_processed"].apply(is_processed)
-
+    mask = df["_processed"].apply(is_true)
+    df_filtered = df[mask]
     final_enriched_columns = []
     for col_current, col_generic in enriched_columns.items():
         col_final = f"{entity_type}_{col_generic}"
-        df.loc[mask.index, col_final] = df[col_current]
+        df.loc[df_filtered.index, col_final] = df_filtered[col_current]
         del df[col_current]
         final_enriched_columns.append(col_final)
 

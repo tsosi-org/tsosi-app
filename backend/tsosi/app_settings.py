@@ -50,10 +50,6 @@ class AppSettings:
         return self._setting("CELERY_BROKER", mandatory=True)
 
     @property
-    def DATA_FOLDER_PATH(self) -> str:
-        return self._setting("DATA_FOLDER_PATH", mandatory=True)
-
-    @property
     def TSOSI_APP_DIR(self) -> Path:
         return TSOSI_DIR
 
@@ -64,6 +60,15 @@ class AppSettings:
     @property
     def TSOSI_APP_TO_INGEST_DIR(self) -> Path:
         return TSOSI_DIR / "data" / "to_ingest"
+
+    @property
+    def DATA_EXPORT_FOLDER(self) -> Path:
+        obj = self._setting("DATA_EXPORT_FOLDER", mandatory=True)
+        return obj if isinstance(obj, Path) else Path(obj)
+
+    @property
+    def TRIGGER_JOBS(self) -> bool:
+        return self._setting("TRIGGER_JOBS", default=False)
 
 
 app_settings = AppSettings()

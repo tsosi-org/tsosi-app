@@ -1,7 +1,8 @@
 from datetime import date, datetime
 
 import pandas as pd
-from tsosi.data.data_preparation import (
+from tsosi.data.exceptions import DataValidationError
+from tsosi.data.preparation.cleaning_utils import (
     clean_cell_value,
     clean_number_value,
     clean_url,
@@ -12,7 +13,6 @@ from tsosi.data.data_preparation import (
     extract_currency_amount,
     undate,
 )
-from tsosi.data.exceptions import DataValidationError
 
 from .utils import BaseTestData, base_test_function
 

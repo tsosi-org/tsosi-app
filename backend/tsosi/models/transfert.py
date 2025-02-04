@@ -5,6 +5,7 @@ from django.db import models
 from .currency import Currency
 from .date import DateField
 from .entity import Entity
+from .source import DataLoadSource
 from .utils import MATCH_SOURCE_CHOICES, TimestampedModel
 
 # WARNING: those must be the names of the foreign keys in the Transfert model
@@ -50,6 +51,9 @@ class Transfert(TimestampedModel):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     raw_data = models.JSONField()
+    data_load_source = models.ForeignKey(
+        DataLoadSource, null=False, on_delete=models.RESTRICT
+    )
     emitter = models.ForeignKey(
         Entity,
         on_delete=models.RESTRICT,
@@ -72,21 +76,19 @@ class Transfert(TimestampedModel):
     amount = models.FloatField(null=True)
     currency = models.ForeignKey(Currency, on_delete=models.RESTRICT, null=True)
     date_clc = DateField(null=True)
-    date_agreement = DateField(null=True)
     date_invoice = DateField(null=True)
     date_payment = DateField(null=True)
     date_start = DateField(null=True)
     date_end = DateField(null=True)
     description = models.TextField()
-    source = models.CharField(max_length=256)
     original_id = models.CharField(max_length=256)
     amounts_clc = models.JSONField(null=True)
+    hide_amount = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(date_agreement__isnull=False)
-                | models.Q(date_invoice__isnull=False)
+                condition=models.Q(date_invoice__isnull=False)
                 | models.Q(date_payment__isnull=False)
                 | models.Q(date_start__isnull=False),
                 name="transfert_at_least_one_date",
