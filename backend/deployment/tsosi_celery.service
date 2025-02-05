@@ -7,6 +7,11 @@ Requires=redis-server.service
 Type=forking
 User=deployer
 Group=deployer
+# The following 3 lines automatically create a /run/celery/ folder
+# owned by the User and Group of the service
+PermissionsStartOnly=True
+RuntimeDirectory=celery
+RuntimeDirectoryMode=0775
 WorkingDirectory=/var/www/current/backend
 # Use double % to escape the character, otherwise systemd will replace it with
 # current process name when we actually want celery to handle this.

@@ -148,6 +148,8 @@ def is_true(val) -> bool:
         return val.strip().lower() == "true"
     elif isinstance(val, bool):
         return val
+    elif isinstance(val, (int, float)):
+        return val == 1
     return False
 
 
@@ -160,7 +162,6 @@ def process_enriched_data(
     """
     logger.info("Processing enriched data.")
 
-    df = data.copy(deep=True)
     allowed_entity_types = [
         TRANSFERT_ENTITY_TYPE_EMITTER,
         TRANSFERT_ENTITY_TYPE_AGENT,
@@ -170,7 +171,9 @@ def process_enriched_data(
             f"Unvalid entity_type {entity_type}. "
             f"Only {allowed_entity_types} types are allowed."
         )
-
+    if name_column not in data.columns:
+        raise ValueError(f"Name column {name_column} is not in the input data.")
+    df = data.copy(deep=True)
     df["_match_source"] = MATCH_SOURCE_MANUAL
     # Fill manual ROR ID from the matched ID when it's a perfect match.
     perfect_match_col = "_ror_perfect_match"
@@ -226,4 +229,5 @@ def process_enriched_data(
             final_columns = final_columns + final_enriched_columns
 
     logger.info("Processed enriched data.")
+    clean_null_values(df)
     return df[final_columns].copy()

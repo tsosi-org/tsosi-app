@@ -51,11 +51,11 @@ __all__ = [
     "FieldRecipientWikidataId",
     "FieldRecipientUrl",
     "FieldRecipientCountry",
-    "FieldConsortiumName",
-    "FieldConsortiumUrl",
-    "FieldConsortiumRorId",
-    "FieldConsortiumWikidataId",
-    "FieldConsortiumCountry",
+    "FieldAgentName",
+    "FieldAgentUrl",
+    "FieldAgentRorId",
+    "FieldAgentWikidataId",
+    "FieldAgentCountry",
     "FieldDateInvoice",
     "FieldDatePayment",
     "FieldDateStart",
@@ -167,28 +167,28 @@ class FieldRecipientUrl(ConstOrField):
 
 
 @dataclass(kw_only=True)
-class FieldConsortiumName(ConstOrField):
-    NAME = "consortium_name"
+class FieldAgentName(ConstOrField):
+    NAME = "agent_name"
 
 
 @dataclass(kw_only=True)
-class FieldConsortiumRorId(ConstOrField):
-    NAME = "consortium_ror_id"
+class FieldAgentRorId(ConstOrField):
+    NAME = "agent_ror_id"
 
 
 @dataclass(kw_only=True)
-class FieldConsortiumWikidataId(ConstOrField):
-    NAME = "consortium_wikidata_id"
+class FieldAgentWikidataId(ConstOrField):
+    NAME = "agent_wikidata_id"
 
 
 @dataclass(kw_only=True)
-class FieldConsortiumUrl(ConstOrField):
-    NAME = "consortium_url"
+class FieldAgentUrl(ConstOrField):
+    NAME = "agent_url"
 
 
 @dataclass(kw_only=True)
-class FieldConsortiumCountry(ConstOrField):
-    NAME = "consortium_country"
+class FieldAgentCountry(ConstOrField):
+    NAME = "agent_country"
     type = "country"
     is_iso: bool = False
 
@@ -246,11 +246,11 @@ ALL_FIELDS: list[Type[ConstOrField]] = [
     FieldRecipientWikidataId,
     FieldRecipientUrl,
     FieldRecipientCountry,
-    FieldConsortiumName,
-    FieldConsortiumUrl,
-    FieldConsortiumRorId,
-    FieldConsortiumWikidataId,
-    FieldConsortiumCountry,
+    FieldAgentName,
+    FieldAgentUrl,
+    FieldAgentRorId,
+    FieldAgentWikidataId,
+    FieldAgentCountry,
     FieldDateInvoice,
     FieldDatePayment,
     FieldDateStart,
@@ -282,6 +282,7 @@ class DataIngestionConfig:
     date_generated: str
     source: DataLoadSource
     hide_amount: bool
+    count: int
     data: list
 
 
@@ -596,14 +597,15 @@ class RawDataConfig:
             file_name += f"_full"
         file_name += ".json"
         file_path = app_settings.DATA_EXPORT_FOLDER / file_name
-        tsosi_data_file = DataIngestionConfig(
+        ingestion_config = DataIngestionConfig(
             date_generated=datetime.now().replace(microsecond=0).isoformat(),
             source=self.source.serialize(),
             hide_amount=self.hide_amount,
+            count=len(data),
             data=data.to_dict(orient="records"),
         )
         with open(file_path, "w") as f:
-            json.dump(asdict(tsosi_data_file), f, indent=2)
+            json.dump(asdict(ingestion_config), f, indent=2)
 
         logger.info(f"Successfully write TSOSI data file at {file_path}")
 
@@ -725,47 +727,6 @@ CONFIG_DOAJ_2022 = {
                 value=date(year=2022, month=1, day=1),
                 precision=DATE_PRECISION_YEAR,
             ).serialize()
-        ),
-    ],
-}
-
-CONFIG_DOAJ_2023 = {
-    "id": "doaj_2023",
-    "fields": [
-        FieldRecipientName(constant="Directory of Open Access Journals"),
-        FieldRecipientRorId(constant="05amyt365"),
-        FieldEmitterName(field="Institution name"),
-        FieldEmitterCountry(field="country"),
-        FieldAmount(field="amount"),
-        FieldCurrency(field="currency"),
-        FieldDateInvoice(
-            constant=Date(
-                value=date(year=2023, month=1, day=1),
-                precision=DATE_PRECISION_YEAR,
-            ).serialize()
-        ),
-    ],
-}
-
-CONFIG_DOAJ_2024 = {
-    "id": "doaj_2024",
-    "date_columns": ["Invoice date", "Support end date", "Paid up until"],
-    "fields": [
-        FieldRecipientName(constant="Directory of Open Access Journals"),
-        FieldRecipientRorId(constant="05amyt365"),
-        FieldEmitterName(field="Company"),
-        FieldEmitterCountry(field="Country", is_iso=False),
-        FieldAmount(field="Support amount"),
-        FieldCurrency(field="Currency"),
-        FieldConsortiumName(field="Agent"),
-        FieldDateInvoice(
-            field="Invoice date",
-            format="%d/%m/%Y",
-            default=Date(
-                value=date(year=2024, month=1, day=1),
-                precision=DATE_PRECISION_YEAR,
-            ).serialize(),
-            date_precision=DATE_PRECISION_DAY,
         ),
     ],
 }

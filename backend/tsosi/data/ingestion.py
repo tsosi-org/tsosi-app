@@ -7,7 +7,6 @@ import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
-from tsosi.app_settings import app_settings
 from tsosi.data.exceptions import DataException
 from tsosi.models import (
     Currency,
@@ -74,24 +73,32 @@ def match_entities_with_db(entities: pd.DataFrame):
 
     if not to_match.empty and not base_entities.empty:
 
-        # Match Agents/Consortiums only with agents/consortium
-        to_match_agent_mask = (
-            to_match[TRANSFERT_ENTITY_TYPE] == TRANSFERT_ENTITY_TYPE_AGENT
-        )
-        to_match_agents = to_match[to_match_agent_mask].copy()
-        base_agent_mask = base_entities["is_agent"] == True
-        base_agents = base_entities[base_agent_mask].copy()
-        if not to_match_agents.empty:
-            match_entities(to_match_agents, base_agents, True)
-            for col in match_columns:
-                entities.loc[to_match_agents.index, col] = to_match_agents[col]
+        ###### WARNING
+        ###### This is not coherent with our way of centralizing
+        ###### the entities in the Entity table.
+        ###### What we can do is to match agent **without PID** only to
+        ###### existing agents.
+        # # Match Agents/Consortiums only with agents/consortium
+        # to_match_agent_mask = (
+        #     to_match[TRANSFERT_ENTITY_TYPE] == TRANSFERT_ENTITY_TYPE_AGENT
+        # )
+        # to_match_agents = to_match[to_match_agent_mask].copy()
+        # base_agent_mask = base_entities["is_agent"] == True
+        # base_agents = base_entities[base_agent_mask].copy()
+        # if not to_match_agents.empty:
+        #     match_entities(to_match_agents, base_agents, True)
+        #     for col in match_columns:
+        #         entities.loc[to_match_agents.index, col] = to_match_agents[col]
 
-        # Handle the other entities
-        to_match_others = to_match[~to_match_agent_mask].copy()
-        base_others = base_entities[~base_agent_mask].copy()
-        match_entities(to_match_others, base_others, True)
+        # # Handle the other entities
+        # to_match_others = to_match[~to_match_agent_mask].copy()
+        # base_others = base_entities[~base_agent_mask].copy()
+        # match_entities(to_match_others, base_others, True)
+        # for col in match_columns:
+        #     entities.loc[to_match_others.index, col] = to_match_others[col]
+        match_entities(to_match, base_entities, True)
         for col in match_columns:
-            entities.loc[to_match_others.index, col] = to_match_others[col]
+            entities.loc[to_match.index, col] = to_match[col]
 
 
 def entities_to_create(entities: pd.DataFrame) -> pd.DataFrame:
@@ -198,14 +205,14 @@ def extract_entities(transferts: pd.DataFrame) -> pd.DataFrame:
     recipients[TRANSFERT_ENTITY_TYPE] = TRANSFERT_ENTITY_TYPE_RECIPIENT
 
     agent_cols_mapping = {
-        dc.FieldConsortiumName.NAME: "name",
-        dc.FieldConsortiumCountry.NAME: "country",
-        dc.FieldConsortiumUrl.NAME: "website",
-        dc.FieldConsortiumRorId.NAME: "ror_id",
-        dc.FieldConsortiumWikidataId.NAME: "wikidata_id",
+        dc.FieldAgentName.NAME: "name",
+        dc.FieldAgentCountry.NAME: "country",
+        dc.FieldAgentUrl.NAME: "website",
+        dc.FieldAgentRorId.NAME: "ror_id",
+        dc.FieldAgentWikidataId.NAME: "wikidata_id",
         dc.FieldOriginalId.NAME: "original_id",
     }
-    mask = transferts[dc.FieldConsortiumName.NAME].isnull()
+    mask = transferts[dc.FieldAgentName.NAME].isnull()
     agents = transferts[~mask][agent_cols_mapping.keys()].rename(
         columns=agent_cols_mapping
     )

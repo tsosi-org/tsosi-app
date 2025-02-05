@@ -7,6 +7,11 @@ Requires=tsosi_celery.service
 Type=simple
 User=deployer
 Group=deployer
+# The following 3 lines automatically create a /run/celery/ folder
+# owned by the User and Group of the service
+PermissionsStartOnly=True
+RuntimeDirectory=celery_beat
+RuntimeDirectoryMode=0775
 WorkingDirectory=/var/www/current/backend
 ExecStart=/home/deployer/.local/bin/poetry run celery -A backend_site beat \
     --pidfile=/var/run/celery/beat.pid
