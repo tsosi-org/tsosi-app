@@ -58,8 +58,9 @@ class AppSettings:
         return TSOSI_DIR / "data"
 
     @property
-    def TSOSI_APP_TO_INGEST_DIR(self) -> Path:
-        return TSOSI_DIR / "data" / "to_ingest"
+    def TO_INGEST_DIR(self) -> Path:
+        obj = self._setting("TO_INGEST_DIR", mandatory=True)
+        return obj if isinstance(obj, Path) else Path(obj)
 
     @property
     def DATA_EXPORT_FOLDER(self) -> Path:

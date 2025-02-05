@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Callable
 
 import redis
@@ -9,7 +10,7 @@ from celery.utils.log import get_task_logger
 from redis.lock import Lock
 
 from .app_settings import app_settings
-from .data import enrichment
+from .data import enrichment, ingestion
 from .data.currencies import currency_rates
 from .data.task_result import TaskResult
 from .models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
@@ -103,7 +104,7 @@ class TsosiLockedTask(TsosiTask):
                 args=args,
                 kwargs=kwargs,
             )
-            raise Ignore("Task is arleady running.")
+            raise Ignore("Task is already running.")
         self.lock = lock
 
     def after_return(self, status, retval, task_id, args, kwargs, einfo):
@@ -111,6 +112,35 @@ class TsosiLockedTask(TsosiTask):
         if self.lock is not None and self.lock.owned():
             self.lock.release()
             self.lock = None
+
+
+@shared_task(base=TsosiLockedTask)
+def ingest_data_file(file_path: str):
+    """
+    Ingest single data file. Only for testing purposes, `ingest_all` should
+    be preferred to avoid concurrency issues.
+    """
+    return ingestion.ingest_data_file(file_path)
+
+
+@shared_task(base=TsosiLockedTask)
+def ingest_all():
+    """
+    Ingest all data files present in INGEST_DIR and delay the
+    post-ingestion pipeline after all files are ingested.
+    """
+    folder = app_settings.TO_INGEST_DIR
+    files = folder.glob("*.json")
+    registries = []
+    for f in files:
+        new_registries = ingestion.ingest_data_file(
+            folder / f, send_signals=False
+        )
+        for r in new_registries:
+            if r in registries:
+                continue
+            registries.append(r)
+    ingestion.send_post_ingestion_signals(registries)
 
 
 @shared_task(base=TsosiLockedTask)

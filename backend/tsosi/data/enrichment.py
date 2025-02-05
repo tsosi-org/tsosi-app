@@ -373,30 +373,15 @@ def fetch_empty_identifier_records_for_registry(
     identifiers_for_udpate = identifier_versions.rename(columns=cols_map)
     bulk_update_from_df(Identifier, identifiers_for_udpate, cols_map.values())
 
-    logger.info(f"Fetched {len(identifier_versions)} empty PID records.")
+    logger.info(
+        f"Fetched {len(identifier_versions)} empty records "
+        f"from registry {registry_id}"
+    )
     identifiers_fetched.send(
         None, registry_id=registry_id, count=len(identifier_versions)
     )
     result.data_modified = True
     return result
-
-
-def fetch_empty_identifier_records(
-    date_update: datetime | None = None,
-    use_tokens: bool = True,
-) -> TaskResult:
-    """
-    Fetch the records for every empty Identifiers.
-    """
-    date_update = date_update if date_update is not None else timezone.now()
-    result_ror = fetch_empty_identifier_records_for_registry(
-        REGISTRY_ROR, use_tokens=use_tokens
-    )
-    result_wikidata = fetch_empty_identifier_records_for_registry(
-        REGISTRY_WIKIDATA, use_tokens=use_tokens
-    )
-
-    return TaskResult.from_tasks(result_ror, result_wikidata)
 
 
 def entities_with_identifier_data() -> pd.DataFrame:

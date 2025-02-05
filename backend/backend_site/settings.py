@@ -19,6 +19,7 @@ from .settings_local import (
     DATABASES,
     DEBUG,
     DJANGO_LOG_LEVEL,
+    ERROR_LOG_FILE,
     MEDIA_ROOT,
     MEDIA_URL,
     SECRET_KEY,
@@ -31,6 +32,7 @@ from .settings_local import (
     TSOSI_REDIS_DB,
     TSOSI_REDIS_HOST,
     TSOSI_REDIS_PORT,
+    TSOSI_TO_INGEST_DIR,
     TSOSI_TRIGGER_JOBS,
 )
 
@@ -125,6 +127,12 @@ LOGGING = {
             "filename": TSOSI_DATA_LOG_FILE,
             "formatter": "default",
         },
+        "error_file": {
+            "level": "ERROR",
+            "class": "logging.handlers.WatchedFileHandler",
+            "filename": ERROR_LOG_FILE,
+            "formatter": "default",
+        },
         "django_file": {
             "level": "INFO",
             "class": "logging.handlers.WatchedFileHandler",
@@ -146,22 +154,22 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "django_file"],
+            "handlers": ["console", "django_file", "error_file"],
             "propagate": False,
             "level": DJANGO_LOG_LEVEL,
         },
         "tsosi": {
-            "handlers": ["console", "tsosi_file"],
+            "handlers": ["console", "tsosi_file", "error_file"],
             "level": TSOSI_LOG_LEVEL,
             "propagate": False,
         },
         "tsosi.data": {
-            "handlers": ["console", "tsosi_data_file"],
+            "handlers": ["console", "tsosi_data_file", "error_file"],
             "level": TSOSI_LOG_LEVEL,
             "propagate": False,
         },
         "tsosi.tasks": {
-            "handlers": ["console", "tsosi_data_file"],
+            "handlers": ["console", "tsosi_data_file", "error_file"],
             "level": TSOSI_LOG_LEVEL,
             "propagate": False,
         },

@@ -1,11 +1,11 @@
 import json
 import logging
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
-from django.db.models import Q
 from django.utils import timezone
 from tsosi.app_settings import app_settings
 from tsosi.data.exceptions import DataException
@@ -388,21 +388,25 @@ def get_data_load_source(source: dc.DataLoadSource):
 
 @transaction.atomic
 def ingest_new_records(
-    transferts: pd.DataFrame, source: DataLoadSource, hide_amount: bool
-):
+    transferts: pd.DataFrame,
+    source: DataLoadSource,
+    hide_amount: bool,
+    send_signals: bool = True,
+) -> list[str]:
     """
     Insert the new records in the database and create appropriate relations.
     Expects the data to be in the appropriate format (ie. processed with
     `data_preparation.prepare_data`).
 
-    0 - De-duplicate incoming records.
     1 - Pre-match entity with existing ones. \\
     2 - Create entities for the remaining ones. \\
     3 - Create transferts with FK to the above entities. \\
     4 - Create appropriate entries in TransfertEntityMatching.
 
-    :param data:    Data formatted to TSOSI format, ie. using
-                    `data_preparation.prepare_data method`
+    :param data:        Data formatted to TSOSI format, ie. using
+                        `RawDataConfig.process` method.
+    :param source:      The data load source to be appended to each transfert.
+    :param hide_amount: Whether the transfert amounts should be hidden.
     """
     logger.info(f"Ingesting {len(transferts)} transfert records.")
     now = timezone.now()
@@ -433,7 +437,7 @@ def ingest_new_records(
     create_entities(e_to_create, now)
 
     # Store registries with newly created identifiers
-    new_identifier_registries = []
+    new_identifier_registries: list[str] = []
     registry_columns = {
         "ror_id": REGISTRY_ROR,
         "wikidata_id": REGISTRY_WIKIDATA,
@@ -482,23 +486,41 @@ def ingest_new_records(
     transfert_entities["match_source"] = MATCH_SOURCE_AUTOMATIC
     create_transfert_entity_matching(transfert_entities, now)
 
+    if send_signals:
+        send_post_ingestion_signals(new_identifier_registries)
     logger.info(f"Successfully ingested {len(transferts)} records.")
-    transferts_created.send(None)
-    identifiers_created.send(None, registries=new_identifier_registries)
+    return new_identifier_registries
 
 
-def ingest(file_name: str):
+def ingest_data_file(
+    file_path: str | Path, send_signals: bool = True
+) -> tuple[bool, list[str]]:
     """
     Ingest data from the given data file.
     The data file should have been generated with
     `RawDataConfig.generate_data_file`
     """
-    file_path = app_settings.TSOSI_APP_TO_INGEST_DIR / file_name
+    logger.info(f"Ingesting data file {file_path}")
     with open(file_path, "r") as f:
         file_content = json.load(f)
     file_content["source"] = dc.DataLoadSource(**file_content["source"])
     ingestion_config = dc.DataIngestionConfig(**file_content)
     df = pd.DataFrame.from_records(ingestion_config.data)
-    source = get_data_load_source(ingestion_config.source)
+    try:
+        source = get_data_load_source(ingestion_config.source)
+    except DataException as e:
+        logger.info(f"Skipping ingestion of file {file_path}:\n{e}")
+        return False, []
     # flag_duplicate_transferts(df, source)
-    ingest_new_records(df, source, ingestion_config.hide_amount)
+    registries = ingest_new_records(
+        df, source, ingestion_config.hide_amount, send_signals
+    )
+    return True, registries
+
+
+def send_post_ingestion_signals(registries: list[str]):
+    """
+    Send signals to trigger post-ingestion pipeline.
+    """
+    transferts_created.send(None)
+    identifiers_created.send(None, registries=registries)
