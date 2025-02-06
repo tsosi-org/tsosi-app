@@ -1,3 +1,8 @@
+"""
+Deployment script
+TODO: Instantiate the SSH tunnel only once and re-use it for all commands. 
+"""
+
 import argparse
 import os
 import subprocess
@@ -126,14 +131,11 @@ def deploy(server_name: str, branch: str = None, skip_front_build=False):
 
     ssh_execute(server, f"mkdir -p {release_dir}")
 
+    # Clone repo & extract only backend code
     ssh_execute(
         server,
         f"cd {release_dir} "
-        "&& git clone https://gricad-gitlab.univ-grenoble-alpes.fr/tsosi/tsosi-app.git "
-        "&& cd tsosi-app "
-        "&& git fetch "
-        f"&& git checkout {deploy_branch} "
-        "&& git pull",
+        f"&& git clone --branch {deploy_branch} https://github.com/tsosi-org/tsosi-app.git",
     )
 
     django_folder = "backend"
@@ -209,6 +211,9 @@ def deploy(server_name: str, branch: str = None, skip_front_build=False):
     )
 
     # Restart services
+    # TODO: Re-start celery services
+    # ssh_execute(server, "sudo systemctl restart tsosi_celery")
+    # ssh_execute(server, "sudo systemctl restart tsosi_celery_beat")
     ssh_execute(server, "sudo systemctl restart tsosi_gunicorn")
     ssh_execute(server, "sudo systemctl restart nginx")
 

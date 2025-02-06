@@ -21,6 +21,7 @@ The preparation process is basically to install and enable all services used by 
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart tsosi_gunicorn, /usr/bin/systemctl start tsosi_gunicorn, /usr/bin/systemctl stop tsosi_gunicorn, /usr/bin/systemctl status tsosi_gunicorn
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart redis-server, /usr/bin/systemctl start redis-server, /usr/bin/systemctl stop redis-server, /usr/bin/systemctl status redis-server
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart tsosi_celery, /usr/bin/systemctl start tsosi_celery, /usr/bin/systemctl stop tsosi_celery, /usr/bin/systemctl status tsosi_celery
+    deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart tsosi_beat, /usr/bin/systemctl start tsosi_beat, /usr/bin/systemctl stop tsosi_beat, /usr/bin/systemctl status tsosi_celery
     ```
 
 * Poetry package manager installed:
@@ -51,6 +52,8 @@ The preparation process is basically to install and enable all services used by 
     Example configuration can be found at [tsosi-app.nginx.config](./tsosi-app.nginx.config).
     
 
+* Install redis datastore, cf [install_redis.sh](/scripts/install_redis.sh)
+
 * Create a `tsosi_celery` service to run celery worker(s). If you're using our common setup, just copy the file [tsosi_celery.service](./tsosi_celery.service) in `/etc/systemd/system/` and enable the service:
     ```bash
     sudo systemctl enable tsosi_celery.service
@@ -67,6 +70,14 @@ The preparation process is basically to install and enable all services used by 
     ```
 
 * Prepared `settings_local.py` with specific environment settings for the Django application.
+
+* Prepare a media repository to store fetched logos. Ex:
+    ```bash
+    cd /
+    sudo mkdir tsosi_media
+    sudo chown deployer:www-data tsosi_media
+    sudo chmod 755 tsosi_media
+    ``` 
 
 * Prepare a folder for logs with rights for the user running the Django app and the Celery services, example:
     ```bash
