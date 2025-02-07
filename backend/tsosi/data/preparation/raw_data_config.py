@@ -694,39 +694,3 @@ CONFIG_OPERAS = {
         ),
     ],
 }
-
-CONFIG_DOAJ_2021 = {
-    "id": "doaj_2021",
-    "fields": [
-        FieldRecipientName(constant="Directory of Open Access Journals"),
-        FieldRecipientRorId(constant="05amyt365"),
-        FieldEmitterName(field="Institution name"),
-        FieldEmitterCountry(field="country"),
-        FieldAmount(field="amount"),
-        FieldCurrency(field="currency"),
-        FieldDateInvoice(
-            constant=Date(
-                value=date(year=2021, month=1, day=1),
-                precision=DATE_PRECISION_YEAR,
-            ).serialize()
-        ),
-    ],
-}
-
-CONFIG_DOAJ_2022 = {
-    "id": "doaj_2022",
-    "fields": [
-        FieldRecipientName(constant="Directory of Open Access Journals"),
-        FieldRecipientRorId(constant="05amyt365"),
-        FieldEmitterName(field="Institution name"),
-        FieldEmitterCountry(field="country"),
-        FieldAmount(field="amount"),
-        FieldCurrency(field="currency"),
-        FieldDateInvoice(
-            constant=Date(
-                value=date(year=2022, month=1, day=1),
-                precision=DATE_PRECISION_YEAR,
-            ).serialize()
-        ),
-    ],
-}
