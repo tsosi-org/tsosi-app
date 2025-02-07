@@ -40,10 +40,14 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
         ]
         .copy()
     )
-    if len(entities) == 0:
+    if len(to_merge) == 0:
         return
 
-    entities["entity_id"] = entities["entity_id"].apply(str)
+    # TODO: entities inputed in the function have null match_criteria.
+    # This should be set beforehand and not in this function.
+    to_merge["match_criteria"] = "merged"
+
+    to_merge["entity_id"] = to_merge["entity_id"].apply(str)
     # 0 - Check for duplicated entity_id inputs
     grouped_by_entity = (
         to_merge.groupby("entity_id")
@@ -135,7 +139,11 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
             how="left",
         )
         t_to_update["date_created"] = date_update
-        t_to_update.rename(columns={"id", "transfert_id"}, inplace=True)
+        t_to_update.rename(
+            columns={"id": "transfert_id", "original_entity_id": "entity_id"},
+            inplace=True,
+        )
+
         fields = [
             "transfert_id",
             "transfert_entity_type",

@@ -14,8 +14,8 @@ RuntimeDirectory=celery_beat
 RuntimeDirectoryMode=0775
 WorkingDirectory=/var/www/current/backend
 ExecStart=/home/deployer/.local/bin/poetry run celery -A backend_site beat \
-    --pidfile=/var/run/celery/beat.pid
-    --logfile=/var/log/tsosi/celery_beat.log
+    --pidfile=/var/run/celery/beat.pid \
+    --logfile=/var/log/tsosi/celery_beat.log \
     --loglevel=INFO
 Restart=always
 

@@ -248,6 +248,7 @@ def ingest_entity_identifier_relations(
         lambda x: f"Entity merged because of the same {registry_id} PID value: {x}"
     )
     to_merge["match_criteria"] = MATCH_CRITERIA_MERGED
+    logger.info(to_merge["match_criteria"])
     merge_entities(to_merge, date_update)
 
     logger.info(f"Finished ingesting new Identifier - Entity relations.")
@@ -490,7 +491,7 @@ def update_entity_from_pid_records() -> TaskResult:
         "country": ["ror_country", "wikidata_country", "raw_country"],
         "website": ["ror_website", "wikidata_website", "raw_website"],
         "logo_url": ["wikidata_logo_url"],
-        "wikipedia_url": ["ror_wikipedia_url", "wikidata_wikipedia_url"],
+        "wikipedia_url": ["wikidata_wikipedia_url", "ror_wikipedia_url"],
         "coordinates": ["ror_coordinates", "wikidata_coordinates"],
     }
     # Compute the value for each field and check if there's a diff with existing
@@ -558,17 +559,18 @@ def new_identifiers_from_records() -> TaskResult:
         ror_check["ror_doublon"] & ror_check["ror_id_diff"]
     ]
     if not mismatching_rors.empty:
-        msg = (
-            "The following entities have mismatching ROR ID " "from Wikidata:\n"
+        msgs = []
+        msgs.append(
+            "The following entities have mismatching ROR ID from Wikidata:"
         )
 
         for _, row in mismatching_rors.iterrows():
-            msg += (
+            msgs.append(
                 f"Entity: {row["name"]} -- "
                 f"ROR ID: {row["ror_id"]} -- "
                 f"Wiki ROR ID: {row["wikidata_ror_id"]}"
             )
-        logger.warning(msg)
+        logger.warning("\n".join(msgs))
         entities.drop(mismatching_rors.index, inplace=True)
 
     # Mismatching Wikidata ID
@@ -677,7 +679,10 @@ def entities_for_wikipedia_extract_update() -> pd.DataFrame:
         .filter(date_condition)
         .values("id", "wikipedia_url", "wikipedia_extract")
     )
-    return pd.DataFrame.from_records(instances)
+    df = pd.DataFrame.from_records(instances)
+    # We only want wikipedia extract for entities with URL to the english wiki
+    mask = df["wikipedia_url"].str.startswith("https://en.wikipedia.org")
+    return df[mask].reset_index(drop=True)
 
 
 def update_wikipedia_extract(use_tokens: bool = True) -> TaskResult:

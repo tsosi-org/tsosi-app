@@ -133,7 +133,7 @@ def ingest_all():
     files = folder.glob("*.json")
     registries = []
     for f in files:
-        new_registries = ingestion.ingest_data_file(
+        _, new_registries = ingestion.ingest_data_file(
             folder / f, send_signals=False
         )
         for r in new_registries:

@@ -161,7 +161,15 @@ async def fetch_wikidata_records_data(
     # Flatten the results
     for col in df.columns:
         df[col] = df[col].map(lambda x: x if pd.isnull(x) else x["value"])
-    df.drop_duplicates(subset="item", inplace=True)
+    # There might be duplicated rows per item when there are multiple values
+    # for one of the queried relations.
+    # Ideally, we need to take the best value for each relation when there's
+    # a way to filter.
+    bad_logo_url_mask = ~df["logoUrl"].str.startswith(
+        "http://commons.wikimedia.org"
+    ) & ~df["logoUrl"].str.startswith("https://commons.wikimedia.org")
+    df.loc[bad_logo_url_mask, "logoUrl"] = None
+    df = df.groupby("item").first().reset_index()
     df["item"] = df["item"].apply(lambda x: x.split("/")[-1])
     col_mapping = {
         "item": "id",
