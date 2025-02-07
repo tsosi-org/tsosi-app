@@ -456,6 +456,8 @@ def entities_with_identifier_data() -> pd.DataFrame:
         right_on="entity_id",
         how="left",
     )
+    # Add missing columns, if any
+    expected_cols = [""]
 
     url_cols = [
         "raw_website",
@@ -478,6 +480,7 @@ def update_entity_from_pid_records() -> TaskResult:
     accordingly.
     Update all the simple clc fields: name, country, website, logo_url,
     wikipedia_url.
+    TODO: Some columns might be missing from entities_with_identifier_data.
     """
     logger.info("Updating entity from PID records.")
     result = TaskResult(partial=False)

@@ -212,10 +212,10 @@ def deploy(server_name: str, branch: str = None, skip_front_build=False):
 
     # Restart services
     # TODO: Re-start celery services
-    # ssh_execute(server, "sudo systemctl restart tsosi_celery")
-    # ssh_execute(server, "sudo systemctl restart tsosi_celery_beat")
     ssh_execute(server, "sudo systemctl restart tsosi_gunicorn")
     ssh_execute(server, "sudo systemctl restart nginx")
+    ssh_execute(server, "sudo systemctl restart tsosi_celery")
+    ssh_execute(server, "sudo systemctl restart tsosi_celery_beat")
 
     print(colored("Deployment successful", "green"))
 

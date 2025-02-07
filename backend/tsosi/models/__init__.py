@@ -21,3 +21,4 @@ def empty_db():
     Registry.objects.all().delete()
     Currency.objects.all().delete()
     DataSource.objects.all().delete()
+    print("Database emptied.")

@@ -165,9 +165,10 @@ async def fetch_wikidata_records_data(
     # for one of the queried relations.
     # Ideally, we need to take the best value for each relation when there's
     # a way to filter.
-    bad_logo_url_mask = ~df["logoUrl"].str.startswith(
-        "http://commons.wikimedia.org"
-    ) & ~df["logoUrl"].str.startswith("https://commons.wikimedia.org")
+    bad_logo_url_mask = ~(
+        df["logoUrl"].str.startswith("http://commons.wikimedia.org")
+        | df["logoUrl"].str.startswith("https://commons.wikimedia.org")
+    )
     df.loc[bad_logo_url_mask, "logoUrl"] = None
     df = df.groupby("item").first().reset_index()
     df["item"] = df["item"].apply(lambda x: x.split("/")[-1])
