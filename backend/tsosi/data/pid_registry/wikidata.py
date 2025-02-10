@@ -24,6 +24,7 @@ WIKIMEDIA COMMONS:
 
 """
 
+import logging
 import re
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
@@ -35,12 +36,9 @@ import aiohttp
 import pandas as pd
 from tsosi.data.utils import chunk_sequence, clean_null_values
 
-from .common import (
-    ApiRateLimit,
-    ApiResult,
-    HTTPStatusError,
-    perform_http_func_batch,
-)
+from .common import ApiResult, HTTPStatusError, perform_http_func_batch
+
+logger = logging.getLogger(__name__)
 
 WIKIDATA_ID_REGEX = r"Q[0-9]+"
 WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
@@ -48,7 +46,6 @@ WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 WIKIPEDIA_SUMMARY_API_ENDPOINT = (
     "https://en.wikipedia.org/api/rest_v1/page/summary"
 )
-WIKIMEDIA_RATE_LIMIT = ApiRateLimit(max_requests=100, time=1)
 
 ALLOWED_IMG_FILE_FORMATS = [
     ".jpg",
@@ -97,6 +94,9 @@ async def fetch_wikidata_sparql_query(
             results: dict = await response.json()
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         # Log the error
+        logger.warning(
+            f"Failed to query the wikipedia sparql endpoint with query:\n {query}"
+        )
         return []
     return results.get("results", {}).get("bindings", [])
 
@@ -161,7 +161,16 @@ async def fetch_wikidata_records_data(
     # Flatten the results
     for col in df.columns:
         df[col] = df[col].map(lambda x: x if pd.isnull(x) else x["value"])
-    df.drop_duplicates(subset="item", inplace=True)
+    # There might be duplicated rows per item when there are multiple values
+    # for one of the queried relations.
+    # Ideally, we need to take the best value for each relation when there's
+    # a way to filter.
+    bad_logo_url_mask = ~(
+        df["logoUrl"].str.startswith("http://commons.wikimedia.org")
+        | df["logoUrl"].str.startswith("https://commons.wikimedia.org")
+    )
+    df.loc[bad_logo_url_mask, "logoUrl"] = None
+    df = df.groupby("item").first().reset_index()
     df["item"] = df["item"].apply(lambda x: x.split("/")[-1])
     col_mapping = {
         "item": "id",
@@ -182,8 +191,10 @@ async def fetch_wikidata_records_data(
 
     clean_null_values(df)
     df["record"] = df.apply(lambda row: row.to_dict(), axis=1)
+    # Add no error for compatibility
+    df["error"] = False
 
-    return df[["id", "record"]].copy()
+    return df[["id", "record", "error"]].copy()
 
 
 def format_wikipedia_page_title(title: str) -> str:
@@ -216,6 +227,7 @@ async def fetch_wikipedia_page_extract(
         result.error = True
         result.error_message = f"Error while querying Wikipedia with url {url}"
         result.error_message += f"\nOriginal exception:\n{e}"
+        logger.warning(result.error_message)
 
     return result
 
@@ -246,6 +258,7 @@ async def fetch_wikimedia_file(
         result.error = True
         result.error_message = f"Error while querying {url}"
         result.error_message += f"Original exception:\n{e}"
+        logger.warning(result.error_message)
 
     return result
 

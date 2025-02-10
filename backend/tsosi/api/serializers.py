@@ -60,9 +60,35 @@ class EntitySerializer(serializers.ModelSerializer):
         }
 
 
-class TransfertSerializer(serializers.ModelSerializer):
-    currency = serializers.ReadOnlyField(source="currency_id")
+class BaseTransfertSerializer(serializers.ModelSerializer):
+    """
+    Base serializer for transferts. It overloads amount-related
+    properties to return null if the amount should be hidden.
+    """
 
+    amount = serializers.SerializerMethodField()
+    amounts_clc = serializers.SerializerMethodField()
+    currency = serializers.SerializerMethodField()
+    raw_data = serializers.SerializerMethodField()
+
+    def get_amount(self, obj: Transfert):
+        return None if obj.hide_amount else obj.amount
+
+    def get_amounts_clc(self, obj: Transfert):
+        return None if obj.hide_amount else obj.amounts_clc
+
+    def get_currency(self, obj: Transfert):
+        return None if obj.hide_amount else obj.currency_id
+
+    def get_raw_data(self, obj: Transfert):
+        if not obj.hide_amount:
+            return obj.raw_data
+        data = obj.raw_data
+        data.pop(obj.original_amount_field, None)
+        return data
+
+
+class TransfertSerializer(BaseTransfertSerializer):
     class Meta:
         model = Transfert
         fields = [
@@ -74,14 +100,11 @@ class TransfertSerializer(serializers.ModelSerializer):
             "currency",
             "date_clc",
             "description",
-            "source",
             "amounts_clc",
         ]
 
 
-class TransfertDetailsSerializer(serializers.ModelSerializer):
-    currency = serializers.ReadOnlyField(source="currency_id")
-
+class TransfertDetailsSerializer(BaseTransfertSerializer):
     class Meta:
         model = Transfert
         fields = [
@@ -92,12 +115,10 @@ class TransfertDetailsSerializer(serializers.ModelSerializer):
             "amount",
             "currency",
             "date_clc",
-            "date_agreement",
             "date_invoice",
             "date_payment",
             "date_start",
             "date_end",
-            "source",
             "amounts_clc",
             "raw_data",
         ]

@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from django.conf import settings
+
+TSOSI_DIR = Path(__file__).resolve().parent
 
 
 class AppSettings:
@@ -28,6 +32,44 @@ class AppSettings:
         The list of origins allowed to bypass API pagination.
         """
         return self._setting("BYPASS_PAGINATION_ALLOWED_ORIGINS", ["*"])
+
+    @property
+    def REDIS_HOST(self) -> str:
+        return self._setting("REDIS_HOST", mandatory=True)
+
+    @property
+    def REDIS_PORT(self) -> str:
+        return self._setting("REDIS_PORT", mandatory=True)
+
+    @property
+    def REDIS_DB(self) -> str:
+        return self._setting("REDIS_DB", mandatory=True)
+
+    @property
+    def CELERY_BROKER(self) -> str:
+        return self._setting("CELERY_BROKER", mandatory=True)
+
+    @property
+    def TSOSI_APP_DIR(self) -> Path:
+        return TSOSI_DIR
+
+    @property
+    def TSOSI_APP_DATA_DIR(self) -> Path:
+        return TSOSI_DIR / "data"
+
+    @property
+    def TO_INGEST_DIR(self) -> Path:
+        obj = self._setting("TO_INGEST_DIR", mandatory=True)
+        return obj if isinstance(obj, Path) else Path(obj)
+
+    @property
+    def DATA_EXPORT_FOLDER(self) -> Path:
+        obj = self._setting("DATA_EXPORT_FOLDER", mandatory=True)
+        return obj if isinstance(obj, Path) else Path(obj)
+
+    @property
+    def TRIGGER_JOBS(self) -> bool:
+        return self._setting("TRIGGER_JOBS", default=False)
 
 
 app_settings = AppSettings()

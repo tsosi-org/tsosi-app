@@ -8,7 +8,7 @@ Follow the below procedure if you want to setup the application locally.
 
 * Install python 3.12
 
-* Install pipx & poetry for deps management
+* Install pipx & poetry for deps management. Poetry is a python dependency & environment manager. It should prefix any call to CLI programm installed in the project. 
     ```bash
     sudo apt install pipx
     pipx ensurepath
@@ -25,7 +25,7 @@ Follow the below procedure if you want to setup the application locally.
 
 * Create a `settings_local.py` file for env. dependent Django settings:
     ```bash
-    cd site
+    cd backend_site
     cp settings_local.example.py settings_local.py
     ```
 
@@ -41,8 +41,40 @@ Follow the below procedure if you want to setup the application locally.
 
 * Run the database migrations to get the up-to-date database version.
     ```bash
-    python manage.py migrate
+    poetry run python manage.py migrate
     ```
+
+## Install redis
+
+* Install Redis manually or run [scripts/install_redis.sh](/scripts/install_redis.sh).
+* Replace Redis connection parameters in your settings_local.py file. The default values should work (connecting with redis://127.0.0.1:6379/0) if you just installed Redis. 
+
+## Celery
+
+You may want to run a celery worker if you want to execute the data-related background tasks (data fetching & data processing).
+You can do so by running a unique worker with unique concurrency by executing the following command.
+
+```bash
+poetry run celery -A backend_site worker --concurrency=1 --loglevel=INFO
+```
+
+**WARNING**: Increasing the workers or the concurrency might lead to errors as the tasks are not properly set up to handle concurrent data updates.
+
+## Run the app with minimal data
+
+You can load example data located in [tsosi/data/fixtures/prepared_files](./tsosi/data/fixtures/prepared_files/) by running the management command `ingest_test`:
+
+```bash
+poetry run python manage.py ingest_test
+```
+
+Then the Django dev server can be run with the command:
+
+```bash
+poetry run python manage.py runserver
+```
+
+You should then be able to navigate to the API at [http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
 
 ## Tests
 

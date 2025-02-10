@@ -12,13 +12,28 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
+from celery.schedules import crontab
+
 from .settings_local import (
     ALLOWED_HOSTS,
     DATABASES,
     DEBUG,
+    DJANGO_LOG_LEVEL,
+    ERROR_LOG_FILE,
     MEDIA_ROOT,
     MEDIA_URL,
     SECRET_KEY,
+    TSOSI_CELERY_BROKER_URL,
+    TSOSI_DATA_EXPORT_FOLDER,
+    TSOSI_DATA_LOG_FILE,
+    TSOSI_DJANGO_LOG_FILE,
+    TSOSI_LOG_LEVEL,
+    TSOSI_MAIN_LOG_FILE,
+    TSOSI_REDIS_DB,
+    TSOSI_REDIS_HOST,
+    TSOSI_REDIS_PORT,
+    TSOSI_TO_INGEST_DIR,
+    TSOSI_TRIGGER_JOBS,
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -36,6 +51,7 @@ CORS_ALLOWED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
+    ## Default apps
     # 'django.contrib.admin',
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -43,8 +59,11 @@ INSTALLED_APPS = [
     "corsheaders",
     # 'django.contrib.messages',
     "django.contrib.staticfiles",
+    ## Additional apps
+    "django_celery_beat",
     "rest_framework",
     "django_filters",
+    ## Custom code
     "tsosi",
 ]
 
@@ -78,6 +97,89 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "backend_site.wsgi.application"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "tsosi_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.WatchedFileHandler",
+            "filename": TSOSI_MAIN_LOG_FILE,
+            "formatter": "default",
+        },
+        "tsosi_data_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.WatchedFileHandler",
+            "filename": TSOSI_DATA_LOG_FILE,
+            "formatter": "default",
+        },
+        "error_file": {
+            "level": "ERROR",
+            "class": "logging.handlers.WatchedFileHandler",
+            "filename": ERROR_LOG_FILE,
+            "formatter": "default",
+        },
+        "django_file": {
+            "level": "INFO",
+            "class": "logging.handlers.WatchedFileHandler",
+            "filename": TSOSI_DJANGO_LOG_FILE,
+            "filters": ["require_debug_false"],
+            "formatter": "default",
+        },
+    },
+    "formatters": {
+        "default": {
+            "format": "[{asctime}: {processName}] {levelname} {filename} - {message}",
+            "style": "{",
+        },
+        "simple": {"format": "{levelname} {module} - {message}", "style": "{"},
+        "celery": {
+            "format": "[{asctime}: {processName}] {levelname} {message}",
+            "style": "{",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "django_file", "error_file"],
+            "propagate": False,
+            "level": DJANGO_LOG_LEVEL,
+        },
+        "tsosi": {
+            "handlers": ["console", "tsosi_file", "error_file"],
+            "level": TSOSI_LOG_LEVEL,
+            "propagate": False,
+        },
+        "tsosi.data": {
+            "handlers": ["console", "tsosi_data_file", "error_file"],
+            "level": TSOSI_LOG_LEVEL,
+            "propagate": False,
+        },
+        "tsosi.tasks": {
+            "handlers": ["console", "tsosi_data_file", "error_file"],
+            "level": TSOSI_LOG_LEVEL,
+            "propagate": False,
+        },
+        "console_only": {
+            "handlers": ["console"],
+            "level": TSOSI_LOG_LEVEL,
+            "propagate": False,
+        },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -128,3 +230,23 @@ REST_FRAMEWORK = {
 }
 
 API_BYPASS_PAGINATION_ALLOWED_ORIGINS = []
+
+
+TSOSI_CELERY_ACCEPT_CONTENT = ["json"]
+TSOSI_CELERY_TASK_SERIALIZER = "json"
+TSOSI_CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+TSOSI_CELERY_BEAT_SCHEDULER = "tsosi.scheduler:DatabaseSchedulerWithCleanup"
+TSOSI_CELERY_BEAT_SCHEDULE = {
+    "periodic-identifier-update": {
+        "task": "tsosi.tasks.identifier_update",
+        "schedule": crontab(minute="0", hour="21"),
+    },
+    "periodic-wiki-data-update": {
+        "task": "tsosi.tasks.update_wiki_data",
+        "schedule": crontab(minute="0", hour="23"),
+    },
+    "periodic-currency-update": {
+        "task": "tsosi.tasks.currency_rates_workflow",
+        "schedule": crontab(minute="0", hour="21", day_of_week="sun"),
+    },
+}

@@ -124,10 +124,10 @@ def match_entities(
     base = base_entities[columns].copy()
 
     df["name"] = df["name"].apply(
-        lambda x: x if not isinstance(x, str) else x.lower()
+        lambda x: x if not isinstance(x, str) else x.strip().lower()
     )
     base["name"] = base["name"].apply(
-        lambda x: x if not isinstance(x, str) else x.lower()
+        lambda x: x if not isinstance(x, str) else x.strip().lower()
     )
     original_id = "__original_id"
     df[original_id] = df.index

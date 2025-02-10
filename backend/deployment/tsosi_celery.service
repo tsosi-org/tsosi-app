@@ -1,0 +1,33 @@
+[Unit]
+Description=TSOSI Celery Service
+After=redis-server.service
+Requires=redis-server.service
+
+[Service]
+Type=forking
+User=deployer
+Group=deployer
+# The following 3 lines automatically create a /run/celery/ folder
+# owned by the User and Group of the service
+PermissionsStartOnly=True
+RuntimeDirectory=celery
+RuntimeDirectoryMode=0775
+WorkingDirectory=/var/www/current/backend
+# Use double % to escape the character, otherwise systemd will replace it with
+# current process name when we actually want celery to handle this.
+ExecStart=/home/deployer/.local/bin/poetry run celery -A backend_site multi start tsosi \
+    --pidfile=/var/run/celery/%%n.pid \
+    --logfile=/var/log/tsosi/celery_%%n%%I.log \
+    --loglevel=INFO --concurrency=2'
+ExecStop=/home/deployer/.local/bin/poetry run celery -A backend_site multi stopwait tsosi \
+    --pidfile=/var/run/celery/%%n.pid \
+    --logfile=/var/log/tsosi/celery_%%n%%I.log \
+    --loglevel=INFO --concurrency=2
+ExecReload=/home/deployer/.local/bin/poetry run celery -A backend_site multi restart tsosi \
+    --pidfile=/var/run/celery/%%n.pid \
+    --logfile=/var/log/tsosi/celery_%%n%%I.log \
+    --loglevel=INFO --concurrency=2
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

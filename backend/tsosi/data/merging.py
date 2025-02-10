@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import pandas as pd
@@ -6,6 +7,8 @@ from tsosi.models import Entity, Transfert, TransfertEntityMatching
 from tsosi.models.transfert import TRANSFERT_ENTITY_TYPES
 
 from .db_utils import bulk_create_from_df, bulk_update_from_df
+
+logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
@@ -37,10 +40,14 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
         ]
         .copy()
     )
-    if len(entities) == 0:
+    if len(to_merge) == 0:
         return
 
-    entities["entity_id"] = entities["entity_id"].apply(str)
+    # TODO: entities inputed in the function have null match_criteria.
+    # This should be set beforehand and not in this function.
+    to_merge["match_criteria"] = "merged"
+
+    to_merge["entity_id"] = to_merge["entity_id"].apply(str)
     # 0 - Check for duplicated entity_id inputs
     grouped_by_entity = (
         to_merge.groupby("entity_id")
@@ -63,7 +70,7 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
             """
         )
 
-    print(f"Merging {len(to_merge)} entities.")
+    logger.info(f"Merging {len(to_merge)} entities.")
 
     # 1 - Update the entities to be merged
     mapping = to_merge.set_index("entity_id")
@@ -74,8 +81,9 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
         )
     )
     if len(e_to_update) == 0:
-        print("No entity to merge.")
+        logger.info("No entity to merge.")
         return
+
     e_to_update["id"] = e_to_update["id"].apply(str)
     e_to_update["merged_with_id"] = e_to_update["id"].map(
         mapping["merged_with_id"]
@@ -96,7 +104,7 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
             "is_active",
         ],
     )
-    print(f"Updated {len(to_merge)} Entity records.")
+    logger.info(f"Updated {len(to_merge)} Entity records.")
 
     for e_type in TRANSFERT_ENTITY_TYPES:
         # 2 - Update all transferts referencing these entities
@@ -117,7 +125,7 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
 
         fields = ["id", entity_field, "date_last_updated"]
         bulk_update_from_df(Transfert, t_to_update, fields)
-        print(
+        logger.info(
             f"Updated {len(t_to_update)} Transfert records with entity type `{e_type}`"
         )
 
@@ -131,7 +139,11 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
             how="left",
         )
         t_to_update["date_created"] = date_update
-        t_to_update.rename(columns={"id", "transfert_id"}, inplace=True)
+        t_to_update.rename(
+            columns={"id": "transfert_id", "original_entity_id": "entity_id"},
+            inplace=True,
+        )
+
         fields = [
             "transfert_id",
             "transfert_entity_type",
@@ -142,6 +154,7 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
             "date_last_updated",
         ]
         bulk_create_from_df(TransfertEntityMatching, t_to_update, fields)
-        print(
+        logger.info(
             f"Created {len(t_to_update)} TransfertEntityMatching records for e_type: `{e_type}`."
         )
+    logger.info(f"Successfully merged {len(to_merge)} entities.")

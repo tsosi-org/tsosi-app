@@ -1,3 +1,8 @@
+"""
+Deployment script
+TODO: Instantiate the SSH tunnel only once and re-use it for all commands. 
+"""
+
 import argparse
 import os
 import subprocess
@@ -77,7 +82,12 @@ def ssh_execute(server: ServerConfig, command: str, count: int = 0):
         exit(exit_status)
 
 
-def deploy(server_name: str, branch: str = None, skip_front_build=False):
+def deploy(
+    server_name: str,
+    branch: str = None,
+    skip_front_build=False,
+    restart_celery=False,
+):
     """
     Deploy the desired server with current code.
     """
@@ -126,14 +136,11 @@ def deploy(server_name: str, branch: str = None, skip_front_build=False):
 
     ssh_execute(server, f"mkdir -p {release_dir}")
 
+    # Clone repo & extract only backend code
     ssh_execute(
         server,
         f"cd {release_dir} "
-        "&& git clone https://gricad-gitlab.univ-grenoble-alpes.fr/tsosi/tsosi-app.git "
-        "&& cd tsosi-app "
-        "&& git fetch "
-        f"&& git checkout {deploy_branch} "
-        "&& git pull",
+        f"&& git clone --branch {deploy_branch} https://github.com/tsosi-org/tsosi-app.git",
     )
 
     django_folder = "backend"
@@ -211,6 +218,11 @@ def deploy(server_name: str, branch: str = None, skip_front_build=False):
     # Restart services
     ssh_execute(server, "sudo systemctl restart tsosi_gunicorn")
     ssh_execute(server, "sudo systemctl restart nginx")
+    if restart_celery:
+        ssh_execute(server, "sudo systemctl restart tsosi_celery")
+        ssh_execute(server, "sudo systemctl restart tsosi_celery_beat")
+    else:
+        print("Skipped celery services restart.")
 
     print(colored("Deployment successful", "green"))
 
@@ -232,5 +244,16 @@ if __name__ == "__main__":
         action=argparse.BooleanOptionalAction,
         default=False,
     )
+    parser.add_argument(
+        "--restart-celery",
+        help="If passed, restart tsosi_celery and tsosi_celery_beat services.",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+    )
     args = parser.parse_args()
-    deploy(args.server_name, args.branch, args.skip_front_build)
+    deploy(
+        args.server_name,
+        args.branch,
+        args.skip_front_build,
+        args.restart_celery,
+    )

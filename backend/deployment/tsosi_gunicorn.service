@@ -1,5 +1,5 @@
 [Unit]
-Description=gunicorn daemon for TSOSI Django back-end
+Description=TSOSI gunicorn daemon for Django back-end
 Requires=tsosi_gunicorn.socket
 After=network.target
 

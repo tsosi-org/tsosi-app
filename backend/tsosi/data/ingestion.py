@@ -1,10 +1,16 @@
+import json
+import logging
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
+from tsosi.data.exceptions import DataException
 from tsosi.models import (
     Currency,
+    DataLoadSource,
     Entity,
     Identifier,
     IdentifierEntityMatching,
@@ -15,8 +21,7 @@ from tsosi.models.identifier import MATCH_CRITERIA_FROM_INPUT
 from tsosi.models.static_data import (
     REGISTRY_ROR,
     REGISTRY_WIKIDATA,
-    create_pid_registries,
-    update_infrastructures,
+    fill_static_data,
 )
 from tsosi.models.transfert import (
     MATCH_CRITERIA_NEW_ENTITY,
@@ -27,34 +32,18 @@ from tsosi.models.transfert import (
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC, MATCH_SOURCE_MANUAL
 
 from .currencies.currency_rates import insert_currencies
-from .data_preparation import (
-    FieldConsortiumCountry,
-    FieldConsortiumName,
-    FieldConsortiumRorId,
-    FieldConsortiumUrl,
-    FieldConsortiumWikidataId,
-    FieldCurrency,
-    FieldEmitterCountry,
-    FieldEmitterName,
-    FieldEmitterRorId,
-    FieldEmitterUrl,
-    FieldEmitterWikidataId,
-    FieldOriginalId,
-    FieldRecipientCountry,
-    FieldRecipientName,
-    FieldRecipientRorId,
-    FieldRecipientUrl,
-    FieldRecipientWikidataId,
-    FieldSource,
-)
 from .db_utils import (
     IDENTIFIER_CREATE_FIELDS,
     IDENTIFIER_MATCHING_CREATE_FIELDS,
     bulk_create_from_df,
 )
-from .enrichment import update_entity_roles_clc, update_transfert_date_clc
 from .entity_matching import match_entities, matchable_entities
+from .preparation import raw_data_config as dc
+from .signals import identifiers_created, transferts_created
+from .transfert_matching import flag_duplicate_transferts
 from .utils import drop_duplicates_keep_index
+
+logger = logging.getLogger(__name__)
 
 TRANSFERT_ENTITY_TYPE = "transfert_entity_type"
 ENTITY_TO_CREATE_ID = "entity_to_create_id"
@@ -84,24 +73,32 @@ def match_entities_with_db(entities: pd.DataFrame):
 
     if not to_match.empty and not base_entities.empty:
 
-        # Match Agents/Consortiums only with agents/consortium
-        to_match_agent_mask = (
-            to_match[TRANSFERT_ENTITY_TYPE] == TRANSFERT_ENTITY_TYPE_AGENT
-        )
-        to_match_agents = to_match[to_match_agent_mask].copy()
-        base_agent_mask = base_entities["is_agent"] == True
-        base_agents = base_entities[base_agent_mask].copy()
-        if not to_match_agents.empty:
-            match_entities(to_match_agents, base_agents, True)
-            for col in match_columns:
-                entities.loc[to_match_agents.index, col] = to_match_agents[col]
+        ###### WARNING
+        ###### This is not coherent with our way of centralizing
+        ###### the entities in the Entity table.
+        ###### What we can do is to match agent **without PID** only to
+        ###### existing agents.
+        # # Match Agents/Consortiums only with agents/consortium
+        # to_match_agent_mask = (
+        #     to_match[TRANSFERT_ENTITY_TYPE] == TRANSFERT_ENTITY_TYPE_AGENT
+        # )
+        # to_match_agents = to_match[to_match_agent_mask].copy()
+        # base_agent_mask = base_entities["is_agent"] == True
+        # base_agents = base_entities[base_agent_mask].copy()
+        # if not to_match_agents.empty:
+        #     match_entities(to_match_agents, base_agents, True)
+        #     for col in match_columns:
+        #         entities.loc[to_match_agents.index, col] = to_match_agents[col]
 
-        # Handle the other entities
-        to_match_others = to_match[~to_match_agent_mask].copy()
-        base_others = base_entities[~base_agent_mask].copy()
-        match_entities(to_match_others, base_others, True)
+        # # Handle the other entities
+        # to_match_others = to_match[~to_match_agent_mask].copy()
+        # base_others = base_entities[~base_agent_mask].copy()
+        # match_entities(to_match_others, base_others, True)
+        # for col in match_columns:
+        #     entities.loc[to_match_others.index, col] = to_match_others[col]
+        match_entities(to_match, base_entities, True)
         for col in match_columns:
-            entities.loc[to_match_others.index, col] = to_match_others[col]
+            entities.loc[to_match.index, col] = to_match[col]
 
 
 def entities_to_create(entities: pd.DataFrame) -> pd.DataFrame:
@@ -180,45 +177,42 @@ def extract_entities(transferts: pd.DataFrame) -> pd.DataFrame:
     to the original indexes.
     """
     emitters_cols_mapping = {
-        FieldEmitterName.NAME: "name",
-        FieldEmitterCountry.NAME: "country",
-        FieldEmitterUrl.NAME: "website",
-        FieldEmitterRorId.NAME: "ror_id",
-        FieldEmitterWikidataId.NAME: "wikidata_id",
-        FieldSource.NAME: "source",
-        FieldOriginalId.NAME: "original_id",
+        dc.FieldEmitterName.NAME: "name",
+        dc.FieldEmitterCountry.NAME: "country",
+        dc.FieldEmitterUrl.NAME: "website",
+        dc.FieldEmitterRorId.NAME: "ror_id",
+        dc.FieldEmitterWikidataId.NAME: "wikidata_id",
+        dc.FieldOriginalId.NAME: "original_id",
     }
-    mask = ~transferts[FieldEmitterName.NAME].isnull()
+    mask = ~transferts[dc.FieldEmitterName.NAME].isnull()
     emitters = transferts[mask][emitters_cols_mapping.keys()].rename(
         columns=emitters_cols_mapping
     )
     emitters[TRANSFERT_ENTITY_TYPE] = TRANSFERT_ENTITY_TYPE_EMITTER
 
     recipient_cols_mapping = {
-        FieldRecipientName.NAME: "name",
-        FieldRecipientCountry.NAME: "country",
-        FieldRecipientUrl.NAME: "website",
-        FieldRecipientRorId.NAME: "ror_id",
-        FieldRecipientWikidataId.NAME: "wikidata_id",
-        FieldSource.NAME: "source",
-        FieldOriginalId.NAME: "original_id",
+        dc.FieldRecipientName.NAME: "name",
+        dc.FieldRecipientCountry.NAME: "country",
+        dc.FieldRecipientUrl.NAME: "website",
+        dc.FieldRecipientRorId.NAME: "ror_id",
+        dc.FieldRecipientWikidataId.NAME: "wikidata_id",
+        dc.FieldOriginalId.NAME: "original_id",
     }
-    mask = ~transferts[FieldRecipientName.NAME].isnull()
+    mask = ~transferts[dc.FieldRecipientName.NAME].isnull()
     recipients = transferts[mask][recipient_cols_mapping.keys()].rename(
         columns=recipient_cols_mapping
     )
     recipients[TRANSFERT_ENTITY_TYPE] = TRANSFERT_ENTITY_TYPE_RECIPIENT
 
     agent_cols_mapping = {
-        FieldConsortiumName.NAME: "name",
-        FieldConsortiumCountry.NAME: "country",
-        FieldConsortiumUrl.NAME: "website",
-        FieldConsortiumRorId.NAME: "ror_id",
-        FieldConsortiumWikidataId.NAME: "wikidata_id",
-        FieldSource.NAME: "source",
-        FieldOriginalId.NAME: "original_id",
+        dc.FieldAgentName.NAME: "name",
+        dc.FieldAgentCountry.NAME: "country",
+        dc.FieldAgentUrl.NAME: "website",
+        dc.FieldAgentRorId.NAME: "ror_id",
+        dc.FieldAgentWikidataId.NAME: "wikidata_id",
+        dc.FieldOriginalId.NAME: "original_id",
     }
-    mask = transferts[FieldConsortiumName.NAME].isnull()
+    mask = transferts[dc.FieldAgentName.NAME].isnull()
     agents = transferts[~mask][agent_cols_mapping.keys()].rename(
         columns=agent_cols_mapping
     )
@@ -246,7 +240,7 @@ def create_identifiers(identifiers: pd.DataFrame, datetime: datetime):
     bulk_create_from_df(
         IdentifierEntityMatching, identifiers, IDENTIFIER_MATCHING_CREATE_FIELDS
     )
-    print(
+    logger.info(
         f"Created {len(identifiers)} Identifier and IdentifierEntityMatching records."
     )
 
@@ -282,7 +276,7 @@ def create_entities(entities: pd.DataFrame, datetime: datetime):
         "date_last_updated",
     ]
     bulk_create_from_df(Entity, entities, fields, "entity_id")
-    print(f"Created {len(entities)} Entity records")
+    logger.info(f"Created {len(entities)} Entity records")
 
     # Create Identifier & IdentifierEntityMatching records
     ror_identifiers = (
@@ -340,18 +334,19 @@ def create_transferts(transferts: pd.DataFrame, datetime: datetime):
         "agent_id",
         "amount",
         "currency_id",
-        "date_agreement",
         "date_invoice",
         "date_payment",
         "date_start",
         "date_end",
         "date_created",
         "date_last_updated",
-        "source",
         "original_id",
+        "data_load_source_id",
+        "hide_amount",
+        "original_amount_field",
     ]
     bulk_create_from_df(Transfert, transferts, fields, "transfert_id")
-    print(f"Created {len(transferts)} Transfert records")
+    logger.info(f"Created {len(transferts)} Transfert records")
 
 
 def create_transfert_entity_matching(
@@ -371,11 +366,41 @@ def create_transfert_entity_matching(
         "date_last_updated",
     ]
     bulk_create_from_df(TransfertEntityMatching, transfert_entities, fields)
-    print(f"Created {len(transfert_entities)} TransfertEntityMatching records")
+    logger.info(
+        f"Created {len(transfert_entities)} TransfertEntityMatching records"
+    )
+
+
+def get_data_load_source(source: dc.DataLoadSource):
+    """
+    Check the given data load validity.
+    Return a fresh DataLoadSource instance.
+    """
+    try:
+        query_args = {
+            "data_source_id": source.data_source_id,
+            "full_data": True,
+        }
+        if source.year:
+            query_args["year"] = source.year
+
+        source = DataLoadSource.objects.get(**query_args)
+        raise DataException(
+            f"A full data load with provided source ID {source.data_source_id} "
+            f"and year {source.year} was already performed."
+        )
+    except ObjectDoesNotExist:
+        source = DataLoadSource(**source.serialize())
+    return source
 
 
 @transaction.atomic
-def ingest_new_records(transferts: pd.DataFrame):
+def ingest_new_records(
+    transferts: pd.DataFrame,
+    source: DataLoadSource,
+    hide_amount: bool,
+    send_signals: bool = True,
+):
     """
     Insert the new records in the database and create appropriate relations.
     Expects the data to be in the appropriate format (ie. processed with
@@ -386,13 +411,24 @@ def ingest_new_records(transferts: pd.DataFrame):
     3 - Create transferts with FK to the above entities. \\
     4 - Create appropriate entries in TransfertEntityMatching.
 
-    :param data:    Data formatted to TSOSI format, ie. using
-                    `data_preparation.prepare_data method`
+    :param data:        Data formatted to TSOSI format, ie. using
+                        `RawDataConfig.process` method.
+    :param source:      The data load source to be appended to each transfert.
+    :param hide_amount: Whether the transfert amounts should be hidden.
     """
+    logger.info(f"Ingesting {len(transferts)} transfert records.")
     now = timezone.now()
 
-    create_pid_registries()
+    fill_static_data()
 
+    # Set the data load source
+    source.date_created = now
+    source.date_last_updated = now
+    source.save()
+    transferts["data_load_source_id"] = source.pk
+    transferts["hide_amount"] = hide_amount
+
+    # Extract entities
     transfert_entities = extract_entities(transferts)
     transfert_entities["is_matchable"] = transfert_entities.apply(
         entity_is_matchable, axis=1
@@ -431,10 +467,12 @@ def ingest_new_records(transferts: pd.DataFrame):
 
     # Insert non-existing currencies
     currencies = (
-        transferts[FieldCurrency.NAME].drop_duplicates().dropna().to_list()
+        transferts[dc.FieldCurrency.NAME].drop_duplicates().dropna().to_list()
     )
     insert_currencies(currencies, now)
-    transferts.rename(columns={FieldCurrency.NAME: "currency_id"}, inplace=True)
+    transferts.rename(
+        columns={dc.FieldCurrency.NAME: "currency_id"}, inplace=True
+    )
 
     # Insert transferts
     create_transferts(transferts, now)
@@ -446,8 +484,37 @@ def ingest_new_records(transferts: pd.DataFrame):
     transfert_entities["match_source"] = MATCH_SOURCE_AUTOMATIC
     create_transfert_entity_matching(transfert_entities, now)
 
-    update_infrastructures()
+    if send_signals:
+        send_post_ingestion_signals()
+    logger.info(f"Successfully ingested {len(transferts)} records.")
 
-    # These are enrichment methods.
-    update_transfert_date_clc()
-    update_entity_roles_clc()
+
+def ingest_data_file(file_path: str | Path, send_signals: bool = True) -> bool:
+    """
+    Ingest data from the given data file.
+    The data file should have been generated with
+    `RawDataConfig.generate_data_file`
+    """
+    logger.info(f"Ingesting data file {file_path}")
+    with open(file_path, "r") as f:
+        file_content = json.load(f)
+    file_content["source"] = dc.DataLoadSource(**file_content["source"])
+    ingestion_config = dc.DataIngestionConfig(**file_content)
+    df = pd.DataFrame.from_records(ingestion_config.data)
+    try:
+        source = get_data_load_source(ingestion_config.source)
+    except DataException as e:
+        logger.info(f"Skipping ingestion of file {file_path}:\n{e}")
+        return False
+    # flag_duplicate_transferts(df, source)
+    ingest_new_records(df, source, ingestion_config.hide_amount, send_signals)
+    return True
+
+
+def send_post_ingestion_signals():
+    """
+    Send signals to trigger post-ingestion pipeline.
+    """
+    registries = [REGISTRY_ROR, REGISTRY_WIKIDATA]
+    transferts_created.send(None)
+    identifiers_created.send(None, registries=registries)

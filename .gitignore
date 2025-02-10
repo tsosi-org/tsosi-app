@@ -6,7 +6,7 @@ backend/backend_site/settings_local.py
 __pycache__/
 .pytest_cache
 backend/static/
-
+backend/tsosi/data/to_ingest/
 
 # Vue app
 frontend/node_modules

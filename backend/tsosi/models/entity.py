@@ -63,6 +63,7 @@ class Entity(TimestampedModel):
     infra_finder_url = models.URLField(max_length=256, null=True)
     posi_url = models.URLField(max_length=256, null=True)
     is_scoss_awarded = models.BooleanField(default=False)
+    is_partner = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
