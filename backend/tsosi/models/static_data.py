@@ -49,6 +49,8 @@ SUPPORTED_INFRASTRUCTURES = [
         "entity": {
             "raw_name": "Directory of Open Access Journals",
             "raw_website": "https://doaj.org",
+            "name": "Directory of Open Access Journals",
+            "website": "https://doaj.org",
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/doaj-directory-of-open-access-journals",
             "posi_url": "https://blog.doaj.org/2022/10/06/doaj-commits-to-the-principles-of-open-scholarly-infrastructure-posi",
             "is_scoss_awarded": True,
@@ -61,6 +63,8 @@ SUPPORTED_INFRASTRUCTURES = [
         "entity": {
             "raw_name": "Directory of Open Access Books",
             "raw_website": "https://www.doabooks.org",
+            "name": "Directory of Open Access Books",
+            "website": "https://www.doabooks.org",
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/directory-of-open-access-books",
             "posi_url": "https://oapen.hypotheses.org/524",
             "is_scoss_awarded": True,
@@ -73,6 +77,8 @@ SUPPORTED_INFRASTRUCTURES = [
         "entity": {
             "raw_name": "OPERAS",
             "raw_website": "https://operas-eu.org",
+            "name": "OPERAS",
+            "website": "https://operas-eu.org",
             "infra_finder_url": None,
             "posi_url": "https://operas-eu.org/principles-of-open-scholarly-infrastructure-posi",
             "is_scoss_awarded": False,
@@ -85,6 +91,8 @@ SUPPORTED_INFRASTRUCTURES = [
         "entity": {
             "raw_name": "Peer Community In",
             "raw_website": "https://peercommunityin.org",
+            "name": "Peer Community In",
+            "website": "https://peercommunityin.org",
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/peer-community-in",
             "posi_url": "https://peercommunityin.org/2024/04/11/posi/",
             "is_scoss_awarded": False,
@@ -97,6 +105,8 @@ SUPPORTED_INFRASTRUCTURES = [
         "entity": {
             "raw_name": "SciPost",
             "raw_website": "https://scipost.org",
+            "name": "SciPost",
+            "website": "https://scipost.org",
             "infra_finder_url": None,
             "posi_url": "https://scipost.org/posi",
             "is_scoss_awarded": True,

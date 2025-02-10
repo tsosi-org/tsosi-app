@@ -131,16 +131,22 @@ def ingest_all():
     """
     folder = app_settings.TO_INGEST_DIR
     files = folder.glob("*.json")
-    registries = []
     for f in files:
-        _, new_registries = ingestion.ingest_data_file(
-            folder / f, send_signals=False
-        )
-        for r in new_registries:
-            if r in registries:
-                continue
-            registries.append(r)
-    ingestion.send_post_ingestion_signals(registries)
+        _ = ingestion.ingest_data_file(folder / f, send_signals=False)
+    ingestion.send_post_ingestion_signals()
+
+
+@shared_task(base=TsosiLockedTask)
+def ingest_test():
+    """
+    Ingest all data files present in INGEST_DIR and delay the
+    post-ingestion pipeline after all files are ingested.
+    """
+    folder = app_settings.TSOSI_APP_DATA_DIR / "fixtures/prepared_files"
+    files = folder.glob("*.json")
+    for f in files:
+        _ = ingestion.ingest_data_file(folder / f, send_signals=False)
+    ingestion.send_post_ingestion_signals()
 
 
 @shared_task(base=TsosiLockedTask)

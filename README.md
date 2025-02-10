@@ -3,7 +3,17 @@
 This is the repository of the TSOSI web platform including both front-end and back-end of the application.
 
 
-## Stuff
+## Local dev with manual installation
+
+### Backend
+
+See related [README.md](/backend/README.md) to install and run the Django app locally.
+
+### Frontend
+
+See related [README.md](/frontend/README.md) to install and run the Vue.js app locally.
+
+## Local dev using containerized env [WIP]
 
 Install docker
 
@@ -12,7 +22,7 @@ sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin dock
 ```
 
 
-## Dev container
+### Dev container
 
 Develop using the provided dev container.
 
@@ -21,12 +31,12 @@ Once built and connected to the container, you will need to mark the repository 
 git config --global --add safe.directory /workspaces/tsosi-app
 ```
 
-## Connecting to local database from the container
+### Connecting to local database from the container
 
 You need to configure several things if you're running the app's container with default network mode `bridge`.
 You should be able to access the database correctly if you're running the network mode `host`.
 
-### Figure out your machine and container IP addresses on docker interface 
+#### Figure out your machine and container IP addresses on docker interface 
 You need to figure out what's your machine IP address on the interface (usually 172.17.0.1), which usually corresponds to the bridge's gateway IP address.
 
 ```bash
@@ -35,7 +45,7 @@ docker network inspect bridge
 
 Find the gateway IP adress in the correct bridge along with the container's IP.
 
-### Edit PostgreSQL config to listen to connection on that interface
+#### Edit PostgreSQL config to listen to connection on that interface
 
 You need to make the Postgres server listen for incoming connections on that interface.
 By default, the server only listens to requests to localhost (127.0.0.1) IP and only allows requests from localhost.
@@ -65,7 +75,7 @@ Warning: for the config to work, the docker daemon and maybe even the docker con
 You can just restart the service if it's not working.
 
 
-### Run dev servers
+#### Run dev servers
 
 You can't run the dev server at the classic 127.0.0.1 IP address if connections are expected from outside the docker container:
 

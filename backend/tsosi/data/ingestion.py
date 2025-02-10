@@ -400,7 +400,7 @@ def ingest_new_records(
     source: DataLoadSource,
     hide_amount: bool,
     send_signals: bool = True,
-) -> list[str]:
+):
     """
     Insert the new records in the database and create appropriate relations.
     Expects the data to be in the appropriate format (ie. processed with
@@ -444,16 +444,6 @@ def ingest_new_records(
     e_to_create = entities_to_create(entities_new)
     create_entities(e_to_create, now)
 
-    # Store registries with newly created identifiers
-    new_identifier_registries: list[str] = []
-    registry_columns = {
-        "ror_id": REGISTRY_ROR,
-        "wikidata_id": REGISTRY_WIKIDATA,
-    }
-    for col, registry in registry_columns.items():
-        if e_to_create[col].any():
-            new_identifier_registries.append(registry)
-
     # Map back the entity data to the transfert dataframe.
     # First complete the entites DF with the created Entity's ID.
     transfert_entities.loc[entities_new.index, "entity_id"] = entities_new[
@@ -495,14 +485,11 @@ def ingest_new_records(
     create_transfert_entity_matching(transfert_entities, now)
 
     if send_signals:
-        send_post_ingestion_signals(new_identifier_registries)
+        send_post_ingestion_signals()
     logger.info(f"Successfully ingested {len(transferts)} records.")
-    return new_identifier_registries
 
 
-def ingest_data_file(
-    file_path: str | Path, send_signals: bool = True
-) -> tuple[bool, list[str]]:
+def ingest_data_file(file_path: str | Path, send_signals: bool = True) -> bool:
     """
     Ingest data from the given data file.
     The data file should have been generated with
@@ -518,17 +505,16 @@ def ingest_data_file(
         source = get_data_load_source(ingestion_config.source)
     except DataException as e:
         logger.info(f"Skipping ingestion of file {file_path}:\n{e}")
-        return False, []
+        return False
     # flag_duplicate_transferts(df, source)
-    registries = ingest_new_records(
-        df, source, ingestion_config.hide_amount, send_signals
-    )
-    return True, registries
+    ingest_new_records(df, source, ingestion_config.hide_amount, send_signals)
+    return True
 
 
-def send_post_ingestion_signals(registries: list[str]):
+def send_post_ingestion_signals():
     """
     Send signals to trigger post-ingestion pipeline.
     """
+    registries = [REGISTRY_ROR, REGISTRY_WIKIDATA]
     transferts_created.send(None)
     identifiers_created.send(None, registries=registries)
