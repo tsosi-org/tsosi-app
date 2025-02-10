@@ -343,6 +343,7 @@ def create_transferts(transferts: pd.DataFrame, datetime: datetime):
         "original_id",
         "data_load_source_id",
         "hide_amount",
+        "original_amount_field",
     ]
     bulk_create_from_df(Transfert, transferts, fields, "transfert_id")
     logger.info(f"Created {len(transferts)} Transfert records")

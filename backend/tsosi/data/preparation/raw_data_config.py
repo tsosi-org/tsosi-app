@@ -61,6 +61,7 @@ __all__ = [
     "FieldDateStart",
     "FieldDateEnd",
     "FieldOriginalId",
+    "FieldOriginalAmountField",
 ]
 
 INPUT_FILE_TYPES = [".xlsx", ".xls", ".json"]
@@ -256,6 +257,7 @@ ALL_FIELDS: list[Type[ConstOrField]] = [
     FieldDateStart,
     FieldDateEnd,
     FieldOriginalId,
+    FieldOriginalAmountField,
 ]
 
 DATE_FIELDS = [

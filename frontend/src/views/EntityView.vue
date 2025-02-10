@@ -20,11 +20,12 @@ import type { ButtonProps } from "@/components/atoms/ButtonAtom.vue"
 import { fillTransfertAmountCurrency } from "@/utils/data-utils"
 
 const route = useRoute()
+const router = useRouter()
 
 const entity: Ref<DeepReadonly<EntityDetails> | null> = ref(null)
-const router = useRouter()
 const transferts: Ref<Record<TransfertEntityType, Transfert[]> | null> =
   ref(null)
+const showAmount: Ref<boolean> = ref(true)
 
 onBeforeMount(async () => {
   const result = await getEntitySummary(route.params.id as string)
@@ -50,6 +51,7 @@ async function update_transferts() {
     recipient: [],
     agent: [],
   }
+  let transfertWithAmount = false
   for (const transfert of rawTransferts) {
     fillTransfertAmountCurrency(
       transfert,
@@ -57,6 +59,9 @@ async function update_transferts() {
       amountColumn,
       currencyColumn,
     )
+    if (transfert.amount) {
+      transfertWithAmount = true
+    }
     if (transfert.emitter_id == entity.value.id) {
       sortedTransferts["emitter"].push(transfert)
     } else if (transfert.recipient_id == entity.value.id) {
@@ -69,6 +74,7 @@ async function update_transferts() {
       )
     }
   }
+  showAmount.value = transfertWithAmount
   transferts.value = sortedTransferts
 }
 
@@ -169,6 +175,28 @@ const baseTableColumns: TableColumnProps[] = [
   },
 ]
 
+/**
+ * Adapt the transfert table columns according to parameters and the data to
+ * display.
+ * @param showAmount
+ * @param removedColumns
+ */
+function getTableColumns(
+  showAmount: boolean,
+  transferts: Transfert[],
+  removedColumns: string[] = [],
+): TableColumnProps[] {
+  let columns = baseTableColumns.filter(
+    (col) => !removedColumns.includes(col.id),
+  )
+  if (!showAmount) {
+    columns = columns.filter((col) => !["amount", "currency"].includes(col.id))
+  }
+  if (transferts.every((t) => t.agent == null)) {
+    columns = columns.filter((col) => col.id != "agent")
+  }
+  return columns
+}
 const buttons: Array<ButtonProps> = [
   {
     id: "transfertDetails",
@@ -189,9 +217,10 @@ const emitterTableProps = computed(() => {
   return {
     id: `${entity.value.id}-emitter`,
     data: transferts.value.emitter,
-    columns: baseTableColumns.filter(
-      (col) => !["emitter", "emitterCountry"].includes(col.id),
-    ),
+    columns: getTableColumns(showAmount.value, transferts.value.emitter, [
+      "emitter",
+      "emitterCountry",
+    ]),
     defaultSort: {
       sortField: "date_clc",
       sortOrder: -1,
@@ -200,7 +229,7 @@ const emitterTableProps = computed(() => {
       title: "Transferts emitted",
     },
     rowUniqueId: "id",
-    currencySelector: true,
+    currencySelector: showAmount.value,
     buttons: buttons,
     exportTitle: `TSOSI_${entity.value.name.replace(/\s+/g, "_")}`,
   }
@@ -213,7 +242,9 @@ const recipientTableProps = computed(() => {
   return {
     id: `${entity.value.id}-recipient`,
     data: transferts.value.recipient,
-    columns: baseTableColumns.filter((col) => col.id != "recipient"),
+    columns: getTableColumns(showAmount.value, transferts.value.recipient, [
+      "recipient",
+    ]),
     defaultSort: {
       sortField: "date_clc",
       sortOrder: -1,
@@ -222,7 +253,7 @@ const recipientTableProps = computed(() => {
       title: "Transferts received",
     },
     rowUniqueId: "id",
-    currencySelector: true,
+    currencySelector: showAmount.value,
     buttons: buttons,
     exportTitle: `TSOSI_${entity.value.name.replace(/\s+/g, "_")}`,
   }
@@ -235,7 +266,9 @@ const agentTableProps = computed(() => {
   return {
     id: `${entity.value.id}-agent`,
     data: transferts.value.agent,
-    columns: baseTableColumns.filter((col) => col.id != "agent"),
+    columns: getTableColumns(showAmount.value, transferts.value.agent, [
+      "agent",
+    ]),
     defaultSort: {
       sortField: "date_clc",
       sortOrder: -1,
@@ -244,7 +277,7 @@ const agentTableProps = computed(() => {
       title: "Transferts as an agent",
     },
     rowUniqueId: "id",
-    currencySelector: true,
+    currencySelector: showAmount.value,
     buttons: buttons,
     exportTitle: `TSOSI_${entity.value.name.replace(/\s+/g, "_")}`,
   }
@@ -257,7 +290,7 @@ const skeletonTableProps = computed(() => {
   return {
     id: `${entity.value.id}-skeleton-table`,
     data: new Array(20).fill({ field: "dummy" }),
-    columns: baseTableColumns,
+    columns: getTableColumns(showAmount.value, []),
     header: {
       title: "Transferts",
     },

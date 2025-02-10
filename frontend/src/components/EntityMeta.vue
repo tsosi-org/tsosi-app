@@ -94,7 +94,7 @@ const desktopLayout = useMediaQuery("(min-width: 1000px)")
           </p>
           <p>
             <span class="wiki-disclaimer">
-              Derived from
+              From
               <a
                 :href="props.entity.wikipedia_url"
                 target="_blank"
@@ -138,7 +138,7 @@ const desktopLayout = useMediaQuery("(min-width: 1000px)")
         </p>
         <p>
           <span class="wiki-disclaimer">
-            Derived from
+            From
             <a
               :href="props.entity.wikipedia_url"
               target="_blank"
