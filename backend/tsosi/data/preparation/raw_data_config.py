@@ -658,30 +658,6 @@ CONFIG_PCI = {
     ],
 }
 
-CONFIG_SCIPOST = {
-    "id": "scipost",
-    "fields": [
-        FieldRecipientName(constant="SciPost"),
-        FieldRecipientWikidataId(constant="Q52663237"),
-        FieldEmitterName(field="organization_name"),
-        FieldEmitterCountry(field="organization_country", is_iso=True),
-        FieldEmitterRorId(field="organization_ror_id"),
-        FieldEmitterType(field="organization_orgtype"),
-        FieldAmount(field="amount"),
-        FieldCurrency(constant="EUR"),
-        FieldDateStart(
-            field="date_from",
-            format="%Y-%m-%d",
-            date_precision=DATE_PRECISION_YEAR,
-        ),
-        FieldDateEnd(
-            field="date_until",
-            format="%Y-%m-%d",
-            date_precision=DATE_PRECISION_YEAR,
-        ),
-    ],
-}
-
 CONFIG_OPERAS = {
     "id": "operas",
     "fields": [
