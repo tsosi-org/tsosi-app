@@ -11,6 +11,7 @@ import CurrencySelector from "./CurrencySelector.vue"
 import { type DataFieldProps, exportCSV, exportJSON } from "@/utils/data-utils"
 import Button from "primevue/button"
 import Menu from "primevue/menu"
+import { type TooltipItem } from "chart.js"
 
 export interface EntityHistogramProps {
   entityId: string
@@ -111,18 +112,14 @@ function updateChart() {
   }
 
   // Generate series for Chart.js
-
-  const colors = refColors()
   labels.sort()
   const datasets: ChartSerie[] = []
-  let index = 0
 
   for (const key of Object.keys(dataBuckets)) {
     const bucket = dataBuckets[key]
     let color = "#9ca3af"
     if (key != "Unknown") {
-      color = colors[index]
-      index += 1
+      color = nextColor()
     }
 
     datasets.push({
@@ -140,7 +137,7 @@ function updateChart() {
   // Set chartData and chartOptions
   chartData.value = {
     labels: labels,
-    datasets: datasets,
+    datasets: datasets.sort((a, b) => (a.label < b.label ? -1 : 1)),
   }
   chartOptions.value = getChartOptions()
   loading.value = false
@@ -174,21 +171,31 @@ function getChartOptions() {
         },
       },
     },
+    plugins: {
+      tooltip: {
+        callbacks: {
+          title: (ttItems: TooltipItem<"bar">[]) =>
+            `${ttItems[0].label}: ${ttItems.reduce((acc, val) => acc + val.parsed.y, 0).toLocaleString()}`,
+        },
+      },
+    },
   }
 }
 
 function refColors(): string[] {
-  const documentStyle = getComputedStyle(document.documentElement)
-  const colorProperties = [
-    "--p-orange-500",
-    "--p-cyan-500",
-    "--p-indigo-500",
-    "--p-emerald-500",
-    "--p-rose-500",
-    "--p-yellow-500",
-    "--p-lime-500",
-  ]
-  return colorProperties.map((prop) => documentStyle.getPropertyValue(prop))
+  return ["#36a2eb", "#ff6384", "#4bc0c0", "#ff9f40", "#9966ff", "#ffcd56"]
+}
+
+let colorIndex = 0
+
+function nextColor() {
+  const ref = refColors()
+  if (colorIndex > ref.length - 1) {
+    colorIndex = 0
+  }
+  const color = ref[colorIndex]
+  colorIndex += 1
+  return color
 }
 
 const exportMenu = useTemplateRef("export-menu")
