@@ -48,6 +48,9 @@ ES_RESERVED_CHARS = [
     "\\",
     "/",
 ]
+# Use a low max connextions number because ROR servers are often
+# experiencing issues/heavy traffix and it seems to be a small infra
+MAX_CONNS = 15
 
 
 @dataclass(kw_only=True)
@@ -182,7 +185,9 @@ async def match_ror_records(
     elif countries is None:
         countries = [None for _ in names]
 
-    results = await perform_http_func_batch(names, match_ror_record)
+    results = await perform_http_func_batch(
+        names, match_ror_record, max_conns=MAX_CONNS
+    )
 
     # Process results
     # TODO: Vectorize somehow ?
@@ -323,7 +328,9 @@ async def fetch_ror_records(identifiers: Iterable[str]):
     """
     Fetch records data from the ROR registry.
     """
-    results = await perform_http_func_batch(identifiers, get_ror_record)
+    results = await perform_http_func_batch(
+        identifiers, get_ror_record, max_conns=MAX_CONNS
+    )
     return pd.DataFrame.from_records([asdict(r) for r in results])
 
 

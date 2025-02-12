@@ -69,13 +69,17 @@ export function getItemLabel(
   return resolveValueFromPath(item, fieldProps.field)
 }
 
-export function getCountryIcon(country_code: string): string {
-  const iconPath = getCountry(country_code).flag_4x3
+export function getCountryIcon(countryCode: string): string {
+  const iconPath = getCountry(countryCode).flag_4x3
   return getStaticDataUrl(iconPath)
 }
 
-export function getCountryLabel(country_code: string): string {
-  return getCountry(country_code).name
+export function getCountryLabel(countryCode: string): string {
+  return getCountry(countryCode).name
+}
+
+export function getCountryRegion(countryCode: string): string {
+  return getCountry(countryCode).continent
 }
 
 type FormatTarget = "html" | "csv" | "json"
@@ -268,7 +272,7 @@ function downloadFile(data: string, type: string, fileName: string) {
  * @param value
  * @returns
  */
-function cleanCSSValue(value: string | number): string {
+function cleanCSVValue(value: string | number): string {
   const specialCharacters = ['"', ",", "\n", "\r"]
   if (typeof value === "number") {
     return value.toString()
@@ -293,12 +297,12 @@ export async function exportCSV(
   const processRow = (row: Record<string, any>) => {
     const values = fields.map((field) => {
       const value = formatItemLabel(row, field, "csv") as string
-      return cleanCSSValue(value)
+      return cleanCSVValue(value)
     })
     return values.join(",")
   }
 
-  let csvRows = fields.map((field) => cleanCSSValue(field.title)).join(",")
+  let csvRows = fields.map((field) => cleanCSVValue(field.title)).join(",")
 
   data.forEach((item) => {
     csvRows += "\n"

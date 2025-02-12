@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from tsosi.models import Currency, Entity, Identifier, Transfert
+from tsosi.models import Analytic, Currency, Entity, Identifier, Transfert
 
 
 class IdentifierSerializer(serializers.ModelSerializer):
@@ -128,3 +128,9 @@ class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = ["id", "name"]
+
+
+class AnalyticSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Analytic
+        fields = "__all__"

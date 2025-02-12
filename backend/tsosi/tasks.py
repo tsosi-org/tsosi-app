@@ -10,7 +10,7 @@ from celery.utils.log import get_task_logger
 from redis.lock import Lock
 
 from .app_settings import app_settings
-from .data import enrichment, ingestion
+from .data import analytics, enrichment, ingestion
 from .data.currencies import currency_rates
 from .data.task_result import TaskResult
 from .models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
@@ -185,6 +185,11 @@ def fetch_empty_wikidata_records():
     )
 
 
+@shared_task(base=TsosiLockedTask)
+def compute_analytics():
+    analytics.compute_analytics()
+
+
 @shared_task(base=TsosiTask)
 def post_ingestion_pipeline():
     """
@@ -198,6 +203,7 @@ def post_ingestion_pipeline():
     ]
     results = [task() for task in tasks]
     currency_rates_workflow.delay()
+    compute_analytics.delay()
     return TaskResult(partial=False, data_modified=True)
 
 

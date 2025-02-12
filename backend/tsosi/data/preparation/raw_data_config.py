@@ -1,7 +1,6 @@
 import json
 import logging
 import re
-from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import date, datetime
 from typing import Any, ClassVar, Type
@@ -13,9 +12,7 @@ from tsosi.data.utils import clean_null_values
 from tsosi.models.date import (
     DATE_FORMAT,
     DATE_PRECISION_CHOICES,
-    DATE_PRECISION_DAY,
     DATE_PRECISION_YEAR,
-    Date,
     format_date,
 )
 from tsosi.models.static_data import DATA_SOURCES
@@ -567,6 +564,8 @@ class RawDataConfig:
             )
             df.loc[df_warn.index, FieldAmount.NAME] = None
             df.loc[df_warn.index, FieldCurrency.NAME] = None
+
+        # TODO: Check identifiers syntax
 
         # Drop all columns whose data will not be used anymore.
         cols_to_drop = [c for c in df.columns if c not in cols_to_export]

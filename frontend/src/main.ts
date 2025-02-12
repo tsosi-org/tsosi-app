@@ -20,6 +20,8 @@ import {
   faBuildingColumns,
   faMagnifyingGlassChart,
   faAngleRight,
+  faListUl,
+  faChartColumn,
 } from "@fortawesome/free-solid-svg-icons"
 
 const app = createApp(App)
@@ -38,6 +40,7 @@ const MyPreset = definePreset(Aura, {
       700: "#3a5066",
       800: "#2c3e50",
       900: "#1a2a39",
+      950: "#1a2a39",
     },
   },
   semantic: {
@@ -55,7 +58,17 @@ const MyPreset = definePreset(Aura, {
       950: "{brand.950}",
     },
   },
+  components: {
+    tabs: {
+      tab: {
+        active: {
+          color: "{primary.900}",
+        },
+      },
+    },
+  },
 })
+
 app.use(PrimeVue, {
   theme: {
     preset: MyPreset,
@@ -78,6 +91,8 @@ const usedIcons = [
   faBuildingColumns,
   faMagnifyingGlassChart,
   faAngleRight,
+  faListUl,
+  faChartColumn,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)

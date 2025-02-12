@@ -74,6 +74,14 @@ export interface Currency {
   name: string
 }
 
+export interface Analytic {
+  id: number
+  recipient: string
+  year: number
+  country: string | null
+  data: Record<string, any>
+}
+
 export type RefData = {
   countries: DeepReadonly<Record<string, Country>>
   entities: DeepReadonly<Record<string, Entity>>
@@ -238,7 +246,7 @@ export async function getCurrencies(): Promise<DeepReadonly<
   if (refData.initialized) {
     return refData.currencies
   }
-  const result = await get("currencies/all/", true)
+  const result = await get("currencies/", true)
   if (result.error || !result.data) {
     return null
   }
@@ -249,4 +257,15 @@ export async function getCurrencies(): Promise<DeepReadonly<
   refData.currencies = mapping
 
   return refData.currencies
+}
+
+export async function getAnalytics(
+  entityId: string,
+): Promise<Analytic[] | null> {
+  const queryParams = new URLSearchParams({ recipient_id: entityId })
+  const result = await get("analytics/", true, queryParams)
+  if (result.error || !result.data) {
+    return null
+  }
+  return result.data as Analytic[]
 }

@@ -1,3 +1,4 @@
+from .analytics import Analytic
 from .currency import Currency, CurrencyRate
 from .entity import Entity, EntityType
 from .identifier import (

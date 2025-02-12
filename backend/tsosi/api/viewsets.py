@@ -7,6 +7,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from tsosi.api.serializers import (
+    AnalyticSerializer,
     CurrencySerializer,
     EntityDetailsSerializer,
     EntitySerializer,
@@ -14,7 +15,7 @@ from tsosi.api.serializers import (
     TransfertSerializer,
 )
 from tsosi.app_settings import app_settings
-from tsosi.models import Currency, Entity, Transfert
+from tsosi.models import Analytic, Currency, Entity, Transfert
 
 
 class ReadOnlyViewSet(viewsets.ModelViewSet):
@@ -121,6 +122,15 @@ class TransfertViewSet(AllActionViewSet, ReadOnlyViewSet):
         return super().retrieve(request, *args, **kwargs)
 
 
-class CurrencyViewSet(AllActionViewSet, ReadOnlyViewSet):
+class CurrencyViewSet(ReadOnlyViewSet):
     queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
+    pagination_class = None
+
+
+class AnalyticViewSet(ReadOnlyViewSet):
+    queryset = Analytic.objects.all()
+    pagination_class = None
+    serializer_class = AnalyticSerializer
+    filter_backends = [filters.DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ["recipient_id", "country", "year"]
