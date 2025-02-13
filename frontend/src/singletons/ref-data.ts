@@ -97,7 +97,7 @@ export interface PaginatedResults<T> {
   results: Array<T>
 }
 
-export type DeepReadonly<T extends Record<any, any>> = {
+export type DeepReadonly<T> = {
   readonly [K in keyof T]: DeepReadonly<T[K]>
 }
 

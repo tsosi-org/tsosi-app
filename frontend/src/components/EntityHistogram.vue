@@ -2,9 +2,14 @@
 import Chart from "primevue/chart"
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import { ref, watch, onMounted, computed, useTemplateRef, type Ref } from "vue"
-import { getAnalytics, type Analytic } from "@/singletons/ref-data"
+import {
+  getAnalytics,
+  type Analytic,
+  type Entity,
+  type DeepReadonly,
+} from "@/singletons/ref-data"
 import { selectedCurrency } from "@/singletons/currencyStore"
-import { getCountryRegion } from "@/utils/data-utils"
+import { getCountryRegion, exportPNG } from "@/utils/data-utils"
 import Select from "primevue/select"
 import Checkbox from "primevue/checkbox"
 import CurrencySelector from "./CurrencySelector.vue"
@@ -14,8 +19,7 @@ import Menu from "primevue/menu"
 import { type TooltipItem } from "chart.js"
 
 export interface EntityHistogramProps {
-  entityId: string
-  exportTitle?: string
+  entity: DeepReadonly<Entity>
   disableExport?: boolean
 }
 
@@ -58,6 +62,9 @@ const chartTitle = computed(() =>
 const metric = ref(metricOptions[0])
 const stacked: Ref<boolean> = ref(false)
 
+const exportMenu = useTemplateRef("export-menu")
+const chartComponent = useTemplateRef("chart")
+
 onMounted(async () => {
   await loadData()
   updateChart()
@@ -69,7 +76,7 @@ watch(stacked, updateChart)
 
 async function loadData() {
   // await new Promise((r) => setTimeout(r, 800))
-  rawData.value = await getAnalytics(props.entityId)
+  rawData.value = await getAnalytics(props.entity.id)
   dataLoaded.value = true
 }
 
@@ -114,21 +121,19 @@ function updateChart() {
   // Generate series for Chart.js
   labels.sort()
   const datasets: ChartSerie[] = []
-
   for (const key of Object.keys(dataBuckets)) {
     const bucket = dataBuckets[key]
-    let color = "#9ca3af"
-    if (key != "Unknown") {
-      color = nextColor()
-    }
-
     datasets.push({
       type: "bar",
       data: labels.map((label) => bucket[label] || null),
       label: key,
-      backgroundColor: color,
     })
   }
+  datasets.sort((a, b) => (a.label < b.label ? -1 : 1))
+  colorIndex = 0
+  datasets.forEach((set) => {
+    set["backgroundColor"] = set.label == "Unknown" ? "#9ca3af" : nextColor()
+  })
   if (stacked.value) {
     datasets.forEach((set, ind) => {
       set["stack"] = `Stack ${ind}`
@@ -137,7 +142,7 @@ function updateChart() {
   // Set chartData and chartOptions
   chartData.value = {
     labels: labels,
-    datasets: datasets.sort((a, b) => (a.label < b.label ? -1 : 1)),
+    datasets: datasets,
   }
   chartOptions.value = getChartOptions()
   loading.value = false
@@ -183,7 +188,18 @@ function getChartOptions() {
 }
 
 function refColors(): string[] {
-  return ["#36a2eb", "#ff6384", "#4bc0c0", "#ff9f40", "#9966ff", "#ffcd56"]
+  const blue = ["#216d95", "#3d9bcc", "#0e5378"]
+  const orange = ["#e57126", "#f58d49", "#a84200"]
+  const green = ["#b3d4c9", "#4dbd98", "#1f805f"]
+  const yellow = ["#e7a824", "#f0c66e", "#ad7602"]
+  const colors = []
+  for (let i = 0; i < blue.length; i++) {
+    colors.push(blue[i])
+    colors.push(green[i])
+    colors.push(orange[i])
+    colors.push(yellow[i])
+  }
+  return colors
 }
 
 let colorIndex = 0
@@ -198,28 +214,45 @@ function nextColor() {
   return color
 }
 
-const exportMenu = useTemplateRef("export-menu")
-
 const exportItems = [
   {
     label: "Export CSV",
     icon: "download",
-    command: () => download("csv"),
+    command: () => downloadData("csv"),
   },
   {
     label: "Export JSON",
     icon: "download",
-    command: () => download("json"),
+    command: () => downloadData("json"),
+  },
+  {
+    label: "Export PNG",
+    icon: "download",
+    command: () => downloadPNG(),
   },
 ]
 
-async function download(format: "json" | "csv") {
+function getFileName(): string {
+  const baseName = props.entity.name.replace(/\s+/g, "_")
+  const chartTitleClean = chartTitle.value.replace(/\s+/g, "_")
+  return `TSOSI_${baseName}_${chartTitleClean}`
+}
+
+async function downloadPNG() {
+  const innerChart = chartComponent.value?.getChart()
+  if (!innerChart) {
+    return
+  }
+  const image = innerChart.toBase64Image()
+  exportPNG(image, getFileName())
+}
+
+async function downloadData(format: "json" | "csv") {
   if (!chartData.value) {
     console.warn("Chart: No data to export!")
     return
   }
-  const chartTitleClean = chartTitle.value.replace(/\s+/g, "_")
-  const fileName = `TSOSI_${chartTitleClean}`
+
   const exportData = []
 
   // Convert the column-like data into row-like data for export
@@ -249,10 +282,10 @@ async function download(format: "json" | "csv") {
     }),
   )
   if (format == "csv") {
-    exportCSV(fields, exportData, fileName)
+    exportCSV(fields, exportData, getFileName())
     return
   }
-  exportJSON(fields, exportData, fileName)
+  exportJSON(fields, exportData, getFileName())
 }
 
 function toggleExportMenu(event: Event) {
@@ -283,7 +316,7 @@ function toggleExportMenu(event: Event) {
             type="button"
             @click="toggleExportMenu"
             aria-haspopup="true"
-            :aria-controls="`histogram-export-menu-${props.entityId}`"
+            :aria-controls="`histogram-export-menu-${props.entity.id}`"
           >
             <template #icon>
               <font-awesome-icon icon="download" />
@@ -291,7 +324,7 @@ function toggleExportMenu(event: Event) {
           </Button>
           <Menu
             ref="export-menu"
-            :id="`histogram-export-menu-${props.entityId}`"
+            :id="`histogram-export-menu-${props.entity.id}`"
             :model="exportItems"
             :popup="true"
           >
@@ -304,10 +337,11 @@ function toggleExportMenu(event: Event) {
     </div>
     <Chart
       v-show="!loading"
+      ref="chart"
+      class="chart"
       type="bar"
       :data="chartData"
       :options="chartOptions"
-      class="chart"
     />
   </div>
 </template>

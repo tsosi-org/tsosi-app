@@ -14,7 +14,7 @@ interface IconLabel {
 }
 
 const props = defineProps<{
-  entity: EntityDetails | DeepReadonly<EntityDetails>
+  entity: DeepReadonly<EntityDetails>
 }>()
 
 const logoWidth = "200px" // px

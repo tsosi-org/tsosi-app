@@ -20,7 +20,7 @@ import TabPanels from "primevue/tabpanels"
 import TabPanel from "primevue/tabpanel"
 
 const props = defineProps<{
-  entity: EntityDetails | DeepReadonly<EntityDetails>
+  entity: DeepReadonly<EntityDetails>
 }>()
 
 const transferts: Ref<Record<TransfertEntityType, Transfert[]> | null> =
@@ -328,10 +328,7 @@ const skeletonTableProps = computed(() => {
         <TabPanel value="1">
           <div class="data-chart-panel">
             <div v-if="chartTabTriggered" class="dataviz-wrapper">
-              <EntityHistogram
-                :entity-id="props.entity.id"
-                class="entity-chart"
-              />
+              <EntityHistogram :entity="props.entity" class="entity-chart" />
             </div>
           </div>
         </TabPanel>

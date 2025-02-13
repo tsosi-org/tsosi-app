@@ -2,7 +2,7 @@
 import "leaflet/dist/leaflet.css"
 import * as L from "leaflet"
 import { type GeoJsonObject } from "geojson"
-import { ref, onMounted, type Ref, watch, nextTick, useTemplateRef } from "vue"
+import { ref, onMounted, type Ref, nextTick, useTemplateRef } from "vue"
 import Loader from "./atoms/LoaderAtom.vue"
 import { getCountries } from "@/singletons/ref-data"
 
@@ -91,6 +91,7 @@ function updateCountryOverlay(): void {
 
 onMounted(async () => {
   await onInit()
+  updateCountryOverlay()
 })
 </script>
 

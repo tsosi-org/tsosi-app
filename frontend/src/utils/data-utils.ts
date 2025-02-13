@@ -253,7 +253,7 @@ export function formatItemLabel(
  * @param type      The file MIME type
  * @param fileName  The full file name
  */
-function downloadFile(data: string, type: string, fileName: string) {
+function downloadFile(data: BlobPart, type: string, fileName: string) {
   const blob = new Blob([data], { type: type })
 
   const link = document.createElement("a")
@@ -337,4 +337,11 @@ export async function exportJSON(
 
   const processedData = JSON.stringify(data.map(processRow), null, 2)
   downloadFile(processedData, "application/json", `${fileName}.json`)
+}
+
+export function exportPNG(base64Data: string, fileName: string) {
+  const link = document.createElement("a")
+  link.href = base64Data
+  link.download = `${fileName}.png`
+  link.click()
 }

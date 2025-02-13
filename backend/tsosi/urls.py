@@ -29,8 +29,8 @@ router.register(r"currencies", CurrencyViewSet, basename="currency")
 # analytics/(?P<pk>[^/.]+)/    analytics-detail useless
 router.register(r"analytics", AnalyticViewSet, basename="analytic")
 
-print("\n\n")
-print(router.urls)
-print("\n\n")
+# print("\n\n")
+# print(router.urls)
+# print("\n\n")
 
 urlpatterns = [path("api/", include(router.urls))]
