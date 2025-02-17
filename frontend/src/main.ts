@@ -100,3 +100,5 @@ app.component("font-awesome-icon", FontAwesomeIcon)
 app.use(router)
 
 app.mount("#app")
+
+export const appContext = app._context

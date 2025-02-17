@@ -18,9 +18,24 @@ class IdentifierSerializer(serializers.ModelSerializer):
     #     return obj.registry.link_template.format(id=obj.value)
 
 
-class EntityDetailsSerializer(serializers.HyperlinkedModelSerializer):
+class BaseEntitySerializer(serializers.ModelSerializer):
     identifiers = IdentifierSerializer(many=True)
 
+
+class EntitySerializer(BaseEntitySerializer):
+    """
+    Minified serializer for entities.
+    """
+
+    class Meta:
+        model = Entity
+        fields = ["id", "name", "country", "identifiers", "coordinates", "logo"]
+        extra_kwargs = {
+            "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
+        }
+
+
+class EntityDetailsSerializer(BaseEntitySerializer):
     class Meta:
         model = Entity
         fields = [
@@ -43,28 +58,6 @@ class EntityDetailsSerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {
             "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
         }
-
-
-class EntitySerializer(serializers.ModelSerializer):
-    """
-    Minified serializer for entities.
-    """
-
-    identifiers = IdentifierSerializer(many=True)
-
-    class Meta:
-        model = Entity
-        fields = ["id", "name", "country", "identifiers"]
-        extra_kwargs = {
-            "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
-        }
-
-
-class EntityCoordinatesSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Entity
-        fields = ["id", "name", "country", "coordinates"]
 
 
 class BaseTransfertSerializer(serializers.ModelSerializer):

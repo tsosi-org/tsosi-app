@@ -20,6 +20,7 @@ export interface Country {
   flag_4x3: string
   iso: boolean
   name: string
+  coordinates: [number, number] | null
 }
 
 export interface Entity {
@@ -27,27 +28,20 @@ export interface Entity {
   name: string
   country?: string
   identifiers: Identifier[]
+  coordinates?: string
+  logo?: string
 }
 
 export interface EntityDetails extends Entity {
   website?: string
-  logo?: string
   wikipedia_url?: string
   wikipedia_extract?: string
-  coordinates?: string
   is_emitted: boolean
   is_recipient: boolean
   is_agent: boolean
   infra_finder_url?: string
   posi_url?: string
   is_scoss_awarded: boolean
-}
-
-export interface EntityCoordinates {
-  id: string
-  name: string
-  country?: string
-  coordinates?: string
 }
 
 export interface Transfert {
@@ -138,7 +132,9 @@ export const refDataPromise = _initRefData()
  * Country data is taken from https://flagicons.lipis.dev/
  * @returns
  */
-export async function getCountries(): Promise<Record<string, Country> | null> {
+export async function getCountries(): Promise<DeepReadonly<
+  Record<string, Country>
+> | null> {
   if (refData.initialized) {
     return refData.countries
   }
@@ -154,7 +150,7 @@ export async function getCountries(): Promise<Record<string, Country> | null> {
   return refData.countries
 }
 
-export function getCountry(country_code: string): Country {
+export function getCountry(country_code: string): DeepReadonly<Country> {
   return refData.countries[country_code]
 }
 
@@ -277,13 +273,11 @@ export async function getAnalytics(
   return result.data as Analytic[]
 }
 
-export async function getEmitters(
-  entityId: string,
-): Promise<EntityCoordinates[] | null> {
+export async function getEmitters(entityId: string): Promise<Entity[] | null> {
   const queryParams = new URLSearchParams({ entity_id: entityId })
   const result = await get("entities/emitters/", true, queryParams)
   if (result.error || !result.data) {
     return null
   }
-  return result.data as EntityCoordinates[]
+  return result.data as Entity[]
 }

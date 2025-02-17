@@ -16,7 +16,7 @@ const sizeDefault = "50px"
 const width = props.width ?? sizeDefault
 const height = props.height ?? width
 const containerPadding = props.containerPadding ?? "5px"
-const iconFontSize = `min(calc(${width} - 2 * ${containerPadding}), 100px)`
+const iconFontSize = `min(calc(${width} - 2 * ${containerPadding}) / 2, 100px)`
 
 onMounted(() => {
   imgElement.value?.addEventListener("load", () => {
@@ -49,6 +49,7 @@ onMounted(() => {
   height: v-bind("height");
   padding: v-bind("containerPadding");
   text-align: center;
+  flex-shrink: 0;
 
   &.center {
     display: flex;

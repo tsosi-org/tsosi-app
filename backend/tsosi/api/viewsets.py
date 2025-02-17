@@ -9,7 +9,6 @@ from rest_framework.request import Request
 from tsosi.api.serializers import (
     AnalyticSerializer,
     CurrencySerializer,
-    EntityCoordinatesSerializer,
     EntityDetailsSerializer,
     EntitySerializer,
     TransfertDetailsSerializer,
@@ -97,7 +96,7 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
             raise ValidationError(f"`entity_id` query parameter if missing.")
 
         self.pagination_class = None
-        self.serializer_class = EntityCoordinatesSerializer
+        self.serializer_class = EntitySerializer
         ids = Transfert.objects.filter(recipient_id=entity_id).values_list(
             "emitter_id", flat=True
         )

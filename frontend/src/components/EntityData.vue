@@ -339,10 +339,10 @@ async function updateMapData() {
         <TabPanel value="1">
           <div class="data-chart-panel">
             <div v-if="chartTabTriggered" class="dataviz-wrapper">
-              <EntityHistogram :entity="props.entity" class="entity-chart" />
+              <EntityMap :entity="props.entity" />
             </div>
             <div v-if="chartTabTriggered" class="dataviz-wrapper">
-              <EntityMap :entity="props.entity" />
+              <EntityHistogram :entity="props.entity" class="entity-chart" />
             </div>
           </div>
         </TabPanel>
@@ -366,7 +366,7 @@ async function updateMapData() {
 .tab-list {
   position: sticky;
   top: var(--header-height);
-  z-index: 1;
+  z-index: 2000;
 }
 .tab-header {
   display: flex;
@@ -382,7 +382,7 @@ async function updateMapData() {
   padding: 1em;
 
   & > * {
-    margin-bottom: 2rem;
+    margin-bottom: 4rem;
   }
 }
 

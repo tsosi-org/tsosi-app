@@ -89,7 +89,7 @@ function resetSearchBar(event: Event) {
         @focus="showResults"
       />
     </IconField>
-    <Popover ref="op">
+    <Popover ref="op" :baseZIndex="9999">
       <div class="search-bar-overlay">
         <div v-if="filteredResults.length == 0" class="search-howto">
           <span v-if="searchTerm.trim().length > 0">

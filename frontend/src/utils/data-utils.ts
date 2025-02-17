@@ -1,5 +1,6 @@
 import { getCountry, type Transfert } from "@/singletons/ref-data"
 import { getStaticDataUrl } from "@/utils/url-utils"
+import type { DeepReadonly } from "vue"
 
 export type DataType =
   | "date"
@@ -80,6 +81,12 @@ export function getCountryLabel(countryCode: string): string {
 
 export function getCountryRegion(countryCode: string): string {
   return getCountry(countryCode).continent
+}
+
+export function getCountryCoordinates(
+  countryCode: string,
+): DeepReadonly<[number, number]> | null {
+  return getCountry(countryCode).coordinates
 }
 
 type FormatTarget = "html" | "csv" | "json"
