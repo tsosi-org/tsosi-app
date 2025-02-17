@@ -9,6 +9,7 @@ from rest_framework.request import Request
 from tsosi.api.serializers import (
     AnalyticSerializer,
     CurrencySerializer,
+    EntityCoordinatesSerializer,
     EntityDetailsSerializer,
     EntitySerializer,
     TransfertDetailsSerializer,
@@ -86,6 +87,23 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
         self.serializer_class = EntitySerializer
         return self.list(request, *args, **kwargs)
 
+    @action(
+        detail=False, methods=["get"], permission_classes=[BypassPagination]
+    )
+    def emitters(self, request: Request, *args, **kwargs):
+        """ """
+        entity_id = request.query_params.get("entity_id")
+        if entity_id is None:
+            raise ValidationError(f"`entity_id` query parameter if missing.")
+
+        self.pagination_class = None
+        self.serializer_class = EntityCoordinatesSerializer
+        ids = Transfert.objects.filter(recipient_id=entity_id).values_list(
+            "emitter_id", flat=True
+        )
+        self.queryset = Entity.objects.filter(id__in=ids).distinct()
+        return self.list(request, *args, **kwargs)
+
 
 class TransfertFilter(filters.FilterSet):
     entity_id = filters.CharFilter(method="filter_by_entity")
@@ -97,6 +115,11 @@ class TransfertFilter(filters.FilterSet):
     def filter_by_entity(
         self, queryset: QuerySet, name: str, value: str | None
     ) -> QuerySet:
+        """
+        TODO: Check the perf of doing OR condition with Django ORM.
+        It might be way more efficient to perform separate requests on each
+        condition and then UNION them
+        """
         if value is None or not value:
             raise ValidationError(
                 detail=f"Query parameter value for `entity_id` is not accepted: {value}"

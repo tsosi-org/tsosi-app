@@ -50,7 +50,7 @@ class Entity(TimestampedModel):
     wikipedia_url = models.CharField(max_length=512, null=True)
     wikipedia_extract = models.TextField(null=True)
     date_wikipedia_fetched = models.DateTimeField(null=True)
-    # Coordinates according to WGS84 coordinates system in form `POINT(LAT LNG)`
+    # Coordinates according to WGS84 coordinates system in form `POINT(LNG LAT)`
     coordinates = models.TextField(null=True)
 
     ##  Clc booleans indicating if the entity is involved in 1+ transfert

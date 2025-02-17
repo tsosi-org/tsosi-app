@@ -43,6 +43,13 @@ export interface EntityDetails extends Entity {
   is_scoss_awarded: boolean
 }
 
+export interface EntityCoordinates {
+  id: string
+  name: string
+  country?: string
+  coordinates?: string
+}
+
 export interface Transfert {
   id: string
   emitter_id: string
@@ -268,4 +275,15 @@ export async function getAnalytics(
     return null
   }
   return result.data as Analytic[]
+}
+
+export async function getEmitters(
+  entityId: string,
+): Promise<EntityCoordinates[] | null> {
+  const queryParams = new URLSearchParams({ entity_id: entityId })
+  const result = await get("entities/emitters/", true, queryParams)
+  if (result.error || !result.data) {
+    return null
+  }
+  return result.data as EntityCoordinates[]
 }

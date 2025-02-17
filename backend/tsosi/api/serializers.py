@@ -60,6 +60,13 @@ class EntitySerializer(serializers.ModelSerializer):
         }
 
 
+class EntityCoordinatesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Entity
+        fields = ["id", "name", "country", "coordinates"]
+
+
 class BaseTransfertSerializer(serializers.ModelSerializer):
     """
     Base serializer for transferts. It overloads amount-related

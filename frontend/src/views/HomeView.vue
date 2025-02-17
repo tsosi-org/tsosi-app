@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import Map from "@/components/MapComponent.vue"
 import { changeTitle } from "@/utils/dom-utils"
 
 changeTitle("Home")
 </script>
 
 <template>
-  <Map />
+  <div class="container">
+    <p style="padding: 3rem">
+      Welcome to TSOSI data application!
+      <br />
+      Homepage in progress.
+    </p>
+  </div>
 </template>

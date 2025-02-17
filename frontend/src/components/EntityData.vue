@@ -18,6 +18,7 @@ import TabList from "primevue/tablist"
 import Tab from "primevue/tab"
 import TabPanels from "primevue/tabpanels"
 import TabPanel from "primevue/tabpanel"
+import EntityMap from "@/components/EntityMap.vue"
 
 const props = defineProps<{
   entity: DeepReadonly<EntityDetails>
@@ -31,6 +32,7 @@ const activeTab = ref("0")
 // This ref is used to trigger chart data fetching only when the tab is
 // selected
 const chartTabTriggered = ref(false)
+const mapData = ref()
 
 onMounted(async () => {
   update_transferts()
@@ -55,6 +57,11 @@ watch(selectedCurrency, () => {
 watch(activeTab, () => {
   if (activeTab.value == "1") {
     chartTabTriggered.value = true
+  }
+})
+watch(chartTabTriggered, () => {
+  if (chartTabTriggered.value === true) {
+    updateMapData()
   }
 })
 
@@ -291,6 +298,10 @@ const skeletonTableProps = computed(() => {
     hideCount: true,
   }
 })
+
+async function updateMapData() {
+  mapData.value = props.entity.coordinates
+}
 </script>
 
 <template>
@@ -330,6 +341,9 @@ const skeletonTableProps = computed(() => {
             <div v-if="chartTabTriggered" class="dataviz-wrapper">
               <EntityHistogram :entity="props.entity" class="entity-chart" />
             </div>
+            <div v-if="chartTabTriggered" class="dataviz-wrapper">
+              <EntityMap :entity="props.entity" />
+            </div>
           </div>
         </TabPanel>
       </TabPanels>
@@ -365,12 +379,15 @@ const skeletonTableProps = computed(() => {
 
 .data-chart-panel {
   width: 100%;
-  overflow-x: auto;
   padding: 1em;
+
+  & > * {
+    margin-bottom: 2rem;
+  }
 }
 
 .dataviz-wrapper {
-  min-width: 300px;
-  /* max-width: 100%; */
+  width: 100%;
+  overflow-x: auto;
 }
 </style>

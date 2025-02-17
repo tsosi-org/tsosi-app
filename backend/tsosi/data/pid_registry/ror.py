@@ -411,7 +411,7 @@ def get_ror_coordinates(record: dict) -> str | None:
         return None
     lat = locations[0]["geonames_details"]["lat"]
     lng = locations[0]["geonames_details"]["lng"]
-    return f"POINT({lat} {lng})"
+    return f"POINT({lng} {lat})"
 
 
 def get_ror_website(record: dict) -> str | None:

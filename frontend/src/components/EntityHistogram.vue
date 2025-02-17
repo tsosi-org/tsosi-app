@@ -295,7 +295,6 @@ function toggleExportMenu(event: Event) {
 
 <template>
   <div class="chart-wrapper">
-    <Loader v-if="loading" width="200px" />
     <div class="chart-header">
       <h2 class="chart-title">
         <template v-if="metric.code == 'sum'">
@@ -335,18 +334,24 @@ function toggleExportMenu(event: Event) {
         </template>
       </div>
     </div>
-    <Chart
-      v-show="!loading"
-      ref="chart"
-      class="chart"
-      type="bar"
-      :data="chartData"
-      :options="chartOptions"
-    />
+    <div class="chart-container">
+      <Loader v-if="loading" width="200px" />
+      <Chart
+        v-show="!loading"
+        ref="chart"
+        class="chart"
+        type="bar"
+        :data="chartData"
+        :options="chartOptions"
+      />
+    </div>
   </div>
 </template>
 
 <style scoped>
+.chart-wrapper {
+  min-width: 300px;
+}
 .chart-header {
   display: flex;
   flex-direction: row;
@@ -375,8 +380,13 @@ function toggleExportMenu(event: Event) {
   font-weight: 900;
 }
 
-.chart {
+.chart-container {
+  position: relative;
   height: 30rem;
   margin-top: 1.5rem;
+}
+
+.chart {
+  height: 30rem;
 }
 </style>

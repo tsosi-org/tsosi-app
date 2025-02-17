@@ -345,3 +345,26 @@ export function exportPNG(base64Data: string, fileName: string) {
   link.download = `${fileName}.png`
   link.click()
 }
+
+export interface PointCoordinates {
+  lat: number
+  lon: number
+}
+
+export function parsePointCoordinates(
+  wktCoordinates: string | null | undefined,
+): PointCoordinates | null {
+  if (!wktCoordinates) {
+    return null
+  }
+  const parsedCoordinates = /[a-zA-Z]+\(([-\d\.]+)\s+([-\d\.]+)\)/g.exec(
+    wktCoordinates,
+  )
+  if (parsedCoordinates?.length != 3) {
+    return null
+  }
+  return {
+    lat: parseFloat(parsedCoordinates[2]),
+    lon: parseFloat(parsedCoordinates[1]),
+  }
+}
