@@ -9,6 +9,11 @@ import { getEntities } from "@/singletons/ref-data"
 import { getEntityUrl } from "@/utils/url-utils"
 import { RouterLink } from "vue-router"
 
+export interface SearchBarProps {
+  width?: string
+}
+
+const props = defineProps<SearchBarProps>()
 const searchTerm = ref("")
 interface searchResult {
   name: string
@@ -75,7 +80,7 @@ function resetSearchBar(event: Event) {
   filteredResults.value = []
 }
 
-const elementWidth = "350px"
+const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
 </script>
 
 <template>

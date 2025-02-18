@@ -6,7 +6,7 @@ import { ref, type Ref, unref, onMounted, onUnmounted } from "vue"
  * @param query
  * @returns
  */
-export function useMediaQuery(query: string | Ref<string>) {
+export function useMediaQuery(query: string | Ref<string>, global = false) {
   let mediaQuery: MediaQueryList | undefined
   const matches = ref(false)
 
@@ -21,7 +21,13 @@ export function useMediaQuery(query: string | Ref<string>) {
     matches.value = event.matches
   }
 
-  onMounted(() => mediaQuery!.addEventListener("change", handler))
-  onUnmounted(() => cleanup())
+  if (!global) {
+    onMounted(() => mediaQuery!.addEventListener("change", handler))
+    onUnmounted(() => cleanup())
+  } else {
+    mediaQuery.addEventListener("change", handler)
+  }
   return matches
 }
+
+export const isDesktop = useMediaQuery("(min-width: 1000px)", true)

@@ -3,7 +3,7 @@ import { type EntityDetails, type DeepReadonly } from "@/singletons/ref-data"
 import Image from "./atoms/ImageAtom.vue"
 import Chip from "primevue/chip"
 import { getRorUrl } from "@/utils/url-utils"
-import { useMediaQuery } from "@/composables/useMediaQuery"
+import { isDesktop } from "@/composables/useMediaQuery"
 import { getCountryLabel } from "@/utils/data-utils"
 
 interface IconLabel {
@@ -69,13 +69,11 @@ if (props.entity.is_recipient) {
     })
   }
 }
-
-const desktopLayout = useMediaQuery("(min-width: 1000px)")
 </script>
 
 <template>
   <div>
-    <div v-if="desktopLayout" class="entity-header-desktop">
+    <div v-if="isDesktop" class="entity-header-desktop">
       <div>
         <Image
           :src="props.entity?.logo"
