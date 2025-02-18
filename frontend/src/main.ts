@@ -22,6 +22,7 @@ import {
   faAngleRight,
   faListUl,
   faChartColumn,
+  faCircleQuestion,
 } from "@fortawesome/free-solid-svg-icons"
 
 const app = createApp(App)
@@ -93,6 +94,7 @@ const usedIcons = [
   faAngleRight,
   faListUl,
   faChartColumn,
+  faCircleQuestion,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)

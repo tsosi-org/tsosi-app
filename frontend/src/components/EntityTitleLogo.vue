@@ -21,11 +21,11 @@ const props = defineProps<EntityMapSummaryProps>()
         :width="'100px'"
         :center="true"
       />
-      <h2>
+      <span>
         <RouterLink :to="getEntityUrl(props.entity.id)">
           {{ props.entity.name }}
         </RouterLink>
-      </h2>
+      </span>
     </div>
     <div class="controls"></div>
   </div>
@@ -33,6 +33,7 @@ const props = defineProps<EntityMapSummaryProps>()
 
 <style scoped>
 .wrapper {
+  font-size: var(--font-size);
   position: relative;
   padding: 2px;
 }

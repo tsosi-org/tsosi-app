@@ -12,7 +12,7 @@ const props = defineProps<CountryEntityListProps>()
 
 <template>
   <div class="country-list">
-    <h2 class="country-list-title">{{ props.title }}</h2>
+    <h3 class="country-list-title">{{ props.title }}</h3>
     <div class="entity-list">
       <EntityTitleLogo
         v-for="entity of props.entities"
@@ -26,6 +26,7 @@ const props = defineProps<CountryEntityListProps>()
 
 <style scoped>
 .country-list {
+  font-size: var(--font-size);
   position: relative;
 }
 

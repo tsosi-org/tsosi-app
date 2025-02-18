@@ -27,6 +27,7 @@ import { type Feature } from "geojson"
 import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
 import CountryItemList from "@/components/CountryItemList.vue"
 import { createComponent } from "@/utils/dom-utils"
+import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 
 export interface EntityMapProps {
   entity: DeepReadonly<EntityDetails>
@@ -50,7 +51,6 @@ const layers: Ref<Record<string, L.FeatureGroup>> = ref({})
 const plottedEntities: Ref<{ total: number; value: number } | null> = ref(null)
 // Do not use a ref, it messes up some leaflet features
 let map: L.Map | null = null
-
 const houseSvg = `
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
     <path d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 16.2c0 22.1-17.9 40-40 40l-16 0c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1L416 512l-24 0c-22.1 0-40-17.9-40-40l0-24 0-64c0-17.7-14.3-32-32-32l-64 0c-17.7 0-32 14.3-32 32l0 64 0 24c0 22.1-17.9 40-40 40l-24 0-31.9 0c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2l-16 0c-22.1 0-40-17.9-40-40l0-112c0-.9 0-1.9 .1-2.8l0-69.7-32 0c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/>
@@ -63,20 +63,24 @@ const diamondSvg = `
 `
 const circleSvg = `
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-    <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z"/>
+    <path stroke-linecap="round" stroke-linejoin="round" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z"/>
   </svg>
 `
 const countryIcon = L.divIcon({
   html: diamondSvg,
   iconSize: [12, 12],
-  className: "diamond-icon",
+  className: "map-icon diamond-icon",
 })
 const houseIcon = L.divIcon({
   html: houseSvg,
   iconSize: [18, 18],
-  className: "house-icon",
+  className: "map-icon house-icon",
 })
-
+const circleIcon = L.divIcon({
+  html: circleSvg,
+  iconSize: [10, 10],
+  className: "map-icon circle-icon",
+})
 onMounted(async () => {
   await onInit()
   await getData()
@@ -151,6 +155,9 @@ async function updateMarkers() {
   if (emitterFeatures) {
     newLayers.emitters = L.geoJSON(emitterFeatures, {
       pointToLayer: (feature, latlng) =>
+        // L.marker(latlng, {
+        //   icon: circleIcon,
+        // }),
         L.circleMarker(latlng, {
           color: "#216d95",
           weight: 1,
@@ -292,7 +299,17 @@ function cleanPopup(element: App) {
       </div>
       <div v-if="layers.countries" class="legend-item">
         <div class="legend-icon diamond-icon" v-html="diamondSvg"></div>
-        <span>Countries</span>
+        <span>
+          Countries
+          <InfoButtonAtom>
+            <template #default>
+              <span>
+                Gather all funders from the given country without a precise
+                location information.
+              </span>
+            </template>
+          </InfoButtonAtom>
+        </span>
       </div>
       <div v-if="layers.emitters" class="legend-item">
         <div class="legend-icon circle-icon" v-html="circleSvg"></div>
@@ -371,10 +388,7 @@ function cleanPopup(element: App) {
   align-items: center;
   gap: 0.5em;
 
-  & .diamond-icon {
-    stroke-width: unset;
-  }
-  & .house-icon {
+  & .map-icon {
     stroke-width: unset;
   }
 }
@@ -384,20 +398,24 @@ function cleanPopup(element: App) {
   height: 1rem;
 }
 
+.map-icon {
+  stroke-width: 40;
+}
+
 .diamond-icon {
   fill: #e7a824;
   stroke: #686868;
-  stroke-width: 40;
 }
 
 .house-icon {
   fill: #e57126;
   stroke: #686868;
-  stroke-width: 40;
 }
 
 .circle-icon {
   fill: #216d95;
-  opacity: 0.8;
+  fill-opacity: 0.8;
+  stroke-width: 10;
+  stroke: #216d95;
 }
 </style>
