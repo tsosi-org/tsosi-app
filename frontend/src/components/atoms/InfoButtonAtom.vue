@@ -25,7 +25,7 @@ function show(event: Event) {
   popup.value?.show(event)
 }
 
-function hide(_) {
+function hide(_: Event) {
   popup.value?.hide()
 }
 </script>

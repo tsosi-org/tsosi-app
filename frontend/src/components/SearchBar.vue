@@ -74,11 +74,13 @@ function resetSearchBar(event: Event) {
   searchTerm.value = ""
   filteredResults.value = []
 }
+
+const elementWidth = "350px"
 </script>
 
 <template>
   <div class="search-bar">
-    <IconField>
+    <IconField class="search-bar-input">
       <InputIcon>
         <font-awesome-icon icon="magnifying-glass" />
       </InputIcon>
@@ -87,9 +89,10 @@ function resetSearchBar(event: Event) {
         placeholder="Search"
         @input="onSearch"
         @focus="showResults"
+        style="width: 100%"
       />
     </IconField>
-    <Popover ref="op" :baseZIndex="9999">
+    <Popover ref="op" :baseZIndex="9999" :style="`--width: ${elementWidth}`">
       <div class="search-bar-overlay">
         <div v-if="filteredResults.length == 0" class="search-howto">
           <span v-if="searchTerm.trim().length > 0">
@@ -110,11 +113,16 @@ function resetSearchBar(event: Event) {
           :items="filteredResults"
           :itemSize="itemSize"
           class="search-results"
+          orientation="vertical"
           :scroll-height="virtualScrollerHeight"
         >
           <template #item="{ item }">
             <div class="search-result" :style="{ height: itemSize + 'px' }">
-              <RouterLink :to="item.url" @click="resetSearchBar">
+              <RouterLink
+                :to="item.url"
+                @click="resetSearchBar"
+                class="search-result-text"
+              >
                 {{ item.name }}
               </RouterLink>
             </div>
@@ -126,25 +134,30 @@ function resetSearchBar(event: Event) {
 </template>
 
 <style scoped>
+.search-bar-input {
+  width: v-bind(elementWidth);
+}
 .search-bar-overlay {
-  width: 350px;
+  --content-width: calc(var(--width) - 20px);
+  position: relative;
+  max-width: var(--content-width);
+  width: var(--content-width);
   overflow: scroll;
-  /* max-height: 300px; */
 }
 
 .search-howto {
   width: 100%;
 }
 
-.search-results {
-  max-width: 350px;
-}
-
 .search-result {
   display: flex;
   align-items: center;
   text-wrap: nowrap;
+  max-width: var(--content-width);
+}
+
+.search-result-text {
   text-overflow: ellipsis;
-  max-width: 350px;
+  overflow: hidden;
 }
 </style>
