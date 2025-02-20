@@ -49,9 +49,9 @@ def prepare_manual_matching(
     Enrich the given data with the results of the ROR affiliation API.
     The following columns holding the affiliation matching result are added
     after the given `name_column`:
-        - `ror_matched_id`
-        - `ror_matched_name`
-        - `ror_exact_match`.
+        - `_ror_matched_id`
+        - `_ror_matched_name`
+        - `_ror_perfect_match`.
 
     The following empty columns are also added to prepare for manual matching:
         - `_processed`
@@ -66,19 +66,31 @@ def prepare_manual_matching(
     logger.info(f"Preparing manual matching for {len(df)} entities.")
 
     initial_columns = list(df.columns)
-
-    df["__name_clean"] = df[name_column].apply(clean_cell_value)
-    df_match = df[~df["__name_clean"].isna()]
+    df[name_column] = df[name_column].apply(clean_cell_value)
+    df["__name_clean"] = df[name_column].copy()
     # Get the country ISO alpha-2 code when the country is present
     if country_column:
-        clean_null_values(df_match)
-        df_match["__country_clean"] = df_match[country_column].apply(
+        df[country_column] = df[country_column].apply(clean_cell_value)
+        df["__country_clean"] = df[country_column].apply(
             lambda x: country_iso_from_name(x, error=True)
         )
     else:
-        df_match["__country_clean"] = None
+        df["__country_clean"] = None
 
-    clean_null_values(df_match)
+    clean_null_values(df)
+    df_match = df[~df["__name_clean"].isna()]
+
+    # Drop duplicates in terms of matching (the same input will yield
+    # the same result)
+    df_match.drop_duplicates(
+        subset=["__name_clean", "__country_clean"], inplace=True
+    )
+    if len(df) != len(df_match):
+        print(
+            f"Performing {len(df_match)} affiliation requests "
+            f"out of {len(df)} inputs."
+        )
+
     # Get ror affiliation matching
     ror_results = asyncio.run(
         match_ror_records(df_match["__name_clean"], df_match["__country_clean"])
@@ -102,11 +114,16 @@ def prepare_manual_matching(
     ror_columns = [f"_{c}" for c in ror_columns]
 
     df = df.merge(
-        result[ror_columns],
+        result[["__name_clean", "__country_clean", *ror_columns]],
         how="left",
-        left_index=True,
-        right_index=True,
+        on=["__name_clean", "__country_clean"],
     )
+    # df = df.merge(
+    #     result[ror_columns],
+    #     how="left",
+    #     left_index=True,
+    #     right_index=True,
+    # )
     # Add other columns used for manual completion
     df["_processed"] = df["_ror_perfect_match"].map({True: True, False: None})
     other_manual_columns = [

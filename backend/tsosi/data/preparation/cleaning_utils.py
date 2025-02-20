@@ -33,7 +33,7 @@ def currency_iso_from_value[T](val: T, error: bool = False) -> str | None:
     its symbol ("$", "£" or "€") or it contains the ISO code with other parasite
     inputs.
     """
-    if val is None:
+    if pd.isna(val):
         return None
     if not isinstance(val, str):
         msg = f"Currency ISO code could not be derived from input value `{val}`"
@@ -64,13 +64,9 @@ def country_check_iso[T](val: T, error: bool = False) -> None:
     """
     Check that the provided value is a country ISO code.
     """
-    if (
-        val is not None
-        and isinstance(val, str)
-        and val in COUNTRY_ALPHA_2_MAPPING.keys()
-    ):
+    if isinstance(val, str) and val in COUNTRY_ALPHA_2_MAPPING.keys():
         return
-    elif val is None:
+    elif pd.isna(val):
         return None
     msg = f"The provided country ISO code `{val}` does not exist."
     if error:
@@ -82,7 +78,7 @@ def country_iso_from_name[T](val: T, error: bool = False) -> str | None:
     """
     Get the country iso 3166-1 alpha-2 code from the input name.
     """
-    if val is None:
+    if pd.isna(val):
         return None
     elif not isinstance(val, str):
         msg = f"The provided country name `{val}` is not valid."
@@ -120,7 +116,7 @@ def clean_url[T](s: T) -> T:
     """
     Add default protocol and remove trailing slash from URL string.
     """
-    if not s or not isinstance(s, str):
+    if not isinstance(s, str):
         return s
     if not s.startswith("https://") and not s.startswith("http://"):
         s = f"https://{s}"
@@ -135,7 +131,7 @@ def clean_cell_value[T](s: T) -> T:
     - Normalize spacing values.
     - Strip whitespaces.
     """
-    if not s or not isinstance(s, str):
+    if not isinstance(s, str):
         return s
     return re.sub(r"\s+", " ", s).strip()
 
@@ -146,7 +142,7 @@ def clean_number_value[T](value: T, comma_decimal=False) -> T | float:
     If `comma_decimal` is true, replace commas by the "." character,
     else discard them.
     """
-    if value is None or not isinstance(value, str):
+    if not isinstance(value, str):
         return value
     value = value.replace(",", ".") if comma_decimal else value.replace(",", "")
     return pd.to_numeric(value, errors="coerce")
@@ -164,7 +160,7 @@ def extract_currency_amount(
 
     if isinstance(val, (int, float)):
         return val, None
-    elif val is None:
+    elif pd.isna(val) is None:
         return None, None
     elif not isinstance(val, str):
         msg = f"Could not parse currency and amount from `{val}`"

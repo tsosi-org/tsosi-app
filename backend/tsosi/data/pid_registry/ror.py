@@ -243,7 +243,7 @@ def process_ror_matching_result(
         ]
         if len(exact_matches) > 0:
             matching_result = exact_matches[0]
-            if country is not None:
+            if not pd.isna(country):
                 for m in exact_matches:
                     record: dict = m["organization"]
                     # Check that the country is the same as the input
