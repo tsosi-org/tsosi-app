@@ -441,7 +441,9 @@ class RawDataConfig:
             format = field.format if field and field.format else DATE_FORMAT
             df[col] = df[col].apply(lambda x: undate(x, format))
 
-        df[FieldRawData.NAME] = df.apply(lambda row: row.to_dict(), axis=1)
+        df[FieldRawData.NAME] = df.apply(
+            lambda row: row.dropna().to_dict(), axis=1
+        )
         amount_field = self.get_field(FieldAmount)
         df[FieldOriginalAmountField.NAME] = (
             amount_field.field if amount_field.field else None

@@ -1,7 +1,7 @@
 from datetime import date
 
 from tsosi.data.preparation import raw_data_config as rdc
-from tsosi.models.date import DATE_PRECISION_DAY, DATE_PRECISION_YEAR, Date
+from tsosi.models.date import DATE_PRECISION_DAY
 
 
 def get_config(file_path: str) -> rdc.RawDataConfigFromFile:
@@ -26,12 +26,12 @@ def get_config(file_path: str) -> rdc.RawDataConfigFromFile:
             rdc.FieldDateStart(
                 field="date_from",
                 format="%Y-%m-%d",
-                date_precision=DATE_PRECISION_YEAR,
+                date_precision=DATE_PRECISION_DAY,
             ),
             rdc.FieldDateEnd(
                 field="date_until",
                 format="%Y-%m-%d",
-                date_precision=DATE_PRECISION_YEAR,
+                date_precision=DATE_PRECISION_DAY,
             ),
         ],
         input_file_name=file_path,

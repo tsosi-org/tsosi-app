@@ -163,7 +163,8 @@ DATA_SOURCES = [
     "doaj_publisher",
     "scipost",
     "pci",
-    "doab",
+    "doab_library",
+    "doab_sponsor",
     "operas",
 ]
 

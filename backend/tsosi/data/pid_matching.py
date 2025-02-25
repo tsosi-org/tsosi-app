@@ -208,6 +208,7 @@ def process_enriched_data(
         "_name_from_ror",
         "_ror_matched_id",
         "_ror_matched_name",
+        "_ror_matched_country",
         "_ror_exact_match",
         "_ror_perfect_match",
     ]

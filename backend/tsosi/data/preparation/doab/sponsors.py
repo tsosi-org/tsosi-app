@@ -1,0 +1,42 @@
+from datetime import date
+
+from tsosi.data.preparation import raw_data_config as rdc
+from tsosi.models.date import DATE_PRECISION_DAY
+
+
+def get_config(file_path: str, sheet_name: str) -> rdc.RawDataConfigFromFile:
+    source = rdc.DataLoadSource(
+        data_source_id="doab_sponsor",
+        full_data=False,
+        data_load_name=file_path.split("/")[-1],
+    )
+    return rdc.RawDataConfigFromFile(
+        "doab_sponsor",
+        ".xlsx",
+        source,
+        fields=[
+            rdc.FieldRecipientName(constant="Directory of Open Access Books"),
+            rdc.FieldRecipientRorId(constant="01q0bmy69"),
+            rdc.FieldEmitterName(field="Company"),
+            rdc.FieldEmitterUrl(field="emitter_website"),
+            rdc.FieldEmitterWikidataId(field="emitter_wikidata_id"),
+            rdc.FieldEmitterRorId(field="emitter_ror_id"),
+            rdc.FieldEmitterCountry(field="Country", is_iso=False),
+            rdc.FieldAmount(field="amount"),
+            rdc.FieldCurrency(field="currency"),
+            rdc.FieldDateStart(
+                field="date_start",
+                format="%Y-%m-%d",
+                date_precision=DATE_PRECISION_DAY,
+            ),
+            rdc.FieldDateEnd(
+                field="date_end",
+                format="%Y-%m-%d",
+                date_precision=DATE_PRECISION_DAY,
+            ),
+        ],
+        date_columns=["date_start", "date_end"],
+        input_file_name=file_path,
+        input_sheet_name=sheet_name,
+        hide_amount=True,
+    )

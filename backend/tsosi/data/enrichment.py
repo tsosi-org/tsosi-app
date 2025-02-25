@@ -15,6 +15,7 @@ from tsosi.models import (
     IdentifierVersion,
     Transfert,
 )
+from tsosi.models.date import DATE_PRECISION_YEAR, Date
 from tsosi.models.identifier import (
     MATCH_CRITERIA_FROM_ROR,
     MATCH_CRITERIA_FROM_WIKIDATA,
@@ -894,6 +895,17 @@ def update_transfert_date_clc(
         return
 
     data = pd.DataFrame.from_records(instances)
+
+    # The date should not be precised if it's derived from the
+    # start date of the supporting period
+    def update_date_start(d: dict | None):
+        if d is None:
+            return d
+        new_date = Date(**d)
+        new_date.precision = DATE_PRECISION_YEAR
+        return new_date.serialize()
+
+    data["date_start"] = data["date_start"].apply(update_date_start)
     data["date_clc"] = (
         data[["date_payment", "date_invoice", "date_start"]]
         .bfill(axis=1)
