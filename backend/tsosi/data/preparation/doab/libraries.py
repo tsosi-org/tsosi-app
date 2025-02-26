@@ -6,17 +6,19 @@ from tsosi.models.date import DATE_PRECISION_DAY
 
 def get_config(file_path: str, sheet_name: str) -> rdc.RawDataConfigFromFile:
     source = rdc.DataLoadSource(
-        data_source_id="doab_library",
+        data_source_id="doab_oapen_library",
         full_data=False,
         data_load_name=file_path.split("/")[-1],
     )
     return rdc.RawDataConfigFromFile(
-        "doab_library",
+        "doab_oapen_library",
         ".xlsx",
         source,
         fields=[
-            rdc.FieldRecipientName(constant="Directory of Open Access Books"),
-            rdc.FieldRecipientRorId(constant="01q0bmy69"),
+            rdc.FieldRecipientName(
+                constant="Directory of Open Access Books & OAPEN"
+            ),
+            rdc.FieldRecipientCustomId(constant="doab_oapen"),
             rdc.FieldEmitterName(field="Company"),
             rdc.FieldEmitterUrl(field="emitter_website"),
             rdc.FieldEmitterWikidataId(field="emitter_wikidata_id"),

@@ -26,6 +26,10 @@ class Entity(TimestampedModel):
         validators=[MinLengthValidator(2), MaxLengthValidator(2)],
     )
     raw_website = models.URLField(max_length=256, null=True)
+    # Description text used when no Wikipedia extract is available.
+    # This should only be used for entity with a Custom registry ID.
+    description = models.TextField(null=True)
+    manual_logo = models.BooleanField(default=False)
 
     is_active = models.BooleanField(default=True)
     is_matchable = models.BooleanField(default=True)

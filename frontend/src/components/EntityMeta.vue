@@ -86,7 +86,7 @@ if (props.entity.is_recipient) {
         <h1 class="entity-title">
           <span>{{ props.entity.name }}</span>
         </h1>
-        <div v-if="props.entity.wikipedia_extract" class="entity-description">
+        <div v-if="props.entity.wikipedia_extract">
           <p>
             {{ props.entity.wikipedia_extract }}
           </p>
@@ -107,6 +107,11 @@ if (props.entity.is_recipient) {
                 >CC-BY-SA</a
               >
             </span>
+          </p>
+        </div>
+        <div v-else-if="props.entity.description">
+          <p>
+            {{ props.entity.description }}
           </p>
         </div>
         <div v-else>

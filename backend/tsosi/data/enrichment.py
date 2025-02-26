@@ -780,7 +780,9 @@ def update_null_logo_url(date_update: datetime | None):
     Reset logo & date_logo_fetched for entities where logo_url is null.
     """
     date_update = date_update if date_update is not None else timezone.now()
-    instances = Entity.objects.filter(logo_url__isnull=True, logo__isnull=False)
+    instances = Entity.objects.filter(
+        logo_url__isnull=True, logo__isnull=False, manual_logo=False
+    )
     for e in instances:
         e.logo.delete(save=True)
         e.date_last_updated = date_update

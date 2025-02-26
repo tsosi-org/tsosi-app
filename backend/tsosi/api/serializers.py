@@ -43,6 +43,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "name",
             "country",
             "website",
+            "description",
             "logo",
             "wikipedia_url",
             "wikipedia_extract",

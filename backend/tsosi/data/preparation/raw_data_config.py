@@ -40,18 +40,21 @@ __all__ = [
     "FieldEmitterName",
     "FieldEmitterRorId",
     "FieldEmitterWikidataId",
+    "FieldEmitterCustomId",
     "FieldEmitterUrl",
     "FieldEmitterCountry",
     "FieldEmitterType",
     "FieldRecipientName",
     "FieldRecipientRorId",
     "FieldRecipientWikidataId",
+    "FieldRecipientCustomId",
     "FieldRecipientUrl",
     "FieldRecipientCountry",
     "FieldAgentName",
     "FieldAgentUrl",
     "FieldAgentRorId",
     "FieldAgentWikidataId",
+    "FieldAgentCustomId",
     "FieldAgentCountry",
     "FieldDateInvoice",
     "FieldDatePayment",
@@ -118,6 +121,11 @@ class FieldEmitterWikidataId(ConstOrField):
 
 
 @dataclass(kw_only=True)
+class FieldEmitterCustomId(ConstOrField):
+    NAME = "emitter_custom_id"
+
+
+@dataclass(kw_only=True)
 class FieldEmitterUrl(ConstOrField):
     NAME = "emitter_url"
     type = "url"
@@ -144,6 +152,11 @@ class FieldRecipientName(ConstOrField):
 @dataclass(kw_only=True)
 class FieldRecipientRorId(ConstOrField):
     NAME = "recipient_ror_id"
+
+
+@dataclass(kw_only=True)
+class FieldRecipientCustomId(ConstOrField):
+    NAME = "recipient_custom_id"
 
 
 @dataclass(kw_only=True)
@@ -177,6 +190,11 @@ class FieldAgentRorId(ConstOrField):
 @dataclass(kw_only=True)
 class FieldAgentWikidataId(ConstOrField):
     NAME = "agent_wikidata_id"
+
+
+@dataclass(kw_only=True)
+class FieldAgentCustomId(ConstOrField):
+    NAME = "agent_custom_id"
 
 
 @dataclass(kw_only=True)
@@ -236,18 +254,21 @@ ALL_FIELDS: list[Type[ConstOrField]] = [
     FieldEmitterName,
     FieldEmitterRorId,
     FieldEmitterWikidataId,
+    FieldEmitterCustomId,
     FieldEmitterUrl,
     FieldEmitterCountry,
     FieldEmitterType,
     FieldRecipientName,
     FieldRecipientRorId,
     FieldRecipientWikidataId,
+    FieldRecipientCustomId,
     FieldRecipientUrl,
     FieldRecipientCountry,
     FieldAgentName,
     FieldAgentUrl,
     FieldAgentRorId,
     FieldAgentWikidataId,
+    FieldAgentCustomId,
     FieldAgentCountry,
     FieldDateInvoice,
     FieldDatePayment,

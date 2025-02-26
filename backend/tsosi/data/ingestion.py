@@ -19,6 +19,7 @@ from tsosi.models import (
 )
 from tsosi.models.identifier import MATCH_CRITERIA_FROM_INPUT
 from tsosi.models.static_data import (
+    REGISTRY_CUSTOM,
     REGISTRY_ROR,
     REGISTRY_WIKIDATA,
     fill_static_data,
@@ -119,6 +120,7 @@ def entities_to_create(entities: pd.DataFrame) -> pd.DataFrame:
         "website",
         "ror_id",
         "wikidata_id",
+        "custom_id",
         "is_matchable",
     ]
     for c in mandatory_columns:
@@ -137,7 +139,7 @@ def entities_to_create(entities: pd.DataFrame) -> pd.DataFrame:
     df = entities[matchable_mask].copy(deep=True)
 
     # Get entity data
-    pid_columns = ["ror_id", "wikidata_id"]
+    pid_columns = ["ror_id", "wikidata_id", "custom_id"]
     for c in pid_columns:
         pid_df = drop_duplicates_keep_index(df, c, "entity_temp_ids")
         if pid_df.empty:
@@ -182,6 +184,7 @@ def extract_entities(transferts: pd.DataFrame) -> pd.DataFrame:
         dc.FieldEmitterUrl.NAME: "website",
         dc.FieldEmitterRorId.NAME: "ror_id",
         dc.FieldEmitterWikidataId.NAME: "wikidata_id",
+        dc.FieldEmitterCustomId.NAME: "custom_id",
         dc.FieldOriginalId.NAME: "original_id",
     }
     mask = ~transferts[dc.FieldEmitterName.NAME].isnull()
@@ -196,6 +199,7 @@ def extract_entities(transferts: pd.DataFrame) -> pd.DataFrame:
         dc.FieldRecipientUrl.NAME: "website",
         dc.FieldRecipientRorId.NAME: "ror_id",
         dc.FieldRecipientWikidataId.NAME: "wikidata_id",
+        dc.FieldRecipientCustomId.NAME: "custom_id",
         dc.FieldOriginalId.NAME: "original_id",
     }
     mask = ~transferts[dc.FieldRecipientName.NAME].isnull()
@@ -210,6 +214,7 @@ def extract_entities(transferts: pd.DataFrame) -> pd.DataFrame:
         dc.FieldAgentUrl.NAME: "website",
         dc.FieldAgentRorId.NAME: "ror_id",
         dc.FieldAgentWikidataId.NAME: "wikidata_id",
+        dc.FieldAgentCustomId.NAME: "custom_id",
         dc.FieldOriginalId.NAME: "original_id",
     }
     mask = transferts[dc.FieldAgentName.NAME].isnull()
@@ -297,8 +302,19 @@ def create_entities(entities: pd.DataFrame, datetime: datetime):
         .rename(columns={"wikidata_id": "value"})
     )
     wikidata_identifiers["registry_id"] = REGISTRY_WIKIDATA
+
+    custom_identifiers = (
+        entities[~entities["custom_id"].isnull()][
+            ["custom_id", "entity_id", "date_created", "date_last_updated"]
+        ]
+        .copy()
+        .rename(columns={"custom_id": "value"})
+    )
+    custom_identifiers["registry_id"] = REGISTRY_CUSTOM
+
     identifiers = pd.concat(
-        [ror_identifiers, wikidata_identifiers], ignore_index=True
+        [ror_identifiers, wikidata_identifiers, custom_identifiers],
+        ignore_index=True,
     )
     identifiers["match_source"] = MATCH_SOURCE_MANUAL
     identifiers["match_criteria"] = MATCH_CRITERIA_FROM_INPUT

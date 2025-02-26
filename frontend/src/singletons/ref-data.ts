@@ -33,6 +33,7 @@ export interface Entity {
 }
 
 export interface EntityDetails extends Entity {
+  description?: string
   website?: string
   wikipedia_url?: string
   wikipedia_extract?: string
