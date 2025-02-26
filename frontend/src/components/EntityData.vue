@@ -148,7 +148,7 @@ const baseTableColumns: TableColumnProps[] = [
   },
   {
     id: "agent",
-    title: "Agent",
+    title: "Intermediary",
     field: "agent",
     type: "pageLink",
     fieldLabel: "agent.name",
@@ -275,7 +275,7 @@ const agentTableProps = computed(() => {
       sortOrder: -1,
     },
     header: {
-      title: "Transferts as an agent",
+      title: "Transferts as an intermediary",
     },
     rowUniqueId: "id",
     currencySelector: showAmount.value,
