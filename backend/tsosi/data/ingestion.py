@@ -523,6 +523,7 @@ def ingest_data_file(file_path: str | Path, send_signals: bool = True) -> bool:
         logger.info(f"Skipping ingestion of file {file_path}:\n{e}")
         return False
     # flag_duplicate_transferts(df, source)
+    dc.create_missing_fields(df)
     ingest_new_records(df, source, ingestion_config.hide_amount, send_signals)
     return True
 

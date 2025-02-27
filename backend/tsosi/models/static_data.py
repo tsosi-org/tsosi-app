@@ -1,5 +1,4 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.files.base import File
 from django.utils import timezone
 from tsosi.app_settings import app_settings
 
@@ -11,7 +10,7 @@ from .identifier import (
     Registry,
 )
 from .source import DataSource
-from .utils import MATCH_SOURCE_MANUAL
+from .utils import MATCH_SOURCE_MANUAL, replace_model_file
 
 REGISTRY_ROR = "ror"
 REGISTRY_WIKIDATA = "wikidata"
@@ -137,6 +136,7 @@ def update_infrastructures():
     for infra in SUPPORTED_INFRASTRUCTURES:
         entity = Entity(**infra["entity"])
         create = False
+        static_logo: str | None = infra.get("static_logo")
         try:
             identifier = Identifier.objects.get(**infra["pid"])
             entity = identifier.entity
@@ -148,13 +148,11 @@ def update_infrastructures():
         if create:
             entity.date_created = now
             entity.date_last_updated = now
-            static_logo: str | None = infra.get("static_logo")
             if static_logo:
-                file_name = str(
+                file_path = str(
                     app_settings.TSOSI_APP_DATA_DIR / "assets" / static_logo
                 )
-                with open(file_name, "rb") as f:
-                    entity.logo.save(static_logo, File(f))
+                replace_model_file(entity, "logo", file_path)
             entity.save()
 
             identifier.entity = entity
@@ -175,6 +173,11 @@ def update_infrastructures():
 
         # Otherwise, only update the entity with additional fields
         entity.save(update_fields=list(infra["entity"].keys()))
+        if static_logo:
+            if entity.logo.name == static_logo:
+                continue
+            file_path = app_settings.TSOSI_APP_DATA_DIR / "assets" / static_logo
+            replace_model_file(entity, "logo", str(file_path))
 
 
 # These are the same IDs as the supported infrastructures.

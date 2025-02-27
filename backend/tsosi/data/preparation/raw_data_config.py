@@ -2,7 +2,7 @@ import json
 import logging
 import re
 from dataclasses import asdict, dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Any, ClassVar, Type
 
 import pandas as pd
@@ -594,10 +594,6 @@ class RawDataConfig:
         cols_to_drop = [c for c in df.columns if c not in cols_to_export]
         df = df.drop(columns=cols_to_drop)
 
-        # Create empty columns for every field not already present in the df
-        cols_to_add = [f.NAME for f in self.fields if f.NAME not in df.columns]
-        df.loc[:, cols_to_add] = None
-
         # Compute the `original_id` field for custom tracking.
         # The ulterior generated transfert ID is a random UUID..
         origin = re.sub(r"\s+", "_", self.origin.strip())
@@ -622,7 +618,7 @@ class RawDataConfig:
         file_name += ".json"
         file_path = app_settings.DATA_EXPORT_FOLDER / file_name
         ingestion_config = DataIngestionConfig(
-            date_generated=datetime.now().replace(microsecond=0).isoformat(),
+            date_generated=datetime.now(UTC).replace(microsecond=0).isoformat(),
             source=self.source.serialize(),
             hide_amount=self.hide_amount,
             count=len(data),
@@ -694,3 +690,13 @@ CONFIG_OPERAS = {
         ),
     ],
 }
+
+
+def create_missing_fields(df: pd.DataFrame):
+    """
+    Create empty columns for every input field not already present in the
+    given dataframe.
+    """
+    cols_to_add = [f.NAME for f in ALL_FIELDS if f.NAME not in df.columns]
+    df.loc[:, cols_to_add] = None
+    clean_null_values(df)
