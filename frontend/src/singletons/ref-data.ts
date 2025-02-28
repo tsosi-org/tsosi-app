@@ -1,6 +1,7 @@
 import { get } from "../services/api"
 import {
   initDateWithPrecision,
+  initDateProperty,
   type DateWithPrecision,
 } from "@/utils/data-utils"
 
@@ -23,6 +24,17 @@ export interface Country {
   coordinates: [number, number] | null
 }
 
+export interface InfrastructureDetails {
+  infra_finder_url?: string
+  posi_url?: string
+  is_scoss_awarded: boolean
+  is_partner: boolean
+  date_data_update?: Date
+  date_data_start?: Date
+  date_data_end?: Date
+  hidden_ratio?: number
+}
+
 export interface Entity {
   id: string
   name: string
@@ -37,12 +49,10 @@ export interface EntityDetails extends Entity {
   website?: string
   wikipedia_url?: string
   wikipedia_extract?: string
+  infrastructure?: InfrastructureDetails
   is_emitted: boolean
   is_recipient: boolean
   is_agent: boolean
-  infra_finder_url?: string
-  posi_url?: string
-  is_scoss_awarded: boolean
 }
 
 export interface Transfert {
@@ -187,7 +197,17 @@ export async function getEntityDetails(
   const url = getEntityApiUrl(id)
   const result = await get(url, true)
   if (result.data) {
-    return result.data as EntityDetails
+    const val = result.data as Record<string, any>
+    if (val.infrastructure) {
+      for (const property of [
+        "date_data_start",
+        "date_data_end",
+        "date_data_update",
+      ]) {
+        initDateProperty(val.infrastructure, property)
+      }
+    }
+    return val as EntityDetails
   }
   return null
 }
@@ -236,11 +256,15 @@ export async function getTransfertDetails(
   }
   const transfert = result.data as TransfertDetails
   processTransfertEntities(transfert)
-  initDateWithPrecision(transfert.date_agreement)
-  initDateWithPrecision(transfert.date_payment)
-  initDateWithPrecision(transfert.date_invoice)
-  initDateWithPrecision(transfert.date_start)
-  initDateWithPrecision(transfert.date_end)
+  for (const f of [
+    "date_agreement",
+    "date_payment",
+    "date_invoice",
+    "date_start",
+    "date_end",
+  ]) {
+    initDateWithPrecision(transfert[f])
+  }
   return transfert
 }
 

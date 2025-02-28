@@ -6,13 +6,14 @@ from urllib.parse import unquote
 import pandas as pd
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.db import transaction
-from django.db.models import F, Q, QuerySet
+from django.db.models import Count, F, Max, Q, QuerySet
 from django.utils import timezone
 from tsosi.models import (
     Entity,
     Identifier,
     IdentifierEntityMatching,
     IdentifierVersion,
+    InfrastructureDetails,
     Transfert,
 )
 from tsosi.models.date import DATE_PRECISION_YEAR, Date
@@ -27,12 +28,19 @@ from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 from .db_utils import (
     IDENTIFIER_CREATE_FIELDS,
     IDENTIFIER_MATCHING_CREATE_FIELDS,
+    DateExtremas,
     bulk_create_from_df,
     bulk_update_from_df,
+    date_extremas_from_queryset,
 )
 from .merging import merge_entities
-from .pid_registry.ror import fetch_ror_records, ror_record_extractor
+from .pid_registry.ror import (
+    ROR_EXTRACT_MAPPING,
+    fetch_ror_records,
+    ror_record_extractor,
+)
 from .pid_registry.wikidata import (
+    WIKIDATA_EXTRACT_MAPPING,
     fetch_wikidata_records_data,
     fetch_wikimedia_files,
     fetch_wikipedia_page_extracts,
@@ -249,7 +257,6 @@ def ingest_entity_identifier_relations(
         lambda x: f"Entity merged because of the same {registry_id} PID value: {x}"
     )
     to_merge["match_criteria"] = MATCH_CRITERIA_MERGED
-    logger.info(to_merge["match_criteria"])
     merge_entities(to_merge, date_update)
 
     logger.info(f"Finished ingesting new Identifier - Entity relations.")
@@ -292,7 +299,7 @@ def check_identifier_version_conflict():
 
 
 @transaction.atomic
-def fetch_empty_identifier_records_for_registry(
+def fetch_empty_identifier_records(
     registry_id: str, use_tokens: bool = True
 ) -> TaskResult:
     """
@@ -407,6 +414,7 @@ def entities_with_identifier_data() -> pd.DataFrame:
         "wikipedia_url",
         "logo_url",
         "coordinates",
+        "date_inception",
     )
     entities = pd.DataFrame.from_records(entities)
     if entities.empty:
@@ -458,7 +466,14 @@ def entities_with_identifier_data() -> pd.DataFrame:
         how="left",
     )
     # Add missing columns, if any
-    expected_cols = [""]
+    expected_cols = [
+        *[f"ror_{name}" for name in ROR_EXTRACT_MAPPING.keys()],
+        *[f"wikidata_{name}" for name in WIKIDATA_EXTRACT_MAPPING.values()],
+    ]
+    for col in expected_cols:
+        if col in entities.columns:
+            continue
+        entities[col] = None
 
     url_cols = [
         "raw_website",
@@ -481,7 +496,6 @@ def update_entity_from_pid_records() -> TaskResult:
     accordingly.
     Update all the simple clc fields: name, country, website, logo_url,
     wikipedia_url.
-    TODO: Some columns might be missing from entities_with_identifier_data.
     """
     logger.info("Updating entity from PID records.")
     result = TaskResult(partial=False)
@@ -497,6 +511,7 @@ def update_entity_from_pid_records() -> TaskResult:
         "logo_url": ["wikidata_logo_url"],
         "wikipedia_url": ["wikidata_wikipedia_url", "ror_wikipedia_url"],
         "coordinates": ["ror_coordinates", "wikidata_coordinates"],
+        "date_inception": ["ror_date_inception", "wikidata_date_inception"],
     }
     # Compute the value for each field and check if there's a diff with existing
     # data
@@ -684,6 +699,8 @@ def entities_for_wikipedia_extract_update() -> pd.DataFrame:
         .values("id", "wikipedia_url", "wikipedia_extract")
     )
     df = pd.DataFrame.from_records(instances)
+    if df.empty:
+        return df
     # We only want wikipedia extract for entities with URL to the english wiki
     mask = df["wikipedia_url"].str.startswith("https://en.wikipedia.org")
     return df[mask].reset_index(drop=True)
@@ -963,3 +980,90 @@ def update_entity_roles_clc():
     bulk_update_from_df(Entity, e_to_update, cols_for_update)
 
     logger.info(f"Updated {len(e_to_update)} Entity's role.")
+
+
+def update_infrastructure_metrics():
+    """
+    Compute infrastructure metrics from the transferts. This updates or creates
+    the  `InfrastructureDetails` instances attached to infrastructure Entities.
+    """
+    logger.info("Updating infrastructure metrics.")
+    # Min & max transfert dates per recipient
+    dates = date_extremas_from_queryset(
+        Transfert.objects.all(), ["date_clc"], groupby=["recipient_id"]
+    )
+    dates: dict[str, DateExtremas] = {
+        d["recipient_id"]: d["_extremas"] for d in dates
+    }
+
+    # Ratio of hidden amounts among all amounts per recipient
+    hidden_transferts = Count(
+        "transfert_as_recipient",
+        filter=Q(transfert_as_recipient__hide_amount=True),
+    )
+    total_transferts = Count("transfert_as_recipient")
+    date_source_max = Max(
+        "transfert_as_recipient__data_load_source__date_data_obtained"
+    )
+
+    entities = (
+        Entity.objects.filter(is_recipient=True)
+        .annotate(hidden_transferts=hidden_transferts)
+        .annotate(total_transferts=total_transferts)
+        .annotate(date_last_update=date_source_max)
+        .values(
+            "id",
+            "hidden_transferts",
+            "total_transferts",
+            "date_last_update",
+            "infrastructure_details",
+        )
+    )
+    data = pd.DataFrame.from_records(entities)
+    if data.empty:
+        logger.info(f"No data to update infrastructure metrics for.")
+        return
+
+    data["hidden_ratio"] = data["hidden_transferts"] / data["total_transferts"]
+
+    data["dates"] = data["id"].map(dates)
+    data["date_data_start"] = data["dates"].apply(
+        lambda x: x.min if not pd.isna(x) else x
+    )
+    data["date_data_end"] = data["dates"].apply(
+        lambda x: x.max if not pd.isna(x) else x
+    )
+
+    data["date_data_update"] = data["date_last_update"]
+
+    no_details_mask = data["infrastructure_details"].isna()
+    details_to_create = data[no_details_mask].copy()
+    if not details_to_create.empty:
+        details_to_create["entity_id"] = details_to_create["id"]
+        bulk_create_from_df(
+            InfrastructureDetails,
+            details_to_create,
+            [
+                "entity_id",
+                "hidden_ratio",
+                "data_data_start",
+                "date_data_end",
+                "date_data_update",
+            ],
+        )
+
+    details_to_update = data[~no_details_mask].copy()
+    if not details_to_update.empty:
+        details_to_update["id"] = details_to_update["infrastructure_details"]
+        bulk_update_from_df(
+            InfrastructureDetails,
+            details_to_update,
+            [
+                "id",
+                "hidden_ratio",
+                "date_data_start",
+                "date_data_end",
+                "date_data_update",
+            ],
+        )
+    logger.info(f"Updated {len(data)} infrastructure metrics.")

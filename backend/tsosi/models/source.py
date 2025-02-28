@@ -18,6 +18,7 @@ class DataLoadSource(TimestampedModel):
     data_load_name = models.CharField(max_length=128)
     year = models.IntegerField(null=True)
     full_data = models.BooleanField(default=False)
+    date_data_obtained = models.DateField(null=False)
 
     class Meta:
         constraints = [

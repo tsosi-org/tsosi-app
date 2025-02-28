@@ -30,6 +30,8 @@ class TsosiTask(DjangoTask):
         in parallel.
     """
 
+    max_retries = 0
+
     def before_start(self, task_id, args, kwargs):
         super().before_start(task_id, args, kwargs)
         task_logger.info(f"Running task: {self.name}")
@@ -175,14 +177,12 @@ def update_wiki_data():
 
 @shared_task(base=TsosiLockedTask)
 def fetch_empty_ror_records():
-    return enrichment.fetch_empty_identifier_records_for_registry(REGISTRY_ROR)
+    return enrichment.fetch_empty_identifier_records(REGISTRY_ROR)
 
 
 @shared_task(base=TsosiTask)
 def fetch_empty_wikidata_records():
-    return enrichment.fetch_empty_identifier_records_for_registry(
-        REGISTRY_WIKIDATA
-    )
+    return enrichment.fetch_empty_identifier_records(REGISTRY_WIKIDATA)
 
 
 @shared_task(base=TsosiLockedTask)
@@ -200,6 +200,7 @@ def post_ingestion_pipeline():
     tasks: list[Callable] = [
         enrichment.update_transfert_date_clc,
         enrichment.update_entity_roles_clc,
+        enrichment.update_infrastructure_metrics,
     ]
     results = [task() for task in tasks]
     currency_rates_workflow.delay()

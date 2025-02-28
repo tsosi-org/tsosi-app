@@ -17,7 +17,7 @@ const props = defineProps<{
   entity: DeepReadonly<EntityDetails>
 }>()
 
-const logoWidth = "200px" // px
+const logoWidth = "200px"
 
 const iconLabels: Array<IconLabel> = []
 if (props.entity.country) {
@@ -47,22 +47,22 @@ props.entity.identifiers
   )
 
 // Infrastructure specific chips
-if (props.entity.is_recipient) {
-  if (props.entity.infra_finder_url) {
+if (props.entity.infrastructure) {
+  if (props.entity.infrastructure.infra_finder_url) {
     iconLabels.push({
       icon: "arrow-up-right-from-square",
       label: "InfraFinder",
-      link: props.entity.infra_finder_url,
+      link: props.entity.infrastructure.infra_finder_url,
     })
   }
-  if (props.entity.posi_url) {
+  if (props.entity.infrastructure.posi_url) {
     iconLabels.push({
       icon: "arrow-up-right-from-square",
       label: "POSI",
-      link: props.entity.posi_url,
+      link: props.entity.infrastructure.posi_url,
     })
   }
-  if (props.entity.is_scoss_awarded) {
+  if (props.entity.infrastructure.is_scoss_awarded) {
     iconLabels.push({
       icon: "square-check",
       label: "SCOSS awarded",

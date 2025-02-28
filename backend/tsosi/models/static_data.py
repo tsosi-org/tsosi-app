@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from tsosi.app_settings import app_settings
 
-from .entity import Entity
+from .entity import Entity, InfrastructureDetails
 from .identifier import (
     MATCH_CRITERIA_FROM_INPUT,
     Identifier,
@@ -60,6 +60,8 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_website": "https://doaj.org",
             "name": "Directory of Open Access Journals",
             "website": "https://doaj.org",
+        },
+        "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/doaj-directory-of-open-access-journals",
             "posi_url": "https://blog.doaj.org/2022/10/06/doaj-commits-to-the-principles-of-open-scholarly-infrastructure-posi",
             "is_scoss_awarded": True,
@@ -74,12 +76,14 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_website": "https://www.doabooks.org",
             "name": "Directory of Open Access Books & OAPEN",
             "website": "https://www.doabooks.org",
+            "description": """OAPEN supports the transition to open access for academic books by providing open infrastructure services to stakeholders, including the DOAB (Directory of Open Access Books), on which OAPEN works in partnership with Open Edition.""",
+            "manual_logo": True,
+        },
+        "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/directory-of-open-access-books",
             "posi_url": "https://oapen.hypotheses.org/524",
             "is_scoss_awarded": True,
             "is_partner": True,
-            "description": """OAPEN supports the transition to open access for academic books by providing open infrastructure services to stakeholders, including the DOAB (Directory of Open Access Books), on which OAPEN works in partnership with Open Edition.""",
-            "manual_logo": True,
         },
         "static_logo": "LOGO_oapen_doab.png",
     },
@@ -91,7 +95,8 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_website": "https://operas-eu.org",
             "name": "OPERAS",
             "website": "https://operas-eu.org",
-            "infra_finder_url": None,
+        },
+        "infrastructure": {
             "posi_url": "https://operas-eu.org/principles-of-open-scholarly-infrastructure-posi",
             "is_scoss_awarded": False,
             "is_partner": True,
@@ -105,6 +110,8 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_website": "https://peercommunityin.org",
             "name": "Peer Community In",
             "website": "https://peercommunityin.org",
+        },
+        "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/peer-community-in",
             "posi_url": "https://peercommunityin.org/2024/04/11/posi/",
             "is_scoss_awarded": False,
@@ -119,7 +126,8 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_website": "https://scipost.org",
             "name": "SciPost",
             "website": "https://scipost.org",
-            "infra_finder_url": None,
+        },
+        "infrastructure": {
             "posi_url": "https://scipost.org/posi",
             "is_scoss_awarded": True,
             "is_partner": True,
@@ -134,7 +142,6 @@ def update_infrastructures():
     """
     now = timezone.now()
     for infra in SUPPORTED_INFRASTRUCTURES:
-        entity = Entity(**infra["entity"])
         create = False
         static_logo: str | None = infra.get("static_logo")
         try:
@@ -142,6 +149,7 @@ def update_infrastructures():
             entity = identifier.entity
         except ObjectDoesNotExist:
             identifier = Identifier(**infra["pid"])
+            entity = Entity(**infra["entity"])
             create = True
         # Create all instances if required:
         # Entity, Identifier, IdentifierEntityMacthing
@@ -154,6 +162,9 @@ def update_infrastructures():
                 )
                 replace_model_file(entity, "logo", file_path)
             entity.save()
+            details = InfrastructureDetails(**infra["infrastructure"])
+            details.entity = entity
+            details.save()
 
             identifier.entity = entity
             identifier.date_created = now
@@ -171,8 +182,16 @@ def update_infrastructures():
 
             continue
 
-        # Otherwise, only update the entity with additional fields
+        # Otherwise, only update the existing data with additional fields
+        for field, value in infra["entity"].items():
+            setattr(entity, field, value)
         entity.save(update_fields=list(infra["entity"].keys()))
+
+        details: InfrastructureDetails = entity.infrastructure_details
+        for field, value in infra["infrastructure"].items():
+            setattr(details, field, value)
+        details.save(update_fields=list(infra["infrastructure"].keys()))
+
         if static_logo:
             if entity.logo.name == static_logo:
                 continue

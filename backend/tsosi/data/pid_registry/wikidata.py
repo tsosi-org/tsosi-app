@@ -112,8 +112,10 @@ SELECT
     ?rorId
     ?wikipediaUrl
     ?coordinates
+    ?inceptionDate
 WHERE {{
     VALUES ?item {{ {ids_part} }}
+    OPTIONAL {{ ?item wdt:P571 ?inceptionDate. }}
     OPTIONAL {{ ?item (wdt:P17/wdt:P297) ?countryIsoCode. }}
     OPTIONAL {{ ?item wdt:P154 ?logoUrl. }}
     OPTIONAL {{ ?item wdt:P856 ?websiteUrl. }}
@@ -136,6 +138,20 @@ def format_wikidata_record_query(identifiers: Sequence[str]) -> str:
     """"""
     ids_part = "\n\t\t".join([f"wd:{id}" for id in identifiers])
     return WIKIDATA_RECORD_QUERY_TEMPLATE.format(ids_part=ids_part)
+
+
+WIKIDATA_EXTRACT_MAPPING = {
+    "item": "id",
+    "itemLabel": "name",
+    "itemDescription": "description",
+    "websiteUrl": "website",
+    "countryIsoCode": "country",
+    "logoUrl": "logo_url",
+    "wikipediaUrl": "wikipedia_url",
+    "rorId": "ror_id",
+    "coordinates": "coordinates",
+    "inceptionDate": "date_inception",
+}
 
 
 async def fetch_wikidata_records_data(
@@ -161,6 +177,8 @@ async def fetch_wikidata_records_data(
     # Flatten the results
     for col in df.columns:
         df[col] = df[col].map(lambda x: x if pd.isnull(x) else x["value"])
+
+    ## Result data cleaning
     # There might be duplicated rows per item when there are multiple values
     # for one of the queried relations.
     # Ideally, we need to take the best value for each relation when there's
@@ -170,22 +188,14 @@ async def fetch_wikidata_records_data(
         | df["logoUrl"].str.startswith("https://commons.wikimedia.org")
     )
     df.loc[bad_logo_url_mask, "logoUrl"] = None
-    df = df.groupby("item").first().reset_index()
     df["item"] = df["item"].apply(lambda x: x.split("/")[-1])
-    col_mapping = {
-        "item": "id",
-        "itemLabel": "name",
-        "itemDescription": "description",
-        "websiteUrl": "website",
-        "countryIsoCode": "country",
-        "logoUrl": "logo_url",
-        "wikipediaUrl": "wikipedia_url",
-        "rorId": "ror_id",
-        "coordinates": "coordinates",
-    }
-    df.rename(columns=col_mapping, inplace=True)
+    bad_label_mask = df["itemLabel"] == df["item"]
+    df.loc[bad_label_mask, "itemLabel"] = None
+
+    df = df.groupby("item").first().reset_index()
+    df.rename(columns=WIKIDATA_EXTRACT_MAPPING, inplace=True)
     # Add missing columns
-    for c in col_mapping.values():
+    for c in WIKIDATA_EXTRACT_MAPPING.values():
         if c not in df.columns:
             df[c] = None
 

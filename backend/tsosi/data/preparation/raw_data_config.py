@@ -290,11 +290,23 @@ DATE_FIELDS = [
 class DataLoadSource:
     data_source_id: str
     data_load_name: str
+    date_data_obtained: date
     year: int | None = None
     full_data: bool = False
 
+    def __post_init__(self):
+        """
+        Handle date field to enable populating the dataclass from JSON.
+        """
+        if isinstance(self.date_data_obtained, str):
+            self.date_data_obtained = date.fromisoformat(
+                self.date_data_obtained
+            )
+
     def serialize(self) -> dict:
-        return asdict(self)
+        data = asdict(self)
+        data["date_data_obtained"] = self.date_data_obtained.isoformat()
+        return data
 
 
 @dataclass(kw_only=True)
@@ -618,7 +630,7 @@ class RawDataConfig:
         file_name += ".json"
         file_path = app_settings.DATA_EXPORT_FOLDER / file_name
         ingestion_config = DataIngestionConfig(
-            date_generated=datetime.now(UTC).replace(microsecond=0).isoformat(),
+            date_generated=datetime.now(UTC).isoformat(timespec="seconds"),
             source=self.source.serialize(),
             hide_amount=self.hide_amount,
             count=len(data),

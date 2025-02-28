@@ -46,9 +46,13 @@ def date_extremas_from_queryset(
     all instances of the given model.
     The date fields are expected to have the models.date.Date dataclass
     structure.
+
     :param queryset:    The base queryset used to compute extremas from.
+    :type queryset:     QuerySet
     :param fields:      The various fields used to compute the extremas.
+    :type fields:       Iterable[str]
     :param groupby:     The grouping fields.
+    :type groupby:      Iterable[str] | None
     :returns:           The list of extremas per group. Each item contains the
                         grouping keys along with the `_extremas` field.
                         There's only 1 item if no grouping keys are provided.

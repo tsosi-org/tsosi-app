@@ -46,6 +46,7 @@ class Entity(TimestampedModel):
         validators=[MinLengthValidator(2), MaxLengthValidator(2)],
     )
     website = models.URLField(max_length=256, null=True)
+    date_inception = models.DateTimeField(null=True)
     logo_url = models.CharField(max_length=256, null=True)
     logo = models.ImageField(
         upload_to=entity_logo_path, max_length=256, null=True
@@ -62,12 +63,6 @@ class Entity(TimestampedModel):
     is_emitter = models.BooleanField(default=False)
     is_recipient = models.BooleanField(default=False)
     is_agent = models.BooleanField(default=False)
-
-    # Infrastructures characterization
-    infra_finder_url = models.URLField(max_length=256, null=True)
-    posi_url = models.URLField(max_length=256, null=True)
-    is_scoss_awarded = models.BooleanField(default=False)
-    is_partner = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
@@ -90,6 +85,21 @@ class Entity(TimestampedModel):
                 name="entity_not_merged_with_self",
             ),
         ]
+
+
+class InfrastructureDetails(TimestampedModel):
+    entity = models.OneToOneField(
+        Entity, on_delete=models.CASCADE, related_name="infrastructure_details"
+    )
+    infra_finder_url = models.URLField(max_length=256, null=True)
+    posi_url = models.URLField(max_length=256, null=True)
+    is_scoss_awarded = models.BooleanField(default=False)
+    is_partner = models.BooleanField(default=False)
+    # Clc fields
+    date_data_update = models.DateField(null=True)
+    date_data_start = models.DateField(null=True)
+    date_data_end = models.DateField(null=True)
+    hidden_ratio = models.FloatField(null=True)
 
 
 class EntityType(TimestampedModel):

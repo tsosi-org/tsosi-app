@@ -1,21 +1,35 @@
 from rest_framework import serializers
-from tsosi.models import Analytic, Currency, Entity, Identifier, Transfert
+from tsosi.models import (
+    Analytic,
+    Currency,
+    Entity,
+    Identifier,
+    InfrastructureDetails,
+    Transfert,
+)
 
 
 class IdentifierSerializer(serializers.ModelSerializer):
     registry = serializers.ReadOnlyField(source="registry_id")
-    # registry_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Identifier
         fields = [
             "registry",
             "value",
-            # "registry_url"
         ]
 
-    # def get_registry_url(self, obj: Identifier) -> str:
-    #     return obj.registry.link_template.format(id=obj.value)
+
+class InfrastructureDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InfrastructureDetails
+        fields = [
+            "infra_finder_url",
+            "posi_url",
+            "is_scoss_awarded",
+            "is_partner",
+            "date_data_update",
+        ]
 
 
 class BaseEntitySerializer(serializers.ModelSerializer):
@@ -36,6 +50,10 @@ class EntitySerializer(BaseEntitySerializer):
 
 
 class EntityDetailsSerializer(BaseEntitySerializer):
+    infrastructure = InfrastructureDetailsSerializer(
+        source="infrastructure_details", required=False
+    )
+
     class Meta:
         model = Entity
         fields = [
@@ -43,6 +61,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "name",
             "country",
             "website",
+            "date_inception",
             "description",
             "logo",
             "wikipedia_url",
@@ -52,13 +71,8 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "is_emitter",
             "is_recipient",
             "is_agent",
-            "infra_finder_url",
-            "posi_url",
-            "is_scoss_awarded",
+            "infrastructure",
         ]
-        extra_kwargs = {
-            "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
-        }
 
 
 class BaseTransfertSerializer(serializers.ModelSerializer):

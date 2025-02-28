@@ -4,11 +4,14 @@ from tsosi.data.preparation import raw_data_config as rdc
 from tsosi.models.date import DATE_PRECISION_DAY
 
 
-def get_config(file_path: str, sheet_name: str) -> rdc.RawDataConfigFromFile:
+def get_config(
+    file_path: str, sheet_name: str, date_data: date
+) -> rdc.RawDataConfigFromFile:
     source = rdc.DataLoadSource(
         data_source_id="doab_oapen_sponsor",
         full_data=False,
         data_load_name=file_path.split("/")[-1],
+        date_data_obtained=date_data,
     )
     return rdc.RawDataConfigFromFile(
         "doab_oapen_sponsor",

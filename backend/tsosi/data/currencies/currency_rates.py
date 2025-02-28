@@ -310,6 +310,10 @@ def compute_average_rates():
             *columns
         )
     )
+    if data.empty:
+        logger.info("No currency rates to compute average for.")
+        return
+
     date_extract = pd.json_normalize(data["date"]).add_prefix("date_")
     data = pd.concat([data, date_extract], axis=1)
     data["date"] = pd.to_datetime(data["date_value"])

@@ -12,6 +12,7 @@ WARNING:
 import logging
 import re
 from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
 from json import JSONDecodeError
 from typing import Iterable
 from urllib.parse import urlencode
@@ -452,6 +453,13 @@ def get_ror_wikidata_id(record: dict) -> str | None:
     return wikidata_ids["preferred"]
 
 
+def get_ror_inception_date(record: dict) -> datetime | None:
+    year = record.get("established")
+    if year is None:
+        return None
+    return datetime(year=year, month=1, day=1, tzinfo=UTC)
+
+
 ROR_EXTRACT_MAPPING = {
     "id": get_ror_id,
     "name": get_ror_name,
@@ -460,6 +468,7 @@ ROR_EXTRACT_MAPPING = {
     "wikipedia_url": get_ror_wikipedia_url,
     "wikidata_id": get_ror_wikidata_id,
     "coordinates": get_ror_coordinates,
+    "date_inception": get_ror_inception_date,
 }
 
 

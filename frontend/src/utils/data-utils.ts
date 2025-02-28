@@ -167,6 +167,13 @@ export function initDateWithPrecision(date?: DateWithPrecision | null) {
   date.dateObj = new Date(date.value)
 }
 
+export function initDateProperty(obj: Record<string, any>, property: string) {
+  const value = obj[property]
+  if (value && typeof value == "string") {
+    obj[property] = new Date(value)
+  }
+}
+
 /**
  * Format a `DateWithPrecision` object for display.
  * @param date  The `DateWithPrecision` object.
