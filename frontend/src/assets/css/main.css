@@ -7,6 +7,10 @@
 .container {
   max-width: var(--container-width);
   margin: 0 auto;
+
+  &.small {
+    max-width: var(--small-container-width);
+  }
 }
 
 .page-content {
@@ -79,4 +83,44 @@ h1 {
   color: var(--color-heading);
   font-weight: 900;
   font-size: 28px;
+}
+
+h2, h3, h4, h5, h6 {
+  color: var(--color-heading);
+  font-weight: 700;
+  border-radius: 4px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 
+    Mount,
+    Verdana,
+    -apple-system,
+    BlinkMacSystemFont,
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Helvetica Neue",
+    sans-serif;
+
+  &:target {
+    outline: 2px solid var(--color-target);
+    padding-left: 2px;
+  }
+}
+
+.static-content {
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
+    padding: 0.5em 0;
+  }
+}
+
+p {
+  margin: 5px 0;
 }

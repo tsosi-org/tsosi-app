@@ -285,8 +285,10 @@ function cleanPopup(element: App) {
       <span v-if="plottedEntities">
         Showing {{ plottedEntities.value }} out of
         {{ plottedEntities.total }} funders ({{
-          Math.round(
-            (100 * plottedEntities.value) / plottedEntities.total,
+          (
+            Math.round(
+              (10 * (100 * plottedEntities.value)) / plottedEntities.total,
+            ) / 10
           ).toString()
         }}%)
       </span>

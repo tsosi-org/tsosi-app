@@ -5,6 +5,7 @@ import SearchBar from "@/components/SearchBar.vue"
 import { isDesktop } from "@/composables/useMediaQuery"
 import Drawer from "primevue/drawer"
 import Button from "@/components/atoms/ButtonAtom.vue"
+import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
 
 const router = useRouter()
 const navMenuVisible = ref(false)
@@ -33,20 +34,7 @@ function toggleDrawer(name: string) {
       <RouterLink style="line-height: 0" to="/">
         <img class="logo" src="@/assets/img/logo_white.svg" />
       </RouterLink>
-      <ul class="d-flex" style="gap: 0">
-        <li>
-          <RouterLink to="/about">Open Infrastructure</RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/">Supporter</RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/">FAQ</RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/about">About</RouterLink>
-        </li>
-      </ul>
+      <NavigationListAtom class="d-flex" style="gap: 0" />
       <SearchBar width="330px"></SearchBar>
     </nav>
     <nav v-else class="d-flex">
@@ -75,20 +63,7 @@ function toggleDrawer(name: string) {
           }"
         >
           <template #container>
-            <ul class="nav-standalone d-flex">
-              <li>
-                <RouterLink to="/about">Open Infrastructure</RouterLink>
-              </li>
-              <li>
-                <RouterLink to="/">Supporter</RouterLink>
-              </li>
-              <li>
-                <RouterLink to="/">FAQ</RouterLink>
-              </li>
-              <li>
-                <RouterLink to="/about">About</RouterLink>
-              </li>
-            </ul>
+            <NavigationListAtom class="nav-standalone d-flex" style="gap: 0" />
           </template>
         </Drawer>
       </div>
@@ -150,35 +125,6 @@ nav {
   margin: 0.5rem 1rem;
   height: calc(var(--header-height) - 1rem);
   background-color: transparent;
-}
-
-ul {
-  padding: 0;
-}
-
-li {
-  list-style: none;
-}
-
-li a {
-  --this-fs: 20px;
-  --this-lh: 1;
-  line-height: var(--this-lh);
-  font-size: var(--this-fs);
-  display: block;
-  text-decoration: none;
-  color: var(--p-gray-50);
-  padding: calc((var(--header-height) - var(--this-lh) * var(--this-fs)) / 2);
-}
-
-ul.nav-standalone {
-  width: 100%;
-  gap: 0;
-  flex-direction: column;
-
-  & li a {
-    color: var(--p-color-primary);
-  }
 }
 
 .header-button {

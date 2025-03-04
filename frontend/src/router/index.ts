@@ -3,6 +3,8 @@ import HomeView from "@/views/HomeView.vue"
 import EntityView from "@/views/EntityView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
 import TransfertView from "@/views/TransfertView.vue"
+import FaqView from "@/views/FaqView.vue"
+import AboutView from "@/views/AboutView.vue"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,6 +23,16 @@ const router = createRouter({
       path: "/transferts/:id",
       name: "transfert",
       component: TransfertView,
+    },
+    {
+      path: "/faq",
+      name: "faq",
+      component: FaqView,
+    },
+    {
+      path: "/about",
+      name: "about",
+      component: AboutView,
     },
     {
       path: "/:pathMatch(.*)*",

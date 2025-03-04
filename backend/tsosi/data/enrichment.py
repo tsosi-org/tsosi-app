@@ -1017,8 +1017,6 @@ def update_infrastructure_metrics():
         logger.info(f"No data to update infrastructure metrics for.")
         return
 
-    data["hidden_ratio"] = data["hidden_transferts"] / data["total_transferts"]
-
     data["dates"] = data["id"].map(dates)
     data["date_data_start"] = data["dates"].apply(
         lambda x: x.min if not pd.isna(x) else x

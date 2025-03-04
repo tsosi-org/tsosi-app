@@ -5,7 +5,12 @@ const props = defineProps<{ details: InfrastructureDetails }>()
 </script>
 
 <template>
-  <div clas="info-box infrastructure"></div>
+  <section clas="info-box infrastructure">
+    <h2>Data coverage</h2>
+    <div></div>
+    <h2>Last update</h2>
+    <div>{{ props.details }}</div>
+  </section>
 </template>
 
 <style lang="css" scoped>
