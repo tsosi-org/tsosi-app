@@ -136,7 +136,9 @@ def clean_cell_value[T](s: T) -> T:
     return re.sub(r"\s+", " ", s).strip()
 
 
-def clean_number_value[T](value: T, comma_decimal=False) -> T | float:
+def clean_number_value[
+    T
+](value: T, comma_decimal=False, error=False) -> T | float:
     """
     Clean a number value by casting in to a number type.
     If `comma_decimal` is true, replace commas by the "." character,
@@ -145,7 +147,7 @@ def clean_number_value[T](value: T, comma_decimal=False) -> T | float:
     if not isinstance(value, str):
         return value
     value = value.replace(",", ".") if comma_decimal else value.replace(",", "")
-    return pd.to_numeric(value, errors="coerce")
+    return pd.to_numeric(value, errors="raise" if error else "coerce")
 
 
 def extract_currency_amount(

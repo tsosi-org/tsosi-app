@@ -95,11 +95,11 @@ class InfrastructureDetails(TimestampedModel):
     posi_url = models.URLField(max_length=256, null=True)
     is_scoss_awarded = models.BooleanField(default=False)
     is_partner = models.BooleanField(default=False)
+    hide_amount = models.BooleanField(default=False)
     # Clc fields
     date_data_update = models.DateField(null=True)
     date_data_start = models.DateField(null=True)
     date_data_end = models.DateField(null=True)
-    hidden_ratio = models.FloatField(null=True)
 
 
 class EntityType(TimestampedModel):

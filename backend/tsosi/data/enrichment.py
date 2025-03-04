@@ -996,11 +996,6 @@ def update_infrastructure_metrics():
         d["recipient_id"]: d["_extremas"] for d in dates
     }
 
-    # Ratio of hidden amounts among all amounts per recipient
-    hidden_transferts = Count(
-        "transfert_as_recipient",
-        filter=Q(transfert_as_recipient__hide_amount=True),
-    )
     total_transferts = Count("transfert_as_recipient")
     date_source_max = Max(
         "transfert_as_recipient__data_load_source__date_data_obtained"
@@ -1008,12 +1003,10 @@ def update_infrastructure_metrics():
 
     entities = (
         Entity.objects.filter(is_recipient=True)
-        .annotate(hidden_transferts=hidden_transferts)
         .annotate(total_transferts=total_transferts)
         .annotate(date_last_update=date_source_max)
         .values(
             "id",
-            "hidden_transferts",
             "total_transferts",
             "date_last_update",
             "infrastructure_details",
@@ -1045,7 +1038,6 @@ def update_infrastructure_metrics():
             details_to_create,
             [
                 "entity_id",
-                "hidden_ratio",
                 "data_data_start",
                 "date_data_end",
                 "date_data_update",
@@ -1060,7 +1052,6 @@ def update_infrastructure_metrics():
             details_to_update,
             [
                 "id",
-                "hidden_ratio",
                 "date_data_start",
                 "date_data_end",
                 "date_data_update",

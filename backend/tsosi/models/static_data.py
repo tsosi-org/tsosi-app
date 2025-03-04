@@ -66,6 +66,7 @@ SUPPORTED_INFRASTRUCTURES = [
             "posi_url": "https://blog.doaj.org/2022/10/06/doaj-commits-to-the-principles-of-open-scholarly-infrastructure-posi",
             "is_scoss_awarded": True,
             "is_partner": True,
+            "hide_amount": True,
         },
     },
     {
@@ -84,6 +85,7 @@ SUPPORTED_INFRASTRUCTURES = [
             "posi_url": "https://oapen.hypotheses.org/524",
             "is_scoss_awarded": True,
             "is_partner": True,
+            "hide_amount": True,
         },
         "static_logo": "LOGO_oapen_doab.png",
     },

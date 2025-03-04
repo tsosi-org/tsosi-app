@@ -573,7 +573,7 @@ class RawDataConfig:
         # Parse amount
         df[FieldAmount.NAME] = df[FieldAmount.NAME].apply(
             lambda x: clean_number_value(
-                x, self.get_field(FieldAmount).comma_decimal
+                x, self.get_field(FieldAmount).comma_decimal, error=error
             )
         )
 
