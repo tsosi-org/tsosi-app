@@ -64,7 +64,6 @@ def get_scipost_raw_data(
         pd.json_normalize(df["organization"]).add_prefix("organization_")
     )
     df.drop("organization", axis=1, inplace=True)
-
     print(
         f"Collected all SciPost funding data - {results_data["total"]} entries"
     )
@@ -110,9 +109,11 @@ def find_ror_from_scipost(org_id: int) -> str | None:
 
 def enrich_scipost_raw_data(source_file: str, dest_file: str = "") -> None:
     """Read scipost raw data and scrap the ROR ID of every organization"""
-    organization_ror = {}
     with open(source_file, "r") as f:
         data = json.loads(f.read())
+
+    # ROR enrichment
+    organization_ror = {}
 
     for d in data:
         match = re.match(
@@ -133,9 +134,15 @@ def enrich_scipost_raw_data(source_file: str, dest_file: str = "") -> None:
         dest_file = f"{date.today().strftime("%Y-%m-%d")}_scipost_data_with_scrapped_ror.json"
 
     print(f"Dumping data to file: {dest_file}")
-    with open(dest_file, "w") as f:
+    with open(dest_file, "w+") as f:
         json.dump(
             data,
             f,
             indent=2,
         )
+
+
+def pre_process_data(df: pd.DataFrame):
+    data = df.copy()
+    data["hide_amount"] = ~data["amount_publicly_shown"]
+    return data

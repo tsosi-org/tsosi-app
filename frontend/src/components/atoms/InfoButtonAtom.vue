@@ -3,8 +3,10 @@ import Popover from "primevue/popover"
 import { onMounted, useTemplateRef } from "vue"
 import { addClickEventListener } from "@/utils/dom-utils"
 
+const props = defineProps<{ content?: string }>()
 const popup = useTemplateRef("popup")
 const iconButton = useTemplateRef("icon-button")
+let hidePopup = true
 
 onMounted(() => attachEvents())
 
@@ -14,7 +16,7 @@ function attachEvents() {
   }
   addClickEventListener(iconButton.value, toggle)
   iconButton.value.addEventListener("mouseenter", show)
-  iconButton.value.addEventListener("mouseleave", hide)
+  iconButton.value.addEventListener("mouseleave", triggerHide)
 }
 
 function toggle(event: Event) {
@@ -26,7 +28,18 @@ function show(event: Event) {
 }
 
 function hide(_: Event) {
-  popup.value?.hide()
+  if (hidePopup) {
+    popup.value?.hide()
+  }
+}
+
+function triggerHide(event: Event) {
+  setTimeout(() => hide(event), 200)
+}
+
+function popupLeave(event: Event) {
+  hidePopup = true
+  setTimeout(() => hide(event), 200)
 }
 </script>
 
@@ -36,9 +49,16 @@ function hide(_: Event) {
       icon="circle-question"
       class="info-icon"
     ></font-awesome-icon>
-    <Popover ref="popup" :baseZIndex="1000" class="popup-wrapper">
+    <Popover
+      ref="popup"
+      :baseZIndex="1000"
+      class="popup-wrapper"
+      @mouseenter="hidePopup = false"
+      @mouseleave="popupLeave"
+    >
       <div class="info-popup">
-        <slot> My info content </slot>
+        <slot></slot>
+        <div v-if="props.content" v-html="props.content"></div>
       </div>
     </Popover>
   </div>
@@ -64,5 +84,8 @@ function hide(_: Event) {
 
 .info-popup {
   max-width: min(80vw, 400px);
+  text-align: initial;
+  color: initial;
+  font-weight: initial;
 }
 </style>

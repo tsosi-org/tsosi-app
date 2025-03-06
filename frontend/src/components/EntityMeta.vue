@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { type EntityDetails, type DeepReadonly } from "@/singletons/ref-data"
+import {
+  type EntityDetails,
+  type DeepReadonly,
+  type InfrastructureDetails,
+} from "@/singletons/ref-data"
 import Image from "./atoms/ImageAtom.vue"
 import Chip from "primevue/chip"
 import { getRorUrl } from "@/utils/url-utils"
 import { isDesktop } from "@/composables/useMediaQuery"
 import { getCountryLabel } from "@/utils/data-utils"
+import InfrastructureInfoBox from "./InfrastructureInfoBox.vue"
 
 interface IconLabel {
   label: string
@@ -69,24 +74,85 @@ if (props.entity.infrastructure) {
     })
   }
 }
+
+function breakdownDisclaimer(): boolean {
+  return props.entity.identifiers.some(
+    (val) => val.registry == "ror" && val.value == "05amyt365",
+  )
+}
 </script>
 
 <template>
-  <div>
-    <div v-if="isDesktop" class="entity-header-desktop">
-      <div>
-        <Image
-          :src="props.entity?.logo"
-          :width="logoWidth"
-          :height="'150px'"
-          :center="true"
-        />
+  <div class="entity-meta" :class="{ desktop: false }">
+    <div>
+      <div v-if="isDesktop" class="entity-header-desktop">
+        <div>
+          <Image
+            :src="props.entity?.logo"
+            :width="logoWidth"
+            :height="'150px'"
+            :center="true"
+          />
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1em">
+          <h1 class="entity-title">
+            <span>{{ props.entity.name }}</span>
+          </h1>
+          <div v-if="props.entity.wikipedia_extract">
+            <p>
+              {{ props.entity.wikipedia_extract }}
+            </p>
+            <p>
+              <span class="wiki-disclaimer">
+                From
+                <a
+                  :href="props.entity.wikipedia_url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Wikipedia</a
+                >
+                licensed
+                <a
+                  href="https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >CC-BY-SA</a
+                >
+              </span>
+            </p>
+          </div>
+          <div v-else-if="props.entity.description">
+            <p>
+              {{ props.entity.description }}
+            </p>
+          </div>
+          <div v-else>
+            Open Access list of financial support made or received by
+            {{ props.entity.name }} from 2XXX to 2XXX.
+          </div>
+        </div>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 1em">
-        <h1 class="entity-title">
-          <span>{{ props.entity.name }}</span>
-        </h1>
-        <div v-if="props.entity.wikipedia_extract">
+
+      <div v-else class="entity-header-mobile">
+        <div
+          style="
+            display: flex;
+            gap: 2em;
+            margin-bottom: 1em;
+            place-items: center;
+          "
+        >
+          <Image
+            :src="props.entity?.logo"
+            :width="'60px'"
+            :height="'50px'"
+            :center="true"
+          />
+          <h1 class="entity-title">
+            <span>{{ props.entity.name }}</span>
+          </h1>
+        </div>
+        <div v-if="props.entity.wikipedia_extract" class="entity-description">
           <p>
             {{ props.entity.wikipedia_extract }}
           </p>
@@ -109,75 +175,45 @@ if (props.entity.infrastructure) {
             </span>
           </p>
         </div>
-        <div v-else-if="props.entity.description">
-          <p>
-            {{ props.entity.description }}
-          </p>
-        </div>
         <div v-else>
           Open Access list of financial support made or received by
           {{ props.entity.name }} from 2XXX to 2XXX.
         </div>
       </div>
-    </div>
 
-    <div v-else class="entity-header-mobile">
-      <div
-        style="display: flex; gap: 2em; margin-bottom: 1em; place-items: center"
-      >
-        <Image
-          :src="props.entity?.logo"
-          :width="'60px'"
-          :height="'50px'"
-          :center="true"
-        />
-        <h1 class="entity-title">
-          <span>{{ props.entity.name }}</span>
-        </h1>
-      </div>
-      <div v-if="props.entity.wikipedia_extract" class="entity-description">
-        <p>
-          {{ props.entity.wikipedia_extract }}
-        </p>
-        <p>
-          <span class="wiki-disclaimer">
-            From
-            <a
-              :href="props.entity.wikipedia_url"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Wikipedia</a
+      <div class="icon-label-list">
+        <div v-for="(iconLabel, index) of iconLabels" :key="index">
+          <a
+            v-if="iconLabel.link"
+            :href="iconLabel.link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Chip
+              class="chip-link"
+              :label="iconLabel.label"
+              :dt="{ gap: '0.8em', padding: { y: '0.6em', x: '1em' } }"
+              pt:root:class="chip-link"
+              pt:label:class="chip-link-label"
             >
-            licensed
-            <a
-              href="https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License"
-              target="_blank"
-              rel="noopener noreferrer"
-              >CC-BY-SA</a
-            >
-          </span>
-        </p>
-      </div>
-      <div v-else>
-        Open Access list of financial support made or received by
-        {{ props.entity.name }} from 2XXX to 2XXX.
-      </div>
-    </div>
-
-    <div class="icon-label-list">
-      <div v-for="(iconLabel, index) of iconLabels" :key="index">
-        <a
-          v-if="iconLabel.link"
-          :href="iconLabel.link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+              <template #icon>
+                <div class="chip-icon-group">
+                  <font-awesome-icon
+                    v-if="iconLabel.icon"
+                    class="icon"
+                    :icon="iconLabel.icon"
+                  />
+                  <span v-if="iconLabel.iconText">{{
+                    iconLabel.iconText
+                  }}</span>
+                </div>
+              </template>
+            </Chip>
+          </a>
           <Chip
-            class="chip-link"
+            v-else
             :label="iconLabel.label"
             :dt="{ gap: '0.8em', padding: { y: '0.6em', x: '1em' } }"
-            pt:root:class="chip-link"
-            pt:label:class="chip-link-label"
           >
             <template #icon>
               <div class="chip-icon-group">
@@ -190,29 +226,26 @@ if (props.entity.infrastructure) {
               </div>
             </template>
           </Chip>
-        </a>
-        <Chip
-          v-else
-          :label="iconLabel.label"
-          :dt="{ gap: '0.8em', padding: { y: '0.6em', x: '1em' } }"
-        >
-          <template #icon>
-            <div class="chip-icon-group">
-              <font-awesome-icon
-                v-if="iconLabel.icon"
-                class="icon"
-                :icon="iconLabel.icon"
-              />
-              <span v-if="iconLabel.iconText">{{ iconLabel.iconText }}</span>
-            </div>
-          </template>
-        </Chip>
+        </div>
       </div>
     </div>
+    <InfrastructureInfoBox
+      v-if="props.entity.infrastructure"
+      :data="props.entity.infrastructure as InfrastructureDetails"
+      style="margin: 1em 0"
+      :full-width="true"
+      :breakdown-disclaimer="breakdownDisclaimer()"
+    />
   </div>
 </template>
 
 <style scoped>
+.entity-meta.desktop {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  column-gap: 1em;
+}
+
 .entity-header {
   text-align: center;
 }

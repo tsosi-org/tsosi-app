@@ -5,13 +5,14 @@ from tsosi.models.date import DATE_PRECISION_YEAR, Date
 
 
 def get_config(
-    year: int, file_path: str, sheet_name: str
+    year: int, file_path: str, sheet_name: str, date_data
 ) -> rdc.RawDataConfigFromFile:
     source = rdc.DataLoadSource(
         data_source_id="doaj_publisher",
         year=year,
         full_data=True,
         data_load_name=file_path.split("/")[-1],
+        date_data_obtained=date_data,
     )
     return rdc.RawDataConfigFromFile(
         "doaj_publisher",
@@ -28,6 +29,7 @@ def get_config(
             rdc.FieldEmitterWikidataId(field="emitter_wikidata_id"),
             rdc.FieldEmitterCountry(field="Country"),
             rdc.FieldAmount(field="Amount"),
+            rdc.FieldHideAmount(constant=True),
             rdc.FieldCurrency(field="Currency"),
             rdc.FieldDatePayment(
                 constant=Date(
@@ -38,5 +40,4 @@ def get_config(
         ],
         input_file_name=file_path,
         input_sheet_name=sheet_name,
-        hide_amount=True,
     )

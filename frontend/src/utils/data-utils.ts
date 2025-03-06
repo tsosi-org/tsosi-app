@@ -12,6 +12,7 @@ export type DataType =
   | "country"
   | "constant"
   | "json"
+  | "boolean"
 
 export interface LinkConfig {
   base: string
@@ -26,6 +27,8 @@ export interface DataFieldProps {
   type: DataType
   fieldLabel?: string
   fieldLink?: LinkConfig
+  labelGetter?: (data: Record<string, any>) => any
+  info?: string
 }
 
 /**
@@ -62,6 +65,9 @@ export function getItemLabel(
   item: Record<string, any>,
   fieldProps: DataFieldProps,
 ): any {
+  if (fieldProps.labelGetter) {
+    return fieldProps.labelGetter(item)
+  }
   if (fieldProps.fieldLabel) {
     return resolveValueFromPath(item, fieldProps.fieldLabel)
   } else if (fieldProps.type == "constant") {

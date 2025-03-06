@@ -5,13 +5,14 @@ from tsosi.models.date import DATE_PRECISION_DAY, DATE_PRECISION_YEAR, Date
 
 
 def get_config(
-    year: int, file_path: str, sheet_name: str
+    year: int, file_path: str, sheet_name: str, date_data: date
 ) -> rdc.RawDataConfigFromFile:
     source = rdc.DataLoadSource(
         data_source_id="doaj_library",
         year=year,
         full_data=True,
         data_load_name=file_path.split("/")[-1],
+        date_data_obtained=date_data,
     )
     return rdc.RawDataConfigFromFile(
         "doaj_library_2024+",
@@ -28,6 +29,7 @@ def get_config(
             rdc.FieldEmitterRorId(field="emitter_ror_id"),
             rdc.FieldEmitterCountry(field="Country", is_iso=False),
             rdc.FieldAmount(field="Support amount"),
+            rdc.FieldHideAmount(constant=True),
             rdc.FieldCurrency(field="Currency"),
             rdc.FieldAgentName(field="Agent"),
             rdc.FieldAgentUrl(field="agent_website"),
@@ -46,7 +48,6 @@ def get_config(
         date_columns=["Invoice date", "Support end date", "Paid up until"],
         input_file_name=file_path,
         input_sheet_name=sheet_name,
-        hide_amount=True,
     )
 
 
@@ -72,6 +73,7 @@ def get_fixture_config(year: int, file_path: str) -> rdc.RawDataConfigFromFile:
             rdc.FieldEmitterRorId(field="emitter_ror_id"),
             rdc.FieldEmitterCountry(field="Country", is_iso=False),
             rdc.FieldAmount(field="Support amount"),
+            rdc.FieldHideAmount(constant=True),
             rdc.FieldCurrency(field="Currency"),
             rdc.FieldAgentName(field="Agent"),
             rdc.FieldAgentUrl(field="agent_website"),
@@ -89,5 +91,4 @@ def get_fixture_config(year: int, file_path: str) -> rdc.RawDataConfigFromFile:
         ],
         date_columns=["Invoice date", "Support end date", "Paid up until"],
         input_file_name=file_path,
-        hide_amount=True,
     )

@@ -40,6 +40,8 @@ https://primevue.org/theming/styled/#colors
   --color-link: var(--c-indigo);
   --color-background-component: white;
   --color-target: var(--p-yellow-500);
+  --color-success: var(--p-green-500);
+  --color-error: var(--p-red-500);
 
   --container-width: 1280px;
   --small-container-width: 1080px;

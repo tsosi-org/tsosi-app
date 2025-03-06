@@ -5,6 +5,8 @@ from datetime import date, datetime
 import pandas as pd
 import pycountry
 from tsosi.data.exceptions import DataValidationError
+from tsosi.data.pid_registry.ror import ROR_ID_REGEX
+from tsosi.data.pid_registry.wikidata import WIKIDATA_ID_REGEX
 from tsosi.models.date import DATE_FORMAT
 
 logger = logging.getLogger(__name__)
@@ -199,3 +201,37 @@ def undate[T](x: T, date_format: str = DATE_FORMAT) -> T | str:
     if isinstance(x, datetime) or isinstance(x, date):
         return x.strftime(date_format)
     return x
+
+
+def check_regex(value, regex: re.Pattern, error: bool = False) -> bool:
+    """
+    Check whether the provided value matches the given regex.
+    """
+    if pd.isna(value):
+        return True
+    if not isinstance(value, str):
+        if error:
+            raise DataValidationError(f"Wrong value for regex {regex}: {value}")
+        return False
+    if re.search(regex, value):
+        return True
+
+    if error:
+        raise DataValidationError(f"Wrong value for regex {regex}: {value}")
+    return False
+
+
+def check_ror_id(value, error: bool = False) -> bool:
+    return check_regex(value, ROR_ID_REGEX, error)
+
+
+def check_wikidata_id(value, error: bool = False) -> bool:
+    return check_regex(value, WIKIDATA_ID_REGEX, error)
+
+
+def check_bool_value(value, error: bool = False) -> bool:
+    if isinstance(value, bool):
+        return True
+    if error:
+        raise DataValidationError(f"Wrong boolean value: {value}")
+    return False

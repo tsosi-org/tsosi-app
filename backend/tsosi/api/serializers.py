@@ -23,13 +23,7 @@ class IdentifierSerializer(serializers.ModelSerializer):
 class InfrastructureDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = InfrastructureDetails
-        fields = [
-            "infra_finder_url",
-            "posi_url",
-            "is_scoss_awarded",
-            "is_partner",
-            "date_data_update",
-        ]
+        fields = "__all__"
 
 
 class BaseEntitySerializer(serializers.ModelSerializer):

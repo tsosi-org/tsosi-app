@@ -28,6 +28,7 @@ def get_config(
             rdc.FieldEmitterRorId(field="emitter_ror_id"),
             rdc.FieldEmitterCountry(field="Country", is_iso=False),
             rdc.FieldAmount(field="amount"),
+            rdc.FieldHideAmount(constant=True),
             rdc.FieldCurrency(field="currency"),
             rdc.FieldDateStart(
                 field="date_start",
@@ -43,5 +44,4 @@ def get_config(
         date_columns=["date_start", "date_end"],
         input_file_name=file_path,
         input_sheet_name=sheet_name,
-        hide_amount=True,
     )

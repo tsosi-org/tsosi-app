@@ -414,7 +414,6 @@ def get_data_load_source(source: dc.DataLoadSource):
 def ingest_new_records(
     transferts: pd.DataFrame,
     source: DataLoadSource,
-    hide_amount: bool,
     send_signals: bool = True,
 ):
     """
@@ -442,7 +441,6 @@ def ingest_new_records(
     source.date_last_updated = now
     source.save()
     transferts["data_load_source_id"] = source.pk
-    transferts["hide_amount"] = hide_amount
 
     # Extract entities
     transfert_entities = extract_entities(transferts)
@@ -524,7 +522,7 @@ def ingest_data_file(file_path: str | Path, send_signals: bool = True) -> bool:
         return False
     # flag_duplicate_transferts(df, source)
     dc.create_missing_fields(df)
-    ingest_new_records(df, source, ingestion_config.hide_amount, send_signals)
+    ingest_new_records(df, source, send_signals)
     return True
 
 

@@ -5,7 +5,11 @@ import {
   type DateWithPrecision,
 } from "@/utils/data-utils"
 
-interface Identifier {
+interface ApiData {
+  [key: string]: any
+}
+
+interface Identifier extends ApiData {
   registry: string
   value: string
   registry_url?: string
@@ -13,7 +17,7 @@ interface Identifier {
 
 export type TransfertEntityType = "emitter" | "recipient" | "agent"
 
-export interface Country {
+export interface Country extends ApiData {
   capital: string
   code: string
   continent: string
@@ -24,18 +28,18 @@ export interface Country {
   coordinates: [number, number] | null
 }
 
-export interface InfrastructureDetails {
+export interface InfrastructureDetails extends ApiData {
   infra_finder_url?: string
   posi_url?: string
   is_scoss_awarded: boolean
   is_partner: boolean
+  hide_amount: boolean
   date_data_update?: Date
   date_data_start?: Date
   date_data_end?: Date
-  hidden_ratio?: number
 }
 
-export interface Entity {
+export interface Entity extends ApiData {
   id: string
   name: string
   country?: string
@@ -55,7 +59,7 @@ export interface EntityDetails extends Entity {
   is_agent: boolean
 }
 
-export interface Transfert {
+export interface Transfert extends ApiData {
   id: string
   emitter_id: string
   emitter?: DeepReadonly<Entity>
@@ -69,7 +73,6 @@ export interface Transfert {
   date_clc: DateWithPrecision
   description: string | null
   source: string
-  [key: string]: any
 }
 
 export interface TransfertDetails extends Transfert {
@@ -86,7 +89,7 @@ export interface Currency {
   name: string
 }
 
-export interface Analytic {
+export interface Analytic extends ApiData {
   id: number
   recipient: string
   year: number

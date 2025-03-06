@@ -136,7 +136,9 @@ WHERE {{
 
 def format_wikidata_record_query(identifiers: Sequence[str]) -> str:
     """"""
-    ids_part = "\n\t\t".join([f"wd:{id}" for id in identifiers])
+    ids_part = "\n\t\t".join(
+        [f"wd:{id}" for id in identifiers if re.match(WIKIDATA_ID_REGEX, id)]
+    )
     return WIKIDATA_RECORD_QUERY_TEMPLATE.format(ids_part=ids_part)
 
 

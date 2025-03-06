@@ -14,6 +14,7 @@ import {
   faImage,
   faMagnifyingGlass,
   faSquareCheck,
+  faSquareXmark,
   faDownload,
   faEllipsisVertical,
   faHouse,
@@ -25,6 +26,7 @@ import {
   faCircleQuestion,
   faBars,
   faXmark,
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons"
 
 const app = createApp(App)
@@ -88,6 +90,7 @@ const usedIcons = [
   faImage,
   faMagnifyingGlass,
   faSquareCheck,
+  faSquareXmark,
   faDownload,
   faEllipsisVertical,
   faHouse,
@@ -99,6 +102,7 @@ const usedIcons = [
   faCircleQuestion,
   faBars,
   faXmark,
+  faCheck,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)

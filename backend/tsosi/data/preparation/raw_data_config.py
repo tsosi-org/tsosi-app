@@ -18,6 +18,9 @@ from tsosi.models.date import (
 from tsosi.models.static_data import DATA_SOURCES
 
 from .cleaning_utils import (
+    check_bool_value,
+    check_ror_id,
+    check_wikidata_id,
     clean_cell_value,
     clean_number_value,
     clean_url,
@@ -36,6 +39,7 @@ __all__ = [
     "ALL_FIELDS",
     "DATE_FIELDS",
     "FieldAmount",
+    "FieldHideAmount",
     "FieldCurrency",
     "FieldEmitterName",
     "FieldEmitterRorId",
@@ -72,6 +76,7 @@ class ConstOrField:
     NAME: ClassVar[str]
     type: ClassVar[str] = "str"
     required: ClassVar[bool] = False
+    check_func: ClassVar[str | None] = None
     constant: str | None = None
     field: str | None = None
 
@@ -113,11 +118,13 @@ class FieldEmitterName(ConstOrField):
 @dataclass(kw_only=True)
 class FieldEmitterRorId(ConstOrField):
     NAME = "emitter_ror_id"
+    check_func = "ror_id"
 
 
 @dataclass(kw_only=True)
 class FieldEmitterWikidataId(ConstOrField):
     NAME = "emitter_wikidata_id"
+    check_func = "wikidata_id"
 
 
 @dataclass(kw_only=True)
@@ -152,6 +159,7 @@ class FieldRecipientName(ConstOrField):
 @dataclass(kw_only=True)
 class FieldRecipientRorId(ConstOrField):
     NAME = "recipient_ror_id"
+    check_func = "ror_id"
 
 
 @dataclass(kw_only=True)
@@ -169,6 +177,7 @@ class FieldRecipientCountry(ConstOrField):
 @dataclass(kw_only=True)
 class FieldRecipientWikidataId(ConstOrField):
     NAME = "recipient_wikidata_id"
+    check_func = "wikidata_id"
 
 
 @dataclass(kw_only=True)
@@ -185,11 +194,13 @@ class FieldAgentName(ConstOrField):
 @dataclass(kw_only=True)
 class FieldAgentRorId(ConstOrField):
     NAME = "agent_ror_id"
+    check_func = "ror_id"
 
 
 @dataclass(kw_only=True)
 class FieldAgentWikidataId(ConstOrField):
     NAME = "agent_wikidata_id"
+    check_func = "wikidata_id"
 
 
 @dataclass(kw_only=True)
@@ -248,8 +259,16 @@ class FieldOriginalAmountField(ConstOrField):
     NAME = "original_amount_field"
 
 
+@dataclass(kw_only=True)
+class FieldHideAmount(ConstOrField):
+    NAME = "hide_amount"
+    required = True
+    type = "bool"
+
+
 ALL_FIELDS: list[Type[ConstOrField]] = [
     FieldAmount,
+    FieldHideAmount,
     FieldCurrency,
     FieldEmitterName,
     FieldEmitterRorId,
@@ -313,7 +332,6 @@ class DataLoadSource:
 class DataIngestionConfig:
     date_generated: str
     source: DataLoadSource
-    hide_amount: bool
     count: int
     data: list
 
@@ -335,7 +353,6 @@ class RawDataConfig:
         extract_currency_amount: bool = False,
         input_file_name: str | None = None,
         input_sheet_name: str | None = None,
-        hide_amount: bool = False,
     ):
 
         self.id = id
@@ -352,7 +369,6 @@ class RawDataConfig:
         self.fields = fields
         self.extract_currency_amount = extract_currency_amount
         self.date_columns = date_columns
-        self.hide_amount = hide_amount
         self.origin = ""
         self.validate_fields()
 
@@ -503,7 +519,7 @@ class RawDataConfig:
         # Data cleaning
         for f in self.active_fields:
             # Insert constant fields
-            if f.constant and f.type != "date":
+            if f.constant is not None and f.type != "date":
                 # Trying to assign a dict value to every row is troublesome
                 # with pandas
                 if isinstance(f.constant, dict):
@@ -520,6 +536,10 @@ class RawDataConfig:
             # Clean URLs
             if f.type == "url" and f.field is not None:
                 df[f.NAME] = df[f.NAME].apply(clean_url)
+            # Boolean field should be set
+            elif f.type == "bool":
+                df[f.NAME].apply(lambda x: check_bool_value(x, error))
+
             # Convert country names to ISO code
             elif f.type == "country":
                 if f.is_iso:
@@ -551,6 +571,16 @@ class RawDataConfig:
                 if f.default is not None:
                     df[f.NAME] = df[f.NAME].apply(
                         lambda x: f.default if pd.isna(x) else x
+                    )
+
+            if f.check_func:
+                if f.check_func == "ror_id":
+                    df[f.NAME].apply(lambda x: check_ror_id(x, error))
+                elif f.check_func == "wikidata_id":
+                    df[f.NAME].apply(lambda x: check_wikidata_id(x, error))
+                else:
+                    raise ValueError(
+                        f"`check_func` value {f.check_func} is not supported."
                     )
 
         # Special case of single column holding both amount and currency
@@ -632,7 +662,6 @@ class RawDataConfig:
         ingestion_config = DataIngestionConfig(
             date_generated=datetime.now(UTC).isoformat(timespec="seconds"),
             source=self.source.serialize(),
-            hide_amount=self.hide_amount,
             count=len(data),
             data=data.to_dict(orient="records"),
         )
@@ -671,23 +700,6 @@ class RawDataConfigFromFile(RawDataConfig):
 
 
 # All configs
-CONFIG_PCI = {
-    "id": "pci",
-    "extract_currency_amount": True,
-    "fields": [
-        FieldAmount(field="Amount"),
-        FieldCurrency(default="EUR"),
-        FieldRecipientName(constant="Peer Community In"),
-        FieldRecipientRorId(constant="0315saa81"),
-        FieldEmitterName(field="From organization"),
-        FieldEmitterType(field="Category"),
-        FieldEmitterUrl(field="Website"),
-        FieldDatePayment(
-            field="Year", format="%Y", date_precision=DATE_PRECISION_YEAR
-        ),
-    ],
-}
-
 CONFIG_OPERAS = {
     "id": "operas",
     "fields": [
