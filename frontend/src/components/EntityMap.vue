@@ -295,9 +295,9 @@ function cleanPopup(element: App) {
       <Skeleton v-else width="10em" border-radius="5px" height="1em"></Skeleton>
     </div>
     <div v-show="!loading" class="map-legend">
-      <div v-if="layers.infra" class="legend-item">
-        <div class="legend-icon house-icon" v-html="houseSvg"></div>
-        <span>Supported Infrastructure</span>
+      <div v-if="layers.emitters" class="legend-item">
+        <div class="legend-icon circle-icon" v-html="circleSvg"></div>
+        <span>Individual Funders</span>
       </div>
       <div v-if="layers.countries" class="legend-item">
         <div class="legend-icon diamond-icon" v-html="diamondSvg"></div>
@@ -313,9 +313,9 @@ function cleanPopup(element: App) {
           </InfoButtonAtom>
         </span>
       </div>
-      <div v-if="layers.emitters" class="legend-item">
-        <div class="legend-icon circle-icon" v-html="circleSvg"></div>
-        <span>Individual Funders</span>
+      <div v-if="layers.infra" class="legend-item">
+        <div class="legend-icon house-icon" v-html="houseSvg"></div>
+        <span>Supported Infrastructure</span>
       </div>
     </div>
     <div v-show="loading" class="map-legend">

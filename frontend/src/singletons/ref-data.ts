@@ -49,6 +49,7 @@ export interface Entity extends ApiData {
 }
 
 export interface EntityDetails extends Entity {
+  date_inception?: Date
   description?: string
   website?: string
   wikipedia_url?: string
@@ -113,7 +114,9 @@ export interface PaginatedResults<T> {
 }
 
 export type DeepReadonly<T> = {
-  readonly [K in keyof T]: DeepReadonly<T[K]>
+  readonly [K in keyof T]: T[K] extends (...args: any[]) => any
+    ? T[K]
+    : DeepReadonly<T[K]>
 }
 
 const refData: RefData = {
@@ -201,6 +204,7 @@ export async function getEntityDetails(
   const result = await get(url, true)
   if (result.data) {
     const val = result.data as Record<string, any>
+    initDateProperty(val, "date_inception")
     if (val.infrastructure) {
       for (const property of [
         "date_data_start",

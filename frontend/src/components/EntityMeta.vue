@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import {
-  type EntityDetails,
-  type DeepReadonly,
-  type InfrastructureDetails,
-} from "@/singletons/ref-data"
+import { type EntityDetails, type DeepReadonly } from "@/singletons/ref-data"
 import Image from "./atoms/ImageAtom.vue"
 import Chip from "primevue/chip"
 import { getRorUrl } from "@/utils/url-utils"
@@ -29,6 +25,13 @@ if (props.entity.country) {
   iconLabels.push({
     icon: "location-dot",
     label: getCountryLabel(props.entity.country),
+  })
+}
+
+if (props.entity.date_inception) {
+  iconLabels.push({
+    icon: "calendar",
+    label: `Since ${props.entity.date_inception.getFullYear()}`,
   })
 }
 
@@ -231,7 +234,7 @@ function breakdownDisclaimer(): boolean {
     </div>
     <InfrastructureInfoBox
       v-if="props.entity.infrastructure"
-      :data="props.entity.infrastructure as InfrastructureDetails"
+      :data="props.entity as EntityDetails"
       style="margin: 1em 0"
       :full-width="true"
       :breakdown-disclaimer="breakdownDisclaimer()"

@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import datetime
+from datetime import UTC, date, datetime
 from urllib.parse import unquote
 
 import pandas as pd
@@ -487,6 +487,26 @@ def entities_with_identifier_data() -> pd.DataFrame:
         if not col in entities.columns:
             continue
         entities[col] = entities[col].apply(clean_url)
+
+    date_cols = ["ror_date_inception", "wikidata_date_inception"]
+
+    def make_date(x) -> datetime | None:
+        if pd.isna(x):
+            return None
+        elif isinstance(x, datetime):
+            return x
+        elif isinstance(x, date):
+            return datetime(x.year, x.month, x.day, tzinfo=UTC)
+        elif isinstance(x, str):
+            return datetime.fromisoformat(x)
+        else:
+            logger.warning(f"Non-supported date-like input: {x}")
+            return None
+
+    for col in date_cols:
+        if not col in entities.columns:
+            continue
+        entities[col] = entities[col].apply(make_date)
     return entities
 
 

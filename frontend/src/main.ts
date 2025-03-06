@@ -27,6 +27,7 @@ import {
   faBars,
   faXmark,
   faCheck,
+  faCalendar,
 } from "@fortawesome/free-solid-svg-icons"
 
 const app = createApp(App)
@@ -103,6 +104,7 @@ const usedIcons = [
   faBars,
   faXmark,
   faCheck,
+  faCalendar,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)

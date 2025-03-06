@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { type InfrastructureDetails } from "@/singletons/ref-data"
+import { type EntityDetails } from "@/singletons/ref-data"
 import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 import { RouterLink } from "vue-router"
 import { formatDateWithPrecision } from "@/utils/data-utils"
 
 const props = defineProps<{
-  data: InfrastructureDetails
+  data: EntityDetails
   fullWidth?: boolean
   breakdownDisclaimer?: boolean
 }>()
@@ -13,15 +13,28 @@ console.log(`Full width: ${props.fullWidth}`)
 </script>
 
 <template>
-  <section class="info-box infrastructure" :class="{ expand: props.fullWidth }">
+  <section
+    v-if="props.data.infrastructure"
+    class="info-box infrastructure"
+    :class="{ expand: props.fullWidth }"
+  >
+    <div v-if="props.data.date_inception" class="info-item">
+      <h3>Inception date</h3>
+      <span>
+        {{ props.data.date_inception.getFullYear() }}
+      </span>
+    </div>
     <div
-      v-if="props.data.date_data_start && props.data.date_data_end"
+      v-if="
+        props.data.infrastructure.date_data_start &&
+        props.data.infrastructure.date_data_end
+      "
       class="info-item"
     >
       <h3>Data coverage</h3>
       <span>
-        {{ props.data.date_data_start.getFullYear() }} to
-        {{ props.data.date_data_end.getFullYear() }}
+        {{ props.data.infrastructure.date_data_start.getFullYear() }} to
+        {{ props.data.infrastructure.date_data_end.getFullYear() }}
       </span>
     </div>
 
@@ -29,7 +42,7 @@ console.log(`Full width: ${props.fullWidth}`)
       <h3>
         <span>Disclosed amounts</span>
         <InfoButtonAtom
-          v-if="props.data.hide_amount"
+          v-if="props.data.infrastructure.hide_amount"
           style="margin-left: 0.5em"
         >
           <template #default>
@@ -38,7 +51,7 @@ console.log(`Full width: ${props.fullWidth}`)
           </template>
         </InfoButtonAtom>
       </h3>
-      <span v-if="props.data.hide_amount">
+      <span v-if="props.data.infrastructure.hide_amount">
         <font-awesome-icon icon="xmark" class="color-error" />
         <span> The transfert amounts are hidden </span>
       </span>
@@ -48,10 +61,15 @@ console.log(`Full width: ${props.fullWidth}`)
       </span>
     </div>
 
-    <div v-if="props.data.date_data_update" class="info-item">
+    <div v-if="props.data.infrastructure.date_data_update" class="info-item">
       <h3>Data update</h3>
       <span>
-        {{ formatDateWithPrecision(props.data.date_data_update, "day") }}
+        {{
+          formatDateWithPrecision(
+            props.data.infrastructure.date_data_update,
+            "day",
+          )
+        }}
       </span>
     </div>
     <div v-if="props.breakdownDisclaimer" class="info-item">

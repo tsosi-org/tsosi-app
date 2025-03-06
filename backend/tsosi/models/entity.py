@@ -46,7 +46,7 @@ class Entity(TimestampedModel):
         validators=[MinLengthValidator(2), MaxLengthValidator(2)],
     )
     website = models.URLField(max_length=256, null=True)
-    date_inception = models.DateTimeField(null=True)
+    date_inception = models.DateField(null=True)
     logo_url = models.CharField(max_length=256, null=True)
     logo = models.ImageField(
         upload_to=entity_logo_path, max_length=256, null=True
