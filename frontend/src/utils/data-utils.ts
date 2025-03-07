@@ -388,3 +388,20 @@ export function parsePointCoordinates(
     lon: parseFloat(parsedCoordinates[1]),
   }
 }
+
+export function shuffleArray(data: any[]) {
+  let currentIndex = data.length
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+    // Pick a remaining element...
+    const randomIndex = Math.floor(Math.random() * currentIndex)
+    currentIndex--
+
+    // And swap it with the current element.
+    ;[data[currentIndex], data[randomIndex]] = [
+      data[randomIndex],
+      data[currentIndex],
+    ]
+  }
+}

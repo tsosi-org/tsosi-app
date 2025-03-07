@@ -14,6 +14,7 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
           included.
           <InfoButtonAtom>
             <template #default>
+              Partner infrastructures:
               <InfrastructureList />
               <RouterLink to="/faq#partner-definition">See our FAQ</RouterLink>
               to know more about partner infrastructures.

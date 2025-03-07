@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router"
+
+const props = defineProps<{
+  color?: string
+  fontSize?: string
+  header?: boolean
+}>()
 </script>
 
 <template>
@@ -15,22 +21,23 @@ import { RouterLink } from "vue-router"
 
 <style scoped>
 ul {
+  --local-color: v-bind($props.color);
+  --this-lh: 1;
+  --this-fs: 20px;
   padding: 0;
 }
 
 li {
   position: relative;
   list-style: none;
-  --this-fs: 20px;
-  --this-lh: 1;
 }
 
-li a {
+a {
   line-height: var(--this-lh);
   font-size: var(--this-fs);
   display: block;
   text-decoration: none;
-  color: var(--p-gray-50);
+  color: var(--local-color);
   padding: calc((var(--header-height) - var(--this-lh) * var(--this-fs)) / 2);
 }
 
@@ -39,7 +46,7 @@ li::after {
   --height: calc(var(--this-fs) - 2px);
   height: var(--height);
   /* width: 1px; */
-  background-color: var(--p-gray-50);
+  background-color: var(--local-color);
   position: absolute;
   right: 0;
   top: calc((var(--header-height) - var(--height)) / 2 + 1px);
@@ -53,9 +60,5 @@ ul.nav-standalone {
   width: 100%;
   gap: 0;
   flex-direction: column;
-
-  & li a {
-    color: var(--p-color-primary);
-  }
 }
 </style>

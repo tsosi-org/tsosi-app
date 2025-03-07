@@ -49,6 +49,7 @@ https://primevue.org/theming/styled/#colors
   --font-size: 14px;
   font-size: var(--font-size);
 
+  --page-min-height: calc(100vh - var(--header-height) - 50px);
 }
 
 /* DARK MODE */

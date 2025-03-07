@@ -39,7 +39,7 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         <kbd>contact[the famous symbol]tsosi.org</kbd>
       </p>
 
-      <h2>License</h2>
+      <h2 id="license">License</h2>
       <p>
         Unless otherwise noted, all content on this site is released under a
         <a

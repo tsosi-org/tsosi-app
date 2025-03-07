@@ -15,6 +15,8 @@
 
 .page-content {
   margin-top: var(--header-height);
+  min-height: 50vh;
+  min-height: var(--page-min-height);
 
   .regular-content {
     width: 100%;

@@ -6,6 +6,7 @@ import { isDesktop } from "@/composables/useMediaQuery"
 import Drawer from "primevue/drawer"
 import Button from "@/components/atoms/ButtonAtom.vue"
 import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
+import { $dt } from "@primevue/themes"
 
 const router = useRouter()
 const navMenuVisible = ref(false)
@@ -34,7 +35,13 @@ function toggleDrawer(name: string) {
       <RouterLink style="line-height: 0" to="/">
         <img class="logo" src="@/assets/img/logo_white.svg" />
       </RouterLink>
-      <NavigationListAtom class="d-flex" style="gap: 0" />
+      <NavigationListAtom
+        :color="$dt('neutral.50').value"
+        :header="true"
+        font-size="20px"
+        class="d-flex"
+        style="gap: 0"
+      />
       <SearchBar width="330px"></SearchBar>
     </nav>
     <nav v-else class="d-flex">
@@ -63,7 +70,13 @@ function toggleDrawer(name: string) {
           }"
         >
           <template #container>
-            <NavigationListAtom class="nav-standalone d-flex" style="gap: 0" />
+            <NavigationListAtom
+              :color="$dt('primary').value"
+              font-size="20px"
+              :header="true"
+              class="nav-standalone d-flex"
+              style="gap: 0"
+            />
           </template>
         </Drawer>
       </div>
