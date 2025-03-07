@@ -23,10 +23,12 @@ import CustomButton, {
   type ButtonProps,
 } from "@/components/atoms/ButtonAtom.vue"
 import Country from "@/components/atoms/CountryAtom.vue"
+import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 
 export interface TableColumnProps extends DataFieldProps {
   sortable?: boolean
   sortField?: string // field used to sort the column. Defaults to fieldLabel
+  info?: string
 }
 
 export interface TableProps {
@@ -228,6 +230,12 @@ function toggleExportMenu(event: Event) {
       :sortField="getSortFieldFunction(column)"
       :key="column.id"
     >
+      <!-- Header template -->
+      <template v-if="column.info" #header>
+        <InfoButtonAtom :content="column.info" />
+      </template>
+
+      <!-- Row template -->
       <template v-if="props.skeleton" #body>
         <Skeleton></Skeleton>
       </template>

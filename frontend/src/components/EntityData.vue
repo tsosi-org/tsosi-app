@@ -158,6 +158,7 @@ const baseTableColumns: TableColumnProps[] = [
       suffixType: "field",
     },
     sortable: true,
+    info: "When a transfert is done through another entity like a library consortia, it appears in this column.",
   },
   {
     id: "amount",
