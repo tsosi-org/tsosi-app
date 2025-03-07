@@ -5,7 +5,8 @@ import Chip from "primevue/chip"
 import { getRorUrl } from "@/utils/url-utils"
 import { isDesktop } from "@/composables/useMediaQuery"
 import { getCountryLabel } from "@/utils/data-utils"
-import InfrastructureInfoBox from "./InfrastructureInfoBox.vue"
+import InfrastructureInfoBox from "@/components/InfrastructureInfoBox.vue"
+import EmitterInfoBox from "@/components/EmitterInfoBox.vue"
 
 interface IconLabel {
   label: string
@@ -239,6 +240,7 @@ function breakdownDisclaimer(): boolean {
       :full-width="true"
       :breakdown-disclaimer="breakdownDisclaimer()"
     />
+    <EmitterInfoBox v-else />
   </div>
 </template>
 

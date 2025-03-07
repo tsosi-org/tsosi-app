@@ -78,33 +78,3 @@ console.log(`Full width: ${props.fullWidth}`)
     </div>
   </section>
 </template>
-
-<style lang="css" scoped>
-.info-box {
-  --info-box-color: var(--p-primary-color);
-  padding: 1em;
-  max-width: min(100%, 400px);
-  border: 2px solid;
-  border-color: var(--p-surface-200);
-  border-radius: 5px;
-  /* box-shadow: 0 0 5px 2px var(--p-surface-300); */
-  height: fit-content;
-
-  &.expand {
-    max-width: unset;
-  }
-}
-
-.info-box > * {
-  margin-bottom: 0.5em;
-}
-
-.info-box > *:last-child {
-  margin-bottom: unset;
-}
-
-.info-item h3 {
-  color: var(--info-box-color);
-  font-size: 1.05rem;
-}
-</style>

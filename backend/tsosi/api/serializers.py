@@ -37,7 +37,15 @@ class EntitySerializer(BaseEntitySerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "country", "identifiers", "coordinates", "logo"]
+        fields = [
+            "id",
+            "name",
+            "country",
+            "identifiers",
+            "coordinates",
+            "logo",
+            "is_recipient",
+        ]
         extra_kwargs = {
             "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
         }

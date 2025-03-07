@@ -328,7 +328,7 @@ async function updateMapData() {
             <!-- @vue-ignore -->
             <Table v-bind="skeletonTableProps"></Table>
           </div>
-          <div v-if="transferts">
+          <div v-if="transferts" class="transfert-tables">
             <Table v-if="emitterTableProps" v-bind="emitterTableProps"></Table>
             <Table
               v-if="recipientTableProps"
@@ -355,7 +355,7 @@ async function updateMapData() {
       <!-- @vue-ignore -->
       <Table v-bind="skeletonTableProps"></Table>
     </div>
-    <div v-if="transferts">
+    <div v-if="transferts" class="transfert-tables">
       <Table v-if="emitterTableProps" v-bind="emitterTableProps"></Table>
       <Table v-if="recipientTableProps" v-bind="recipientTableProps"></Table>
       <Table v-if="agentTableProps" v-bind="agentTableProps"></Table>
@@ -369,6 +369,7 @@ async function updateMapData() {
   top: var(--header-height);
   z-index: 2000;
 }
+
 .tab-header {
   display: flex;
   flex-direction: row;
@@ -376,6 +377,14 @@ async function updateMapData() {
   gap: 0.6em;
   align-items: center;
   font-size: 1.3em;
+}
+
+.transfert-tables > * {
+  margin-bottom: 2em;
+}
+
+.transfert-tables > *:last-child {
+  margin-bottom: initial;
 }
 
 .data-chart-panel {

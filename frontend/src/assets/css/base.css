@@ -37,7 +37,7 @@ https://primevue.org/theming/styled/#colors
 
   --color-heading: var(--p-primary-800);
   --color-text: var(--p-neutral-950);
-  --color-link: var(--c-indigo);
+  --color-link: var(--p-primary-700);
   --color-background-component: white;
   --color-target: var(--p-yellow-500);
   --color-success: var(--p-green-500);

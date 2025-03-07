@@ -46,6 +46,7 @@ export interface Entity extends ApiData {
   identifiers: Identifier[]
   coordinates?: string
   logo?: string
+  is_recipient: boolean
 }
 
 export interface EntityDetails extends Entity {
@@ -55,8 +56,7 @@ export interface EntityDetails extends Entity {
   wikipedia_url?: string
   wikipedia_extract?: string
   infrastructure?: InfrastructureDetails
-  is_emitted: boolean
-  is_recipient: boolean
+  is_emitter: boolean
   is_agent: boolean
 }
 
@@ -312,4 +312,8 @@ export async function getEmitters(entityId: string): Promise<Entity[] | null> {
     return null
   }
   return result.data as Entity[]
+}
+
+export function getInfrastructures(): DeepReadonly<Entity>[] {
+  return Object.values(refData.entities).filter((e) => e.is_recipient)
 }
