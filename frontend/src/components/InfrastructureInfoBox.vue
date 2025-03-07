@@ -52,17 +52,13 @@ console.log(`Full width: ${props.fullWidth}`)
         </InfoButtonAtom>
       </h3>
       <span v-if="props.data.infrastructure.hide_amount">
-        <font-awesome-icon icon="xmark" class="color-error" />
-        <span> The transfert amounts are hidden </span>
+        The transfert amounts are hidden.
       </span>
-      <span v-else>
-        <font-awesome-icon icon="check" class="color-success" />
-        <span> The transfert amounts are displayed </span>
-      </span>
+      <span v-else> The transfert amounts are displayed. </span>
     </div>
 
     <div v-if="props.data.infrastructure.date_data_update" class="info-item">
-      <h3>Data update</h3>
+      <h3>Last data update</h3>
       <span>
         {{
           formatDateWithPrecision(

@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
@@ -81,8 +81,8 @@ SUPPORTED_INFRASTRUCTURES = [
             "website": "https://www.doabooks.org",
             "description": """OAPEN supports the transition to open access for academic books by providing open infrastructure services to stakeholders, including the DOAB (Directory of Open Access Books), on which OAPEN works in partnership with Open Edition.""",
             "manual_logo": True,
-            "date_inception": datetime(
-                2010, 1, 1, tzinfo=UTC
+            "date_inception": date(
+                2010, 1, 1
             ),  # Inception date of OAPEN - DOAB was launched in 2013
         },
         "infrastructure": {

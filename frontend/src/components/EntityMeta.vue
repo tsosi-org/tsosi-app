@@ -86,7 +86,7 @@ function breakdownDisclaimer(): boolean {
 </script>
 
 <template>
-  <div class="entity-meta" :class="{ desktop: false }">
+  <div class="entity-meta" :class="{ desktop: isDesktop }">
     <div>
       <div v-if="isDesktop" class="entity-header-desktop">
         <div>
@@ -245,7 +245,7 @@ function breakdownDisclaimer(): boolean {
 <style scoped>
 .entity-meta.desktop {
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr 350px;
   column-gap: 1em;
 }
 
@@ -257,7 +257,7 @@ function breakdownDisclaimer(): boolean {
   --first-col: v-bind("logoWidth");
   display: grid;
   grid-template-columns: calc(var(--first-col) + 50px) 1fr;
-  gap: 2em;
+  gap: 1em;
   padding: 1em;
 
   & > div:first-child {
