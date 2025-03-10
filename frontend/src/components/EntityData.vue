@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import {
+  getEmittersForEntity,
   getTransferts,
   type EntityDetails,
-  type DeepReadonly,
+  type Entity,
   type Transfert,
   type TransfertEntityType,
 } from "@/singletons/ref-data"
@@ -21,7 +22,7 @@ import TabPanel from "primevue/tabpanel"
 import EntityMap from "@/components/EntityMap.vue"
 
 const props = defineProps<{
-  entity: DeepReadonly<EntityDetails>
+  entity: EntityDetails
 }>()
 
 const transferts: Ref<Record<TransfertEntityType, Transfert[]> | null> =
@@ -32,10 +33,11 @@ const activeTab = ref("0")
 // This ref is used to trigger chart data fetching only when the tab is
 // selected
 const chartTabTriggered = ref(false)
-const mapData = ref()
+const emittersData: Ref<Entity[]> = ref([])
+const mapDataLoaded = ref(false)
 
 onMounted(async () => {
-  update_transferts()
+  updateTransferts()
 })
 
 watch(selectedCurrency, () => {
@@ -65,7 +67,7 @@ watch(chartTabTriggered, () => {
   }
 })
 
-async function update_transferts() {
+async function updateTransferts() {
   const rawTransferts = await getTransferts(props.entity.id)
   if (!rawTransferts) {
     return
@@ -301,7 +303,11 @@ const skeletonTableProps = computed(() => {
 })
 
 async function updateMapData() {
-  mapData.value = props.entity.coordinates
+  const emitters = await getEmittersForEntity(props.entity.id)
+  if (emitters != null) {
+    emittersData.value = emitters
+  }
+  mapDataLoaded.value = true
 }
 </script>
 
@@ -340,7 +346,12 @@ async function updateMapData() {
         <TabPanel value="1">
           <div class="data-chart-panel">
             <div v-if="chartTabTriggered" class="dataviz-wrapper">
-              <EntityMap :entity="props.entity" />
+              <EntityMap
+                :supporters="emittersData"
+                :infrastructures="[props.entity]"
+                title="Funder locations"
+                :data-loaded="mapDataLoaded"
+              />
             </div>
             <div v-if="chartTabTriggered" class="dataviz-wrapper">
               <EntityHistogram :entity="props.entity" class="entity-chart" />

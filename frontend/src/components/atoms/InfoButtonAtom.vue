@@ -3,7 +3,12 @@ import Popover from "primevue/popover"
 import { onMounted, useTemplateRef } from "vue"
 import { addClickEventListener } from "@/utils/dom-utils"
 
-const props = defineProps<{ content?: string }>()
+export interface InfoButtonProps {
+  icon?: string
+  label?: string
+  content?: string
+}
+const props = defineProps<InfoButtonProps>()
 const popup = useTemplateRef("popup")
 const iconButton = useTemplateRef("icon-button")
 let hidePopup = true
@@ -45,7 +50,17 @@ function popupLeave(event: Event) {
 
 <template>
   <div class="info-button" ref="icon-button" tabindex="0">
+    <font-awesome-icon v-if="props.icon" :icon="props.icon">
+    </font-awesome-icon>
+    <span
+      v-else-if="props.label"
+      class="info-button-label"
+      style="text-decoration: underline"
+    >
+      {{ props.label }}
+    </span>
     <font-awesome-icon
+      v-else
       icon="circle-question"
       class="info-icon"
     ></font-awesome-icon>
@@ -66,9 +81,8 @@ function popupLeave(event: Event) {
 
 <style scoped>
 .info-button {
-  display: inline-block;
+  display: inline;
   position: relative;
-  padding: 2px;
   border-radius: 2px;
 }
 

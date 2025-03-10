@@ -52,7 +52,7 @@ footer {
   line-height: 2.5;
   color: var(--p-neutral-50);
   background-color: var(--p-neutral-950);
-  padding: 7vh 0;
+  padding: 5vh 0;
 
   /* Override variables define in some child componentss */
   & :deep(a) {

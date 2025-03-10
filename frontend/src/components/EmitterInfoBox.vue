@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
 import { RouterLink } from "vue-router"
-import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
+import InfrastructurePopup from "@/components/InfrastructurePopup.vue"
 </script>
 
 <template>
@@ -14,10 +14,7 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
           included.
           <InfoButtonAtom>
             <template #default>
-              Partner infrastructures:
-              <InfrastructureList />
-              <RouterLink to="/faq#partner-definition">See our FAQ</RouterLink>
-              to know more about partner infrastructures.
+              <InfrastructurePopup />
             </template>
           </InfoButtonAtom>
         </span>

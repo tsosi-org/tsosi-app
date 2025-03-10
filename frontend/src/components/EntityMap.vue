@@ -5,6 +5,7 @@ import Skeleton from "primevue/skeleton"
 import {
   ref,
   onMounted,
+  watch,
   type Ref,
   nextTick,
   useTemplateRef,
@@ -12,17 +13,13 @@ import {
   type Component,
 } from "vue"
 import Loader from "./atoms/LoaderAtom.vue"
-import {
-  type EntityDetails,
-  type DeepReadonly,
-  getEntitySummary,
-} from "@/singletons/ref-data"
+import { getEntitySummary } from "@/singletons/ref-data"
 import {
   parsePointCoordinates,
   getCountryCoordinates,
   getCountryLabel,
 } from "@/utils/data-utils"
-import { getEmitters, type Entity } from "@/singletons/ref-data"
+import { type Entity } from "@/singletons/ref-data"
 import { type Feature } from "geojson"
 import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
 import CountryItemList from "@/components/CountryItemList.vue"
@@ -30,12 +27,10 @@ import { createComponent } from "@/utils/dom-utils"
 import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 
 export interface EntityMapProps {
-  entity: DeepReadonly<EntityDetails>
-  initPosition?: {
-    lat: number
-    lon: number
-    zoom?: number
-  }
+  infrastructures: Entity[]
+  supporters: Entity[]
+  title?: string
+  dataLoaded?: boolean
 }
 
 const props = defineProps<EntityMapProps>()
@@ -46,7 +41,6 @@ const tileBaseUrl =
 
 const loading = ref(true)
 const mapElement = useTemplateRef("tsosi-map")
-const mapData: Ref<Entity[] | null> = ref(null)
 const layers: Ref<Record<string, L.FeatureGroup>> = ref({})
 const plottedEntities: Ref<{ total: number; value: number } | null> = ref(null)
 // Do not use a ref, it messes up some leaflet features
@@ -76,26 +70,28 @@ const houseIcon = L.divIcon({
   iconSize: [18, 18],
   className: "map-icon house-icon",
 })
-const circleIcon = L.divIcon({
-  html: circleSvg,
-  iconSize: [10, 10],
-  className: "map-icon circle-icon",
-})
+// const circleIcon = L.divIcon({
+//   html: circleSvg,
+//   iconSize: [10, 10],
+//   className: "map-icon circle-icon",
+// })
+
 onMounted(async () => {
   await onInit()
-  await getData()
   await updateMarkers()
 })
+
+watch(props, async () => await updateMarkers())
 
 async function onInit() {
   await nextTick()
 
-  const initLat = props.initPosition?.lat ?? 30
-  const initLon = props.initPosition?.lon ?? -10
-  const initZoom = props.initPosition?.zoom ?? 3
   const options: L.MapOptions = {
-    center: L.latLng(initLat, initLon),
-    zoom: initZoom,
+    maxBoundsViscosity: 1,
+    maxBounds: [
+      [-85, -181],
+      [85, 181],
+    ],
   }
   const mapObject = L.map(mapElement.value as HTMLElement, options)
   L.tileLayer(tileBaseUrl, {
@@ -109,31 +105,26 @@ async function onInit() {
   map = mapObject
 }
 
-async function getData() {
-  mapData.value = await getEmitters(props.entity.id)
-}
-
 /**
  * Add geoJSON layers to the map from the mapData
  */
 async function updateMarkers() {
   loading.value = true
-  if (!map || !mapData.value) {
+  if (!map || !props.dataLoaded) {
     return
   }
   const newLayers: Record<string, L.FeatureGroup> = {}
   const emitterRatio = {
-    total: mapData.value.length,
+    total: props.supporters.length,
     value: 0,
   }
-
+  // Construct individual emitters layer
   const emitterFeatures: Feature[] = []
   const emitterCountries: { [code: string]: Entity[] } = {}
-  for (const item of mapData.value) {
-    let feature: Feature | null = null
+  for (const item of props.supporters) {
     const coordinates = parsePointCoordinates(item.coordinates)
     if (coordinates) {
-      feature = {
+      const feature: Feature = {
         type: "Feature",
         properties: {
           ...item,
@@ -154,10 +145,7 @@ async function updateMarkers() {
   }
   if (emitterFeatures) {
     newLayers.emitters = L.geoJSON(emitterFeatures, {
-      pointToLayer: (feature, latlng) =>
-        // L.marker(latlng, {
-        //   icon: circleIcon,
-        // }),
+      pointToLayer: (_, latlng) =>
         L.circleMarker(latlng, {
           color: "#216d95",
           weight: 1,
@@ -176,6 +164,7 @@ async function updateMarkers() {
         }),
     })
   }
+  // Construct emitter countries layer
   if (Object.keys(emitterCountries).length) {
     const countryFeatures: Feature[] = []
     for (const key of Object.keys(emitterCountries)) {
@@ -224,21 +213,28 @@ async function updateMarkers() {
       })
     }
   }
-  const entityCoordinates = parsePointCoordinates(props.entity.coordinates)
-  if (entityCoordinates) {
-    const infraFeature: Feature = {
+  // Construct infrastructures layers
+  const infraFeatures: Feature[] = []
+  for (const item of props.infrastructures) {
+    const coordinates = parsePointCoordinates(item.coordinates)
+    if (!coordinates) {
+      continue
+    }
+    const feature: Feature = {
       type: "Feature",
       properties: {
-        ...props.entity,
+        id: item.id,
       },
       geometry: {
         type: "Point",
-        coordinates: [entityCoordinates.lon, entityCoordinates.lat],
+        coordinates: [coordinates.lon, coordinates.lat],
       },
     }
-
-    newLayers.infra = L.geoJSON(infraFeature, {
-      pointToLayer: (feature, latlng) =>
+    infraFeatures.push(feature)
+  }
+  if (infraFeatures) {
+    newLayers.infra = L.geoJSON(infraFeatures, {
+      pointToLayer: (_, latlng) =>
         L.marker(latlng, {
           icon: houseIcon,
           opacity: 0.95,
@@ -247,7 +243,7 @@ async function updateMarkers() {
         layer.bindPopup(() => {
           const mountElement = document.createElement("div")
           const popup = createPopup(EntityTitleLogo, mountElement, {
-            entity: props.entity,
+            entity: getEntitySummary(feature.properties.id),
           })
           layer.on("popupclose", () => cleanPopup(popup))
           return mountElement
@@ -261,6 +257,11 @@ async function updateMarkers() {
   layers.value = newLayers
   plottedEntities.value = emitterRatio
   loading.value = false
+  const bonds = L.latLngBounds([])
+  Object.values(layers.value).forEach((group) =>
+    bonds.extend(group.getBounds()),
+  )
+  map.fitBounds(bonds)
 }
 
 function createPopup(
@@ -280,8 +281,8 @@ function cleanPopup(element: App) {
 
 <template>
   <div class="map-wrapper">
-    <div class="map-header">
-      <h2 class="map-title">Funder locations</h2>
+    <div class="map-header" v-if="props.title">
+      <h2 class="map-title">{{ props.title }}</h2>
       <span v-if="plottedEntities">
         Showing {{ plottedEntities.value }} out of
         {{ plottedEntities.total }} funders ({{
@@ -315,7 +316,7 @@ function cleanPopup(element: App) {
       </div>
       <div v-if="layers.infra" class="legend-item">
         <div class="legend-icon house-icon" v-html="houseSvg"></div>
-        <span>Supported Infrastructure</span>
+        <span>Supported Infrastructures</span>
       </div>
     </div>
     <div v-show="loading" class="map-legend">
@@ -379,6 +380,7 @@ function cleanPopup(element: App) {
 
 .map-legend {
   display: flex;
+  flex-wrap: wrap;
   row-gap: 0.5em;
   column-gap: 1.5em;
   justify-content: center;
@@ -386,10 +388,11 @@ function cleanPopup(element: App) {
 
 .legend-item {
   display: flex;
+  flex-wrap: nowrap;
   font-size: 0.9rem;
   align-items: center;
   gap: 0.5em;
-
+  white-space: nowrap;
   & .map-icon {
     stroke-width: unset;
   }

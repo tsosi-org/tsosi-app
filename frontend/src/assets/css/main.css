@@ -20,8 +20,8 @@
 
   .regular-content {
     width: 100%;
-    padding: 2rem;
-    background-color: var(--color-background-component);
+    padding: 1rem;
+    /* background-color: var(--color-background-component); */
     border-radius: 10px;
     display: inline-block;
   }

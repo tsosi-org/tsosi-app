@@ -305,7 +305,9 @@ export async function getAnalytics(
   return result.data as Analytic[]
 }
 
-export async function getEmitters(entityId: string): Promise<Entity[] | null> {
+export async function getEmittersForEntity(
+  entityId: string,
+): Promise<Entity[] | null> {
   const queryParams = new URLSearchParams({ entity_id: entityId })
   const result = await get("entities/emitters/", true, queryParams)
   if (result.error || !result.data) {
@@ -316,4 +318,8 @@ export async function getEmitters(entityId: string): Promise<Entity[] | null> {
 
 export function getInfrastructures(): DeepReadonly<Entity>[] {
   return Object.values(refData.entities).filter((e) => e.is_recipient)
+}
+
+export function getEmitters(): DeepReadonly<Entity>[] {
+  return Object.values(refData.entities).filter((e) => !e.is_recipient)
 }

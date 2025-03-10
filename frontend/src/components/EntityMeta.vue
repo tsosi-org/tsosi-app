@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type EntityDetails, type DeepReadonly } from "@/singletons/ref-data"
+import { type EntityDetails } from "@/singletons/ref-data"
 import Image from "./atoms/ImageAtom.vue"
 import Chip from "primevue/chip"
 import { getRorUrl } from "@/utils/url-utils"
@@ -16,7 +16,7 @@ interface IconLabel {
 }
 
 const props = defineProps<{
-  entity: DeepReadonly<EntityDetails>
+  entity: EntityDetails
 }>()
 
 const logoWidth = "200px"

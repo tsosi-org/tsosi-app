@@ -40,8 +40,8 @@ watch(entity, onEntityChange)
   <Loader v-show="!entity" width="150px"></Loader>
   <div class="container" v-if="entity">
     <div class="regular-content">
-      <EntityMeta :entity="entity"></EntityMeta>
-      <EntityData :entity="entity"></EntityData>
+      <EntityMeta :entity="entity as EntityDetails" />
+      <EntityData :entity="entity as EntityDetails" />
     </div>
   </div>
 </template>
