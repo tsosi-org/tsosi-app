@@ -47,6 +47,7 @@ export interface Entity extends ApiData {
   coordinates?: string
   logo?: string
   is_recipient: boolean
+  is_partner: boolean
 }
 
 export interface EntityDetails extends Entity {
@@ -322,4 +323,8 @@ export function getInfrastructures(): DeepReadonly<Entity>[] {
 
 export function getEmitters(): DeepReadonly<Entity>[] {
   return Object.values(refData.entities).filter((e) => !e.is_recipient)
+}
+
+export function getPartners(): DeepReadonly<Entity>[] {
+  return Object.values(refData.entities).filter((e) => e.is_partner)
 }

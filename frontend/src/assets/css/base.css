@@ -33,6 +33,8 @@ https://primevue.org/theming/styled/#colors
 
 /* semantic color variables for this project */
 :root {
+  scroll-behavior: smooth;
+
   --color-background: white;
 
   --color-heading: var(--p-primary-800);
@@ -47,9 +49,16 @@ https://primevue.org/theming/styled/#colors
   --small-container-width: 1080px;
   --header-height: 50px;
   --font-size: 14px;
-  font-size: var(--font-size);
+  --font-size-small: 13px;
+  font-size: var(--font-size-small);
 
   --page-min-height: calc(100vh - var(--header-height) - 50px);
+}
+
+@media (min-width: 1000px) {
+  :root {
+    font-size: var(--font-size);
+  }
 }
 
 /* DARK MODE */

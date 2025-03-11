@@ -55,6 +55,7 @@ class Entity(TimestampedModel):
     wikipedia_url = models.CharField(max_length=512, null=True)
     wikipedia_extract = models.TextField(null=True)
     date_wikipedia_fetched = models.DateTimeField(null=True)
+    is_partner = models.BooleanField(default=False)
     # Coordinates according to WGS84 coordinates system in form `POINT(LNG LAT)`
     coordinates = models.TextField(null=True)
 
@@ -94,7 +95,6 @@ class InfrastructureDetails(TimestampedModel):
     infra_finder_url = models.URLField(max_length=256, null=True)
     posi_url = models.URLField(max_length=256, null=True)
     is_scoss_awarded = models.BooleanField(default=False)
-    is_partner = models.BooleanField(default=False)
     hide_amount = models.BooleanField(default=False)
     # Clc fields
     date_data_update = models.DateField(null=True)

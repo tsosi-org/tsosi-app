@@ -11,6 +11,7 @@ import { RouterLink } from "vue-router"
 
 export interface SearchBarProps {
   width?: string
+  placeHolder?: string
 }
 
 const props = defineProps<SearchBarProps>()
@@ -86,12 +87,12 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
 <template>
   <div class="search-bar">
     <IconField class="search-bar-input">
-      <InputIcon>
+      <InputIcon class="search-bar-icon">
         <font-awesome-icon icon="magnifying-glass" />
       </InputIcon>
       <InputText
         v-model="searchTerm"
-        placeholder="Search"
+        :placeholder="props.placeHolder ?? 'Search'"
         @input="onSearch"
         @focus="showResults"
         style="width: 100%"
@@ -139,7 +140,26 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
 </template>
 
 <style scoped>
+.search-bar {
+  text-align: center;
+
+  &.large {
+    .search-bar-input :deep(input) {
+      font-size: 1.8rem;
+      /* padding-inline: 0.75em;
+      padding-block: 0.5em; */
+      padding-inline-start: 2em;
+    }
+
+    .search-bar-icon {
+      font-size: 1.8em;
+      margin-top: -0.5em;
+    }
+  }
+}
+
 .search-bar-input {
+  display: inline-block;
   width: v-bind(elementWidth);
 }
 .search-bar-overlay {

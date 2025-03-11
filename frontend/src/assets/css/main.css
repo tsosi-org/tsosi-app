@@ -80,7 +80,8 @@ a,
   background-color: var(--p-surface-200);
 }
 
-h1 {
+h1,
+.as-h1 {
   text-transform: uppercase;
   color: var(--color-heading);
   font-weight: 900;

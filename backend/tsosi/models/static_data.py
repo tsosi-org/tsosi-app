@@ -62,12 +62,12 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_website": "https://doaj.org",
             "name": "Directory of Open Access Journals",
             "website": "https://doaj.org",
+            "is_partner": True,
         },
         "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/doaj-directory-of-open-access-journals",
             "posi_url": "https://blog.doaj.org/2022/10/06/doaj-commits-to-the-principles-of-open-scholarly-infrastructure-posi",
             "is_scoss_awarded": True,
-            "is_partner": True,
             "hide_amount": True,
         },
     },
@@ -84,12 +84,12 @@ SUPPORTED_INFRASTRUCTURES = [
             "date_inception": date(
                 2010, 1, 1
             ),  # Inception date of OAPEN - DOAB was launched in 2013
+            "is_partner": True,
         },
         "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/directory-of-open-access-books",
             "posi_url": "https://oapen.hypotheses.org/524",
             "is_scoss_awarded": True,
-            "is_partner": True,
             "hide_amount": True,
         },
         "static_logo": "LOGO_oapen_doab.png",
@@ -102,11 +102,11 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_website": "https://operas-eu.org",
             "name": "OPERAS",
             "website": "https://operas-eu.org",
+            "is_partner": True,
         },
         "infrastructure": {
             "posi_url": "https://operas-eu.org/principles-of-open-scholarly-infrastructure-posi",
             "is_scoss_awarded": False,
-            "is_partner": True,
         },
     },
     {
@@ -117,12 +117,12 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_website": "https://peercommunityin.org",
             "name": "Peer Community In",
             "website": "https://peercommunityin.org",
+            "is_partner": True,
         },
         "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/peer-community-in",
             "posi_url": "https://peercommunityin.org/2024/04/11/posi/",
             "is_scoss_awarded": False,
-            "is_partner": True,
         },
     },
     {
@@ -133,19 +133,19 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_website": "https://scipost.org",
             "name": "SciPost",
             "website": "https://scipost.org",
+            "is_partner": True,
         },
         "infrastructure": {
             "posi_url": "https://scipost.org/posi",
             "is_scoss_awarded": True,
-            "is_partner": True,
         },
     },
 ]
 
 
-def update_infrastructures():
+def update_partners():
     """
-    Create or update infrastructure data.
+    Create or update partners Entity data.
     """
     now = timezone.now()
     for infra in SUPPORTED_INFRASTRUCTURES:
@@ -242,5 +242,5 @@ def fill_static_data():
     Fill static data in the database.
     """
     create_pid_registries()
-    update_infrastructures()
+    update_partners()
     create_sources()
