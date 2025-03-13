@@ -29,3 +29,9 @@ TSOSI_CELERY_BROKER_URL = (
 TSOSI_DATA_EXPORT_FOLDER = "/some/path/only_for_local_use"
 TSOSI_TO_INGEST_DIR = TSOSI_DATA_EXPORT_FOLDER
 TSOSI_TRIGGER_JOBS = False
+TSOSI_SCIPOST_AUTH = {
+    "username": None,
+    "password": None,
+    "client_id": None,
+    "client_secret": None,
+}

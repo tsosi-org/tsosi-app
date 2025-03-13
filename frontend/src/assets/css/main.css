@@ -1,5 +1,9 @@
 @import "./base.css";
 
+#body.drawer-open {
+  overflow: hidden;
+}
+
 #app {
   font-weight: normal;
 }
@@ -14,18 +18,29 @@
 }
 
 .page-content {
-  margin-top: var(--header-height);
-  min-height: 50vh;
   min-height: var(--page-min-height);
+  margin-top: var(--regular-header-height);
 
   .regular-content {
     width: 100%;
-    padding: 1rem;
+    padding: min(1rem, 3vw);
     /* background-color: var(--color-background-component); */
     border-radius: 10px;
     display: inline-block;
   }
+
 }
+
+.init-big-header {
+  &.header-hidden .page-content {
+    margin-top: 0;
+  }
+  & .page-content {
+    margin-top: var(--big-header-height);
+  }
+}
+
+
 
 .top-drawer {
   position: fixed !important;

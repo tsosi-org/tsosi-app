@@ -98,7 +98,12 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
         style="width: 100%"
       />
     </IconField>
-    <Popover ref="op" :baseZIndex="9999" :style="`--width: ${elementWidth}`">
+    <Popover
+      ref="op"
+      :baseZIndex="9999"
+      :dt="{ gutter: 0 }"
+      :style="`--width: ${elementWidth}`"
+    >
       <div class="search-bar-overlay">
         <div v-if="filteredResults.length == 0" class="search-howto">
           <span v-if="searchTerm.trim().length > 0">
@@ -167,7 +172,11 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
   position: relative;
   max-width: var(--content-width);
   width: var(--content-width);
-  overflow: scroll;
+  overflow: hidden;
+}
+
+.search-results {
+  overflow-x: hidden;
 }
 
 .search-howto {

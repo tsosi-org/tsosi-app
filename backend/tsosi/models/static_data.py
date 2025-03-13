@@ -77,8 +77,10 @@ SUPPORTED_INFRASTRUCTURES = [
         "entity": {
             "raw_name": "OAPEN & Directory of Open Access Books",
             "raw_website": "https://www.doabooks.org",
+            "raw_country": "NL",
             "name": "OAPEN & Directory of Open Access Books",
             "website": "https://www.doabooks.org",
+            "country": "NL",
             "description": """OAPEN supports the transition to open access for academic books by providing open infrastructure services to stakeholders, including the DOAB (Directory of Open Access Books), on which OAPEN works in partnership with Open Edition.""",
             "manual_logo": True,
             "date_inception": date(

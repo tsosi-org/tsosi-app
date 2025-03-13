@@ -13,6 +13,8 @@ import ImageAtom from "@/components/atoms/ImageAtom.vue"
 import SearchBar from "@/components/SearchBar.vue"
 import { getEntityUrl } from "@/utils/url-utils"
 import { isDesktop } from "@/composables/useMediaQuery"
+import { onBeforeMount, onMounted, onUnmounted } from "vue"
+import { togglePageNoHeader, setBigHeader } from "@/singletons/fixedHeaderStore"
 
 changeTitle("Home")
 
@@ -28,43 +30,90 @@ emitters.forEach((e) => {
     countries.push(e.country)
   }
 })
+
+onBeforeMount(() => {
+  setBigHeader(true)
+  togglePageNoHeader(true)
+})
+
+onMounted(() => {
+  window.addEventListener("scroll", updateHeaderHome)
+})
+
+onUnmounted(() => {
+  setBigHeader(false)
+  togglePageNoHeader(false)
+  window.removeEventListener("scroll", updateHeaderHome)
+})
+
+function updateHeaderHome() {
+  setBigHeader(window.scrollY < 70)
+}
 </script>
 
 <template>
-  <div :class="{ 'home-mobile': !isDesktop }">
-    <section class="container" style="padding-top: 3vh">
-      <div class="regular-content content-section">
-        <div class="data-summary">
-          <span class="number-emphasis">
-            {{ emitters.length }}
-          </span>
-          institutions from
-          <span class="number-emphasis">
-            {{ countries.length.toString() }}
-          </span>
-          countries contributed to sustain
-          <!-- Either a popup or href to anchor tag
-          <InfoButtonAtom
-            :label="infrastructures.length.toString()"
-            class="number-emphasis"
-          >
-            <template #default>
-              <InfrastructurePopup />
-            </template>
-          </InfoButtonAtom>
-          -->
-          <RouterLink to="#partner-banner" class="number-emphasis">
-            {{ infrastructures.length.toString() }}
-          </RouterLink>
-          Open Science Infrastructures.
+  <div id="home" :class="{ 'home-mobile': !isDesktop }">
+    <section class="banner">
+      <div class="container">
+        <div class="regular-content content-section citation">
+          <div>
+            <h2>
+              No reason to hide a contribution made to an Open Science
+              Infrastructure.
+            </h2>
+          </div>
+          <div class="hr"></div>
+          <div class="subtitle">
+            On the contrary, TSOSI was born from the idea that all the fundings,
+            subsidies and supports should be transparent in order to better
+            grasp the stakes behind the OS infrastructures.
+            <RouterLink to="/about"> Read more. </RouterLink>
+          </div>
         </div>
-        <EntityMap
-          class="home-map"
-          :infrastructures="infrastructures"
-          :supporters="emitters"
-          title="Funder locations"
-          :data-loaded="true"
-        />
+      </div>
+    </section>
+
+    <section class="banner banner-dark">
+      <div class="container">
+        <div class="regular-content content-section">
+          <div class="data-summary">
+            <span class="number-emphasis">
+              {{ emitters.length }}
+            </span>
+            institutions from
+            <span class="number-emphasis">
+              {{ countries.length.toString() }}
+            </span>
+            countries contributed to sustain
+            <!-- Either a popup or href to anchor tag
+            <InfoButtonAtom
+              :label="infrastructures.length.toString()"
+              class="number-emphasis"
+            >
+              <template #default>
+                <InfrastructurePopup />
+              </template>
+            </InfoButtonAtom>
+            -->
+            <RouterLink to="#partner-banner" class="number-emphasis">
+              {{ infrastructures.length.toString() }}
+            </RouterLink>
+            Open Science Infrastructures.
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="banner">
+      <div class="container">
+        <div class="regular-content content-section">
+          <EntityMap
+            class="home-map"
+            :infrastructures="infrastructures"
+            :supporters="emitters"
+            title="Funder locations"
+            :data-loaded="true"
+          />
+        </div>
       </div>
     </section>
 
@@ -113,8 +162,9 @@ emitters.forEach((e) => {
               justify-content: space-around;
             "
           >
+            <!--
             <CardComponent
-              width="21rem"
+              width="24rem"
               style="
                 background: transparent
                   linear-gradient(145deg, #fff, 5%, #cbe7f7, 90%, #3f84aa);
@@ -134,8 +184,9 @@ emitters.forEach((e) => {
                 egestas.
               </template>
             </CardComponent>
+            -->
             <CardComponent
-              width="21rem"
+              width="24rem"
               style="
                 background: transparent
                   linear-gradient(145deg, #fff, 5%, #ffe0cd, 90%, #e57126);
@@ -156,7 +207,7 @@ emitters.forEach((e) => {
               </template>
             </CardComponent>
             <CardComponent
-              width="21rem"
+              width="24rem"
               style="
                 background: transparent
                   linear-gradient(145deg, #fff, 5%, #e3f3ee, 90%, #549b83);
@@ -177,7 +228,7 @@ emitters.forEach((e) => {
               </template>
             </CardComponent>
             <CardComponent
-              width="21rem"
+              width="24rem"
               style="
                 background: transparent
                   linear-gradient(145deg, #fff, 5%, #fff0d0, 90%, #e7a824);
@@ -205,6 +256,49 @@ emitters.forEach((e) => {
 </template>
 
 <style scoped>
+#home > *:first-child {
+  padding-top: 3vh;
+}
+
+.home-mobile {
+  .citation,
+  .citation h2 {
+    font-size: 2.8rem;
+
+    & .subtitle {
+      width: initial;
+    }
+  }
+
+  .data-summary {
+    font-size: 1.75rem;
+  }
+}
+
+.citation {
+  padding: 0 min(0.8em, 4vw);
+
+  & .hr {
+    content: "";
+    height: 2px;
+    width: 50%;
+    /* margin-left: min(1em, 4vw); */
+    background-color: var(--color-heading);
+  }
+
+  & .subtitle {
+    font-size: 1rem;
+    width: 50%;
+  }
+}
+
+.citation,
+.citation h2 {
+  font-size: 5rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
 .logo {
   max-width: 100%;
 }
@@ -218,10 +312,10 @@ emitters.forEach((e) => {
     }
   }
 }
+
 .data-summary {
   font-size: 2.25rem;
-  padding: 1rem;
-  /* box-shadow: 0 0 6px 1px var(--p-surface-300); */
+  padding: min(1rem, 3vw);
   border-radius: 20px;
   font-weight: 700;
 }

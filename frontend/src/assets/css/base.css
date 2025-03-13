@@ -47,7 +47,11 @@ https://primevue.org/theming/styled/#colors
 
   --container-width: 1280px;
   --small-container-width: 1080px;
-  --header-height: 50px;
+  --big-header-height: 150px;
+  --regular-header-height: 50px;
+  
+  --header-height: var(--regular-header-height);
+
   --font-size: 14px;
   --font-size-small: 13px;
   font-size: var(--font-size-small);
@@ -82,7 +86,30 @@ https://primevue.org/theming/styled/#colors
   box-sizing: border-box;
   margin: 0;
   font-weight: inherit;
-  scroll-margin-top: var(--header-height);
+  scroll-margin-top: var(--regular-header-height);
+}
+
+/* Make webkit browsers' scrollbar behave like chrome as an overlay  */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #a8a8a8;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.init-big-header {
+  *,
+  *::before,
+  *::after {
+    scroll-margin-top: 0;
+  }
 }
 
 body {

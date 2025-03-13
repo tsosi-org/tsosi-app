@@ -46,7 +46,9 @@ const router = createRouter({
     } else if (savedPosition) {
       return savedPosition
     }
-    return { el: "#main", top: 200 }
+    // The top value must be higher than the maximum header-height
+    // which is contained in --big-header-height
+    return { el: "#main", top: 500 }
   },
 })
 

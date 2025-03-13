@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
 TSOSI_DIR = Path(__file__).resolve().parent
 
@@ -46,10 +47,6 @@ class AppSettings:
         return self._setting("REDIS_DB", mandatory=True)
 
     @property
-    def CELERY_BROKER(self) -> str:
-        return self._setting("CELERY_BROKER", mandatory=True)
-
-    @property
     def TSOSI_APP_DIR(self) -> Path:
         return TSOSI_DIR
 
@@ -70,6 +67,33 @@ class AppSettings:
     @property
     def TRIGGER_JOBS(self) -> bool:
         return self._setting("TRIGGER_JOBS", default=False)
+
+    @property
+    def SCIPOST_AUTH(self) -> dict | None:
+        """
+        The authentication credentials used to fetch SciPost protected data.
+        The dictionnary requires the following data:
+        ```
+        {
+            "username": The name of the scipost user with elevated rights,
+            "password": The name of the scipost user with elevated rights,
+            "client_id": The ID of the OAuth2 application created to retrieve an auth token,
+            "client_secret": Tee secret of the OAuth2 application created to retrieve an auth token
+        }
+        ```
+        """
+        val = self._setting("SCIPOST_AUTH", mandatory=True)
+        if not isinstance(val, dict):
+            raise ImproperlyConfigured(
+                f"Wrong data type for setting `SCIPOST_AUTH`: {val}"
+            )
+        relevant_keys = ["username", "password", "client_id", "client_secret"]
+        for key in relevant_keys:
+            if val.get(key) is None:
+                raise ImproperlyConfigured(
+                    f"Missing value for `SCIPOST_AUTH` required key: {key}"
+                )
+        return val
 
 
 app_settings = AppSettings()
