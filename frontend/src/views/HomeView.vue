@@ -64,9 +64,10 @@ function updateHeaderHome() {
           </div>
           <div class="hr"></div>
           <div class="subtitle">
-            On the contrary, TSOSI was born from the idea that all the fundings,
-            subsidies and supports should be transparent in order to better
-            grasp the stakes behind the OS infrastructures.
+            On the contrary, TSOSI was born of the idea that all funding,
+            subsidies and support should be transparent, so that we can better
+            understand the issues behind the OS infrastructures.
+            <br />
             <RouterLink to="/about"> Read more. </RouterLink>
           </div>
         </div>
@@ -77,6 +78,7 @@ function updateHeaderHome() {
       <div class="container">
         <div class="regular-content content-section">
           <div class="data-summary">
+            So far, TSOSI includes
             <span class="number-emphasis">
               {{ emitters.length }}
             </span>
@@ -84,7 +86,7 @@ function updateHeaderHome() {
             <span class="number-emphasis">
               {{ countries.length.toString() }}
             </span>
-            countries contributed to sustain
+            countries that contributed to sustain
             <!-- Either a popup or href to anchor tag
             <InfoButtonAtom
               :label="infrastructures.length.toString()"
