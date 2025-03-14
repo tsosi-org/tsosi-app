@@ -1,9 +1,8 @@
 import json
 import logging
 import re
-from copy import deepcopy
 from dataclasses import asdict, dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Any, ClassVar, Type
 
 import pandas as pd
@@ -13,14 +12,15 @@ from tsosi.data.utils import clean_null_values
 from tsosi.models.date import (
     DATE_FORMAT,
     DATE_PRECISION_CHOICES,
-    DATE_PRECISION_DAY,
     DATE_PRECISION_YEAR,
-    Date,
     format_date,
 )
 from tsosi.models.static_data import DATA_SOURCES
 
 from .cleaning_utils import (
+    check_bool_value,
+    check_ror_id,
+    check_wikidata_id,
     clean_cell_value,
     clean_number_value,
     clean_url,
@@ -39,22 +39,26 @@ __all__ = [
     "ALL_FIELDS",
     "DATE_FIELDS",
     "FieldAmount",
+    "FieldHideAmount",
     "FieldCurrency",
     "FieldEmitterName",
     "FieldEmitterRorId",
     "FieldEmitterWikidataId",
+    "FieldEmitterCustomId",
     "FieldEmitterUrl",
     "FieldEmitterCountry",
     "FieldEmitterType",
     "FieldRecipientName",
     "FieldRecipientRorId",
     "FieldRecipientWikidataId",
+    "FieldRecipientCustomId",
     "FieldRecipientUrl",
     "FieldRecipientCountry",
     "FieldAgentName",
     "FieldAgentUrl",
     "FieldAgentRorId",
     "FieldAgentWikidataId",
+    "FieldAgentCustomId",
     "FieldAgentCountry",
     "FieldDateInvoice",
     "FieldDatePayment",
@@ -72,6 +76,7 @@ class ConstOrField:
     NAME: ClassVar[str]
     type: ClassVar[str] = "str"
     required: ClassVar[bool] = False
+    check_func: ClassVar[str | None] = None
     constant: str | None = None
     field: str | None = None
 
@@ -113,11 +118,18 @@ class FieldEmitterName(ConstOrField):
 @dataclass(kw_only=True)
 class FieldEmitterRorId(ConstOrField):
     NAME = "emitter_ror_id"
+    check_func = "ror_id"
 
 
 @dataclass(kw_only=True)
 class FieldEmitterWikidataId(ConstOrField):
     NAME = "emitter_wikidata_id"
+    check_func = "wikidata_id"
+
+
+@dataclass(kw_only=True)
+class FieldEmitterCustomId(ConstOrField):
+    NAME = "emitter_custom_id"
 
 
 @dataclass(kw_only=True)
@@ -147,6 +159,12 @@ class FieldRecipientName(ConstOrField):
 @dataclass(kw_only=True)
 class FieldRecipientRorId(ConstOrField):
     NAME = "recipient_ror_id"
+    check_func = "ror_id"
+
+
+@dataclass(kw_only=True)
+class FieldRecipientCustomId(ConstOrField):
+    NAME = "recipient_custom_id"
 
 
 @dataclass(kw_only=True)
@@ -159,6 +177,7 @@ class FieldRecipientCountry(ConstOrField):
 @dataclass(kw_only=True)
 class FieldRecipientWikidataId(ConstOrField):
     NAME = "recipient_wikidata_id"
+    check_func = "wikidata_id"
 
 
 @dataclass(kw_only=True)
@@ -175,11 +194,18 @@ class FieldAgentName(ConstOrField):
 @dataclass(kw_only=True)
 class FieldAgentRorId(ConstOrField):
     NAME = "agent_ror_id"
+    check_func = "ror_id"
 
 
 @dataclass(kw_only=True)
 class FieldAgentWikidataId(ConstOrField):
     NAME = "agent_wikidata_id"
+    check_func = "wikidata_id"
+
+
+@dataclass(kw_only=True)
+class FieldAgentCustomId(ConstOrField):
+    NAME = "agent_custom_id"
 
 
 @dataclass(kw_only=True)
@@ -233,24 +259,35 @@ class FieldOriginalAmountField(ConstOrField):
     NAME = "original_amount_field"
 
 
+@dataclass(kw_only=True)
+class FieldHideAmount(ConstOrField):
+    NAME = "hide_amount"
+    required = True
+    type = "bool"
+
+
 ALL_FIELDS: list[Type[ConstOrField]] = [
     FieldAmount,
+    FieldHideAmount,
     FieldCurrency,
     FieldEmitterName,
     FieldEmitterRorId,
     FieldEmitterWikidataId,
+    FieldEmitterCustomId,
     FieldEmitterUrl,
     FieldEmitterCountry,
     FieldEmitterType,
     FieldRecipientName,
     FieldRecipientRorId,
     FieldRecipientWikidataId,
+    FieldRecipientCustomId,
     FieldRecipientUrl,
     FieldRecipientCountry,
     FieldAgentName,
     FieldAgentUrl,
     FieldAgentRorId,
     FieldAgentWikidataId,
+    FieldAgentCustomId,
     FieldAgentCountry,
     FieldDateInvoice,
     FieldDatePayment,
@@ -272,18 +309,29 @@ DATE_FIELDS = [
 class DataLoadSource:
     data_source_id: str
     data_load_name: str
+    date_data_obtained: date
     year: int | None = None
     full_data: bool = False
 
+    def __post_init__(self):
+        """
+        Handle date field to enable populating the dataclass from JSON.
+        """
+        if isinstance(self.date_data_obtained, str):
+            self.date_data_obtained = date.fromisoformat(
+                self.date_data_obtained
+            )
+
     def serialize(self) -> dict:
-        return asdict(self)
+        data = asdict(self)
+        data["date_data_obtained"] = self.date_data_obtained.isoformat()
+        return data
 
 
 @dataclass(kw_only=True)
 class DataIngestionConfig:
     date_generated: str
     source: DataLoadSource
-    hide_amount: bool
     count: int
     data: list
 
@@ -305,7 +353,6 @@ class RawDataConfig:
         extract_currency_amount: bool = False,
         input_file_name: str | None = None,
         input_sheet_name: str | None = None,
-        hide_amount: bool = False,
     ):
 
         self.id = id
@@ -322,7 +369,6 @@ class RawDataConfig:
         self.fields = fields
         self.extract_currency_amount = extract_currency_amount
         self.date_columns = date_columns
-        self.hide_amount = hide_amount
         self.origin = ""
         self.validate_fields()
 
@@ -444,7 +490,9 @@ class RawDataConfig:
             format = field.format if field and field.format else DATE_FORMAT
             df[col] = df[col].apply(lambda x: undate(x, format))
 
-        df[FieldRawData.NAME] = df.apply(lambda row: row.to_dict(), axis=1)
+        df[FieldRawData.NAME] = df.apply(
+            lambda row: row.dropna().to_dict(), axis=1
+        )
         amount_field = self.get_field(FieldAmount)
         df[FieldOriginalAmountField.NAME] = (
             amount_field.field if amount_field.field else None
@@ -471,7 +519,7 @@ class RawDataConfig:
         # Data cleaning
         for f in self.active_fields:
             # Insert constant fields
-            if f.constant and f.type != "date":
+            if f.constant is not None and f.type != "date":
                 # Trying to assign a dict value to every row is troublesome
                 # with pandas
                 if isinstance(f.constant, dict):
@@ -488,6 +536,10 @@ class RawDataConfig:
             # Clean URLs
             if f.type == "url" and f.field is not None:
                 df[f.NAME] = df[f.NAME].apply(clean_url)
+            # Boolean field should be set
+            elif f.type == "bool":
+                df[f.NAME].apply(lambda x: check_bool_value(x, error))
+
             # Convert country names to ISO code
             elif f.type == "country":
                 if f.is_iso:
@@ -521,6 +573,16 @@ class RawDataConfig:
                         lambda x: f.default if pd.isna(x) else x
                     )
 
+            if f.check_func:
+                if f.check_func == "ror_id":
+                    df[f.NAME].apply(lambda x: check_ror_id(x, error))
+                elif f.check_func == "wikidata_id":
+                    df[f.NAME].apply(lambda x: check_wikidata_id(x, error))
+                else:
+                    raise ValueError(
+                        f"`check_func` value {f.check_func} is not supported."
+                    )
+
         # Special case of single column holding both amount and currency
         if self.extract_currency_amount:
             df[[FieldAmount.NAME, FieldCurrency.NAME]] = df[
@@ -541,7 +603,7 @@ class RawDataConfig:
         # Parse amount
         df[FieldAmount.NAME] = df[FieldAmount.NAME].apply(
             lambda x: clean_number_value(
-                x, self.get_field(FieldAmount).comma_decimal
+                x, self.get_field(FieldAmount).comma_decimal, error=error
             )
         )
 
@@ -568,13 +630,11 @@ class RawDataConfig:
             df.loc[df_warn.index, FieldAmount.NAME] = None
             df.loc[df_warn.index, FieldCurrency.NAME] = None
 
+        # TODO: Check identifiers syntax
+
         # Drop all columns whose data will not be used anymore.
         cols_to_drop = [c for c in df.columns if c not in cols_to_export]
         df = df.drop(columns=cols_to_drop)
-
-        # Create empty columns for every field not already present in the df
-        cols_to_add = [f.NAME for f in self.fields if f.NAME not in df.columns]
-        df.loc[:, cols_to_add] = None
 
         # Compute the `original_id` field for custom tracking.
         # The ulterior generated transfert ID is a random UUID..
@@ -600,9 +660,8 @@ class RawDataConfig:
         file_name += ".json"
         file_path = app_settings.DATA_EXPORT_FOLDER / file_name
         ingestion_config = DataIngestionConfig(
-            date_generated=datetime.now().replace(microsecond=0).isoformat(),
+            date_generated=datetime.now(UTC).isoformat(timespec="seconds"),
             source=self.source.serialize(),
-            hide_amount=self.hide_amount,
             count=len(data),
             data=data.to_dict(orient="records"),
         )
@@ -641,47 +700,6 @@ class RawDataConfigFromFile(RawDataConfig):
 
 
 # All configs
-CONFIG_PCI = {
-    "id": "pci",
-    "extract_currency_amount": True,
-    "fields": [
-        FieldAmount(field="Amount"),
-        FieldCurrency(default="EUR"),
-        FieldRecipientName(constant="Peer Community In"),
-        FieldRecipientRorId(constant="0315saa81"),
-        FieldEmitterName(field="From organization"),
-        FieldEmitterType(field="Category"),
-        FieldEmitterUrl(field="Website"),
-        FieldDatePayment(
-            field="Year", format="%Y", date_precision=DATE_PRECISION_YEAR
-        ),
-    ],
-}
-
-CONFIG_SCIPOST = {
-    "id": "scipost",
-    "fields": [
-        FieldRecipientName(constant="SciPost"),
-        FieldRecipientWikidataId(constant="Q52663237"),
-        FieldEmitterName(field="organization_name"),
-        FieldEmitterCountry(field="organization_country", is_iso=True),
-        FieldEmitterRorId(field="organization_ror_id"),
-        FieldEmitterType(field="organization_orgtype"),
-        FieldAmount(field="amount"),
-        FieldCurrency(constant="EUR"),
-        FieldDateStart(
-            field="date_from",
-            format="%Y-%m-%d",
-            date_precision=DATE_PRECISION_YEAR,
-        ),
-        FieldDateEnd(
-            field="date_until",
-            format="%Y-%m-%d",
-            date_precision=DATE_PRECISION_YEAR,
-        ),
-    ],
-}
-
 CONFIG_OPERAS = {
     "id": "operas",
     "fields": [
@@ -696,3 +714,13 @@ CONFIG_OPERAS = {
         ),
     ],
 }
+
+
+def create_missing_fields(df: pd.DataFrame):
+    """
+    Create empty columns for every input field not already present in the
+    given dataframe.
+    """
+    cols_to_add = [f.NAME for f in ALL_FIELDS if f.NAME not in df.columns]
+    df.loc[:, cols_to_add] = None
+    clean_null_values(df)

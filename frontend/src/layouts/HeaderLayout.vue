@@ -1,29 +1,152 @@
 <script setup lang="ts">
-import { RouterLink } from "vue-router"
+import { ref, watch } from "vue"
+import { RouterLink, useRouter } from "vue-router"
 import SearchBar from "@/components/SearchBar.vue"
+import { isDesktop } from "@/composables/useMediaQuery"
+import Drawer from "primevue/drawer"
+import Button from "@/components/atoms/ButtonAtom.vue"
+import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
+import { $dt } from "@primevue/themes"
+import { bigHeader } from "@/singletons/fixedHeaderStore"
+
+const router = useRouter()
+const navMenuVisible = ref(false)
+const searchMenuVisible = ref(false)
+
+watch(router.currentRoute, closeDrawers)
+
+function closeDrawers() {
+  searchMenuVisible.value = false
+  navMenuVisible.value = false
+}
+
+function toggleDrawer(name: string) {
+  if (name == "navMenu") {
+    searchMenuVisible.value = false
+    navMenuVisible.value = !navMenuVisible.value
+  } else {
+    navMenuVisible.value = false
+    searchMenuVisible.value = !searchMenuVisible.value
+  }
+}
+
+/**
+ * Toggle a custom class on the #body element to indicate an opened drawer.
+ */
+function onDrawerToggle(show: boolean) {
+  const body = document.getElementById("body")
+  if (show) {
+    body!.classList.add("drawer-open")
+  } else {
+    body!.classList.remove("drawer-open")
+  }
+}
 </script>
 
 <template>
-  <header>
-    <nav class="container d-flex">
-      <RouterLink style="line-height: 0" to="/">
+  <header
+    id="header"
+    class="header-visible"
+    :class="{ home: bigHeader, desktop: isDesktop }"
+  >
+    <!-- Large screen header -->
+    <nav v-if="isDesktop" class="container">
+      <RouterLink style="line-height: 0" to="/" @click="closeDrawers">
         <img class="logo" src="@/assets/img/logo_white.svg" />
       </RouterLink>
-      <ul class="d-flex" style="gap: 0">
-        <li>
-          <RouterLink to="/about">Open Infrastructure</RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/">Supporter</RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/">FAQ</RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/about">About</RouterLink>
-        </li>
-      </ul>
-      <SearchBar></SearchBar>
+      <div v-show="bigHeader" class="header-citation">
+        Transparency to Sustain Open Science Infrastructure
+      </div>
+      <NavigationListAtom
+        v-show="!bigHeader"
+        :color="$dt('neutral.50').value"
+        :header="true"
+        font-size="20px"
+        class="d-flex"
+        style="gap: 0"
+      />
+      <SearchBar v-show="!bigHeader" width="330px" />
+    </nav>
+
+    <!-- Small screens header -->
+    <nav v-if="!isDesktop">
+      <div v-show="!bigHeader" id="nav-menu">
+        <Button
+          v-if="!navMenuVisible"
+          id="navMenu"
+          icon="bars"
+          type="action"
+          @click="toggleDrawer('navMenu')"
+          custom-class="header-button"
+        ></Button>
+        <Button
+          v-else
+          id="navMenuClose"
+          icon="xmark"
+          type="action"
+          @click="toggleDrawer('navMenu')"
+          custom-class="header-button"
+        ></Button>
+        <Drawer
+          v-model:visible="navMenuVisible"
+          :baseZIndex="8000"
+          :pt="{
+            root: { class: 'top-drawer' },
+          }"
+          @show="onDrawerToggle(true)"
+          @hide="onDrawerToggle(false)"
+        >
+          <template #container>
+            <NavigationListAtom
+              :color="$dt('primary').value"
+              font-size="20px"
+              :header="true"
+              class="nav-standalone d-flex"
+              style="gap: 0"
+            />
+          </template>
+        </Drawer>
+      </div>
+
+      <RouterLink style="line-height: 0" to="/" @click="closeDrawers">
+        <img class="logo" src="@/assets/img/logo_white.svg" />
+      </RouterLink>
+      <div v-show="bigHeader" class="header-citation">
+        Transparency to Sustain Open Science Infrastructure
+      </div>
+
+      <div id="search-menu" v-show="!bigHeader">
+        <Button
+          v-if="!searchMenuVisible"
+          id="searchMenu"
+          icon="magnifying-glass"
+          type="action"
+          custom-class="header-button"
+          @click="toggleDrawer('searchMenu')"
+        ></Button>
+        <Button
+          v-else
+          id="searchMenuClose"
+          icon="xmark"
+          type="action"
+          @click="toggleDrawer('searchMenu')"
+          custom-class="header-button"
+        ></Button>
+        <Drawer
+          v-model:visible="searchMenuVisible"
+          position="right"
+          :baseZIndex="8000"
+          :pt="{
+            root: { class: 'top-drawer' },
+          }"
+          @show="onDrawerToggle(true)"
+          @hide="onDrawerToggle(false)"
+        >
+          <template #container>
+            <SearchBar width="500px"></SearchBar>
+          </template>
+        </Drawer>
+      </div>
     </nav>
   </header>
 </template>
@@ -38,35 +161,74 @@ header {
   z-index: 10000;
   height: var(--header-height);
   overflow: hidden;
+  transform: translate(0, -100%);
+  transition: all 0.3s ease-in-out;
+
+  &.header-visible {
+    transform: unset;
+  }
+}
+
+header.home {
+  --content-height: calc(var(--header-height) - 6rem);
+  padding: 1rem 1rem;
+  transform: unset;
+
+  & .logo {
+    margin: 0;
+    padding: 0 auto;
+    max-width: 100%;
+    margin-left: -4px;
+    height: min(var(--content-height), 50px);
+  }
+
+  &.desktop .logo {
+    height: min(var(--content-height), 100px);
+  }
+
+  & nav {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    justify-items: center;
+    column-gap: 2rem;
+    margin: auto;
+    height: 100%;
+  }
+  &.desktop nav {
+    font-size: 2.25rem;
+    grid-template-columns: 40% 1fr;
+  }
+}
+
+.header-citation {
+  font-style: italic;
+  color: white;
+  font-weight: 500;
+  text-align: center;
+}
+
+.desktop .header-citation {
+  text-align: initial;
 }
 
 nav {
-  justify-content: space-between;
+  font-size: 1rem;
   align-items: center;
+  display: flex;
+  justify-content: space-between;
 }
 
 .logo {
   margin: 0.5rem 1rem;
   height: calc(var(--header-height) - 1rem);
   background-color: transparent;
+  /* transition: height 0.3s linear; */
 }
 
-ul {
-  padding: 0;
-}
-
-li {
-  list-style: none;
-}
-
-li a {
-  --this-fs: 20px;
-  --this-lh: 1;
-  line-height: var(--this-lh);
-  font-size: var(--this-fs);
-  display: block;
-  text-decoration: none;
-  color: var(--p-gray-50);
-  padding: calc((var(--header-height) - var(--this-lh) * var(--this-fs)) / 2);
+.header-button {
+  background-color: var(--p-primary-800);
+  border-color: transparent;
+  font-size: 1.5rem;
 }
 </style>

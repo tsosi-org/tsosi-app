@@ -7,6 +7,7 @@ import {
 } from "@/utils/data-utils"
 import { RouterLink } from "vue-router"
 import Country from "@/components/atoms/CountryAtom.vue"
+import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 
 export interface SummaryProps {
   data: Record<string, any>
@@ -20,8 +21,14 @@ const props = defineProps<SummaryProps>()
 <template>
   <div class="summary">
     <template v-for="field of props.fields" :key="field.id">
-      <div v-if="getItemLabel(props.data, field)" class="summary-field">
-        <div class="summary-label">{{ field.title }}:</div>
+      <div
+        v-if="getItemLabel(props.data, field) || field.type == 'boolean'"
+        class="summary-field"
+      >
+        <div class="summary-label">
+          {{ field.title
+          }}<InfoButtonAtom v-if="field.info" :content="field.info" />&nbsp;:
+        </div>
         <div class="summary-value">
           <RouterLink
             v-if="field.type == 'pageLink'"
@@ -54,6 +61,14 @@ const props = defineProps<SummaryProps>()
             precision
           </div>
 
+          <div v-else-if="field.type == 'boolean'">
+            <font-awesome-icon
+              v-if="getItemLabel(props.data, field)"
+              icon="square-check"
+            />
+            <font-awesome-icon v-else icon="square-xmark" />
+          </div>
+
           <div v-else>
             {{ formatValue(getItemLabel(props.data, field), field.type) }}
           </div>
@@ -69,6 +84,12 @@ const props = defineProps<SummaryProps>()
   flex-direction: column;
   gap: 1em;
   overflow-x: auto;
+  padding: 1em;
+
+  &.info-box {
+    border: 2px solid orange;
+    border-radius: 5px;
+  }
 }
 
 .summary-field {

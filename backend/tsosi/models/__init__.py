@@ -1,5 +1,6 @@
+from .analytics import Analytic
 from .currency import Currency, CurrencyRate
-from .entity import Entity, EntityType
+from .entity import Entity, EntityType, InfrastructureDetails
 from .identifier import (
     Identifier,
     IdentifierEntityMatching,

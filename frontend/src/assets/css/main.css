@@ -1,5 +1,9 @@
 @import "./base.css";
 
+#body.drawer-open {
+  overflow: hidden;
+}
+
 #app {
   font-weight: normal;
 }
@@ -7,18 +11,47 @@
 .container {
   max-width: var(--container-width);
   margin: 0 auto;
+
+  &.small {
+    max-width: var(--small-container-width);
+  }
 }
 
 .page-content {
-  margin-top: var(--header-height);
+  min-height: var(--page-min-height);
+  margin-top: var(--regular-header-height);
 
   .regular-content {
     width: 100%;
-    padding: 2rem;
-    background-color: var(--color-background-component);
+    padding: min(1rem, 3vw);
+    /* background-color: var(--color-background-component); */
     border-radius: 10px;
     display: inline-block;
   }
+
+}
+
+.init-big-header {
+  &.header-hidden .page-content {
+    margin-top: 0;
+  }
+  & .page-content {
+    margin-top: var(--big-header-height);
+  }
+}
+
+
+
+.top-drawer {
+  position: fixed !important;
+  top: 0;
+  width: 100vw !important;
+  margin-top: var(--header-height);
+  min-height: calc(100vh - var(--header-height));
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  place-items: center;
 }
 
 @media screen and (min-width: 1280px) {
@@ -62,9 +95,98 @@ a,
   background-color: var(--p-surface-200);
 }
 
-h1 {
+h1,
+.as-h1 {
   text-transform: uppercase;
   color: var(--color-heading);
   font-weight: 900;
   font-size: 28px;
+}
+
+h2, h3, h4, h5, h6 {
+  color: var(--color-heading);
+  font-weight: 700;
+  border-radius: 4px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 
+    Mount,
+    Verdana,
+    -apple-system,
+    BlinkMacSystemFont,
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Helvetica Neue",
+    sans-serif;
+
+  &:target {
+    outline: 2px solid var(--color-target);
+    padding-left: 2px;
+  }
+}
+
+.static-content {
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
+    padding: 0.5em 0;
+  }
+}
+
+p {
+  margin: 5px 0;
+}
+
+.color-success {
+  color: var(--color-success);
+}
+
+.color-error {
+  color: var(--color-error);
+}
+
+
+.p-popover.p-component::before,
+.p-popover.p-component::after {
+  display: none;
+}
+
+/*
+ Component specific CSS
+ TODO: move it to primevue styling framework.
+ More generally, all styling should be reviewed and reworked to use
+ primevue styling system.
+*/
+.info-box {
+  --info-box-color: var(--p-primary-color);
+  padding: 1em;
+  max-width: min(100%, 400px);
+  border: 2px solid;
+  border-color: var(--p-surface-200);
+  border-radius: 5px;
+  /* box-shadow: 0 0 5px 2px var(--p-surface-300); */
+  height: fit-content;
+
+  &.expand {
+    max-width: unset;
+  }
+}
+
+.info-box > * {
+  margin-bottom: 0.5em;
+}
+
+.info-box > *:last-child {
+  margin-bottom: unset;
+}
+
+.info-item h3 {
+  color: var(--info-box-color);
+  font-size: 1.05rem;
 }

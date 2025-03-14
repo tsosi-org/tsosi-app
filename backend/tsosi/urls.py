@@ -1,6 +1,11 @@
 from django.urls import include, path
 from tsosi.api.router import OptionalSlashRouter
-from tsosi.api.viewsets import CurrencyViewSet, EntityViewSet, TransfertViewSet
+from tsosi.api.viewsets import (
+    AnalyticViewSet,
+    CurrencyViewSet,
+    EntityViewSet,
+    TransfertViewSet,
+)
 
 app_name = "tsosi"
 
@@ -17,9 +22,12 @@ router.register(r"entities", EntityViewSet, basename="entity")
 router.register(r"transferts", TransfertViewSet, basename="transfert")
 ### Produced routes:
 # currencies/                   currency-list
-# currencies/all/               currency-all
-# currencies/(?P<pk>[^/.]+)/    currency-detail
+# currencies/(?P<pk>[^/.]+)/    currency-detail useless
 router.register(r"currencies", CurrencyViewSet, basename="currency")
+### Produced routes:
+# analytics/                   analytics-list
+# analytics/(?P<pk>[^/.]+)/    analytics-detail useless
+router.register(r"analytics", AnalyticViewSet, basename="analytic")
 
 # print("\n\n")
 # print(router.urls)

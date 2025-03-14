@@ -1,5 +1,6 @@
 import { getCountry, type Transfert } from "@/singletons/ref-data"
 import { getStaticDataUrl } from "@/utils/url-utils"
+import type { DeepReadonly } from "vue"
 
 export type DataType =
   | "date"
@@ -11,6 +12,7 @@ export type DataType =
   | "country"
   | "constant"
   | "json"
+  | "boolean"
 
 export interface LinkConfig {
   base: string
@@ -25,6 +27,8 @@ export interface DataFieldProps {
   type: DataType
   fieldLabel?: string
   fieldLink?: LinkConfig
+  labelGetter?: (data: Record<string, any>) => any
+  info?: string
 }
 
 /**
@@ -61,6 +65,9 @@ export function getItemLabel(
   item: Record<string, any>,
   fieldProps: DataFieldProps,
 ): any {
+  if (fieldProps.labelGetter) {
+    return fieldProps.labelGetter(item)
+  }
   if (fieldProps.fieldLabel) {
     return resolveValueFromPath(item, fieldProps.fieldLabel)
   } else if (fieldProps.type == "constant") {
@@ -69,13 +76,23 @@ export function getItemLabel(
   return resolveValueFromPath(item, fieldProps.field)
 }
 
-export function getCountryIcon(country_code: string): string {
-  const iconPath = getCountry(country_code).flag_4x3
+export function getCountryIcon(countryCode: string): string {
+  const iconPath = getCountry(countryCode).flag_4x3
   return getStaticDataUrl(iconPath)
 }
 
-export function getCountryLabel(country_code: string): string {
-  return getCountry(country_code).name
+export function getCountryLabel(countryCode: string): string {
+  return getCountry(countryCode).name
+}
+
+export function getCountryRegion(countryCode: string): string {
+  return getCountry(countryCode).continent
+}
+
+export function getCountryCoordinates(
+  countryCode: string,
+): DeepReadonly<[number, number]> | null {
+  return getCountry(countryCode).coordinates
 }
 
 type FormatTarget = "html" | "csv" | "json"
@@ -154,6 +171,13 @@ export function initDateWithPrecision(date?: DateWithPrecision | null) {
     return
   }
   date.dateObj = new Date(date.value)
+}
+
+export function initDateProperty(obj: Record<string, any>, property: string) {
+  const value = obj[property]
+  if (value && typeof value == "string") {
+    obj[property] = new Date(value)
+  }
 }
 
 /**
@@ -249,7 +273,7 @@ export function formatItemLabel(
  * @param type      The file MIME type
  * @param fileName  The full file name
  */
-function downloadFile(data: string, type: string, fileName: string) {
+function downloadFile(data: BlobPart, type: string, fileName: string) {
   const blob = new Blob([data], { type: type })
 
   const link = document.createElement("a")
@@ -268,7 +292,7 @@ function downloadFile(data: string, type: string, fileName: string) {
  * @param value
  * @returns
  */
-function cleanCSSValue(value: string | number): string {
+function cleanCSVValue(value: string | number): string {
   const specialCharacters = ['"', ",", "\n", "\r"]
   if (typeof value === "number") {
     return value.toString()
@@ -293,12 +317,12 @@ export async function exportCSV(
   const processRow = (row: Record<string, any>) => {
     const values = fields.map((field) => {
       const value = formatItemLabel(row, field, "csv") as string
-      return cleanCSSValue(value)
+      return cleanCSVValue(value)
     })
     return values.join(",")
   }
 
-  let csvRows = fields.map((field) => cleanCSSValue(field.title)).join(",")
+  let csvRows = fields.map((field) => cleanCSVValue(field.title)).join(",")
 
   data.forEach((item) => {
     csvRows += "\n"
@@ -333,4 +357,51 @@ export async function exportJSON(
 
   const processedData = JSON.stringify(data.map(processRow), null, 2)
   downloadFile(processedData, "application/json", `${fileName}.json`)
+}
+
+export function exportPNG(base64Data: string, fileName: string) {
+  const link = document.createElement("a")
+  link.href = base64Data
+  link.download = `${fileName}.png`
+  link.click()
+}
+
+export interface PointCoordinates {
+  lat: number
+  lon: number
+}
+
+export function parsePointCoordinates(
+  wktCoordinates: string | null | undefined,
+): PointCoordinates | null {
+  if (!wktCoordinates) {
+    return null
+  }
+  const parsedCoordinates = /[a-zA-Z]+\(([-\d\.]+)\s+([-\d\.]+)\)/g.exec(
+    wktCoordinates,
+  )
+  if (parsedCoordinates?.length != 3) {
+    return null
+  }
+  return {
+    lat: parseFloat(parsedCoordinates[2]),
+    lon: parseFloat(parsedCoordinates[1]),
+  }
+}
+
+export function shuffleArray(data: any[]) {
+  let currentIndex = data.length
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+    // Pick a remaining element...
+    const randomIndex = Math.floor(Math.random() * currentIndex)
+    currentIndex--
+
+    // And swap it with the current element.
+    ;[data[currentIndex], data[randomIndex]] = [
+      data[randomIndex],
+      data[currentIndex],
+    ]
+  }
 }

@@ -1,7 +1,11 @@
 import pandas as pd
 from django.db.models import F
 from tsosi.models import Entity
-from tsosi.models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
+from tsosi.models.static_data import (
+    REGISTRY_CUSTOM,
+    REGISTRY_ROR,
+    REGISTRY_WIKIDATA,
+)
 from tsosi.models.transfert import (
     MATCH_CRITERIA_SAME_NAME_COUNTRY,
     MATCH_CRITERIA_SAME_NAME_ONLY,
@@ -82,19 +86,35 @@ def matchable_entities() -> pd.DataFrame:
     data = data[data["is_matchable"] == True].drop(columns=["is_matchable"])
 
     # Rename identifier columns to ror_id & wikidata_id
+    mapping = {
+        REGISTRY_ROR: "ror_id",
+        REGISTRY_WIKIDATA: "wikidata_id",
+        REGISTRY_CUSTOM: "custom_id",
+    }
+    pids: list[pd.DataFrame] = []
+    for r, col in mapping.items():
+        subset = data[data["identifier_registry"] == r].copy()
+        subset[col] = subset["identifier_value"]
+        pids.append(subset.copy())
+
     ror_ids = data[data["identifier_registry"] == REGISTRY_ROR].copy()
     ror_ids["ror_id"] = ror_ids["identifier_value"]
 
     wikidata_ids = data[data["identifier_registry"] == REGISTRY_WIKIDATA].copy()
     wikidata_ids["wikidata_id"] = wikidata_ids["identifier_value"]
 
-    rest = data[
-        ~data.index.isin(ror_ids.index.to_list() + wikidata_ids.index.to_list())
-    ]
+    custom_ids = data[data["identifier_registry"] == REGISTRY_CUSTOM].copy()
+    custom_ids["custom_id"] = custom_ids["identifier_value"]
 
-    result = pd.concat(
-        [ror_ids, wikidata_ids, rest], axis=0, ignore_index=True
-    ).drop(columns=["identifier_value", "identifier_registry"])
+    pid_indexes = []
+    for subset in pids:
+        pid_indexes += subset.index.to_list()
+
+    rest = data[~data.index.isin(pid_indexes)]
+
+    result = pd.concat([*pids, rest], axis=0, ignore_index=True).drop(
+        columns=["identifier_value", "identifier_registry"]
+    )
     clean_null_values(result)
     return result
 
@@ -116,7 +136,14 @@ def match_entities(
     `merged_with_id` when the matched entity was merged with another one.
     """
     # Assert expected columns are present
-    columns = ["name", "country", "website", "ror_id", "wikidata_id"]
+    columns = [
+        "name",
+        "country",
+        "website",
+        "ror_id",
+        "wikidata_id",
+        "custom_id",
+    ]
     df = to_match[columns].copy()
     columns.append("id")
     if merged_with_id:
@@ -138,6 +165,19 @@ def match_entities(
 
     # Match on PIDs
     # Input data with PIDs can only be matched on PIDs
+
+    # Match on Custom IDs
+    mask_custom = ~df["custom_id"].isnull()
+    df_loc = df[mask_custom].copy()
+    merged = df_loc.merge(
+        base[["id", "custom_id"]], how="inner", on="custom_id"
+    )
+    if not merged.empty:
+        merged["match_criteria"] = MATCH_CRITERIA_SAME_PID
+        merged.set_index(original_id, inplace=True)
+        df.loc[merged.index, "matched_id"] = merged["id"]
+        df.loc[merged.index, "match_criteria"] = merged["match_criteria"]
+
     # Match on ROR
     mask_ror = ~df["ror_id"].isnull()
     df_loc = df[mask_ror].copy()
@@ -161,7 +201,11 @@ def match_entities(
         df.loc[merged.index, "match_criteria"] = merged["match_criteria"]
 
     # Match on name & country
-    mask_no_pid = df["ror_id"].isnull() & df["wikidata_id"].isnull()
+    mask_no_pid = (
+        df["ror_id"].isnull()
+        & df["wikidata_id"].isnull()
+        & df["custom_id"].isnull()
+    )
     mask_name_country = ~df["name"].isnull() & ~df["country"].isnull()
     df_loc = df[mask_no_pid & mask_name_country].copy()
     merged = df_loc.merge(

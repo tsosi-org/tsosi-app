@@ -13,7 +13,7 @@ import Loader from "@/components/atoms/LoaderAtom.vue"
 import Breadcrumb, {
   type BreadcrumbItem,
 } from "@/components/BreadcrumbComponent.vue"
-import { useMediaQuery } from "@/composables/useMediaQuery"
+import { isDesktop } from "@/composables/useMediaQuery"
 
 const route = useRoute()
 const router = useRouter()
@@ -170,8 +170,6 @@ const metadataConfig: Array<DataFieldProps> = [
     type: "json",
   },
 ]
-
-const desktop = useMediaQuery("(min-width: 1000px)")
 </script>
 
 <template>
@@ -180,12 +178,12 @@ const desktop = useMediaQuery("(min-width: 1000px)")
     <div class="regular-content">
       <Breadcrumb v-if="breadcrumb" :items="breadcrumb" />
       <h1 style="margin: 1.5rem 0.5rem">Transfert details</h1>
-      <div class="data-layout" :class="{ desktop: desktop }">
+      <div class="data-layout" :class="{ desktop: isDesktop }">
         <div class="data-content">
           <h2 class="summary-title">Data</h2>
           <Summary :data="transfert" :fields="dataConfig" :explicit="true" />
         </div>
-        <Divider :layout="desktop ? 'vertical' : 'horizontal'" />
+        <Divider :layout="isDesktop ? 'vertical' : 'horizontal'" />
         <div>
           <h2 class="summary-title">Metadata</h2>
           <Summary

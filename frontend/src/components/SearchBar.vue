@@ -9,6 +9,12 @@ import { getEntities } from "@/singletons/ref-data"
 import { getEntityUrl } from "@/utils/url-utils"
 import { RouterLink } from "vue-router"
 
+export interface SearchBarProps {
+  width?: string
+  placeHolder?: string
+}
+
+const props = defineProps<SearchBarProps>()
 const searchTerm = ref("")
 interface searchResult {
   name: string
@@ -74,22 +80,30 @@ function resetSearchBar(event: Event) {
   searchTerm.value = ""
   filteredResults.value = []
 }
+
+const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
 </script>
 
 <template>
   <div class="search-bar">
-    <IconField>
-      <InputIcon>
+    <IconField class="search-bar-input">
+      <InputIcon class="search-bar-icon">
         <font-awesome-icon icon="magnifying-glass" />
       </InputIcon>
       <InputText
         v-model="searchTerm"
-        placeholder="Search"
+        :placeholder="props.placeHolder ?? 'Search'"
         @input="onSearch"
         @focus="showResults"
+        style="width: 100%"
       />
     </IconField>
-    <Popover ref="op">
+    <Popover
+      ref="op"
+      :baseZIndex="9999"
+      :dt="{ gutter: 0 }"
+      :style="`--width: ${elementWidth}`"
+    >
       <div class="search-bar-overlay">
         <div v-if="filteredResults.length == 0" class="search-howto">
           <span v-if="searchTerm.trim().length > 0">
@@ -110,11 +124,16 @@ function resetSearchBar(event: Event) {
           :items="filteredResults"
           :itemSize="itemSize"
           class="search-results"
+          orientation="vertical"
           :scroll-height="virtualScrollerHeight"
         >
           <template #item="{ item }">
             <div class="search-result" :style="{ height: itemSize + 'px' }">
-              <RouterLink :to="item.url" @click="resetSearchBar">
+              <RouterLink
+                :to="item.url"
+                @click="resetSearchBar"
+                class="search-result-text"
+              >
                 {{ item.name }}
               </RouterLink>
             </div>
@@ -126,25 +145,53 @@ function resetSearchBar(event: Event) {
 </template>
 
 <style scoped>
+.search-bar {
+  text-align: center;
+
+  &.large {
+    .search-bar-input :deep(input) {
+      font-size: 1.8rem;
+      /* padding-inline: 0.75em;
+      padding-block: 0.5em; */
+      padding-inline-start: 2em;
+    }
+
+    .search-bar-icon {
+      font-size: 1.8em;
+      margin-top: -0.5em;
+    }
+  }
+}
+
+.search-bar-input {
+  display: inline-block;
+  width: v-bind(elementWidth);
+}
 .search-bar-overlay {
-  width: 350px;
-  overflow: scroll;
-  /* max-height: 300px; */
+  --content-width: calc(var(--width) - 20px);
+  position: relative;
+  max-width: var(--content-width);
+  width: var(--content-width);
+  overflow: hidden;
+}
+
+.search-results {
+  overflow-x: hidden;
 }
 
 .search-howto {
   width: 100%;
 }
 
-.search-results {
-  max-width: 350px;
-}
-
 .search-result {
   display: flex;
   align-items: center;
   text-wrap: nowrap;
+  max-width: var(--content-width);
+}
+
+.search-result-text {
   text-overflow: ellipsis;
-  max-width: 350px;
+  overflow: hidden;
 }
 </style>

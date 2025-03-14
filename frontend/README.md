@@ -20,6 +20,13 @@ npm install
 npm run dev
 ```
 
+## Country data source
+
+The static `country.json` file is a mix of the following sources:
+
+* Country flags are downloaded from https://flagicons.lipis.dev
+* Country centroïds are taken from https://github.com/gavinr/world-countries-centroids?tab=readme-ov-file
+
 ---
 
 ## Default content from vite setup

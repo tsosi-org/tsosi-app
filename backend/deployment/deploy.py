@@ -121,8 +121,13 @@ def deploy(
         for cmd in cmds:
             print(f"{colored("RUNNING: ", "blue")} {colored(cmd, "yellow")}")
             result = subprocess.run(
-                cmd.split(" "), capture_output=True, text=True, check=True
+                cmd.split(" "), capture_output=True, text=True, check=False
             )
+            if result.returncode != 0:
+                if result.stderr:
+                    print(colored(result.stderr, "red"))
+                print(result.stdout)
+                exit(result.returncode)
             print(result.stdout)
 
     # Pull back-end code on server

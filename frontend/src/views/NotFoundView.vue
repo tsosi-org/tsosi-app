@@ -2,7 +2,7 @@
 import { useRoute } from "vue-router"
 import { changeTitle } from "@/utils/dom-utils"
 
-changeTitle("Not found")
+changeTitle("404 Not found")
 
 const route = useRoute()
 

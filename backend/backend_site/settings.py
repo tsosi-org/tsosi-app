@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import importlib
 from pathlib import Path
 
 from celery.schedules import crontab
@@ -24,17 +25,35 @@ from .settings_local import (
     MEDIA_URL,
     SECRET_KEY,
     TSOSI_CELERY_BROKER_URL,
-    TSOSI_DATA_EXPORT_FOLDER,
     TSOSI_DATA_LOG_FILE,
     TSOSI_DJANGO_LOG_FILE,
     TSOSI_LOG_LEVEL,
     TSOSI_MAIN_LOG_FILE,
-    TSOSI_REDIS_DB,
-    TSOSI_REDIS_HOST,
-    TSOSI_REDIS_PORT,
-    TSOSI_TO_INGEST_DIR,
-    TSOSI_TRIGGER_JOBS,
 )
+
+# Import optionnal settings
+TSOSI_OPTIONAL_SETTINGS = [
+    # Settings used to generate data files locally
+    "TSOSI_DATA_EXPORT_FOLDER",
+    "TSOSI_SCIPOST_AUTH",
+    # Only used by the `ingest_all` management command
+    "TSOSI_TO_INGEST_DIR",
+    # Only used by background tasks
+    "TSOSI_REDIS_DB",
+    "TSOSI_REDIS_HOST",
+    "TSOSI_REDIS_PORT",
+    # Following settings have defaults
+    "TSOSI_TRIGGER_JOBS",
+]
+
+settings_local_module = importlib.import_module("backend_site.settings_local")
+for setting_name in TSOSI_OPTIONAL_SETTINGS:
+    try:
+        setting_value = getattr(settings_local_module, setting_name)
+        globals()[setting_name] = setting_value
+    except AttributeError:
+        continue
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -228,9 +247,6 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
 }
-
-API_BYPASS_PAGINATION_ALLOWED_ORIGINS = []
-
 
 TSOSI_CELERY_ACCEPT_CONTENT = ["json"]
 TSOSI_CELERY_TASK_SERIALIZER = "json"

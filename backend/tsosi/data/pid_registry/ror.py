@@ -12,6 +12,7 @@ WARNING:
 import logging
 import re
 from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
 from json import JSONDecodeError
 from typing import Iterable
 from urllib.parse import urlencode
@@ -48,6 +49,9 @@ ES_RESERVED_CHARS = [
     "\\",
     "/",
 ]
+# Use a low max connextions number because ROR servers are often
+# experiencing issues/heavy traffix and it seems to be a small infra
+MAX_CONNS = 15
 
 
 @dataclass(kw_only=True)
@@ -182,7 +186,9 @@ async def match_ror_records(
     elif countries is None:
         countries = [None for _ in names]
 
-    results = await perform_http_func_batch(names, match_ror_record)
+    results = await perform_http_func_batch(
+        names, match_ror_record, max_conns=MAX_CONNS
+    )
 
     # Process results
     # TODO: Vectorize somehow ?
@@ -238,7 +244,7 @@ def process_ror_matching_result(
         ]
         if len(exact_matches) > 0:
             matching_result = exact_matches[0]
-            if country is not None:
+            if not pd.isna(country):
                 for m in exact_matches:
                     record: dict = m["organization"]
                     # Check that the country is the same as the input
@@ -323,7 +329,9 @@ async def fetch_ror_records(identifiers: Iterable[str]):
     """
     Fetch records data from the ROR registry.
     """
-    results = await perform_http_func_batch(identifiers, get_ror_record)
+    results = await perform_http_func_batch(
+        identifiers, get_ror_record, max_conns=MAX_CONNS
+    )
     return pd.DataFrame.from_records([asdict(r) for r in results])
 
 
@@ -404,7 +412,7 @@ def get_ror_coordinates(record: dict) -> str | None:
         return None
     lat = locations[0]["geonames_details"]["lat"]
     lng = locations[0]["geonames_details"]["lng"]
-    return f"POINT({lat} {lng})"
+    return f"POINT({lng} {lat})"
 
 
 def get_ror_website(record: dict) -> str | None:
@@ -445,6 +453,13 @@ def get_ror_wikidata_id(record: dict) -> str | None:
     return wikidata_ids["preferred"]
 
 
+def get_ror_inception_date(record: dict) -> datetime | None:
+    year = record.get("established")
+    if year is None:
+        return None
+    return datetime(year=year, month=1, day=1, tzinfo=UTC)
+
+
 ROR_EXTRACT_MAPPING = {
     "id": get_ror_id,
     "name": get_ror_name,
@@ -453,6 +468,7 @@ ROR_EXTRACT_MAPPING = {
     "wikipedia_url": get_ror_wikipedia_url,
     "wikidata_id": get_ror_wikidata_id,
     "coordinates": get_ror_coordinates,
+    "date_inception": get_ror_inception_date,
 }
 
 

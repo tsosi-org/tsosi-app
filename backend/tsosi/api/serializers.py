@@ -1,25 +1,61 @@
 from rest_framework import serializers
-from tsosi.models import Currency, Entity, Identifier, Transfert
+from tsosi.models import (
+    Analytic,
+    Currency,
+    Entity,
+    Identifier,
+    InfrastructureDetails,
+    Transfert,
+)
 
 
 class IdentifierSerializer(serializers.ModelSerializer):
     registry = serializers.ReadOnlyField(source="registry_id")
-    # registry_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Identifier
         fields = [
             "registry",
             "value",
-            # "registry_url"
         ]
 
-    # def get_registry_url(self, obj: Identifier) -> str:
-    #     return obj.registry.link_template.format(id=obj.value)
+
+class InfrastructureDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InfrastructureDetails
+        fields = "__all__"
 
 
-class EntityDetailsSerializer(serializers.HyperlinkedModelSerializer):
+class BaseEntitySerializer(serializers.ModelSerializer):
     identifiers = IdentifierSerializer(many=True)
+
+
+class EntitySerializer(BaseEntitySerializer):
+    """
+    Minified serializer for entities.
+    """
+
+    class Meta:
+        model = Entity
+        fields = [
+            "id",
+            "name",
+            "country",
+            "identifiers",
+            "coordinates",
+            "logo",
+            "is_recipient",
+            "is_partner",
+        ]
+        extra_kwargs = {
+            "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
+        }
+
+
+class EntityDetailsSerializer(BaseEntitySerializer):
+    infrastructure = InfrastructureDetailsSerializer(
+        source="infrastructure_details", required=False
+    )
 
     class Meta:
         model = Entity
@@ -28,6 +64,8 @@ class EntityDetailsSerializer(serializers.HyperlinkedModelSerializer):
             "name",
             "country",
             "website",
+            "date_inception",
+            "description",
             "logo",
             "wikipedia_url",
             "wikipedia_extract",
@@ -36,28 +74,9 @@ class EntityDetailsSerializer(serializers.HyperlinkedModelSerializer):
             "is_emitter",
             "is_recipient",
             "is_agent",
-            "infra_finder_url",
-            "posi_url",
-            "is_scoss_awarded",
+            "infrastructure",
+            "is_partner",
         ]
-        extra_kwargs = {
-            "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
-        }
-
-
-class EntitySerializer(serializers.ModelSerializer):
-    """
-    Minified serializer for entities.
-    """
-
-    identifiers = IdentifierSerializer(many=True)
-
-    class Meta:
-        model = Entity
-        fields = ["id", "name", "country", "identifiers"]
-        extra_kwargs = {
-            "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
-        }
 
 
 class BaseTransfertSerializer(serializers.ModelSerializer):
@@ -128,3 +147,9 @@ class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = ["id", "name"]
+
+
+class AnalyticSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Analytic
+        fields = "__all__"

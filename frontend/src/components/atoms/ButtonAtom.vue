@@ -2,7 +2,7 @@
 import Button from "primevue/button"
 import { type LinkConfig, getItemLink } from "@/utils/data-utils"
 
-export type ButtonType = "pageLink" | "externalLink"
+export type ButtonType = "pageLink" | "externalLink" | "action"
 export interface ButtonProps {
   id: string
   label?: string
@@ -11,6 +11,7 @@ export interface ButtonProps {
   linkConfig?: LinkConfig
   data?: Record<string, any>
   severity?: string
+  customClass?: string
 }
 
 const props = defineProps<ButtonProps>()
@@ -23,6 +24,7 @@ const props = defineProps<ButtonProps>()
     :label="props.label"
     :to="getItemLink(props.data, props.linkConfig)"
     :severity="props.severity"
+    :class="props.customClass"
   >
     <template #icon v-if="props.icon">
       <font-awesome-icon :icon="props.icon" />
@@ -30,11 +32,23 @@ const props = defineProps<ButtonProps>()
   </Button>
 
   <Button
-    v-if="props.type == 'externalLink'"
+    v-else-if="props.type == 'externalLink'"
     as="link"
     :label="props.label"
     :to="getItemLink(props.data, props.linkConfig)"
     :severity="props.severity"
+    :class="props.customClass"
+  >
+    <template #icon v-if="props.icon">
+      <font-awesome-icon :icon="props.icon" />
+    </template>
+  </Button>
+
+  <Button
+    v-else
+    :label="props.label"
+    :severity="props.severity"
+    :class="props.customClass"
   >
     <template #icon v-if="props.icon">
       <font-awesome-icon :icon="props.icon" />

@@ -23,10 +23,12 @@ import CustomButton, {
   type ButtonProps,
 } from "@/components/atoms/ButtonAtom.vue"
 import Country from "@/components/atoms/CountryAtom.vue"
+import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 
 export interface TableColumnProps extends DataFieldProps {
   sortable?: boolean
   sortField?: string // field used to sort the column. Defaults to fieldLabel
+  info?: string
 }
 
 export interface TableProps {
@@ -48,6 +50,7 @@ export interface TableProps {
   buttons?: Array<ButtonProps>
   disableExport?: boolean
   exportTitle?: string
+  hideCount?: boolean
 }
 
 const props = defineProps<TableProps>()
@@ -171,7 +174,7 @@ function toggleExportMenu(event: Event) {
     :value="props.data"
     ref="dt"
     paginator
-    :rows="10"
+    :rows="20"
     :rowsPerPageOptions="[10, 20, 50, 100]"
     :sortField="defaultSortFieldFunction()"
     :sortOrder="props.defaultSort?.sortOrder"
@@ -182,7 +185,7 @@ function toggleExportMenu(event: Event) {
       <div class="table-header">
         <h2 class="table-title">
           {{ props.header.title }}
-          <span class="table-count">
+          <span v-if="!props.hideCount" class="table-count">
             {{ props.data.length.toLocaleString("fr-FR") }}
           </span>
         </h2>
@@ -194,7 +197,7 @@ function toggleExportMenu(event: Event) {
               type="button"
               @click="toggleExportMenu"
               aria-haspopup="true"
-              aria-controls="table-export-menu"
+              :aria-controls="`table-export-menu-${props.id}`"
             >
               <template #icon>
                 <font-awesome-icon icon="download" />
@@ -202,7 +205,7 @@ function toggleExportMenu(event: Event) {
             </Button>
             <Menu
               ref="export-menu"
-              id="table-export-menu"
+              :id="`table-export-menu-${props.id}`"
               :model="exportItems"
               :popup="true"
             >
@@ -227,6 +230,12 @@ function toggleExportMenu(event: Event) {
       :sortField="getSortFieldFunction(column)"
       :key="column.id"
     >
+      <!-- Header template -->
+      <template v-if="column.info" #header>
+        <InfoButtonAtom :content="column.info" />
+      </template>
+
+      <!-- Row template -->
       <template v-if="props.skeleton" #body>
         <Skeleton></Skeleton>
       </template>
@@ -290,7 +299,9 @@ function toggleExportMenu(event: Event) {
 <style scoped>
 .table-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
+  row-gap: 1em;
 
   & h2 {
     font-weight: 900;

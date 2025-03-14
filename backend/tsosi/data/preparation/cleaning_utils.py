@@ -5,6 +5,8 @@ from datetime import date, datetime
 import pandas as pd
 import pycountry
 from tsosi.data.exceptions import DataValidationError
+from tsosi.data.pid_registry.ror import ROR_ID_REGEX
+from tsosi.data.pid_registry.wikidata import WIKIDATA_ID_REGEX
 from tsosi.models.date import DATE_FORMAT
 
 logger = logging.getLogger(__name__)
@@ -33,7 +35,7 @@ def currency_iso_from_value[T](val: T, error: bool = False) -> str | None:
     its symbol ("$", "£" or "€") or it contains the ISO code with other parasite
     inputs.
     """
-    if val is None:
+    if pd.isna(val):
         return None
     if not isinstance(val, str):
         msg = f"Currency ISO code could not be derived from input value `{val}`"
@@ -64,13 +66,9 @@ def country_check_iso[T](val: T, error: bool = False) -> None:
     """
     Check that the provided value is a country ISO code.
     """
-    if (
-        val is not None
-        and isinstance(val, str)
-        and val in COUNTRY_ALPHA_2_MAPPING.keys()
-    ):
+    if isinstance(val, str) and val in COUNTRY_ALPHA_2_MAPPING.keys():
         return
-    elif val is None:
+    elif pd.isna(val):
         return None
     msg = f"The provided country ISO code `{val}` does not exist."
     if error:
@@ -82,7 +80,7 @@ def country_iso_from_name[T](val: T, error: bool = False) -> str | None:
     """
     Get the country iso 3166-1 alpha-2 code from the input name.
     """
-    if val is None:
+    if pd.isna(val):
         return None
     elif not isinstance(val, str):
         msg = f"The provided country name `{val}` is not valid."
@@ -120,7 +118,7 @@ def clean_url[T](s: T) -> T:
     """
     Add default protocol and remove trailing slash from URL string.
     """
-    if not s or not isinstance(s, str):
+    if not isinstance(s, str):
         return s
     if not s.startswith("https://") and not s.startswith("http://"):
         s = f"https://{s}"
@@ -135,21 +133,23 @@ def clean_cell_value[T](s: T) -> T:
     - Normalize spacing values.
     - Strip whitespaces.
     """
-    if not s or not isinstance(s, str):
+    if not isinstance(s, str):
         return s
     return re.sub(r"\s+", " ", s).strip()
 
 
-def clean_number_value[T](value: T, comma_decimal=False) -> T | float:
+def clean_number_value[
+    T
+](value: T, comma_decimal=False, error=False) -> T | float:
     """
     Clean a number value by casting in to a number type.
     If `comma_decimal` is true, replace commas by the "." character,
     else discard them.
     """
-    if value is None or not isinstance(value, str):
+    if not isinstance(value, str):
         return value
     value = value.replace(",", ".") if comma_decimal else value.replace(",", "")
-    return pd.to_numeric(value, errors="coerce")
+    return pd.to_numeric(value, errors="raise" if error else "coerce")
 
 
 def extract_currency_amount(
@@ -164,7 +164,7 @@ def extract_currency_amount(
 
     if isinstance(val, (int, float)):
         return val, None
-    elif val is None:
+    elif pd.isna(val) is None:
         return None, None
     elif not isinstance(val, str):
         msg = f"Could not parse currency and amount from `{val}`"
@@ -201,3 +201,37 @@ def undate[T](x: T, date_format: str = DATE_FORMAT) -> T | str:
     if isinstance(x, datetime) or isinstance(x, date):
         return x.strftime(date_format)
     return x
+
+
+def check_regex(value, regex: re.Pattern, error: bool = False) -> bool:
+    """
+    Check whether the provided value matches the given regex.
+    """
+    if pd.isna(value):
+        return True
+    if not isinstance(value, str):
+        if error:
+            raise DataValidationError(f"Wrong value for regex {regex}: {value}")
+        return False
+    if re.search(regex, value):
+        return True
+
+    if error:
+        raise DataValidationError(f"Wrong value for regex {regex}: {value}")
+    return False
+
+
+def check_ror_id(value, error: bool = False) -> bool:
+    return check_regex(value, ROR_ID_REGEX, error)
+
+
+def check_wikidata_id(value, error: bool = False) -> bool:
+    return check_regex(value, WIKIDATA_ID_REGEX, error)
+
+
+def check_bool_value(value, error: bool = False) -> bool:
+    if isinstance(value, bool):
+        return True
+    if error:
+        raise DataValidationError(f"Wrong boolean value: {value}")
+    return False

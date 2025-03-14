@@ -14,12 +14,20 @@ import {
   faImage,
   faMagnifyingGlass,
   faSquareCheck,
+  faSquareXmark,
   faDownload,
   faEllipsisVertical,
   faHouse,
   faBuildingColumns,
   faMagnifyingGlassChart,
   faAngleRight,
+  faListUl,
+  faChartColumn,
+  faCircleQuestion,
+  faBars,
+  faXmark,
+  faCheck,
+  faCalendar,
 } from "@fortawesome/free-solid-svg-icons"
 
 const app = createApp(App)
@@ -38,6 +46,7 @@ const MyPreset = definePreset(Aura, {
       700: "#3a5066",
       800: "#2c3e50",
       900: "#1a2a39",
+      950: "#1a2a39",
     },
   },
   semantic: {
@@ -55,7 +64,17 @@ const MyPreset = definePreset(Aura, {
       950: "{brand.950}",
     },
   },
+  components: {
+    tabs: {
+      tab: {
+        active: {
+          color: "{primary.900}",
+        },
+      },
+    },
+  },
 })
+
 app.use(PrimeVue, {
   theme: {
     preset: MyPreset,
@@ -72,12 +91,20 @@ const usedIcons = [
   faImage,
   faMagnifyingGlass,
   faSquareCheck,
+  faSquareXmark,
   faDownload,
   faEllipsisVertical,
   faHouse,
   faBuildingColumns,
   faMagnifyingGlassChart,
   faAngleRight,
+  faListUl,
+  faChartColumn,
+  faCircleQuestion,
+  faBars,
+  faXmark,
+  faCheck,
+  faCalendar,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)
@@ -85,3 +112,5 @@ app.component("font-awesome-icon", FontAwesomeIcon)
 app.use(router)
 
 app.mount("#app")
+
+export const appContext = app._context

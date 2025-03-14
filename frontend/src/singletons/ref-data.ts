@@ -1,10 +1,15 @@
 import { get } from "../services/api"
 import {
   initDateWithPrecision,
+  initDateProperty,
   type DateWithPrecision,
 } from "@/utils/data-utils"
 
-interface Identifier {
+interface ApiData {
+  [key: string]: any
+}
+
+interface Identifier extends ApiData {
   registry: string
   value: string
   registry_url?: string
@@ -12,7 +17,7 @@ interface Identifier {
 
 export type TransfertEntityType = "emitter" | "recipient" | "agent"
 
-export interface Country {
+export interface Country extends ApiData {
   capital: string
   code: string
   continent: string
@@ -20,30 +25,43 @@ export interface Country {
   flag_4x3: string
   iso: boolean
   name: string
+  coordinates: [number, number] | null
 }
 
-export interface Entity {
+export interface InfrastructureDetails extends ApiData {
+  infra_finder_url?: string
+  posi_url?: string
+  is_scoss_awarded: boolean
+  is_partner: boolean
+  hide_amount: boolean
+  date_data_update?: Date
+  date_data_start?: Date
+  date_data_end?: Date
+}
+
+export interface Entity extends ApiData {
   id: string
   name: string
   country?: string
   identifiers: Identifier[]
+  coordinates?: string
+  logo?: string
+  is_recipient: boolean
+  is_partner: boolean
 }
 
 export interface EntityDetails extends Entity {
+  date_inception?: Date
+  description?: string
   website?: string
-  logo?: string
   wikipedia_url?: string
   wikipedia_extract?: string
-  coordinates?: string
-  is_emitted: boolean
-  is_recipient: boolean
+  infrastructure?: InfrastructureDetails
+  is_emitter: boolean
   is_agent: boolean
-  infra_finder_url?: string
-  posi_url?: string
-  is_scoss_awarded: boolean
 }
 
-export interface Transfert {
+export interface Transfert extends ApiData {
   id: string
   emitter_id: string
   emitter?: DeepReadonly<Entity>
@@ -57,7 +75,6 @@ export interface Transfert {
   date_clc: DateWithPrecision
   description: string | null
   source: string
-  [key: string]: any
 }
 
 export interface TransfertDetails extends Transfert {
@@ -72,6 +89,14 @@ export interface TransfertDetails extends Transfert {
 export interface Currency {
   id: string
   name: string
+}
+
+export interface Analytic extends ApiData {
+  id: number
+  recipient: string
+  year: number
+  country: string | null
+  data: Record<string, any>
 }
 
 export type RefData = {
@@ -89,8 +114,10 @@ export interface PaginatedResults<T> {
   results: Array<T>
 }
 
-export type DeepReadonly<T extends Record<any, any>> = {
-  readonly [K in keyof T]: DeepReadonly<T[K]>
+export type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends (...args: any[]) => any
+    ? T[K]
+    : DeepReadonly<T[K]>
 }
 
 const refData: RefData = {
@@ -123,7 +150,9 @@ export const refDataPromise = _initRefData()
  * Country data is taken from https://flagicons.lipis.dev/
  * @returns
  */
-export async function getCountries(): Promise<Record<string, Country> | null> {
+export async function getCountries(): Promise<DeepReadonly<
+  Record<string, Country>
+> | null> {
   if (refData.initialized) {
     return refData.countries
   }
@@ -139,7 +168,7 @@ export async function getCountries(): Promise<Record<string, Country> | null> {
   return refData.countries
 }
 
-export function getCountry(country_code: string): Country {
+export function getCountry(country_code: string): DeepReadonly<Country> {
   return refData.countries[country_code]
 }
 
@@ -175,7 +204,18 @@ export async function getEntityDetails(
   const url = getEntityApiUrl(id)
   const result = await get(url, true)
   if (result.data) {
-    return result.data as EntityDetails
+    const val = result.data as Record<string, any>
+    initDateProperty(val, "date_inception")
+    if (val.infrastructure) {
+      for (const property of [
+        "date_data_start",
+        "date_data_end",
+        "date_data_update",
+      ]) {
+        initDateProperty(val.infrastructure, property)
+      }
+    }
+    return val as EntityDetails
   }
   return null
 }
@@ -224,11 +264,15 @@ export async function getTransfertDetails(
   }
   const transfert = result.data as TransfertDetails
   processTransfertEntities(transfert)
-  initDateWithPrecision(transfert.date_agreement)
-  initDateWithPrecision(transfert.date_payment)
-  initDateWithPrecision(transfert.date_invoice)
-  initDateWithPrecision(transfert.date_start)
-  initDateWithPrecision(transfert.date_end)
+  for (const f of [
+    "date_agreement",
+    "date_payment",
+    "date_invoice",
+    "date_start",
+    "date_end",
+  ]) {
+    initDateWithPrecision(transfert[f])
+  }
   return transfert
 }
 
@@ -238,7 +282,7 @@ export async function getCurrencies(): Promise<DeepReadonly<
   if (refData.initialized) {
     return refData.currencies
   }
-  const result = await get("currencies/all/", true)
+  const result = await get("currencies/", true)
   if (result.error || !result.data) {
     return null
   }
@@ -249,4 +293,38 @@ export async function getCurrencies(): Promise<DeepReadonly<
   refData.currencies = mapping
 
   return refData.currencies
+}
+
+export async function getAnalytics(
+  entityId: string,
+): Promise<Analytic[] | null> {
+  const queryParams = new URLSearchParams({ recipient_id: entityId })
+  const result = await get("analytics/", true, queryParams)
+  if (result.error || !result.data) {
+    return null
+  }
+  return result.data as Analytic[]
+}
+
+export async function getEmittersForEntity(
+  entityId: string,
+): Promise<Entity[] | null> {
+  const queryParams = new URLSearchParams({ entity_id: entityId })
+  const result = await get("entities/emitters/", true, queryParams)
+  if (result.error || !result.data) {
+    return null
+  }
+  return result.data as Entity[]
+}
+
+export function getInfrastructures(): DeepReadonly<Entity>[] {
+  return Object.values(refData.entities).filter((e) => e.is_recipient)
+}
+
+export function getEmitters(): DeepReadonly<Entity>[] {
+  return Object.values(refData.entities).filter((e) => !e.is_recipient)
+}
+
+export function getPartners(): DeepReadonly<Entity>[] {
+  return Object.values(refData.entities).filter((e) => e.is_partner)
 }

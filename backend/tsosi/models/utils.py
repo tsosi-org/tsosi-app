@@ -1,3 +1,4 @@
+from django.core.files.base import File
 from django.db import models
 from django.utils import timezone
 
@@ -15,3 +16,20 @@ class TimestampedModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+def replace_model_file(
+    instance: models.Model,
+    attribute: str,
+    file_path: str,
+    read_mode: str = "rb",
+):
+    """
+    Replace a model's file with the one at the given path.
+    """
+    file_field: models.FieldFile = getattr(instance, attribute)
+    if file_field.name is not None:
+        file_field.delete()
+    name = file_path.split("/")[-1]
+    with open(file_path, read_mode) as f:
+        file_field.save(name, File(f))

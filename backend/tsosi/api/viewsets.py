@@ -7,6 +7,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from tsosi.api.serializers import (
+    AnalyticSerializer,
     CurrencySerializer,
     EntityDetailsSerializer,
     EntitySerializer,
@@ -14,7 +15,7 @@ from tsosi.api.serializers import (
     TransfertSerializer,
 )
 from tsosi.app_settings import app_settings
-from tsosi.models import Currency, Entity, Transfert
+from tsosi.models import Analytic, Currency, Entity, Transfert
 
 
 class ReadOnlyViewSet(viewsets.ModelViewSet):
@@ -85,6 +86,23 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
         self.serializer_class = EntitySerializer
         return self.list(request, *args, **kwargs)
 
+    @action(
+        detail=False, methods=["get"], permission_classes=[BypassPagination]
+    )
+    def emitters(self, request: Request, *args, **kwargs):
+        """ """
+        entity_id = request.query_params.get("entity_id")
+        if entity_id is None:
+            raise ValidationError(f"`entity_id` query parameter if missing.")
+
+        self.pagination_class = None
+        self.serializer_class = EntitySerializer
+        ids = Transfert.objects.filter(recipient_id=entity_id).values_list(
+            "emitter_id", flat=True
+        )
+        self.queryset = Entity.objects.filter(id__in=ids).distinct()
+        return self.list(request, *args, **kwargs)
+
 
 class TransfertFilter(filters.FilterSet):
     entity_id = filters.CharFilter(method="filter_by_entity")
@@ -96,6 +114,11 @@ class TransfertFilter(filters.FilterSet):
     def filter_by_entity(
         self, queryset: QuerySet, name: str, value: str | None
     ) -> QuerySet:
+        """
+        TODO: Check the perf of doing OR condition with Django ORM.
+        It might be way more efficient to perform separate requests on each
+        condition and then UNION them
+        """
         if value is None or not value:
             raise ValidationError(
                 detail=f"Query parameter value for `entity_id` is not accepted: {value}"
@@ -121,6 +144,15 @@ class TransfertViewSet(AllActionViewSet, ReadOnlyViewSet):
         return super().retrieve(request, *args, **kwargs)
 
 
-class CurrencyViewSet(AllActionViewSet, ReadOnlyViewSet):
+class CurrencyViewSet(ReadOnlyViewSet):
     queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
+    pagination_class = None
+
+
+class AnalyticViewSet(ReadOnlyViewSet):
+    queryset = Analytic.objects.all()
+    pagination_class = None
+    serializer_class = AnalyticSerializer
+    filter_backends = [filters.DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ["recipient_id", "country", "year"]
