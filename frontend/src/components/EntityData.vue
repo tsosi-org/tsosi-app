@@ -400,7 +400,7 @@ async function updateMapData() {
 
 .data-chart-panel {
   width: 100%;
-  padding: 1em;
+  padding: 1em 0;
 
   & > * {
     margin-bottom: 4rem;

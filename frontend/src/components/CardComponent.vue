@@ -31,10 +31,20 @@ const props = defineProps<{ width?: string }>()
   border-radius: 12px;
   display: flex;
   flex-direction: column;
+  transition:
+    transform 0.2s linear,
+    box-shadow 0.2s linear;
 
   &.width {
     width: v-bind(width);
   }
+
+  /* &:hover {
+    transform: translate(-2px, -5px);
+    box-shadow:
+      rgba(0, 0, 0, 0.1) 0px 1px 3px 0px,
+      rgba(0, 0, 0, 0.1) 2px 5px 2px -1px;
+  } */
 }
 
 .card-header {

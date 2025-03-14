@@ -156,6 +156,7 @@ function updateHeaderHome() {
       <div class="container">
         <div class="regular-content content-section">
           <div
+            class="explain-cards"
             style="
               display: flex;
               flex-direction: row;
@@ -164,36 +165,7 @@ function updateHeaderHome() {
               justify-content: space-around;
             "
           >
-            <!--
-            <CardComponent
-              width="24rem"
-              style="
-                background: transparent
-                  linear-gradient(145deg, #fff, 5%, #cbe7f7, 90%, #3f84aa);
-              "
-            >
-              <template #title>
-                <h3 class="as-h1">Where ?</h3>
-              </template>
-              <template #content>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. In
-                interdum, odio in aliquam ornare, nunc tellus euismod mi, vitae
-                varius enim risus vel quam. Proin fringilla nec quam vel
-                consectetur. Cras pharetra tempus dapibus. Sed libero turpis,
-                dapibus et tortor id, vestibulum congue sapien. Phasellus erat
-                mi, interdum eu euismod aliquam, ultricies nec nibh. Etiam nec
-                malesuada elit. Nunc scelerisque metus eget turpis rhoncus
-                egestas.
-              </template>
-            </CardComponent>
-            -->
-            <CardComponent
-              width="24rem"
-              style="
-                background: transparent
-                  linear-gradient(145deg, #fff, 5%, #ffe0cd, 90%, #e57126);
-              "
-            >
+            <CardComponent width="24rem">
               <template #title>
                 <h3 class="as-h1">Why ?</h3>
               </template>
@@ -208,13 +180,7 @@ function updateHeaderHome() {
                 egestas.
               </template>
             </CardComponent>
-            <CardComponent
-              width="24rem"
-              style="
-                background: transparent
-                  linear-gradient(145deg, #fff, 5%, #e3f3ee, 90%, #549b83);
-              "
-            >
+            <CardComponent width="24rem">
               <template #title>
                 <h3 class="as-h1">How ?</h3>
               </template>
@@ -229,13 +195,7 @@ function updateHeaderHome() {
                 egestas.
               </template>
             </CardComponent>
-            <CardComponent
-              width="24rem"
-              style="
-                background: transparent
-                  linear-gradient(145deg, #fff, 5%, #fff0d0, 90%, #e7a824);
-              "
-            >
+            <CardComponent width="24rem">
               <template #title>
                 <h3 class="as-h1">When ?</h3>
               </template>
@@ -341,6 +301,16 @@ function updateHeaderHome() {
   justify-content: space-around;
 }
 
+.explain-cards :deep(.card) {
+  color: white;
+  background: transparent
+    linear-gradient(115deg, var(--p-primary-400), 30%, var(--p-primary-700));
+  /* background-color: var(--p-primary-700); */
+
+  & :deep(h3) {
+    color: white;
+  }
+}
 .content-section {
   display: flex;
   flex-direction: column;
