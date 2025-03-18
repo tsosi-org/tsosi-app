@@ -1,4 +1,4 @@
-import { getCountry, type Transfert } from "@/singletons/ref-data"
+import { getCountry, type Transfer } from "@/singletons/ref-data"
 import { getStaticDataUrl } from "@/utils/url-utils"
 import type { DeepReadonly } from "vue"
 
@@ -232,29 +232,29 @@ export function formatDateWithPrecision(
 }
 
 /**
- * Fill the given transfert's amount & currency properties with the
+ * Fill the given transfer's amount & currency properties with the
  * desired currency.
  * It fallbacks to the original currency if the given currency is unavailable
- * for this transfert.
- * @param transfert
+ * for this transfer.
+ * @param transfer
  * @param currencyCode
  * @param amountPropName
  * @param currencyPropName
  * @returns
  */
-export function fillTransfertAmountCurrency(
-  transfert: Transfert,
+export function fillTransferAmountCurrency(
+  transfer: Transfer,
   currencyCode: string,
   amountPropName: string,
   currencyPropName: string,
 ) {
-  if (transfert.amounts_clc?.hasOwnProperty(currencyCode)) {
-    transfert[currencyPropName] = currencyCode
-    transfert[amountPropName] = transfert.amounts_clc[currencyCode]
+  if (transfer.amounts_clc?.hasOwnProperty(currencyCode)) {
+    transfer[currencyPropName] = currencyCode
+    transfer[amountPropName] = transfer.amounts_clc[currencyCode]
     return
   }
-  transfert[currencyPropName] = transfert.currency
-  transfert[amountPropName] = transfert.amount
+  transfer[currencyPropName] = transfer.currency
+  transfer[amountPropName] = transfer.amount
 }
 
 export function formatItemLabel(

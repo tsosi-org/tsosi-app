@@ -21,7 +21,7 @@ from tsosi.data.db_utils import (
     date_extremas_from_queryset,
 )
 from tsosi.data.task_result import TaskResult
-from tsosi.models import Currency, CurrencyRate, Transfert
+from tsosi.models import Currency, CurrencyRate, Transfer
 from tsosi.models.date import (
     DATE_PRECISION_DAY,
     DATE_PRECISION_MONTH,
@@ -350,7 +350,7 @@ def compute_average_rates():
 
 def update_currency_rates():
     """
-    Update the currency rates to cover the Transfert timespan.
+    Update the currency rates to cover the Transfer timespan.
 
     TODO: Figure out the rate limit of the currency API and use a token
     bucket ?
@@ -369,10 +369,10 @@ def update_currency_rates():
         "date_end",
     ]
     t_extremas: DateExtremas = date_extremas_from_queryset(
-        Transfert.objects.filter(amount__isnull=False), date_fields
+        Transfer.objects.filter(amount__isnull=False), date_fields
     )[0]["_extremas"]
     if t_extremas.min is None:
-        logger.info("No transferts to fetch currency rates for.")
+        logger.info("No transfers to fetch currency rates for.")
         return
 
     # Make sure the interval spans full years so that we can make proper avg
@@ -405,21 +405,21 @@ def update_currency_rates():
         )
 
 
-def compute_transfert_amounts():
+def compute_transfer_amounts():
     """
-    Compute transfert amounts for all available currencies.
+    Compute transfer amounts for all available currencies.
 
-    The correct rate to use is derived according to the transfert's date
+    The correct rate to use is derived according to the transfer's date
     precision.
     """
-    logger.info("Computing transfert amounts in available currencies.")
-    transferts = pd.DataFrame.from_records(
-        Transfert.objects.filter(amount__isnull=False).values(
+    logger.info("Computing transfer amounts in available currencies.")
+    transfers = pd.DataFrame.from_records(
+        Transfer.objects.filter(amount__isnull=False).values(
             "id", "amount", "date_clc", "currency_id"
         )
     )
-    if transferts.empty:
-        logger.info("No transferts to compute amounts for.")
+    if transfers.empty:
+        logger.info("No transfers to compute amounts for.")
         return
     rates = pd.DataFrame.from_records(
         CurrencyRate.objects.all().values("currency_id", "date", "value")
@@ -437,27 +437,25 @@ def compute_transfert_amounts():
     rates["month"] = rates["date_value"].dt.month
     rates["day"] = rates["date_value"].dt.day
 
-    date_extract = pd.json_normalize(transferts["date_clc"]).add_prefix("date_")
-    transferts = pd.concat([transferts, date_extract], axis=1)
-    transferts["date_value"] = pd.to_datetime(transferts["date_value"])
+    date_extract = pd.json_normalize(transfers["date_clc"]).add_prefix("date_")
+    transfers = pd.concat([transfers, date_extract], axis=1)
+    transfers["date_value"] = pd.to_datetime(transfers["date_value"])
 
-    # Handle the transferts made after the last known rate differently
+    # Handle the transfers made after the last known rate differently
     max_date: datetime = rates["date_value"].max()
-    t_future = transferts[transferts["date_value"] > max_date]
+    t_future = transfers[transfers["date_value"] > max_date]
 
-    transferts = transferts[~transferts.index.isin(t_future.index)]
-    transferts["year"] = transferts["date_value"].dt.year
-    transferts["month"] = transferts["date_value"].dt.month
-    transferts["day"] = transferts["date_value"].dt.day
-    t_year = transferts[
-        transferts["date_precision"] == DATE_PRECISION_YEAR
+    transfers = transfers[~transfers.index.isin(t_future.index)]
+    transfers["year"] = transfers["date_value"].dt.year
+    transfers["month"] = transfers["date_value"].dt.month
+    transfers["day"] = transfers["date_value"].dt.day
+    t_year = transfers[
+        transfers["date_precision"] == DATE_PRECISION_YEAR
     ].copy()
-    t_month = transferts[
-        transferts["date_precision"] == DATE_PRECISION_MONTH
+    t_month = transfers[
+        transfers["date_precision"] == DATE_PRECISION_MONTH
     ].copy()
-    t_day = transferts[
-        transferts["date_precision"] == DATE_PRECISION_DAY
-    ].copy()
+    t_day = transfers[transfers["date_precision"] == DATE_PRECISION_DAY].copy()
 
     currencies = rates["currency_id"].drop_duplicates().to_list()
 
@@ -474,7 +472,7 @@ def compute_transfert_amounts():
         )
         .reset_index()
     )
-    # 2 - Handle "future" transferts with the average rate over the last month
+    # 2 - Handle "future" transfers with the average rate over the last month
     last_known_rate = (
         r_pivot[r_pivot["date_precision"] == DATE_PRECISION_MONTH]
         .sort_values(["year", "month", "day"], ascending=False)
@@ -483,7 +481,7 @@ def compute_transfert_amounts():
     )
     t_future = t_future.merge(last_known_rate, how="cross")
 
-    # 3 - Add rate data to the transfert frame
+    # 3 - Add rate data to the transfer frame
     t_year = t_year.merge(
         r_pivot.drop(columns=["month", "day"]), on=["date_precision", "year"]
     )
@@ -495,33 +493,31 @@ def compute_transfert_amounts():
         r_pivot,
         on=["date_precision", "year", "month", "day"],
     )
-    transferts = pd.concat(
-        [t_future, t_year, t_month, t_day], ignore_index=True
-    )
+    transfers = pd.concat([t_future, t_year, t_month, t_day], ignore_index=True)
 
     # 4 - Compute USD amount with appropriate rate
     for c in currencies:
-        t_sub = transferts[transferts["currency_id"] == c]
-        transferts.loc[t_sub.index, "amount_USD"] = t_sub["amount"] / t_sub[c]
+        t_sub = transfers[transfers["currency_id"] == c]
+        transfers.loc[t_sub.index, "amount_USD"] = t_sub["amount"] / t_sub[c]
 
     # 5 - Compute all other amounts based on USD one
     currency_cols = []
     for c in currencies:
         col_name = f"amount_{c}"
         currency_cols.append(col_name)
-        transferts[col_name] = (
-            (transferts["amount_USD"] * transferts[c]).round().astype("Int64")
+        transfers[col_name] = (
+            (transfers["amount_USD"] * transfers[c]).round().astype("Int64")
         )
 
     # Dump results to the database
-    transferts = transferts[["id", *currency_cols]].set_index("id")
+    transfers = transfers[["id", *currency_cols]].set_index("id")
     cols_rename = {c: c[-3:] for c in currency_cols}
-    transferts.rename(columns=cols_rename, inplace=True)
-    transferts["amounts_clc"] = transferts.to_dict(orient="index").values()
-    transferts.reset_index(inplace=True)
-    bulk_update_from_df(Transfert, transferts, ["id", "amounts_clc"])
+    transfers.rename(columns=cols_rename, inplace=True)
+    transfers["amounts_clc"] = transfers.to_dict(orient="index").values()
+    transfers.reset_index(inplace=True)
+    bulk_update_from_df(Transfer, transfers, ["id", "amounts_clc"])
     logger.info(
-        "Successfully computed transfert amounts in available currencies."
+        "Successfully computed transfer amounts in available currencies."
     )
 
 
@@ -530,6 +526,6 @@ def currency_rates_workflow():
     logger.info("Starting currency rate workflow.")
     update_currency_rates()
     compute_average_rates()
-    compute_transfert_amounts()
+    compute_transfer_amounts()
     logger.info("Ending currency rate workflow.")
     return TaskResult(partial=False)

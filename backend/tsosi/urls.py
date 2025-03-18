@@ -4,7 +4,7 @@ from tsosi.api.viewsets import (
     AnalyticViewSet,
     CurrencyViewSet,
     EntityViewSet,
-    TransfertViewSet,
+    TransferViewSet,
 )
 
 app_name = "tsosi"
@@ -16,10 +16,10 @@ router = OptionalSlashRouter()
 # entities/(?P<pk>[^/.]+)/      entity-detail
 router.register(r"entities", EntityViewSet, basename="entity")
 ### Produced routes:
-# transferts/                   transfert-list
-# transferts/all/               transfert-all
-# transferts/(?P<pk>[^/.]+)/    transfert-detail
-router.register(r"transferts", TransfertViewSet, basename="transfert")
+# transfers/                   transfer-list
+# transfers/all/               transfer-all
+# transfers/(?P<pk>[^/.]+)/    transfer-detail
+router.register(r"transfers", TransferViewSet, basename="transfer")
 ### Produced routes:
 # currencies/                   currency-list
 # currencies/(?P<pk>[^/.]+)/    currency-detail useless

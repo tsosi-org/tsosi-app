@@ -2,10 +2,14 @@
 import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
 import { RouterLink } from "vue-router"
 import InfrastructurePopup from "@/components/InfrastructurePopup.vue"
+import Panel from "primevue/panel"
 </script>
 
 <template>
-  <section class="info-box">
+  <Panel toggleable class="info-box">
+    <template #header>
+      <h2 class="info-box-header">Data coverage</h2>
+    </template>
     <div class="info-item">
       <h3>Data source</h3>
       <span>
@@ -24,10 +28,10 @@ import InfrastructurePopup from "@/components/InfrastructurePopup.vue"
     <div class="info-item">
       <h3>Disclosed amounts</h3>
       <span>
-        The individual transfert amounts may not be disclosed depending on the
+        The individual transfer amounts may not be disclosed depending on the
         supported infrastructure,
         <RouterLink to="/faq#partner-definition">see our FAQ</RouterLink>
       </span>
     </div>
-  </section>
+  </Panel>
 </template>

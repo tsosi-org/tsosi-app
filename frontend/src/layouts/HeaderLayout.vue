@@ -55,7 +55,7 @@ function onDrawerToggle(show: boolean) {
         <img class="logo" src="@/assets/img/logo_white.svg" />
       </RouterLink>
       <div v-show="bigHeader" class="header-citation">
-        Transparency to Sustain Open Science Infrastructure
+        <h2>Transparency to Sustain Open Science Infrastructure</h2>
       </div>
       <NavigationListAtom
         v-show="!bigHeader"
@@ -197,15 +197,17 @@ header.home {
   }
   &.desktop nav {
     font-size: 2.25rem;
-    grid-template-columns: 40% 1fr;
+    grid-template-columns: 30% 1fr;
   }
 }
 
-.header-citation {
+.header-citation,
+.header-citation h2 {
   font-style: italic;
   color: white;
   font-weight: 500;
   text-align: center;
+  font-size: inherit;
 }
 
 .desktop .header-citation {

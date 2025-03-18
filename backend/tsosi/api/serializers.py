@@ -5,7 +5,7 @@ from tsosi.models import (
     Entity,
     Identifier,
     InfrastructureDetails,
-    Transfert,
+    Transfer,
 )
 
 
@@ -79,9 +79,9 @@ class EntityDetailsSerializer(BaseEntitySerializer):
         ]
 
 
-class BaseTransfertSerializer(serializers.ModelSerializer):
+class BaseTransferSerializer(serializers.ModelSerializer):
     """
-    Base serializer for transferts. It overloads amount-related
+    Base serializer for transfers. It overloads amount-related
     properties to return null if the amount should be hidden.
     """
 
@@ -90,16 +90,16 @@ class BaseTransfertSerializer(serializers.ModelSerializer):
     currency = serializers.SerializerMethodField()
     raw_data = serializers.SerializerMethodField()
 
-    def get_amount(self, obj: Transfert):
+    def get_amount(self, obj: Transfer):
         return None if obj.hide_amount else obj.amount
 
-    def get_amounts_clc(self, obj: Transfert):
+    def get_amounts_clc(self, obj: Transfer):
         return None if obj.hide_amount else obj.amounts_clc
 
-    def get_currency(self, obj: Transfert):
+    def get_currency(self, obj: Transfer):
         return None if obj.hide_amount else obj.currency_id
 
-    def get_raw_data(self, obj: Transfert):
+    def get_raw_data(self, obj: Transfer):
         if not obj.hide_amount:
             return obj.raw_data
         data = obj.raw_data
@@ -107,9 +107,9 @@ class BaseTransfertSerializer(serializers.ModelSerializer):
         return data
 
 
-class TransfertSerializer(BaseTransfertSerializer):
+class TransferSerializer(BaseTransferSerializer):
     class Meta:
-        model = Transfert
+        model = Transfer
         fields = [
             "id",
             "emitter_id",
@@ -123,9 +123,9 @@ class TransfertSerializer(BaseTransfertSerializer):
         ]
 
 
-class TransfertDetailsSerializer(BaseTransfertSerializer):
+class TransferDetailsSerializer(BaseTransferSerializer):
     class Meta:
-        model = Transfert
+        model = Transfer
         fields = [
             "id",
             "emitter_id",

@@ -5,9 +5,9 @@ import pandas as pd
 from tsosi.data.pid_registry.ror import match_ror_records
 from tsosi.models import Entity
 from tsosi.models.static_data import REGISTRY_ROR
-from tsosi.models.transfert import (
-    TRANSFERT_ENTITY_TYPE_AGENT,
-    TRANSFERT_ENTITY_TYPE_EMITTER,
+from tsosi.models.transfer import (
+    TRANSFER_ENTITY_TYPE_AGENT,
+    TRANSFER_ENTITY_TYPE_EMITTER,
 )
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC, MATCH_SOURCE_MANUAL
 
@@ -180,8 +180,8 @@ def process_enriched_data(
     logger.info("Processing enriched data.")
 
     allowed_entity_types = [
-        TRANSFERT_ENTITY_TYPE_EMITTER,
-        TRANSFERT_ENTITY_TYPE_AGENT,
+        TRANSFER_ENTITY_TYPE_EMITTER,
+        TRANSFER_ENTITY_TYPE_AGENT,
     ]
     if entity_type not in allowed_entity_types:
         raise ValueError(

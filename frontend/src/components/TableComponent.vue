@@ -55,6 +55,7 @@ export interface TableProps {
 
 const props = defineProps<TableProps>()
 
+const tableComponent = useTemplateRef("data-table")
 const exportMenu = useTemplateRef("export-menu")
 const rowButtonMenu = useTemplateRef("row-button-menu")
 const selectedButtonData: Ref<Record<string, any> | null> = ref(null)
@@ -163,6 +164,18 @@ function buttonFromConfig(
 function toggleExportMenu(event: Event) {
   exportMenu.value!.toggle(event)
 }
+
+/**
+ * Scroll the document to the start of the table on page change.
+ */
+function onPageChange() {
+  if (!tableComponent.value) {
+    return
+  }
+  // @ts-expect-error PrimeVue component declartaion omits basic
+  // VueJS attributes..
+  tableComponent.value.$el.scrollIntoView()
+}
 </script>
 
 <template>
@@ -172,14 +185,15 @@ function toggleExportMenu(event: Event) {
   <DataTable
     class="tsosi-table"
     :value="props.data"
-    ref="dt"
-    paginator
+    ref="data-table"
+    :paginator="props.data.length > 20 ? true : undefined"
     :rows="20"
     :rowsPerPageOptions="[10, 20, 50, 100]"
     :sortField="defaultSortFieldFunction()"
     :sortOrder="props.defaultSort?.sortOrder"
     selectionMode="single"
     :dataKey="props.rowUniqueId"
+    @page="onPageChange"
   >
     <template v-if="props.header" #header>
       <div class="table-header">

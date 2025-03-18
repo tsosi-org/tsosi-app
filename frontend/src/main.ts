@@ -1,4 +1,4 @@
-import "./assets/css/main.css"
+import "@/assets/css/main.css"
 
 import { createApp } from "vue"
 import App from "./App.vue"
@@ -28,6 +28,7 @@ import {
   faXmark,
   faCheck,
   faCalendar,
+  faGlobe,
 } from "@fortawesome/free-solid-svg-icons"
 
 const app = createApp(App)
@@ -83,6 +84,9 @@ app.use(PrimeVue, {
     preset: MyPreset,
     options: {
       darkModeSelector: false,
+      // The cssLayer enables primevue styling to be applied aftef
+      // our custom CSS.
+      cssLayer: true,
     },
   },
 })
@@ -108,6 +112,7 @@ const usedIcons = [
   faXmark,
   faCheck,
   faCalendar,
+  faGlobe,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)

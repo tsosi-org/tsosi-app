@@ -2,10 +2,7 @@
 import { onBeforeMount, ref, type Ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import Divider from "primevue/divider"
-import {
-  getTransfertDetails,
-  type TransfertDetails,
-} from "@/singletons/ref-data"
+import { getTransferDetails, type TransferDetails } from "@/singletons/ref-data"
 import { getEntityBaseUrl, getEntityUrl } from "@/utils/url-utils"
 import { type DataFieldProps } from "@/utils/data-utils"
 import Summary from "@/components/SummaryComponent.vue"
@@ -17,18 +14,18 @@ import { isDesktop } from "@/composables/useMediaQuery"
 
 const route = useRoute()
 const router = useRouter()
-const transfert: Ref<TransfertDetails | null> = ref(null)
+const transfer: Ref<TransferDetails | null> = ref(null)
 const loading = ref(true)
 
 const breadcrumb: Ref<Array<BreadcrumbItem> | null> = ref(null)
 
 onBeforeMount(async () => {
-  const result = await getTransfertDetails(route.params.id as string)
+  const result = await getTransferDetails(route.params.id as string)
   if (result == null) {
     router.replace({ name: "NotFound", query: { target: route.path } })
     return
   }
-  transfert.value = result
+  transfer.value = result
 
   breadcrumb.value = [
     {
@@ -37,12 +34,12 @@ onBeforeMount(async () => {
       icon: "house",
     },
     {
-      label: transfert.value.recipient!.name,
-      route: getEntityUrl(transfert.value.recipient!.id),
+      label: transfer.value.recipient!.name,
+      route: getEntityUrl(transfer.value.recipient!.id),
       icon: "building-columns",
     },
     {
-      label: transfert.value.id,
+      label: transfer.value.id,
       route: route.path,
       icon: "magnifying-glass-chart",
     },
@@ -174,23 +171,19 @@ const metadataConfig: Array<DataFieldProps> = [
 
 <template>
   <Loader v-if="loading" width="150px" />
-  <div v-if="transfert" class="container">
+  <div v-if="transfer" class="container">
     <div class="regular-content">
       <Breadcrumb v-if="breadcrumb" :items="breadcrumb" />
-      <h1 style="margin: 1.5rem 0.5rem">Transfert details</h1>
+      <h1 style="margin: 1.5rem 0.5rem">Transfer details</h1>
       <div class="data-layout" :class="{ desktop: isDesktop }">
         <div class="data-content">
           <h2 class="summary-title">Data</h2>
-          <Summary :data="transfert" :fields="dataConfig" :explicit="true" />
+          <Summary :data="transfer" :fields="dataConfig" :explicit="true" />
         </div>
         <Divider :layout="isDesktop ? 'vertical' : 'horizontal'" />
         <div>
           <h2 class="summary-title">Metadata</h2>
-          <Summary
-            :data="transfert"
-            :fields="metadataConfig"
-            :explicit="true"
-          />
+          <Summary :data="transfer" :fields="metadataConfig" :explicit="true" />
         </div>
       </div>
     </div>

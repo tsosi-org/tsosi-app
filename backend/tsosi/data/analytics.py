@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 from django.db.models import F
 from tsosi.data.db_utils import bulk_create_from_df
-from tsosi.models import Analytic, Transfert
+from tsosi.models import Analytic, Transfer
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +13,8 @@ def compute_analytics():
     Generate analytics table of pre-computed data.
     """
     logger.info("Computing analytics.")
-    transferts = (
-        Transfert.objects.prefetch_related("emitter", "recipient", "agent")
+    transfers = (
+        Transfer.objects.prefetch_related("emitter", "recipient", "agent")
         .all()
         .values(
             "amounts_clc",
@@ -23,9 +23,9 @@ def compute_analytics():
             country=F("emitter__country"),
         )
     )
-    df = pd.DataFrame.from_records(transferts)
+    df = pd.DataFrame.from_records(transfers)
     if df.empty:
-        logger.info("No transfert to compute analytics for.")
+        logger.info("No transfer to compute analytics for.")
         return
 
     # Flatten data

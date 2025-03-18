@@ -3,7 +3,7 @@ from django.dispatch import Signal
 from .data.signals import (
     identifiers_created,
     identifiers_fetched,
-    transferts_created,
+    transfers_created,
 )
 from .tasks import (
     trigger_identifier_data_processing,
@@ -12,7 +12,7 @@ from .tasks import (
     trigger_wiki_data_update,
 )
 
-transferts_created.connect(trigger_post_ingestion_pipeline)
+transfers_created.connect(trigger_post_ingestion_pipeline)
 
 identifiers_fetched.connect(trigger_identifier_data_processing)
 

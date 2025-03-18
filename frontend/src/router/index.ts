@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router"
 import HomeView from "@/views/HomeView.vue"
 import EntityView from "@/views/EntityView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
-import TransfertView from "@/views/TransfertView.vue"
+import TransferView from "@/views/TransferView.vue"
 import FaqView from "@/views/FaqView.vue"
 import AboutView from "@/views/AboutView.vue"
 
@@ -20,9 +20,9 @@ const router = createRouter({
       component: EntityView,
     },
     {
-      path: "/transferts/:id",
-      name: "transfert",
-      component: TransfertView,
+      path: "/transfers/:id",
+      name: "transfer",
+      component: TransferView,
     },
     {
       path: "/faq",

@@ -1,4 +1,6 @@
-@import "./base.css";
+@layer reset, primeui;
+
+@import "./base.css" layer(reset);
 
 #body.drawer-open {
   overflow: hidden;
@@ -164,29 +166,30 @@ p {
  primevue styling system.
 */
 .info-box {
+  font-size: 1rem;
   --info-box-color: var(--p-primary-color);
-  padding: 1em;
-  max-width: min(100%, 400px);
-  border: 2px solid;
+  padding: min(1em, 3vw) min(1rem, 1vw);
+  border: 3px solid;
   border-color: var(--p-surface-200);
   border-radius: 5px;
-  /* box-shadow: 0 0 5px 2px var(--p-surface-300); */
+  color: inherit;
   height: fit-content;
-
-  &.expand {
-    max-width: unset;
-  }
 }
 
-.info-box > * {
+.info-box .info-item {
   margin-bottom: 0.5em;
 }
 
-.info-box > *:last-child {
+.info-box .info-item:last-child {
   margin-bottom: unset;
 }
 
 .info-item h3 {
   color: var(--info-box-color);
   font-size: 1.05rem;
+}
+
+h2.info-box-header {
+  font-size: 1.15em;
+  color: var(--color-heading);
 }

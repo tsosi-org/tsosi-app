@@ -3,8 +3,8 @@ from datetime import datetime
 
 import pandas as pd
 from django.db import transaction
-from tsosi.models import Entity, Transfert, TransfertEntityMatching
-from tsosi.models.transfert import TRANSFERT_ENTITY_TYPES
+from tsosi.models import Entity, Transfer, TransferEntityMatching
+from tsosi.models.transfer import TRANSFER_ENTITY_TYPES
 
 from .db_utils import bulk_create_from_df, bulk_update_from_df
 
@@ -16,15 +16,15 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
     """
     TODO: Concatenate all relevant data when merging entities:
         - raw name/country/URL
-        - transfert PIDs
+        - transfer PIDs
 
     Merge entities. The input dataframe must contain the column `id` of the
     entity to be merged and the column `merge_id` of the entity
     to be merged with.
     1 - Update the `merged_with` value of the entities to me merged.
-    2 - Update all transferts referencing the original entity to reference
+    2 - Update all transfers referencing the original entity to reference
         the new one.
-    3 - Add an entry in TransfertEntityMatching for all the (Transfert, Entity)
+    3 - Add an entry in TransferEntityMatching for all the (Transfer, Entity)
         combinations.
     """
     to_merge = (
@@ -106,12 +106,12 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
     )
     logger.info(f"Updated {len(to_merge)} Entity records.")
 
-    for e_type in TRANSFERT_ENTITY_TYPES:
-        # 2 - Update all transferts referencing these entities
+    for e_type in TRANSFER_ENTITY_TYPES:
+        # 2 - Update all transfers referencing these entities
         entity_field = f"{e_type}_id"
         kwargs = {f"{entity_field}__in": entity_list}
         t_to_update = pd.DataFrame.from_records(
-            Transfert.objects.filter(**kwargs).values("id", entity_field)
+            Transfer.objects.filter(**kwargs).values("id", entity_field)
         )
         if t_to_update.empty:
             continue
@@ -124,13 +124,13 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
         t_to_update["date_last_updated"] = date_update
 
         fields = ["id", entity_field, "date_last_updated"]
-        bulk_update_from_df(Transfert, t_to_update, fields)
+        bulk_update_from_df(Transfer, t_to_update, fields)
         logger.info(
-            f"Updated {len(t_to_update)} Transfert records with entity type `{e_type}`"
+            f"Updated {len(t_to_update)} Transfer records with entity type `{e_type}`"
         )
 
-        # 3 - Create new TransfertEntityMatching records
-        t_to_update["transfert_entity_type"] = e_type
+        # 3 - Create new TransferEntityMatching records
+        t_to_update["transfer_entity_type"] = e_type
         t_to_update = t_to_update.merge(
             to_merge[["entity_id", "match_criteria", "match_source"]].rename(
                 columns={"entity_id": "original_entity_id"}
@@ -140,21 +140,21 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
         )
         t_to_update["date_created"] = date_update
         t_to_update.rename(
-            columns={"id": "transfert_id", "original_entity_id": "entity_id"},
+            columns={"id": "transfer_id", "original_entity_id": "entity_id"},
             inplace=True,
         )
 
         fields = [
-            "transfert_id",
-            "transfert_entity_type",
+            "transfer_id",
+            "transfer_entity_type",
             "entity_id",
             "match_criteria",
             "match_source",
             "date_created",
             "date_last_updated",
         ]
-        bulk_create_from_df(TransfertEntityMatching, t_to_update, fields)
+        bulk_create_from_df(TransferEntityMatching, t_to_update, fields)
         logger.info(
-            f"Created {len(t_to_update)} TransfertEntityMatching records for e_type: `{e_type}`."
+            f"Created {len(t_to_update)} TransferEntityMatching records for e_type: `{e_type}`."
         )
     logger.info(f"Successfully merged {len(to_merge)} entities.")

@@ -475,7 +475,7 @@ class RawDataConfig:
         Convert the input data to our data format and
         perform various data cleaning.
 
-        :param df:      The transfert DataFrame to prepare.
+        :param df:      The transfer DataFrame to prepare.
         :param error:   Whether to raise error while cleaning the data.
                         This should be True when the data is prepared
                         for ingestion.
@@ -637,7 +637,7 @@ class RawDataConfig:
         df = df.drop(columns=cols_to_drop)
 
         # Compute the `original_id` field for custom tracking.
-        # The ulterior generated transfert ID is a random UUID..
+        # The ulterior generated transfer ID is a random UUID..
         origin = re.sub(r"\s+", "_", self.origin.strip())
         df.loc[:, FieldOriginalId.NAME] = f"{origin}_" + df.index.astype(str)
 

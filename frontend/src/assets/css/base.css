@@ -39,8 +39,9 @@ https://primevue.org/theming/styled/#colors
 
   --color-heading: var(--p-primary-800);
   --color-text: var(--p-neutral-950);
-  --color-link: var(--p-primary-700);
-  --color-background-component: white;
+  /* --color-link: var(--p-primary-700); */
+  --color-link: var(--color-text);
+  --color-background-component: rgb(5, 4, 4);
   --color-target: var(--p-yellow-500);
   --color-success: var(--p-green-500);
   --color-error: var(--p-red-500);
@@ -84,10 +85,19 @@ https://primevue.org/theming/styled/#colors
 *::before,
 *::after {
   box-sizing: border-box;
-  margin: 0;
-  font-weight: inherit;
   scroll-margin-top: var(--regular-header-height);
 }
+
+/*
+I have issue with CSS layer precedence.
+I'm trying to use what's adviced by primevue, namely to encapsulate
+the reset CSS in a layer with lower precedence than primevue's layer but
+it's not working.
+*/
+*:not(div, span) {
+  margin: 0;
+}
+
 
 /* Make webkit browsers' scrollbar behave like chrome as an overlay  */
 ::-webkit-scrollbar {

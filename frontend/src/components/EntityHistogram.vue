@@ -55,7 +55,7 @@ const chartOptions: Ref<object | undefined> = ref()
 const chartTitle = computed(() =>
   metric.value.code == "sum"
     ? `Total value (${selectedCurrency.value.id})`
-    : "Number of transferts",
+    : "Number of transfers",
 )
 
 // Chart controls
@@ -300,7 +300,7 @@ function toggleExportMenu(event: Event) {
         <template v-if="metric.code == 'sum'">
           Overall funding per year in {{ selectedCurrency.name }}
         </template>
-        <template v-else> Number of transferts per year </template>
+        <template v-else> Number of transfers per year </template>
       </h2>
       <div class="chart-controls">
         <div class="check-box-wrapper">

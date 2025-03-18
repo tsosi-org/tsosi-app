@@ -67,8 +67,11 @@ SUPPORTED_INFRASTRUCTURES = [
         "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/doaj-directory-of-open-access-journals",
             "posi_url": "https://blog.doaj.org/2022/10/06/doaj-commits-to-the-principles-of-open-scholarly-infrastructure-posi",
-            "is_scoss_awarded": True,
+            "date_scoss_start": "2017-01-01",
+            "date_scoss_end": "2020-01-01",
             "hide_amount": True,
+            "backer_name": "Infrastructure Services for Open Access (IS4OA)",
+            "support_url": "https://doaj.org/support/",
         },
     },
     {
@@ -83,16 +86,17 @@ SUPPORTED_INFRASTRUCTURES = [
             "country": "NL",
             "description": """OAPEN supports the transition to open access for academic books by providing open infrastructure services to stakeholders, including the DOAB (Directory of Open Access Books), on which OAPEN works in partnership with Open Edition.""",
             "manual_logo": True,
-            "date_inception": date(
-                2010, 1, 1
-            ),  # Inception date of OAPEN - DOAB was launched in 2013
+            "date_inception": "2010-01-01",  # Inception date of OAPEN - DOAB was launched in 2013
             "is_partner": True,
         },
         "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/directory-of-open-access-books",
             "posi_url": "https://oapen.hypotheses.org/524",
-            "is_scoss_awarded": True,
+            "date_scoss_start": "2019-12-01",
+            "date_scoss_end": "2022-12-01",
             "hide_amount": True,
+            "backer_name": "OAPEN Foundation and OpenEdition",
+            "support_url": "https://oapen.org/librarians/15963583-support-oapen-libraries",
         },
         "static_logo": "LOGO_oapen_doab.png",
     },
@@ -108,7 +112,6 @@ SUPPORTED_INFRASTRUCTURES = [
         },
         "infrastructure": {
             "posi_url": "https://operas-eu.org/principles-of-open-scholarly-infrastructure-posi",
-            "is_scoss_awarded": False,
         },
     },
     {
@@ -124,7 +127,7 @@ SUPPORTED_INFRASTRUCTURES = [
         "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/peer-community-in",
             "posi_url": "https://peercommunityin.org/2024/04/11/posi/",
-            "is_scoss_awarded": False,
+            "support_url": "https://peercommunityin.org/endorse-and-financially-support-pci/",
         },
     },
     {
@@ -139,7 +142,10 @@ SUPPORTED_INFRASTRUCTURES = [
         },
         "infrastructure": {
             "posi_url": "https://scipost.org/posi",
-            "is_scoss_awarded": True,
+            "date_scoss_start": "2024-12-01",
+            "date_scoss_end": "2027-12-01",
+            "backer_name": "SciPost Foundation",
+            "support_url": "https://scipost.org/sponsors/",
         },
     },
 ]

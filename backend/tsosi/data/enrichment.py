@@ -14,7 +14,7 @@ from tsosi.models import (
     IdentifierEntityMatching,
     IdentifierVersion,
     InfrastructureDetails,
-    Transfert,
+    Transfer,
 )
 from tsosi.models.date import DATE_PRECISION_YEAR, Date
 from tsosi.models.identifier import (
@@ -22,7 +22,7 @@ from tsosi.models.identifier import (
     MATCH_CRITERIA_FROM_WIKIDATA,
 )
 from tsosi.models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
-from tsosi.models.transfert import MATCH_CRITERIA_MERGED, TRANSFERT_ENTITY_TYPES
+from tsosi.models.transfer import MATCH_CRITERIA_MERGED, TRANSFER_ENTITY_TYPES
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 
 from .db_utils import (
@@ -917,20 +917,20 @@ def update_registry_data() -> TaskResult:
     pass
 
 
-def update_transfert_date_clc(
-    instances: QuerySet[Transfert] | None = None,
+def update_transfer_date_clc(
+    instances: QuerySet[Transfer] | None = None,
 ):
     """
-    Update the `date_clc` field for transferts based on the various
+    Update the `date_clc` field for transfers based on the various
     date fields.
     """
-    logger.info("Updating transfert CLC date.")
+    logger.info("Updating transfer CLC date.")
     if instances is None:
-        instances = Transfert.objects.all().values(
+        instances = Transfer.objects.all().values(
             "id", "date_invoice", "date_payment", "date_start"
         )
     if len(instances) == 0:
-        logger.info("No transfert to update CLC date for.")
+        logger.info("No transfer to update CLC date for.")
         return
 
     data = pd.DataFrame.from_records(instances)
@@ -952,34 +952,34 @@ def update_transfert_date_clc(
     )
     data["date_last_updated"] = timezone.now()
     columns = ["id", "date_clc", "date_last_updated"]
-    bulk_update_from_df(Transfert, data, columns)
+    bulk_update_from_df(Transfer, data, columns)
 
 
 def update_entity_roles_clc():
     """
     Update the `is_emitter`, `is_recipient`, `is_agent` booleans according
-    to the transfert data.
+    to the transfer data.
     """
     logger.info("Updating entity roles.")
 
-    transfert_cols = [f"{t}_id" for t in TRANSFERT_ENTITY_TYPES]
-    transferts = pd.DataFrame.from_records(
-        Transfert.objects.all().values("id", *transfert_cols)
+    transfer_cols = [f"{t}_id" for t in TRANSFER_ENTITY_TYPES]
+    transfers = pd.DataFrame.from_records(
+        Transfer.objects.all().values("id", *transfer_cols)
     )
-    entities_cols = [f"is_{t}" for t in TRANSFERT_ENTITY_TYPES]
+    entities_cols = [f"is_{t}" for t in TRANSFER_ENTITY_TYPES]
     entities = pd.DataFrame.from_records(
         Entity.objects.filter(is_active=True).values("id", *entities_cols)
     )
-    if transferts.empty or entities.empty:
-        logger.info("No transfert or no active entity, no role update to make.")
+    if transfers.empty or entities.empty:
+        logger.info("No transfer or no active entity, no role update to make.")
         return
 
-    for t in TRANSFERT_ENTITY_TYPES:
-        e_of_type = transferts[f"{t}_id"].drop_duplicates()
+    for t in TRANSFER_ENTITY_TYPES:
+        e_of_type = transfers[f"{t}_id"].drop_duplicates()
         entities[f"new_is_{t}"] = entities["id"].isin(e_of_type)
         entities[f"{t}_diff"] = entities[f"is_{t}"] != entities[f"new_is_{t}"]
 
-    diff_cols = [f"{t}_diff" for t in TRANSFERT_ENTITY_TYPES]
+    diff_cols = [f"{t}_diff" for t in TRANSFER_ENTITY_TYPES]
     e_to_update = entities[entities[diff_cols].any(axis=1)].copy()
 
     if e_to_update.empty:
@@ -990,7 +990,7 @@ def update_entity_roles_clc():
     cols_for_update = {
         "id": "id",
         "date_last_updated": "date_last_updated",
-        **{f"new_is_{t}": f"is_{t}" for t in TRANSFERT_ENTITY_TYPES},
+        **{f"new_is_{t}": f"is_{t}" for t in TRANSFER_ENTITY_TYPES},
     }
     e_to_update = e_to_update[cols_for_update.keys()].rename(
         columns=cols_for_update
@@ -1004,30 +1004,30 @@ def update_entity_roles_clc():
 
 def update_infrastructure_metrics():
     """
-    Compute infrastructure metrics from the transferts. This updates or creates
+    Compute infrastructure metrics from the transfers. This updates or creates
     the  `InfrastructureDetails` instances attached to infrastructure Entities.
     """
     logger.info("Updating infrastructure metrics.")
-    # Min & max transfert dates per recipient
+    # Min & max transfer dates per recipient
     dates = date_extremas_from_queryset(
-        Transfert.objects.all(), ["date_clc"], groupby=["recipient_id"]
+        Transfer.objects.all(), ["date_clc"], groupby=["recipient_id"]
     )
     dates: dict[str, DateExtremas] = {
         d["recipient_id"]: d["_extremas"] for d in dates
     }
 
-    total_transferts = Count("transfert_as_recipient")
+    total_transfers = Count("transfer_as_recipient")
     date_source_max = Max(
-        "transfert_as_recipient__data_load_source__date_data_obtained"
+        "transfer_as_recipient__data_load_source__date_data_obtained"
     )
 
     entities = (
         Entity.objects.filter(is_recipient=True)
-        .annotate(total_transferts=total_transferts)
+        .annotate(total_transfers=total_transfers)
         .annotate(date_last_update=date_source_max)
         .values(
             "id",
-            "total_transferts",
+            "total_transfers",
             "date_last_update",
             "infrastructure_details",
         )

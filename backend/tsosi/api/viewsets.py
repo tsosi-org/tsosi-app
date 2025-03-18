@@ -11,11 +11,11 @@ from tsosi.api.serializers import (
     CurrencySerializer,
     EntityDetailsSerializer,
     EntitySerializer,
-    TransfertDetailsSerializer,
-    TransfertSerializer,
+    TransferDetailsSerializer,
+    TransferSerializer,
 )
 from tsosi.app_settings import app_settings
-from tsosi.models import Analytic, Currency, Entity, Transfert
+from tsosi.models import Analytic, Currency, Entity, Transfer
 
 
 class ReadOnlyViewSet(viewsets.ModelViewSet):
@@ -97,18 +97,18 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
 
         self.pagination_class = None
         self.serializer_class = EntitySerializer
-        ids = Transfert.objects.filter(recipient_id=entity_id).values_list(
+        ids = Transfer.objects.filter(recipient_id=entity_id).values_list(
             "emitter_id", flat=True
         )
         self.queryset = Entity.objects.filter(id__in=ids).distinct()
         return self.list(request, *args, **kwargs)
 
 
-class TransfertFilter(filters.FilterSet):
+class TransferFilter(filters.FilterSet):
     entity_id = filters.CharFilter(method="filter_by_entity")
 
     class Meta:
-        model = Transfert
+        model = Transfer
         fields = ["entity_id"]
 
     def filter_by_entity(
@@ -129,18 +129,18 @@ class TransfertFilter(filters.FilterSet):
         return queryset.filter(condition)
 
 
-class TransfertViewSet(AllActionViewSet, ReadOnlyViewSet):
-    queryset = Transfert.objects.all().select_related(
+class TransferViewSet(AllActionViewSet, ReadOnlyViewSet):
+    queryset = Transfer.objects.all().select_related(
         "emitter", "recipient", "agent"
     )
-    serializer_class = TransfertSerializer
+    serializer_class = TransferSerializer
     filter_backends = [filters.DjangoFilterBackend, OrderingFilter]
-    filterset_class = TransfertFilter
+    filterset_class = TransferFilter
     ordering = ["date_clc"]
     ordering_fields = ["date_clc"]
 
     def retrieve(self, request, *args, **kwargs):
-        self.serializer_class = TransfertDetailsSerializer
+        self.serializer_class = TransferDetailsSerializer
         return super().retrieve(request, *args, **kwargs)
 
 
