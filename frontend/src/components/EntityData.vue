@@ -63,10 +63,14 @@ watch(activeTab, () => {
 })
 watch(chartTabTriggered, () => {
   if (chartTabTriggered.value === true) {
+    // Scroll the tab panel back to top for the first
     if (tabs.value != null) {
       // @ts-expect-error PrimeVue component declaration omits basic
       // VueJS attributes..
-      tabs.value.$el.scrollIntoView({ behavior: "instant" })
+      const tabPanelEl: HTMLElement = tabs.value.$el
+      if (tabPanelEl.getBoundingClientRect().top < 0) {
+        tabPanelEl.scrollIntoView({ behavior: "instant" })
+      }
     }
     updateMapData()
   }

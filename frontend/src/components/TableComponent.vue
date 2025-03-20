@@ -194,6 +194,7 @@ function onPageChange() {
     selectionMode="single"
     :dataKey="props.rowUniqueId"
     @page="onPageChange"
+    :dt="{ row: { color: 'var(--color-text)' } }"
   >
     <template v-if="props.header" #header>
       <div class="table-header">

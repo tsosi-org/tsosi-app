@@ -42,7 +42,18 @@ const router = createRouter({
   ],
   scrollBehavior(to, from, savedPosition) {
     if (to.hash) {
-      return { el: to.hash }
+      const scrollData: { [id: string]: any } = { el: to.hash, top: undefined }
+      const el = document.querySelector(to.hash)
+      if (!el) {
+        return scrollData
+      }
+      const styles = window.getComputedStyle(el)
+      // Retrieve the scroll-margin-top property
+      const scrollMarginTop = styles.getPropertyValue("scroll-margin-top")
+      if (scrollMarginTop) {
+        scrollData.top = parseInt(scrollMarginTop)
+      }
+      return scrollData
     } else if (savedPosition) {
       return savedPosition
     }

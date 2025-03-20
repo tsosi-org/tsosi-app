@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import Chip from "primevue/chip"
+import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
 
 export interface ChipConfig {
   label: string
   icon?: string
   iconText?: string
   link?: string
+  info?: string
 }
 
 const props = defineProps<{
-  tags: ChipConfig[]
+  chips: ChipConfig[]
   chipYGap?: string
   center?: boolean
 }>()
@@ -17,20 +19,20 @@ const props = defineProps<{
 
 <template>
   <div
-    v-if="props.tags.length"
+    v-if="props.chips.length"
     class="icon-label-list"
     :class="{ center: props.center }"
   >
-    <div v-for="(iconLabel, index) of props.tags" :key="index">
+    <div v-for="(chip, index) of props.chips" :key="index">
       <a
-        v-if="iconLabel.link"
-        :href="iconLabel.link"
+        v-if="chip.link"
+        :href="chip.link"
         target="_blank"
         rel="noopener noreferrer"
       >
         <Chip
           class="chip-link"
-          :label="iconLabel.label"
+          :label="chip.label"
           :dt="{
             gap: '0.8em',
             fontSize: '0.9rem',
@@ -42,18 +44,41 @@ const props = defineProps<{
           <template #icon>
             <div class="chip-icon-group">
               <font-awesome-icon
-                v-if="iconLabel.icon"
+                v-if="chip.icon"
                 class="icon"
-                :icon="iconLabel.icon"
+                :icon="chip.icon"
               />
-              <span v-if="iconLabel.iconText">{{ iconLabel.iconText }}</span>
+              <span v-if="chip.iconText">{{ chip.iconText }}</span>
             </div>
           </template>
         </Chip>
       </a>
+      <InfoButtonAtom v-else-if="chip.info" :content="chip.info">
+        <template #body>
+          <Chip
+            :label="chip.label"
+            :dt="{
+              gap: '0.8em',
+              fontSize: '0.9rem',
+              padding: { y: chipYGap ?? '0.25rem', x: '1rem' },
+            }"
+          >
+            <template #icon>
+              <div class="chip-icon-group">
+                <font-awesome-icon
+                  v-if="chip.icon"
+                  class="icon"
+                  :icon="chip.icon"
+                />
+                <span v-if="chip.iconText">{{ chip.iconText }}</span>
+              </div>
+            </template>
+          </Chip>
+        </template>
+      </InfoButtonAtom>
       <Chip
         v-else
-        :label="iconLabel.label"
+        :label="chip.label"
         :dt="{
           gap: '0.8em',
           fontSize: '0.9rem',
@@ -63,11 +88,11 @@ const props = defineProps<{
         <template #icon>
           <div class="chip-icon-group">
             <font-awesome-icon
-              v-if="iconLabel.icon"
+              v-if="chip.icon"
               class="icon"
-              :icon="iconLabel.icon"
+              :icon="chip.icon"
             />
-            <span v-if="iconLabel.iconText">{{ iconLabel.iconText }}</span>
+            <span v-if="chip.iconText">{{ chip.iconText }}</span>
           </div>
         </template>
       </Chip>

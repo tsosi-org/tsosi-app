@@ -3,6 +3,7 @@ import {
   initDateWithPrecision,
   initDateProperty,
   type DateWithPrecision,
+  shuffleArray,
 } from "@/utils/data-utils"
 
 interface ApiData {
@@ -107,6 +108,7 @@ export type RefData = {
   currencies: DeepReadonly<Record<string, Currency>>
   transfers?: Transfer[]
   initialized: boolean
+  infrastructures: DeepReadonly<Entity>[]
 }
 
 export interface PaginatedResults<T> {
@@ -127,6 +129,7 @@ const refData: RefData = {
   entities: {},
   currencies: {},
   initialized: false,
+  infrastructures: [],
 }
 
 /**
@@ -140,6 +143,7 @@ async function _initRefData(): Promise<boolean> {
     getCountries(),
     getCurrencies(),
   ])
+  getInfrastructures()
   refData.initialized = true
   const correctlyLoaded = !promiseResults.some((res) => res == null)
   return correctlyLoaded
@@ -321,8 +325,19 @@ export async function getEmittersForEntity(
   return result.data as Entity[]
 }
 
+/**
+ * The infrastructures order is random, but we keep the order throughout the
+ * navigation to avoid strange effects.
+ * @returns
+ */
 export function getInfrastructures(): DeepReadonly<Entity>[] {
-  return Object.values(refData.entities).filter((e) => e.is_recipient)
+  if (!refData.initialized) {
+    refData.infrastructures = Object.values(refData.entities).filter(
+      (e) => e.is_recipient,
+    )
+    shuffleArray(refData.infrastructures)
+  }
+  return refData.infrastructures
 }
 
 export function getEmitters(): DeepReadonly<Entity>[] {

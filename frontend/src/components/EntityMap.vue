@@ -27,7 +27,7 @@ import { createComponent } from "@/utils/dom-utils"
 import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 
 export interface EntityMapProps {
-  infrastructures: Entity[]
+  infrastructures?: Entity[]
   supporters: Entity[]
   title?: string
   dataLoaded?: boolean
@@ -88,10 +88,12 @@ async function onInit() {
 
   const options: L.MapOptions = {
     maxBoundsViscosity: 1,
-    maxBounds: [
-      [-85, -181],
-      [85, 181],
-    ],
+    // Having max bounds can cause issue with the popups, that may be out of
+    // reach.
+    // maxBounds: [
+    //   [-89, -181],
+    //   [89, 181],
+    // ],
   }
   const mapObject = L.map(mapElement.value as HTMLElement, options)
   L.tileLayer(tileBaseUrl, {
@@ -215,7 +217,7 @@ async function updateMarkers() {
   }
   // Construct infrastructures layers
   const infraFeatures: Feature[] = []
-  for (const item of props.infrastructures) {
+  for (const item of props.infrastructures || []) {
     const coordinates = parsePointCoordinates(item.coordinates)
     if (!coordinates) {
       continue
@@ -232,7 +234,7 @@ async function updateMarkers() {
     }
     infraFeatures.push(feature)
   }
-  if (infraFeatures) {
+  if (infraFeatures.length) {
     newLayers.infra = L.geoJSON(infraFeatures, {
       pointToLayer: (_, latlng) =>
         L.marker(latlng, {
@@ -305,7 +307,7 @@ function cleanPopup(element: App) {
         <span>
           Countries
           <InfoButtonAtom>
-            <template #default>
+            <template #popup>
               <span>
                 Gather all funders from the given country without a precise
                 location information.

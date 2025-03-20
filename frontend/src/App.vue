@@ -32,7 +32,7 @@ function scrollToHash(retry: boolean) {
   if (hash) {
     const element = document.querySelector(hash)
     if (element) {
-      element.scrollIntoView()
+      element.scrollIntoView(true)
     } else if (retry) {
       setTimeout(() => scrollToHash, scrollTimeout, false)
     }

@@ -44,4 +44,9 @@ const props = defineProps<EntityMapSummaryProps>()
   gap: 1em;
   position: relative;
 }
+
+a {
+  text-decoration: underline;
+  color: initial;
+}
 </style>

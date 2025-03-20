@@ -92,7 +92,7 @@ function updateHeaderHome() {
               :label="infrastructures.length.toString()"
               class="number-emphasis"
             >
-              <template #default>
+              <template #popup>
                 <InfrastructurePopup />
               </template>
             </InfoButtonAtom>
@@ -110,7 +110,6 @@ function updateHeaderHome() {
         <div class="regular-content content-section">
           <EntityMap
             class="home-map"
-            :infrastructures="infrastructures"
             :supporters="emitters"
             title="Funder locations"
             :data-loaded="true"

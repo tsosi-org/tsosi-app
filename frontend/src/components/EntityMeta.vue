@@ -45,10 +45,19 @@ onMounted(() => loadChips())
 
 function loadChips() {
   if (props.entity.country) {
-    headerChips.value.push({
+    const countryName = getCountryLabel(props.entity.country)
+    const countryChip: ChipConfig = {
       icon: "location-dot",
-      label: getCountryLabel(props.entity.country),
-    })
+      label: countryName,
+    }
+    const backerName = props.entity.infrastructure?.backer_name
+    if (backerName) {
+      countryChip.info = `
+        ${props.entity.name} is maintained by ${backerName},
+        located in ${countryName}
+      `
+    }
+    headerChips.value.push(countryChip)
   }
 
   if (props.entity.date_inception) {
@@ -122,7 +131,7 @@ function breakdownDisclaimer(): boolean {
           <h1 class="entity-title">
             <span>{{ props.entity.name }}</span>
           </h1>
-          <ChipList :tags="headerChips" :center="!isDesktop" />
+          <ChipList :chips="headerChips" :center="!isDesktop" />
         </div>
         <div class="entiy-header__desc">
           <!--
@@ -431,15 +440,15 @@ function breakdownDisclaimer(): boolean {
     var(--p-primary-400),
     30%,
     var(--p-primary-700)
-  ); */
-  /* color: white; */
+  );
+  color: white; */
   background: linear-gradient(
     to right bottom,
-    var(--p-amber-50),
-    30%,
+    var(--p-amber-100),
+    25%,
     var(--p-amber-200)
   );
-  color: var(--p-amber-700);
+  color: var(--p-amber-800);
   text-decoration: unset;
   transition: 0.3s outline-color ease-in;
   animation: 1.5s shake linear 1.5s 1;
@@ -489,15 +498,19 @@ function breakdownDisclaimer(): boolean {
 }
 
 .special-button {
+  --color-1: var(--p-primary-600);
+  --color-2: var(--p-primary-700);
+  --color-invert: white;
   display: inline-block;
   column-gap: 1em;
   align-items: baseline;
-  padding: 0.7rem 1.5rem;
-  /* border: 2px solid; */
-  background-color: var(--p-primary-600);
-  color: white;
+  padding: 0.6rem 1.25rem;
+  border: 2px solid var(--color-1);
+  background-color: var(--color-1);
+  color: var(--color-invert);
   border-radius: 4px;
   text-decoration: unset;
+  transition: all 0.2s ease-out;
 
   & > .fa-icon {
     margin-left: 0.75rem;
@@ -506,7 +519,7 @@ function breakdownDisclaimer(): boolean {
 
 a.special-button:hover,
 a.special-button:focus-visible {
-  background-color: var(--p-primary-700);
-  outline: 2px solid var(--p-primary-200);
+  background-color: var(--color-invert);
+  color: var(--color-2);
 }
 </style>

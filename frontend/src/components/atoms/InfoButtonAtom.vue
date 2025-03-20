@@ -51,30 +51,34 @@ function popupLeave(event: Event) {
 
 <template>
   <div class="info-button" ref="icon-button" tabindex="0">
-    <font-awesome-icon v-if="props.icon" :icon="props.icon">
-    </font-awesome-icon>
-    <span
-      v-else-if="props.label"
-      class="info-button-label"
-      style="text-decoration: underline"
-    >
-      {{ props.label }}
-    </span>
-    <font-awesome-icon
-      v-else
-      icon="circle-question"
-      class="info-icon"
-    ></font-awesome-icon>
+    <slot name="body">
+      <font-awesome-icon v-if="props.icon" :icon="props.icon">
+      </font-awesome-icon>
+      <span
+        v-else-if="props.label"
+        class="info-button-label"
+        style="text-decoration: underline"
+      >
+        {{ props.label }}
+      </span>
+      <font-awesome-icon
+        v-else
+        icon="circle-question"
+        class="info-icon"
+      ></font-awesome-icon>
+    </slot>
     <Popover
       ref="popup"
       :baseZIndex="1000"
       class="popup-wrapper"
       @mouseenter="hidePopup = false"
       @mouseleave="popupLeave"
+      :dt="{ gutter: '0' }"
     >
       <div class="info-popup">
-        <slot></slot>
-        <div v-if="props.content" v-html="props.content"></div>
+        <slot name="popup">
+          <div v-if="props.content" v-html="props.content"></div>
+        </slot>
       </div>
     </Popover>
   </div>
@@ -82,9 +86,10 @@ function popupLeave(event: Event) {
 
 <style scoped>
 .info-button {
-  display: inline;
+  display: inline-block;
   position: relative;
   border-radius: 2px;
+  padding: 2px;
 }
 
 .info-button:focus,

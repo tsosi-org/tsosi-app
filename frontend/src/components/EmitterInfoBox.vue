@@ -17,7 +17,7 @@ import Panel from "primevue/panel"
         <span style="white-space: nowrap">
           included.
           <InfoButtonAtom>
-            <template #default>
+            <template #popup>
               <InfrastructurePopup />
             </template>
           </InfoButtonAtom>

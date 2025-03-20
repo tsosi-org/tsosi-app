@@ -30,7 +30,7 @@ console.log(`Full width: ${props.fullWidth}`)
           v-if="props.data.infrastructure.hide_amount"
           style="margin-left: 0.5em"
         >
-          <template #default>
+          <template #popup>
             The individual funding amounts are not disclosed,
             <RouterLink to="/faq#partner-definition">see our FAQ</RouterLink>
           </template>
