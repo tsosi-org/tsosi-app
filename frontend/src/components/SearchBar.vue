@@ -106,7 +106,7 @@ function onKeyDown(event: KeyboardEvent) {
     return
   }
   if (event.key == "Enter") {
-    getHighlighted()?.querySelector("a")?.click()
+    getHighlighted()?.click()
     return
   }
   const resultsLength = filteredResults.value.length
@@ -224,20 +224,18 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
           :scroll-height="virtualScrollerHeight"
         >
           <template #item="{ item }">
-            <div
+            <RouterLink
+              :to="item.url"
+              @click="resetSearchBar"
               class="search-result"
               :style="{ height: itemSize + 'px' }"
               :class="{ highlighted: item.highlighted }"
+              :title="item.name"
             >
-              <RouterLink
-                :to="item.url"
-                @click="resetSearchBar"
-                class="search-result-text"
-                :title="item.name"
-              >
+              <span class="search-result-text">
                 {{ item.name }}
-              </RouterLink>
-            </div>
+              </span>
+            </RouterLink>
           </template>
         </VirtualScroller>
       </div>
@@ -291,19 +289,13 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
   max-width: var(--content-width);
   padding: 2px 4px;
   border-radius: 4x;
-
-  & a {
-    text-decoration: unset;
-  }
+  text-decoration: unset;
 
   &.highlighted,
   &:hover {
     cursor: pointer;
     background-color: var(--p-surface-200);
-
-    & a {
-      text-decoration: underline;
-    }
+    text-decoration: underline;
   }
 }
 

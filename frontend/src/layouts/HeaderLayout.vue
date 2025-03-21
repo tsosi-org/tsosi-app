@@ -162,7 +162,7 @@ header {
   height: var(--header-height);
   overflow: hidden;
   transform: translate(0, -100%);
-  transition: all 0.3s ease-in-out;
+  transition: all 0.2s ease-in-out;
 
   &.header-visible {
     transform: unset;
