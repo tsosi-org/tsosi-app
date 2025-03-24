@@ -32,7 +32,9 @@ console.log(`Full width: ${props.fullWidth}`)
         >
           <template #popup>
             The individual funding amounts are not disclosed,
-            <RouterLink to="/faq#partner-definition">see our FAQ</RouterLink>
+            <RouterLink to="/pages/faq#partner-definition"
+              >see our FAQ</RouterLink
+            >
           </template>
         </InfoButtonAtom>
       </h3>
@@ -58,7 +60,9 @@ console.log(`Full width: ${props.fullWidth}`)
       <span>
         The data does not include the supporters breakdown before 2021, but only
         the intermediary like a library consortia,
-        <RouterLink to="/faq#partner-definition"> see more in FAQ </RouterLink>.
+        <RouterLink to="/pages/faq#partner-definition">
+          see more in FAQ </RouterLink
+        >.
       </span>
     </div>
   </Panel>

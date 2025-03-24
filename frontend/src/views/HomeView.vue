@@ -15,6 +15,7 @@ import { getEntityUrl } from "@/utils/url-utils"
 import { isDesktop } from "@/composables/useMediaQuery"
 import { onBeforeMount, onMounted, onUnmounted } from "vue"
 import { togglePageNoHeader, setBigHeader } from "@/singletons/fixedHeaderStore"
+import Carousel from "primevue/carousel"
 
 changeTitle("Home")
 
@@ -68,7 +69,7 @@ function updateHeaderHome() {
             subsidies and support should be transparent, so that we can better
             understand the issues behind the OS infrastructures.
             <br />
-            <RouterLink to="/about"> Read more. </RouterLink>
+            <RouterLink to="/pages/about"> Read more. </RouterLink>
           </div>
         </div>
       </div>
@@ -122,7 +123,50 @@ function updateHeaderHome() {
       <div class="container">
         <div class="regular-content content-section">
           <h1 style="text-align: center">Our Partners</h1>
-          <div class="partner-cards">
+          <Carousel
+            :value="partners"
+            :numVisible="4"
+            :numScroll="1"
+            circular
+            :responsive-options="[
+              {
+                breakpoint: '1150px',
+                numVisible: 3,
+                numScroll: 1,
+              },
+              {
+                breakpoint: '850px',
+                numVisible: 2,
+                numScroll: 1,
+              },
+              {
+                breakpoint: '600px',
+                numVisible: 1,
+                numScroll: 1,
+              },
+            ]"
+          >
+            <template #item="slotProps">
+              <RouterLink
+                :to="getEntityUrl(slotProps.data.id)"
+                class="card-link"
+              >
+                <CardComponent>
+                  <template #header>
+                    <ImageAtom
+                      :src="slotProps.data.logo"
+                      :width="'150px'"
+                      :center="true"
+                    />
+                  </template>
+                  <template #title>
+                    {{ slotProps.data.name }}
+                  </template>
+                </CardComponent>
+              </RouterLink>
+            </template>
+          </Carousel>
+          <div class="partner-cards" style="display: none">
             <CardComponent
               v-for="entity of partners"
               :entity="entity"
@@ -298,6 +342,35 @@ function updateHeaderHome() {
   grid-template-columns: 1fr;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   justify-content: space-around;
+}
+
+.card-link {
+  display: block;
+  text-decoration: unset;
+  margin: 8px 1.5em;
+  /* height: calc(100% - 16px); */
+
+  & :deep(.card) {
+    min-height: 250px;
+  }
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+    outline: unset;
+
+    & :deep(.card) {
+      box-shadow:
+        rgba(0, 0, 0, 0.1) 0px 1px 5px 5px,
+        rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
+    }
+  }
+
+  &:focus-visible {
+    & :deep(.card) {
+      outline: 2px solid var(--p-primary-color);
+    }
+  }
 }
 
 .explain-cards :deep(.card) {

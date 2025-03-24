@@ -24,4 +24,15 @@ changeTitle(props.title)
   text-align: center;
   padding-top: 0;
 }
+
+.static-content {
+  & :deep(h1),
+  & :deep(h2),
+  & :deep(h3),
+  & :deep(h4),
+  & :deep(h5),
+  & :deep(h6) {
+    margin: 1em 0 0.5em 0;
+  }
+}
 </style>

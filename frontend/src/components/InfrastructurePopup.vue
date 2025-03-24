@@ -7,7 +7,7 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
   <div>
     Partner infrastructures:
     <InfrastructureList />
-    <RouterLink to="/faq#partner-definition">See our FAQ</RouterLink>
+    <RouterLink to="/pages/faq#partner-definition">See our FAQ</RouterLink>
     to know more about partner infrastructures.
   </div>
 </template>

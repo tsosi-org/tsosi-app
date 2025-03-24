@@ -9,10 +9,10 @@ const props = defineProps<{
 <template>
   <ul>
     <li>
-      <RouterLink to="/faq">FAQ</RouterLink>
+      <RouterLink to="/pages/faq">FAQ</RouterLink>
     </li>
     <li>
-      <RouterLink to="/about">About</RouterLink>
+      <RouterLink to="/pages/about">About</RouterLink>
     </li>
   </ul>
 </template>

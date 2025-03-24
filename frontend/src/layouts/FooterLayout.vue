@@ -15,7 +15,7 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
         </div>
         <div class="copyright">
           &copy; Transparency to Sustain Open Science Infrastructure 2025 &bull;
-          <RouterLink to="/about#license">
+          <RouterLink to="/pages/about#license">
             License
             <img class="logo-inline" src="@/assets/img/logo_cc_heart.svg" />
           </RouterLink>
@@ -23,10 +23,10 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
         <div class="legal">
           <ul>
             <li>
-              <RouterLink to="/privacy-policy">Privacy policy</RouterLink>
+              <RouterLink to="/pages/legal-notices">Legal notices</RouterLink>
             </li>
             <li>
-              <RouterLink to="/legal-terms">Terms & conditions</RouterLink>
+              <RouterLink to="/pages/privacy-policy">Privacy policy</RouterLink>
             </li>
           </ul>
         </div>
