@@ -29,6 +29,7 @@ export interface TableColumnProps extends DataFieldProps {
   sortable?: boolean
   sortField?: string // field used to sort the column. Defaults to fieldLabel
   info?: string
+  currencySelector?: boolean
 }
 
 export interface TableProps {
@@ -45,7 +46,6 @@ export interface TableProps {
   rowUniqueId: string
   skeleton?: boolean
   storeState?: boolean
-  currencySelector?: boolean
   rowSelectable?: boolean
   buttons?: Array<ButtonProps>
   disableExport?: boolean
@@ -174,7 +174,7 @@ function onPageChange() {
   }
   // @ts-expect-error PrimeVue component declartaion omits basic
   // VueJS attributes..
-  tableComponent.value.$el.scrollIntoView()
+  tableComponent.value.$el.scrollIntoView({ behavior: "instant" })
 }
 </script>
 
@@ -205,7 +205,6 @@ function onPageChange() {
           </span>
         </h2>
         <div class="table-header__actions">
-          <CurrencySelector v-if="props.currencySelector" />
           <template v-if="!props.disableExport">
             <Button
               label="Export"
@@ -240,14 +239,17 @@ function onPageChange() {
     <Column
       v-for="column of columns"
       :field="column.field"
-      :header="column.title"
       :sortable="column.sortable ? true : undefined"
       :sortField="getSortFieldFunction(column)"
       :key="column.id"
     >
       <!-- Header template -->
-      <template v-if="column.info" #header>
-        <InfoButtonAtom :content="column.info" />
+      <template #header>
+        <InfoButtonAtom v-if="column.info" :content="column.info" />
+        <span class="p-datatable-column-title">
+          {{ column.title }}
+        </span>
+        <CurrencySelector v-if="column.currencySelector" />
       </template>
 
       <!-- Row template -->
@@ -309,9 +311,36 @@ function onPageChange() {
       </div>
     </div>
   </Popover>
+
+  <!--
+    The export menu is located in the table's header when it's displayed
+    otherwise at the bottom here
+  -->
+  <div class="table-export" v-if="!props.disableExport && !props.header">
+    <h3 style="display: inline-block; margin-right: 1em">Export data:</h3>
+    <div style="display: inline-flex; gap: 1em; align-items: center">
+      <Button
+        v-for="(item, index) of exportItems"
+        :key="index"
+        :label="item.label"
+        @click="item.command"
+      >
+        <template #icon>
+          <font-awesome-icon icon="download" />
+        </template>
+      </Button>
+    </div>
+    <div>
+      <span>See our <RouterLink to="/pages/faq/">policy</RouterLink>.</span>
+    </div>
+  </div>
 </template>
 
 <style scoped>
+.tsosi-table {
+  scroll-margin-top: calc(var(--regular-header-height) + 50px);
+}
+
 .table-header {
   display: flex;
   flex-wrap: wrap;

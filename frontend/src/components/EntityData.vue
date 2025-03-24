@@ -183,6 +183,7 @@ const baseTableColumns: TableColumnProps[] = [
     title: "Currency",
     field: currencyColumn,
     type: "string",
+    currencySelector: true,
   },
 ]
 
@@ -243,11 +244,7 @@ const supporterTableProps = computed(() => {
       sortField: "date_clc",
       sortOrder: -1,
     },
-    header: {
-      title: "Transfers",
-    },
     rowUniqueId: "id",
-    currencySelector: showAmount.value,
     buttons: buttons,
     exportTitle: exportString,
   }
@@ -268,11 +265,7 @@ const recipientTableProps = computed(() => {
       sortField: "date_clc",
       sortOrder: -1,
     },
-    header: {
-      title: "Transfers",
-    },
     rowUniqueId: "id",
-    currencySelector: showAmount.value,
     buttons: buttons,
     exportTitle: exportString,
   }
@@ -283,13 +276,11 @@ const skeletonTableProps = computed(() => {
     id: `${props.entity.id}-skeleton-table`,
     data: new Array(20).fill({ field: "dummy" }),
     columns: getTableColumns(showAmount.value, []),
-    header: {
-      title: "Transfers",
-    },
     rowUniqueId: "id",
     skeleton: true,
     exportTitle: exportString,
     hideCount: true,
+    disableExport: true,
   }
 })
 

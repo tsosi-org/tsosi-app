@@ -21,7 +21,7 @@ const props = defineProps<CountryProps>()
 
 <style scoped>
 .country-container {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
   gap: 0.5em;
 }

@@ -2,6 +2,8 @@ import { getCountry, type Transfer } from "@/singletons/ref-data"
 import { getStaticDataUrl } from "@/utils/url-utils"
 import type { DeepReadonly } from "vue"
 
+export const nullValues = [null, undefined]
+
 export type DataType =
   | "date"
   | "dateWithPrecision"
@@ -46,7 +48,7 @@ export function resolveValueFromPath(
   const paths = path.split(".")
   let current = item
   for (path of paths) {
-    if (current[path]) {
+    if (!nullValues.includes(current[path])) {
       current = current[path]
     } else {
       return undefined
@@ -110,7 +112,7 @@ export function formatValue(
   type: DataType,
   target: FormatTarget = "html",
 ): string | number | null {
-  if (value == null) {
+  if (nullValues.includes(value)) {
     return target == "json" ? null : ""
   }
   switch (type) {
