@@ -71,14 +71,14 @@ function loadChips() {
   if (props.entity.infrastructure) {
     if (props.entity.infrastructure.posi_url) {
       bottomButtons.value.push({
-        icon: "arrow-up-right-from-square",
+        // icon: "arrow-up-right-from-square",
         label: "Committed to POSI",
         link: props.entity.infrastructure.posi_url,
       })
     }
     if (props.entity.infrastructure.infra_finder_url) {
       bottomButtons.value.push({
-        icon: "arrow-up-right-from-square",
+        // icon: "arrow-up-right-from-square",
         label: "Included in InfraFinder",
         link: props.entity.infrastructure.infra_finder_url,
       })
@@ -91,8 +91,16 @@ function loadChips() {
         props.entity.infrastructure.date_scoss_start.getFullYear()
       const dateEnd = props.entity.infrastructure.date_scoss_end.getFullYear()
       bottomButtons.value.push({
-        icon: "square-check",
+        // icon: "square-check",
         label: `SCOSS selected for ${dateStart}-${dateEnd}`,
+      })
+    }
+
+    if (props.entity.infrastructure.support_url) {
+      bottomButtons.value.push({
+        label: "SUPPORT",
+        link: props.entity.infrastructure.support_url,
+        inverse: true,
       })
     }
   }
@@ -119,20 +127,19 @@ function breakdownDisclaimer(): boolean {
             :height="logoHeight"
             :center="true"
           />
-          <a
-            v-if="isInfrastructure && props.entity.website"
-            :href="props.entity.website"
-            rel="noopener noreferrer"
-            target="_blank"
-            >{{ props.entity.website.split("://").at(-1) }}</a
-          >
         </div>
+
         <div class="entity-header__title">
           <h1 class="entity-title">
             <span>{{ props.entity.name }}</span>
           </h1>
-          <ChipList :chips="headerChips" :center="!isDesktop" />
+          <ChipList
+            :chips="headerChips"
+            :center="!isDesktop"
+            :style="{ justifyContent: 'center' }"
+          />
         </div>
+
         <div class="entiy-header__desc">
           <!--
             Description (manual) takes precedence on automatically
@@ -171,6 +178,7 @@ function breakdownDisclaimer(): boolean {
             {{ props.entity.name }} from 2XXX to 2XXX.
           </div>
         </div>
+
         <div
           v-if="props.entity.infrastructure == null && hasLinks"
           class="entity-header__links"
@@ -193,7 +201,7 @@ function breakdownDisclaimer(): boolean {
             rel="noopener noreferrer"
           >
             <img alt="ROR logo" src="@/assets/img/ror_icon_rgb.svg" />
-            Record
+            ROR
           </a>
           <a
             v-if="wikidataIdentifier"
@@ -203,53 +211,38 @@ function breakdownDisclaimer(): boolean {
             rel="noopener noreferrer"
           >
             <img alt="Wikidata logo" src="@/assets/img/wikidata_logo.png" />
-            Item
+            Wikidata
           </a>
         </div>
-      </div>
 
-      <div class="buttons">
-        <div v-for="(button, index) of bottomButtons" :key="index">
-          <a
-            v-if="button.link"
-            class="special-button"
-            :href="button.link"
-            target="_blank"
-            rel="noopener noreferre"
-          >
-            {{ button.label }}
-            <font-awesome-icon
-              v-if="button.icon"
-              :icon="button.icon"
-              class="fa-icon"
-            />
-          </a>
-          <div v-else class="special-button">
-            {{ button.label }}
-            <font-awesome-icon
-              v-if="button.icon"
-              :icon="button.icon"
-              class="fa-icon"
-            />
+        <div class="entity-header__buttons">
+          <div v-for="(button, index) of bottomButtons" :key="index">
+            <a
+              v-if="button.link"
+              class="special-button"
+              :class="{ inverse: button.inverse }"
+              :href="button.link"
+              target="_blank"
+              rel="noopener noreferre"
+            >
+              {{ button.label }}
+              <font-awesome-icon
+                v-if="button.icon"
+                :icon="button.icon"
+                class="fa-icon"
+              />
+            </a>
+            <div v-else class="special-button">
+              {{ button.label }}
+              <font-awesome-icon
+                v-if="button.icon"
+                :icon="button.icon"
+                class="fa-icon"
+              />
+            </div>
           </div>
         </div>
       </div>
-    </section>
-
-    <section
-      v-if="props.entity.infrastructure?.support_url"
-      class="support-banner"
-    >
-      <a
-        class="support-link"
-        :href="props.entity.infrastructure.support_url"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <span>SUPPORT</span>
-        <br />
-        <h3>{{ props.entity.name }}</h3>
-      </a>
     </section>
 
     <section class="data-info">
@@ -274,6 +267,7 @@ function breakdownDisclaimer(): boolean {
     --first-col: v-bind("logoWidth");
     grid-template-columns: calc(var(--first-col) + 50px) 1fr;
     justify-items: initial;
+    gap: 2em;
 
     & > div:first-child {
       margin: auto;
@@ -287,7 +281,6 @@ function breakdownDisclaimer(): boolean {
   }
 
   & .entity-header__title {
-    text-align: initial;
     grid-row: 1;
   }
 
@@ -299,6 +292,10 @@ function breakdownDisclaimer(): boolean {
     grid-column: 3;
     grid-row: 1 / span 2;
     flex-direction: column;
+  }
+
+  & .entity-header__buttons {
+    grid-column: 2;
   }
 
   & .entity-icon-link {
@@ -370,6 +367,11 @@ function breakdownDisclaimer(): boolean {
   }
 }
 
+.entity-title {
+  font-size: 3rem;
+  line-height: 1.25;
+}
+
 .wiki-disclaimer {
   font-size: 0.9em;
   color: var(--p-gray-600);
@@ -422,74 +424,8 @@ function breakdownDisclaimer(): boolean {
   }
 }
 
-.support-banner {
-  text-align: center;
-}
-
-.support-link {
-  display: inline-block;
-  min-width: 250px;
-  font-size: 1.25rem;
-  padding: 1rem 2rem;
-  outline: 3px solid transparent;
-  border-radius: 50px;
-  font-weight: bold;
-  line-height: 1.7;
-  /* background: linear-gradient(
-    to right bottom,
-    var(--p-primary-400),
-    30%,
-    var(--p-primary-700)
-  );
-  color: white; */
-  background: linear-gradient(
-    to right bottom,
-    var(--p-amber-100),
-    25%,
-    var(--p-amber-200)
-  );
-  color: var(--p-amber-800);
-  text-decoration: unset;
-  transition: 0.3s outline-color ease-in;
-  animation: 1.5s shake linear 1.5s 1;
-  box-shadow: rgb(0, 0, 0, 0.15) 2px 5px 3px 1px;
-
-  &:hover,
-  &:focus-visible {
-    outline-color: var(--p-amber-200);
-    background: var(--p-amber-200);
-  }
-
-  & h3 {
-    color: inherit;
-    padding: 0.2rem 1rem;
-  }
-}
-
-@keyframes shake {
-  50%,
-  95% {
-    transform: translate3d(-1px, 0, 0);
-  }
-
-  55%,
-  90% {
-    transform: translate3d(2px, 0, 0);
-  }
-
-  60%,
-  70%,
-  80% {
-    transform: translate3d(-4px, 0, 0);
-  }
-
-  65%,
-  75% {
-    transform: translate3d(4px, 0, 0);
-  }
-}
-
-.buttons {
+.entity-header__buttons {
+  grid-column: 1;
   padding: 0.7rem 0;
   display: flex;
   gap: min(3rem, 5vw);
@@ -515,11 +451,22 @@ function breakdownDisclaimer(): boolean {
   & > .fa-icon {
     margin-left: 0.75rem;
   }
+
+  &.inverse {
+    background-color: var(--color-invert);
+    color: var(--color-2);
+    font-weight: 700;
+  }
 }
 
 a.special-button:hover,
 a.special-button:focus-visible {
   background-color: var(--color-invert);
   color: var(--color-2);
+
+  &.inverse {
+    background-color: var(--color-1);
+    color: var(--color-invert);
+  }
 }
 </style>

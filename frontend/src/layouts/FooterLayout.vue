@@ -49,6 +49,7 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
 
 <style scoped>
 footer {
+  margin-top: 2em;
   line-height: 2.5;
   color: var(--p-neutral-50);
   background-color: var(--p-neutral-950);

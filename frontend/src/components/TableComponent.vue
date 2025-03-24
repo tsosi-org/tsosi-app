@@ -317,8 +317,10 @@ function onPageChange() {
     otherwise at the bottom here
   -->
   <div class="table-export" v-if="!props.disableExport && !props.header">
-    <h3 style="display: inline-block; margin-right: 1em">Export data:</h3>
-    <div style="display: inline-flex; gap: 1em; align-items: center">
+    <h3 style="display: inline-block; margin-right: min(1em, 2vw)">
+      Export data:
+    </h3>
+    <div style="display: inline-flex; gap: min(1em, 3vw); align-items: center">
       <Button
         v-for="(item, index) of exportItems"
         :key="index"

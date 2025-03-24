@@ -74,6 +74,7 @@ const MyPreset = definePreset(Aura, {
       },
       tabpanel: {
         padding: "min(1.125rem, 5vh) min(0.875rem, 1vw)",
+        color: "var(--p-neutral-950)",
       },
     },
   },

@@ -65,9 +65,9 @@ function updateHeaderHome() {
           </div>
           <div class="hr"></div>
           <div class="subtitle">
-            On the contrary, TSOSI was born of the idea that all funding,
-            subsidies and support should be transparent, so that we can better
-            understand the issues behind the OS infrastructures.
+            TSOSI was born of the idea that all funding, subsidies and support
+            should be transparent, so that we can better understand the issues
+            behind the OS infrastructures.
             <br />
             <RouterLink to="/pages/about"> Read more. </RouterLink>
           </div>

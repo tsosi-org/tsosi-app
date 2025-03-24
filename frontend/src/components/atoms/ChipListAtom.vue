@@ -34,7 +34,7 @@ const props = defineProps<{
           class="chip-link"
           :label="chip.label"
           :dt="{
-            gap: '0.8em',
+            gap: '0.8rem',
             fontSize: '0.9rem',
             padding: { y: chipYGap ?? '0.25rem', x: '1rem' },
           }"
@@ -58,7 +58,7 @@ const props = defineProps<{
           <Chip
             :label="chip.label"
             :dt="{
-              gap: '0.8em',
+              gap: '0.8rem',
               fontSize: '0.9rem',
               padding: { y: chipYGap ?? '0.25rem', x: '1rem' },
             }"
@@ -80,7 +80,7 @@ const props = defineProps<{
         v-else
         :label="chip.label"
         :dt="{
-          gap: '0.8em',
+          gap: '0.8rem',
           fontSize: '0.9rem',
           padding: { y: chipYGap ?? '0.25rem', x: '1rem' },
         }"
@@ -102,11 +102,12 @@ const props = defineProps<{
 
 <style scoped>
 .icon-label-list {
+  font-size: 1rem;
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
-  row-gap: 1em;
-  column-gap: 2em;
+  row-gap: 1rem;
+  column-gap: 2rem;
 
   &.center {
     justify-content: center;
@@ -115,7 +116,7 @@ const props = defineProps<{
 
 .chip-icon-group {
   display: inline-flex;
-  gap: 0.5em;
+  gap: 0.5rem;
   align-items: center;
 }
 </style>
