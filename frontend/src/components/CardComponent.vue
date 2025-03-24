@@ -8,7 +8,7 @@ const props = defineProps<{ width?: string }>()
       <slot name="header"> </slot>
     </div>
     <div class="card-body">
-      <div class="card-title" style="text-align: center">
+      <div class="card-title as-heading" style="text-align: center">
         <slot name="title"></slot>
       </div>
       <div class="card-content">
@@ -62,6 +62,8 @@ const props = defineProps<{ width?: string }>()
 .card-title {
   font-size: 1.25rem;
   font-weight: 500;
+
+  color: var(--color-heading);
 }
 
 .card-content {

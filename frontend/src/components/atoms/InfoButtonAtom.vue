@@ -30,6 +30,7 @@ function toggle(event: Event) {
 }
 
 function show(event: Event) {
+  hidePopup = false
   popup.value?.show(event)
 }
 
@@ -40,6 +41,7 @@ function hide(_: Event) {
 }
 
 function triggerHide(event: Event) {
+  hidePopup = true
   setTimeout(() => hide(event), 200)
 }
 

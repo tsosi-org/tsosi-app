@@ -166,6 +166,8 @@ function updateHeaderHome() {
               </RouterLink>
             </template>
           </Carousel>
+
+          <!-- TO BE REMOVED once carousel is validated -->
           <div class="partner-cards" style="display: none">
             <CardComponent
               v-for="entity of partners"
@@ -186,6 +188,7 @@ function updateHeaderHome() {
               </template>
             </CardComponent>
           </div>
+
           <SearchBar
             width="min(80vw, 800px)"
             class="large"
