@@ -5,13 +5,36 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
 <template>
   <StaticContentComponent title="Privacy policy">
     <template #default>
-      <p><strong>Last updated:</strong> <i>2025-03-21</i></p>
       <p>
-        This Privacy Policy explains how we collect, use, and safeguard your
-        data when you visit our website, in accordance with European data
-        protection laws, including the General Data Protection Regulation
-        (GDPR).
+        The TSOSI project's mission is to foster the sustainability of open
+        science infrastructures. In this context, Université Grenoble Alpes is
+        required to collect and use personal information such as IP addresses,
+        browsers, and the terminals used.
+        <br />
+        The implementation of this site has therefore undergone a compliance
+        review by the Data Protection Officer. The personal information
+        collected is processed in accordance with the General Data Protection
+        Regulation (EU) 2016/679 of the European Parliament and of the Council
+        of April 27, 2016 (GDPR), as well as the 'Informatique et libertés' law
+        of January 6, 1978, as amended.
       </p>
+
+      <h2>Purpose of data collection</h2>
+      <p>The data we collect is used for the following purposes:</p>
+      <ul>
+        <li>
+          <strong>Website analytics</strong>
+          <br />
+          To analyze and monitor website traffic, including the number of
+          visitors, their location and the pages accessed.
+        </li>
+        <li>
+          <strong>Troubleshooting and security</strong>
+          <br />
+          To identify and resolve any technical issues with the website, as well
+          as to detect and prevent any security incidents.
+        </li>
+      </ul>
 
       <h2>Collected data</h2>
       <p>We collect browsing logs when you visit our website:</p>
@@ -23,60 +46,51 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         <li>Response status (HTTP status code)</li>
       </ul>
 
-      <h2>Purpose of data collection</h2>
-      <p>The data we collect is used for the following purposes:</p>
-      <ul>
-        <li>
-          <strong>Website analytics</strong>
-          <br />
-          To analyze and monitor website traffic, including the number of
-          visitors, the pages accessed, and other technical metrics.
-        </li>
-        <li>
-          <strong>Troubleshooting and security</strong>
-          <br />
-          To identify and resolve any technical issues with the website, as well
-          as to detect and prevent any security incidents.
-        </li>
-      </ul>
-
       <h2>Recipient of the data collection</h2>
       <p>
-        The data we collect is only used by the people working for the TSOSI
-        project to perform the previously listed tasks.
-      </p>
-
-      <h2>Legal basis for data processing</h2>
-      <p>
-        We process the data we collect based on
-        <strong>legitimate interests</strong>. The processing of your data is
-        necessary for the legitimate interests pursued by us, including
-        improving the functionality of our website, ensuring its security, and
-        maintaining traffic analysis.
+        The data we collect is only used by the members of the TSOSI project to
+        perform the previously listed tasks.
+        <br />
+        The data is stored on the information technology servers of the
+        Université Grenoble Alpes.
       </p>
 
       <h2>Data retention</h2>
       <p>
         We retain the logged data only for as long as necessary for the purposes
-        stated above. This data is kept for a period not exceeding 6 months,
+        stated above. This data is kept for a period not exceeding 24 months,
         after which it is securely deleted.
       </p>
 
       <h2>Your rights</h2>
       <p>
-        You are allowed to request access, rectification, erasure, restriction
-        or portability of your personal data collected on our website. To
-        exercise any of these rights, please contact us using our contact
-        details
+        You have the right to access, rectify, erase, limit, and the right to
+        data portability concerning your information, which you can exercise by
+        contacting:
+        <br />
+        <br />
+        Université Grenoble Alpes
+        <br />
+        GRICAD
+        <br />
+        150 place du Torrent 38400
+        <br />
+        Saint Martin d'Hères, France
+        <br />
+        <br />
+
+        or with the email included on the about page.
       </p>
 
       <h2>Changes to this privacy policy</h2>
       <p>
         We may update this Privacy Policy. Any changes will be posted on this
-        page, and we will update the "Last Updated" date at the top of this
-        policy. We encourage you to review this policy periodically to stay
-        informed about how we are protecting your information.
+        page, and we will update the "Last Updated" date of this policy.
       </p>
+
+      <br />
+
+      <p><strong>Last updated:</strong> <i>2025-03-25</i></p>
     </template>
   </StaticContentComponent>
 </template>

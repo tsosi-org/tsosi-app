@@ -14,21 +14,14 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
           <img src="@/assets/img/logo_white.svg" />
         </div>
         <div class="copyright">
-          &copy; Transparency to Sustain Open Science Infrastructure 2025 &bull;
-          <RouterLink to="/pages/about#license">
-            License
-            <img class="logo-inline" src="@/assets/img/logo_cc_heart.svg" />
-          </RouterLink>
+          &copy; TSOSI 2025 default by all rights reserved
+          <RouterLink to="/pages/legal-notice">
+            unless otherwise specified </RouterLink
+          >.
         </div>
         <div class="legal">
-          <ul>
-            <li>
-              <RouterLink to="/pages/legal-notices">Legal notices</RouterLink>
-            </li>
-            <li>
-              <RouterLink to="/pages/privacy-policy">Privacy policy</RouterLink>
-            </li>
-          </ul>
+          <RouterLink to="/pages/legal-notice">Legal notice</RouterLink> &bull;
+          <RouterLink to="/pages/privacy-policy">Privacy policy</RouterLink>
         </div>
       </div>
       <div class="footer-nav">
@@ -145,5 +138,9 @@ ul {
 
 .copyright {
   color: var(--p-neutral-400);
+
+  & a {
+    text-decoration: underline;
+  }
 }
 </style>

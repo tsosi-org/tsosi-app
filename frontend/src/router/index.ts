@@ -37,8 +37,8 @@ const router = createRouter({
       component: AboutView,
     },
     {
-      path: "/pages/legal-notices",
-      name: "legal-notices",
+      path: "/pages/legal-notice",
+      name: "legal-notice",
       component: LegalNotices,
     },
     {
