@@ -332,7 +332,7 @@ async function updateMapData() {
             <div v-if="chartTabTriggered" class="dataviz-wrapper">
               <EntityMap
                 :supporters="emittersData"
-                title="Funder locations"
+                title="Location of the supporters"
                 :data-loaded="mapDataLoaded"
               />
             </div>

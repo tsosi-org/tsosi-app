@@ -13,8 +13,8 @@ const props = defineProps<{
   entity: EntityDetails
 }>()
 
-const logoWidth = computed(() => (isDesktop.value ? "200px" : "125px"))
-const logoHeight = computed(() => (isDesktop.value ? "150px" : "125px"))
+const logoWidth = computed(() => (isDesktop.value ? "225px" : "125px"))
+const logoHeight = computed(() => (isDesktop.value ? "125px" : "125px"))
 const isInfrastructure = computed(() => props.entity.infrastructure != null)
 const rorIdentifier = computed(() => {
   const ids = props.entity.identifiers.filter((id) => id.registry == "ror")
@@ -115,9 +115,20 @@ function breakdownDisclaimer(): boolean {
 
 <template>
   <div class="entity-meta" :class="{ desktop: isDesktop }">
-    <section>
+    <section class="entity-header">
+      <div class="entity-header__title">
+        <h1 class="entity-title">
+          {{ props.entity.name }}
+        </h1>
+        <ChipList
+          :chips="headerChips"
+          :center="!isDesktop"
+          :style="{ justifyContent: 'center' }"
+        />
+      </div>
+
       <div
-        class="entity-header"
+        class="entity-header__grid"
         :class="{ 'three-columns': hasLinks && !isInfrastructure }"
       >
         <div v-if="isDesktop || props.entity?.logo" class="entity-header__logo">
@@ -126,17 +137,6 @@ function breakdownDisclaimer(): boolean {
             :width="logoWidth"
             :height="logoHeight"
             :center="true"
-          />
-        </div>
-
-        <div class="entity-header__title">
-          <h1 class="entity-title">
-            <span>{{ props.entity.name }}</span>
-          </h1>
-          <ChipList
-            :chips="headerChips"
-            :center="!isDesktop"
-            :style="{ justifyContent: 'center' }"
           />
         </div>
 
@@ -214,32 +214,31 @@ function breakdownDisclaimer(): boolean {
             Wikidata
           </a>
         </div>
-
-        <div class="entity-header__buttons">
-          <div v-for="(button, index) of bottomButtons" :key="index">
-            <a
-              v-if="button.link"
-              class="special-button"
-              :class="{ inverse: button.inverse }"
-              :href="button.link"
-              target="_blank"
-              rel="noopener noreferre"
-            >
-              {{ button.label }}
-              <font-awesome-icon
-                v-if="button.icon"
-                :icon="button.icon"
-                class="fa-icon"
-              />
-            </a>
-            <div v-else class="special-button">
-              {{ button.label }}
-              <font-awesome-icon
-                v-if="button.icon"
-                :icon="button.icon"
-                class="fa-icon"
-              />
-            </div>
+      </div>
+      <div v-if="bottomButtons.length > 0" class="entity-header__buttons">
+        <div v-for="(button, index) of bottomButtons" :key="index">
+          <a
+            v-if="button.link"
+            class="special-button"
+            :class="{ inverse: button.inverse }"
+            :href="button.link"
+            target="_blank"
+            rel="noopener noreferre"
+          >
+            {{ button.label }}
+            <font-awesome-icon
+              v-if="button.icon"
+              :icon="button.icon"
+              class="fa-icon"
+            />
+          </a>
+          <div v-else class="special-button">
+            {{ button.label }}
+            <font-awesome-icon
+              v-if="button.icon"
+              :icon="button.icon"
+              class="fa-icon"
+            />
           </div>
         </div>
       </div>
@@ -263,7 +262,7 @@ function breakdownDisclaimer(): boolean {
 }
 
 .entity-meta.desktop {
-  & .entity-header {
+  & .entity-header__grid {
     --first-col: v-bind("logoWidth");
     grid-template-columns: calc(var(--first-col) + 50px) 1fr;
     justify-items: initial;
@@ -271,31 +270,22 @@ function breakdownDisclaimer(): boolean {
 
     & > div:first-child {
       margin: auto;
-      padding-top: 0.5em;
     }
   }
 
   & .entity-header__logo {
     grid-column: 1;
-    grid-row: 1 / span 2;
-  }
-
-  & .entity-header__title {
-    grid-row: 1;
   }
 
   & .entity-header__desc {
-    grid-row: 2;
+    grid-column: 2;
   }
 
   & .entity-header__links {
     grid-column: 3;
-    grid-row: 1 / span 2;
+    grid-row: 1;
     flex-direction: column;
-  }
-
-  & .entity-header__buttons {
-    grid-column: 2;
+    width: 150px;
   }
 
   & .entity-icon-link {
@@ -308,8 +298,8 @@ function breakdownDisclaimer(): boolean {
     }
   }
 
-  & .entity-header.three-columns {
-    grid-template-columns: calc(var(--first-col) + 50px) 1fr 150px;
+  & .entity-header__grid.three-columns {
+    grid-template-columns: calc(var(--first-col) + 50px) 1fr 200px;
   }
 }
 
@@ -331,13 +321,14 @@ function breakdownDisclaimer(): boolean {
   */
 }
 
-.entity-header {
+.entity-header__grid {
   display: grid;
   grid-template-columns: 100%;
   justify-items: center;
+  align-items: center;
   gap: 1em;
-  padding: min(1em, 1vw);
   column-gap: 3em;
+  margin: 1em 0;
 }
 
 .entity-header__title {
@@ -345,7 +336,6 @@ function breakdownDisclaimer(): boolean {
   text-align: center;
   flex-direction: column;
   gap: 1em;
-  grid-row: 1;
   z-index: 2;
 
   &::before {
@@ -425,7 +415,6 @@ function breakdownDisclaimer(): boolean {
 }
 
 .entity-header__buttons {
-  grid-column: 1;
   padding: 0.7rem 0;
   display: flex;
   gap: min(3rem, 5vw);

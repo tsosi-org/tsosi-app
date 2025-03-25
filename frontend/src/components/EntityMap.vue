@@ -42,7 +42,11 @@ const tileBaseUrl =
 const loading = ref(true)
 const mapElement = useTemplateRef("tsosi-map")
 const layers: Ref<Record<string, L.FeatureGroup>> = ref({})
-const plottedEntities: Ref<{ total: number; value: number } | null> = ref(null)
+const plottedSupporters: Ref<{
+  total: number
+  value: number
+  countries: number
+} | null> = ref(null)
 // Do not use a ref, it messes up some leaflet features
 let map: L.Map | null = null
 const houseSvg = `
@@ -116,9 +120,12 @@ async function updateMarkers() {
     return
   }
   const newLayers: Record<string, L.FeatureGroup> = {}
-  const emitterRatio = {
+  const emittersRecap = {
     total: props.supporters.length,
     value: 0,
+    countries: new Set(
+      props.supporters.map((e) => e.country).filter((c) => c != null),
+    ).size,
   }
   // Construct individual emitters layer
   const emitterFeatures: Feature[] = []
@@ -137,7 +144,7 @@ async function updateMarkers() {
         },
       }
       emitterFeatures.push(feature)
-      emitterRatio.value += 1
+      emittersRecap.value += 1
     } else if (item.country) {
       if (!(item.country in emitterCountries)) {
         emitterCountries[item.country] = []
@@ -185,7 +192,7 @@ async function updateMarkers() {
           coordinates: [...countryCoordinates],
         },
       })
-      emitterRatio.value += emitterCountries[key].length
+      emittersRecap.value += emitterCountries[key].length
     }
     if (countryFeatures.length) {
       newLayers.countries = L.geoJSON(countryFeatures, {
@@ -257,7 +264,7 @@ async function updateMarkers() {
     layer.addTo(map)
   }
   layers.value = newLayers
-  plottedEntities.value = emitterRatio
+  plottedSupporters.value = emittersRecap
   loading.value = false
   const bonds = L.latLngBounds([])
   Object.values(layers.value).forEach((group) =>
@@ -285,22 +292,30 @@ function cleanPopup(element: App) {
   <div class="map-wrapper">
     <div class="map-header" v-if="props.title">
       <h2 class="map-title">{{ props.title }}</h2>
-      <span v-if="plottedEntities">
-        Showing {{ plottedEntities.value }} out of
-        {{ plottedEntities.total }} funders ({{
-          (
-            Math.round(
-              (10 * (100 * plottedEntities.value)) / plottedEntities.total,
-            ) / 10
-          ).toString()
-        }}%)
+      <span v-if="plottedSupporters">
+        {{ plottedSupporters.total }} supporters from
+        {{ plottedSupporters.countries }} different countries
       </span>
-      <Skeleton v-else width="10em" border-radius="5px" height="1em"></Skeleton>
+      <Skeleton
+        v-else
+        width="10em"
+        border-radius="5px"
+        height="1em"
+        style="display: inline-block"
+      ></Skeleton>
     </div>
+
+    <div class="map-container">
+      <div v-show="loading" class="loader-wrapper">
+        <Loader width="200px"></Loader>
+      </div>
+      <div class="map" ref="tsosi-map"></div>
+    </div>
+
     <div v-show="!loading" class="map-legend">
       <div v-if="layers.emitters" class="legend-item">
         <div class="legend-icon circle-icon" v-html="circleSvg"></div>
-        <span>Individual Funders</span>
+        <span>Individual supporters</span>
       </div>
       <div v-if="layers.countries" class="legend-item">
         <div class="legend-icon diamond-icon" v-html="diamondSvg"></div>
@@ -318,7 +333,7 @@ function cleanPopup(element: App) {
       </div>
       <div v-if="layers.infra" class="legend-item">
         <div class="legend-icon house-icon" v-html="houseSvg"></div>
-        <span>Supported Infrastructures</span>
+        <span>Supported infrastructures</span>
       </div>
     </div>
     <div v-show="loading" class="map-legend">
@@ -335,11 +350,26 @@ function cleanPopup(element: App) {
         <Skeleton width="10ch" border-radius="3px"></Skeleton>
       </div>
     </div>
-    <div class="map-container">
-      <div v-show="loading" class="loader-wrapper">
-        <Loader width="200px"></Loader>
+
+    <div class="map-description" style="margin: 0 auto; width: fit-content">
+      <div style="padding: 0 min(2vw, 2em)">
+        This world map represents the locations of all the entities that have
+        financially contributed to the infrastructure. Supporters with a
+        specific location are represented by circles, while those for which
+        TSOSI only has information at the country level are represented by
+        diamond shapes. The location data comes from ROR and Wikidata.
+        <span v-if="plottedSupporters">
+          {{ plottedSupporters.value }} supporters out of
+          {{ plottedSupporters.total }} are included in the world map.
+        </span>
+        <Skeleton
+          v-else
+          width="10em"
+          border-radius="5px"
+          height="1em"
+          style="display: inline-block"
+        ></Skeleton>
       </div>
-      <div class="map" ref="tsosi-map"></div>
     </div>
   </div>
 </template>
@@ -380,12 +410,16 @@ function cleanPopup(element: App) {
   } */
 }
 
+.map-header {
+  text-align: center;
+}
 .map-legend {
   display: flex;
   flex-wrap: wrap;
   row-gap: 0.5em;
   column-gap: 1.5em;
   justify-content: center;
+  margin: 1em 0;
 }
 
 .legend-item {
@@ -410,7 +444,9 @@ function cleanPopup(element: App) {
 }
 
 .diamond-icon {
-  fill: #e7a824;
+  fill: #216d95;
+  fill-opacity: 0.8;
+  /* fill: #e7a824; */
   stroke: #686868;
 }
 

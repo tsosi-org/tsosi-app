@@ -93,6 +93,10 @@ a,
   text-decoration: underline;
 }
 
+a.p-menu-item-link {
+  text-decoration: unset;
+}
+
 .chip-link:hover {
   background-color: var(--p-surface-200);
 }

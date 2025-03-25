@@ -63,6 +63,7 @@ SUPPORTED_INFRASTRUCTURES = [
             "name": "Directory of Open Access Journals",
             "website": "https://doaj.org",
             "is_partner": True,
+            "description": """DOAJ is a unique and extensive index of diverse open access journals from around the world, driven by a growing community, and is committed to insuring quality content is freely available online for everyone.""",
         },
         "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/doaj-directory-of-open-access-journals",

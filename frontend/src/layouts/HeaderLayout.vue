@@ -51,9 +51,16 @@ function onDrawerToggle(show: boolean) {
   >
     <!-- Large screen header -->
     <nav v-if="isDesktop" class="container">
-      <RouterLink style="line-height: 0" to="/" @click="closeDrawers">
-        <img class="logo" src="@/assets/img/logo_white.svg" />
-      </RouterLink>
+      <div class="logo-container" style="width: 330px">
+        <RouterLink
+          style="line-height: 0; display: block; width: fit-content"
+          to="/"
+          @click="closeDrawers"
+        >
+          <img class="logo" src="@/assets/img/logo_white.svg" />
+        </RouterLink>
+      </div>
+
       <div v-show="bigHeader" class="header-citation">
         <h2>Transparency to Sustain Open Science Infrastructure</h2>
       </div>
@@ -65,6 +72,7 @@ function onDrawerToggle(show: boolean) {
         class="d-flex"
         style="gap: 0"
       />
+
       <SearchBar v-show="!bigHeader" width="330px" />
     </nav>
 
