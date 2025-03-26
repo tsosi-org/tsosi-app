@@ -111,8 +111,9 @@ function updateHeaderHome() {
         <div class="regular-content content-section">
           <EntityMap
             class="home-map"
+            :id="'home-supporters-map'"
             :supporters="emitters"
-            title="Funder locations"
+            :title="'Location of the supporters'"
             :data-loaded="true"
           />
         </div>

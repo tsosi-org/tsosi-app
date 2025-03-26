@@ -2,7 +2,6 @@
 import { ref, type Ref, nextTick, useTemplateRef } from "vue"
 import { RouterLink } from "vue-router"
 import DataTable from "primevue/datatable"
-import Menu from "primevue/menu"
 import Column from "primevue/column"
 import Skeleton from "primevue/skeleton"
 import Button from "primevue/button"
@@ -24,6 +23,7 @@ import CustomButton, {
 } from "@/components/atoms/ButtonAtom.vue"
 import Country from "@/components/atoms/CountryAtom.vue"
 import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
+import MenuButtonAtom from "./atoms/MenuButtonAtom.vue"
 
 export interface TableColumnProps extends DataFieldProps {
   sortable?: boolean
@@ -56,7 +56,6 @@ export interface TableProps {
 const props = defineProps<TableProps>()
 
 const tableComponent = useTemplateRef("data-table")
-const exportMenu = useTemplateRef("export-menu")
 const rowButtonMenu = useTemplateRef("row-button-menu")
 const selectedButtonData: Ref<Record<string, any> | null> = ref(null)
 
@@ -161,10 +160,6 @@ function buttonFromConfig(
   return buttonProps
 }
 
-function toggleExportMenu(event: Event) {
-  exportMenu.value!.toggle(event)
-}
-
 /**
  * Scroll the document to the start of the table on page change.
  */
@@ -206,27 +201,16 @@ function onPageChange() {
         </h2>
         <div class="table-header__actions">
           <template v-if="!props.disableExport">
-            <Button
-              label="Export"
-              type="button"
-              @click="toggleExportMenu"
-              aria-haspopup="true"
-              :aria-controls="`table-export-menu-${props.id}`"
-            >
-              <template #icon>
-                <font-awesome-icon icon="download" />
-              </template>
-            </Button>
-            <Menu
-              ref="export-menu"
+            <MenuButtonAtom
               :id="`table-export-menu-${props.id}`"
-              :model="exportItems"
-              :popup="true"
-            >
-              <template #itemicon="{ item }">
-                <font-awesome-icon :icon="item.icon" />
-              </template>
-            </Menu>
+              :button="{
+                id: `table-export-button-${props.id}`,
+                label: 'Export',
+                type: 'action',
+                icon: 'download',
+              }"
+              :items="exportItems"
+            />
           </template>
         </div>
       </div>
@@ -321,16 +305,16 @@ function onPageChange() {
       Export data:
     </h3>
     <div style="display: inline-flex; gap: min(1em, 3vw); align-items: center">
-      <Button
-        v-for="(item, index) of exportItems"
-        :key="index"
-        :label="item.label"
-        @click="item.command"
-      >
-        <template #icon>
-          <font-awesome-icon icon="download" />
-        </template>
-      </Button>
+      <MenuButtonAtom
+        :id="`table-export-menu-${props.id}`"
+        :button="{
+          id: `table-export-button-${props.id}`,
+          label: 'Export',
+          type: 'action',
+          icon: 'download',
+        }"
+        :items="exportItems"
+      />
     </div>
     <div>
       <span>See our <RouterLink to="/pages/faq/">policy</RouterLink>.</span>

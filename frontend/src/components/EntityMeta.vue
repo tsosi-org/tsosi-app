@@ -123,7 +123,7 @@ function breakdownDisclaimer(): boolean {
         <ChipList
           :chips="headerChips"
           :center="!isDesktop"
-          :style="{ justifyContent: 'center' }"
+          :style="{ justifyContent: 'center', marginTop: '1rem' }"
         />
       </div>
 

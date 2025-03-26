@@ -14,9 +14,8 @@ import Select from "primevue/select"
 import Checkbox from "primevue/checkbox"
 import CurrencySelector from "./CurrencySelector.vue"
 import { type DataFieldProps, exportCSV, exportJSON } from "@/utils/data-utils"
-import Button from "primevue/button"
-import Menu from "primevue/menu"
 import { type TooltipItem } from "chart.js"
+import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
 
 export interface EntityHistogramProps {
   entity: DeepReadonly<Entity>
@@ -64,7 +63,6 @@ const yAxisTitle = computed(() =>
 const metric = ref(metricOptions[0])
 const stacked: Ref<boolean> = ref(false)
 
-const exportMenu = useTemplateRef("export-menu")
 const chartComponent = useTemplateRef("chart")
 
 onMounted(async () => {
@@ -289,10 +287,6 @@ async function downloadData(format: "json" | "csv") {
   }
   exportJSON(fields, exportData, getFileName())
 }
-
-function toggleExportMenu(event: Event) {
-  exportMenu.value!.toggle(event)
-}
 </script>
 
 <template>
@@ -323,27 +317,16 @@ function toggleExportMenu(event: Event) {
       <Select v-model="metric" :options="metricOptions" optionLabel="name" />
       <CurrencySelector />
       <template v-if="!props.disableExport">
-        <Button
-          label="Export"
-          type="button"
-          @click="toggleExportMenu"
-          aria-haspopup="true"
-          :aria-controls="`histogram-export-menu-${props.entity.id}`"
-        >
-          <template #icon>
-            <font-awesome-icon icon="download" />
-          </template>
-        </Button>
-        <Menu
-          ref="export-menu"
+        <MenuButtonAtom
           :id="`histogram-export-menu-${props.entity.id}`"
-          :model="exportItems"
-          :popup="true"
-        >
-          <template #itemicon="{ item }">
-            <font-awesome-icon :icon="item.icon" />
-          </template>
-        </Menu>
+          :button="{
+            id: `histogram-export-button-${props.entity.id}`,
+            label: 'Export',
+            type: 'action',
+            icon: 'download',
+          }"
+          :items="exportItems"
+        />
       </template>
     </div>
 

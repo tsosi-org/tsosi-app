@@ -18,19 +18,27 @@ import {
   parsePointCoordinates,
   getCountryCoordinates,
   getCountryLabel,
+  exportCSV,
+  exportJSON,
+  type DataFieldProps,
 } from "@/utils/data-utils"
 import { type Entity } from "@/singletons/ref-data"
 import { type Feature } from "geojson"
 import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
 import CountryItemList from "@/components/CountryItemList.vue"
 import { createComponent } from "@/utils/dom-utils"
-import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
+import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
+import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
+import { isDesktop } from "@/composables/useMediaQuery"
 
 export interface EntityMapProps {
+  id: string
   infrastructures?: Entity[]
   supporters: Entity[]
-  title?: string
+  title: string
   dataLoaded?: boolean
+  exportTitleBase?: string
+  disableExport?: boolean
 }
 
 const props = defineProps<EntityMapProps>()
@@ -119,6 +127,11 @@ async function updateMarkers() {
   if (!map || !props.dataLoaded) {
     return
   }
+  // Clean the map
+  for (const layer of Object.values(layers.value)) {
+    map.removeLayer(layer)
+  }
+
   const newLayers: Record<string, L.FeatureGroup> = {}
   const emittersRecap = {
     total: props.supporters.length,
@@ -286,10 +299,91 @@ function cleanPopup(element: App) {
     element.unmount()
   }, 400)
 }
+
+const exportItems = [
+  {
+    label: "Export CSV",
+    icon: "download",
+    command: () => downloadData("csv"),
+  },
+  {
+    label: "Export JSON",
+    icon: "download",
+    command: () => downloadData("json"),
+  },
+]
+
+function getFileName(): string {
+  let baseName = "TSOSI"
+  if (props.exportTitleBase) {
+    baseName += "_"
+    baseName += props.exportTitleBase.replace(/\s+/g, "_")
+  }
+  baseName += "_"
+  baseName += props.title.replace(/\s+/g, "_")
+  return baseName
+}
+
+function downloadData(format: "json" | "csv") {
+  if (!props.dataLoaded || props.supporters.length == 0) {
+    return
+  }
+  const exportData = []
+
+  for (const item of props.supporters) {
+    const coordinates = parsePointCoordinates(item.coordinates)
+    exportData.push({
+      id: item.id,
+      name: item.name,
+      latitude: coordinates?.lat,
+      longitude: coordinates?.lon,
+      country: item.country,
+    })
+  }
+
+  const fields: DataFieldProps[] = [
+    {
+      id: "id",
+      title: "id",
+      field: "id",
+      type: "string",
+    },
+    {
+      id: "name",
+      title: "name",
+      field: "name",
+      type: "string",
+    },
+    {
+      id: "latitude",
+      title: "latitude",
+      field: "latitude",
+      type: "number",
+    },
+    {
+      id: "longitude",
+      title: "longitude",
+      field: "longitude",
+      type: "number",
+    },
+    {
+      id: "country",
+      title: "country",
+      field: "country",
+      type: "country",
+    },
+  ]
+  const fileName = getFileName()
+  if (format == "csv") {
+    exportCSV(fields, exportData, fileName)
+    return
+  }
+  exportJSON(fields, exportData, fileName)
+}
 </script>
 
 <template>
-  <div class="map-wrapper">
+  <div class="map-wrapper" :class="{ desktop: isDesktop }">
     <div class="map-header" v-if="props.title">
       <h2 class="map-title">{{ props.title }}</h2>
       <span v-if="plottedSupporters">
@@ -311,43 +405,58 @@ function cleanPopup(element: App) {
       </div>
       <div class="map" ref="tsosi-map"></div>
     </div>
+    <div style="position: relative">
+      <div v-show="!loading" class="map-legend">
+        <div v-if="layers.emitters" class="legend-item">
+          <div class="legend-icon circle-icon" v-html="circleSvg"></div>
+          <span>Individual supporters</span>
+        </div>
+        <div v-if="layers.countries" class="legend-item">
+          <div class="legend-icon diamond-icon" v-html="diamondSvg"></div>
+          <span>
+            Countries
+            <InfoButtonAtom>
+              <template #popup>
+                <span>
+                  Gather all funders from the given country without a precise
+                  location information.
+                </span>
+              </template>
+            </InfoButtonAtom>
+          </span>
+        </div>
+        <div v-if="layers.infra" class="legend-item">
+          <div class="legend-icon house-icon" v-html="houseSvg"></div>
+          <span>Supported infrastructures</span>
+        </div>
+      </div>
 
-    <div v-show="!loading" class="map-legend">
-      <div v-if="layers.emitters" class="legend-item">
-        <div class="legend-icon circle-icon" v-html="circleSvg"></div>
-        <span>Individual supporters</span>
+      <div v-if="!props.disableExport" class="map-export-menu">
+        <MenuButtonAtom
+          :id="`${props.id}-export-menu`"
+          :button="{
+            id: `${props.id}-export-button`,
+            label: 'Export',
+            type: 'action',
+            icon: 'download',
+          }"
+          :items="exportItems"
+        />
       </div>
-      <div v-if="layers.countries" class="legend-item">
-        <div class="legend-icon diamond-icon" v-html="diamondSvg"></div>
-        <span>
-          Countries
-          <InfoButtonAtom>
-            <template #popup>
-              <span>
-                Gather all funders from the given country without a precise
-                location information.
-              </span>
-            </template>
-          </InfoButtonAtom>
-        </span>
-      </div>
-      <div v-if="layers.infra" class="legend-item">
-        <div class="legend-icon house-icon" v-html="houseSvg"></div>
-        <span>Supported infrastructures</span>
-      </div>
-    </div>
-    <div v-show="loading" class="map-legend">
-      <div class="legend-item">
-        <Skeleton shape="circle" size="1rem"></Skeleton>
-        <Skeleton width="10ch" border-radius="3px" height="0.9rem"></Skeleton>
-      </div>
-      <div class="legend-item">
-        <Skeleton shape="circle" size="1rem"></Skeleton>
-        <Skeleton width="10ch" border-radius="3px"></Skeleton>
-      </div>
-      <div class="legend-item">
-        <Skeleton shape="circle" size="1rem"></Skeleton>
-        <Skeleton width="10ch" border-radius="3px"></Skeleton>
+
+      <div v-show="loading" class="map-legend">
+        <div class="legend-item">
+          <Skeleton shape="circle" size="1rem"></Skeleton>
+          <Skeleton width="10ch" border-radius="3px" height="0.9rem"></Skeleton>
+        </div>
+        <div class="legend-item">
+          <Skeleton shape="circle" size="1rem"></Skeleton>
+          <Skeleton width="10ch" border-radius="3px"></Skeleton>
+        </div>
+        <div class="legend-item">
+          <Skeleton shape="circle" size="1rem"></Skeleton>
+          <Skeleton width="10ch" border-radius="3px"></Skeleton>
+        </div>
       </div>
     </div>
 
@@ -378,6 +487,14 @@ function cleanPopup(element: App) {
 .map-wrapper {
   position: relative;
   width: 100%;
+
+  &.desktop {
+    & .map-export-menu {
+      position: absolute;
+      top: -0.5em;
+      right: 0;
+    }
+  }
 }
 
 .loader-wrapper {
@@ -460,5 +577,10 @@ function cleanPopup(element: App) {
   fill-opacity: 0.8;
   stroke-width: 10;
   stroke: #216d95;
+}
+
+.map-export-menu {
+  text-align: center;
+  margin-bottom: 1em;
 }
 </style>

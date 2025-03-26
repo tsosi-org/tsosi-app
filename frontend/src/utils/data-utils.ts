@@ -290,19 +290,18 @@ function downloadFile(data: BlobPart, type: string, fileName: string) {
 }
 
 /**
- * Escape CSV reserved characters
+ * Escape double quotes and escape the whole output value.
  * @param value
  * @returns
  */
 function cleanCSVValue(value: string | number): string {
-  const specialCharacters = ['"', ",", "\n", "\r"]
+  let baseValue: string = ""
   if (typeof value === "number") {
-    return value.toString()
+    baseValue = value.toString()
+  } else {
+    baseValue = value
   }
-  if (specialCharacters.some((s) => value.includes(s))) {
-    return `"${value}"`
-  }
-  return value
+  return `"${baseValue.replace(/"/g, '""')}"`
 }
 
 /**
@@ -373,6 +372,11 @@ export interface PointCoordinates {
   lon: number
 }
 
+/**
+ * Parse the given WKT coordinates.
+ * @param wktCoordinates the WKT coordinates string, as POINT(latitude longitude)
+ * @returns
+ */
 export function parsePointCoordinates(
   wktCoordinates: string | null | undefined,
 ): PointCoordinates | null {
