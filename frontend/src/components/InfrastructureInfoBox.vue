@@ -55,6 +55,22 @@ console.log(`Full width: ${props.fullWidth}`)
         }}
       </span>
     </div>
+
+    <div
+      v-if="
+        props.data.infrastructure.date_data_start &&
+        props.data.infrastructure.date_data_end
+      "
+      class="info-item"
+    >
+      <h3>Time coverage</h3>
+      <span>
+        {{ props.data.infrastructure.date_data_start.getFullYear() }}
+        to
+        {{ props.data.infrastructure.date_data_end.getFullYear() }}
+      </span>
+    </div>
+
     <div v-if="props.breakdownDisclaimer" class="info-item">
       <h3>Supporter breakdown</h3>
       <span>
