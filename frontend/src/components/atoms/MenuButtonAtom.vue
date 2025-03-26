@@ -1,8 +1,30 @@
 <script setup lang="ts">
-import { type MenuItem } from "primevue/menuitem"
 import Menu from "primevue/menu"
 import ButtonAtom, { type ButtonProps } from "./ButtonAtom.vue"
 import { useTemplateRef } from "vue"
+
+/**
+ * Copy-pasted from primevue/menuitem bc the type is not exported..
+ */
+export interface MenuItem {
+  label?: string | ((...args: any) => string) | undefined
+  icon?: string | undefined
+  command?: (event: {
+    originalEvent: Event
+    item: MenuItem
+    [key: string]: any
+  }) => void
+  url?: string | undefined
+  items?: MenuItem[] | undefined
+  disabled?: boolean | ((...args: any) => boolean) | undefined
+  visible?: boolean | ((...args: any) => boolean) | undefined
+  target?: string | undefined
+  separator?: boolean | undefined
+  style?: any
+  class?: any
+  key?: string | undefined
+  [key: string]: any
+}
 
 export interface MenuButtonAtomProps {
   button: ButtonProps
