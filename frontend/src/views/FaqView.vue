@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 </script>
 
@@ -63,17 +64,12 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
       <p>
         No, we also include smaller infrastructures, such as publishing
         platforms at national or regional level. For example
-        <a
-          href="https://peercommunityin.org/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          PeerCommunityIn
-        </a>
+        <ExternalLinkAtom
+          :label="'PeerCommunityIn'"
+          :href="'https://peercommunityin.org/'"
+        />
         and
-        <a href="https://scipost.org" target="_blank" rel="noopener noreferrer">
-          SciPost
-        </a>
+        <ExternalLinkAtom :label="'SciPost'" :href="'https://scipost.org'" />
         are partners of the project.
       </p>
     </template>

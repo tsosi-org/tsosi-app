@@ -8,7 +8,7 @@ export interface EmailAtomProps {
 }
 
 onBeforeMount(async () => {
-  await new Promise((r) => setTimeout(r, 400))
+  await new Promise((r) => setTimeout(r, 100))
   loaded.value = true
 })
 const loaded = ref(false)

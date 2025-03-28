@@ -6,6 +6,7 @@ import router from "./router"
 import PrimeVue from "primevue/config"
 import Aura from "@primevue/themes/aura"
 import { definePreset } from "@primevue/themes"
+import DialogService from "primevue/dialogservice"
 import { library } from "@fortawesome/fontawesome-svg-core"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 import {
@@ -77,6 +78,12 @@ const MyPreset = definePreset(Aura, {
         color: "var(--p-neutral-950)",
       },
     },
+    dialog: {
+      color: "var(--p-neutral-950)",
+    },
+    inputtext: {
+      paddingX: "0",
+    },
   },
 })
 
@@ -91,6 +98,7 @@ app.use(PrimeVue, {
     },
   },
 })
+app.use(DialogService)
 
 // Registering used Font Awesome icons
 const usedIcons = [

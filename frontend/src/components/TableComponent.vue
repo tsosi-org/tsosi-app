@@ -24,6 +24,7 @@ import CustomButton, {
 import Country from "@/components/atoms/CountryAtom.vue"
 import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 import MenuButtonAtom from "./atoms/MenuButtonAtom.vue"
+import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 
 export interface TableColumnProps extends DataFieldProps {
   sortable?: boolean
@@ -249,14 +250,11 @@ function onPageChange() {
         </RouterLink>
       </template>
       <template v-else-if="column.type == 'externalLink'" #body="{ data }">
-        <a
+        <ExternalLinkAtom
           v-if="getItemLabel(data, column)"
           :href="getItemLink(data, column.fieldLink)"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {{ getItemLabel(data, column) }}
-        </a>
+          :label="getItemLabel(data, column)"
+        />
       </template>
       <template v-else-if="column.type == 'country'" #body="{ data }">
         <Country :code="getItemLabel(data, column)" />

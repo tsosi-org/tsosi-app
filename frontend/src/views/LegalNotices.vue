@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import StaticContentComponent from "@/views/StaticContentView.vue"
 import EmailAtom from "@/components/atoms/EmailAtom.vue"
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 </script>
 
 <template>
@@ -19,14 +20,12 @@ import EmailAtom from "@/components/atoms/EmailAtom.vue"
         <li>
           Unless otherwise stated, both the data and the content are licensed
           with a
-          <a
-            href="https://creativecommons.org/licenses/by-sa/4.0/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            CC BY-SA 4.0 license </a
-          >. Collecting, using, and reusing part or all of this data and content
-          must be done in accordance under the terms of the CC BY-SA license.
+          <ExternalLinkAtom
+            :href="'https://creativecommons.org/licenses/by-sa/4.0/'"
+            :label="'CC BY-SA 4.0 license'"
+          />. Collecting, using, and reusing part or all of this data and
+          content must be done in accordance under the terms of the CC BY-SA
+          license.
         </li>
       </ol>
 
@@ -80,13 +79,10 @@ import EmailAtom from "@/components/atoms/EmailAtom.vue"
       <p>
         The project is hosted by GRICAD, Grenoble Alps Research Scientific
         Computing and Data Infrastructure,
-        <a
-          href="https://gricad.univ-grenoble-alpes.fr"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          gricad.univ-grenoble-alpes.fr </a
-        >.
+        <ExternalLinkAtom
+          :label="'gricad.univ-grenoble-alpes.fr'"
+          :href="'https://gricad.univ-grenoble-alpes.fr'"
+        />.
       </p>
 
       <h2>Credits</h2>

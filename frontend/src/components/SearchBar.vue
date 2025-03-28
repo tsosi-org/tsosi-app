@@ -17,19 +17,20 @@ import { getEntities } from "@/singletons/ref-data"
 import { getEntityUrl } from "@/utils/url-utils"
 import { RouterLink } from "vue-router"
 
-export interface SearchBarProps {
-  width?: string
-  placeHolder?: string
-}
-
-const props = defineProps<SearchBarProps>()
-const searchTerm = ref("")
 interface searchResult {
   name: string
   url: string
   matchable: string[]
   highlighted?: boolean
 }
+export interface SearchBarProps {
+  width?: string
+  placeHolder?: string
+  asGrowingButton?: boolean
+}
+
+const props = defineProps<SearchBarProps>()
+const searchTerm = ref("")
 const searchResults: Ref<Array<searchResult>> = ref([])
 const filteredResults: Ref<Array<searchResult>> = ref([])
 const loading = ref(true)
@@ -37,6 +38,16 @@ const op = useTemplateRef("op")
 const input = useTemplateRef("input")
 const virtualScroll = useTemplateRef("virtual-scroll")
 const highlightedIndex: Ref<number | undefined> = ref(undefined)
+const isFocused = ref(false)
+const isOpen = computed(() => {
+  return (
+    !props.asGrowingButton || searchTerm.value.length > 0 || isFocused.value
+  )
+})
+const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
+const computedWidth = computed(() =>
+  isOpen.value ? elementWidth.value : "100px",
+)
 
 const itemSize = 40
 
@@ -85,8 +96,16 @@ const virtualScrollerHeight = computed(() => {
   return `${size > 300 ? 300 : size}px`
 })
 
-const showResults = (event: Event) => {
-  op.value!.show(event)
+function showResults(event: Event) {
+  if (props.asGrowingButton && !isFocused.value) {
+    isFocused.value = true
+    // Trigger the results popup after the searchbar animation is finished
+    setTimeout(() => showResults(event), 800)
+    return
+  }
+  // @ts-expect-error PrimeVue component declaration omits basic
+  // VueJS attributes..
+  op.value!.show(event, input.value!.$el)
   highlightedIndex.value = undefined
 }
 
@@ -167,14 +186,10 @@ async function updateHighlightedResult() {
   }
 }
 
-const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
-
-// function onKeyDownForInput(event: KeyboardEvent) {
-//   if (!["ArrowDown", "ArrowUp"].includes(event.key)) {
-//     return
-//   }
-//   event.stopImmediatePropagation()
-// }
+function focusOut() {
+  isFocused.value = false
+  op.value!.hide()
+}
 </script>
 
 <template>
@@ -189,6 +204,7 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
         :placeholder="props.placeHolder ?? 'Search'"
         @input="onSearch"
         @focus="showResults"
+        @focusout="focusOut"
         :onKeydown="onKeyDown"
         style="width: 100%"
       />
@@ -264,7 +280,8 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
 
 .search-bar-input {
   display: inline-block;
-  width: v-bind(elementWidth);
+  width: v-bind(computedWidth);
+  transition: width 0.1s ease-in;
 }
 .search-bar-overlay {
   --content-width: calc(var(--width) - 20px);

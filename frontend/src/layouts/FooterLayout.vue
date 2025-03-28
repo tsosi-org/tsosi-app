@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router"
 import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import { $dt } from "@primevue/themes"
 import { isDesktop } from "@/composables/useMediaQuery"
 import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
@@ -22,6 +23,25 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
         <div class="legal">
           <RouterLink to="/pages/legal-notice">Legal notice</RouterLink> &bull;
           <RouterLink to="/pages/privacy-policy">Privacy policy</RouterLink>
+        </div>
+        <div class="backers">
+          Funded by
+          <ExternalLinkAtom
+            :label="'The French Committee for Open Science'"
+            :href="'https://www.ouvrirlascience.fr/the-committee-for-open-science/'"
+          />
+          <br />
+          Led by
+          <ExternalLinkAtom
+            :label="'Université Grenoble Alpes'"
+            :href="'https://www.univ-grenoble-alpes.fr/english/'"
+          />
+          <br />
+          Powered by
+          <ExternalLinkAtom
+            :label="'Grenoble Alps Research Scientific Computing and Data Infrastructure (GRICAD)'"
+            :href="'https://gricad.univ-grenoble-alpes.fr/index_en.html'"
+          />
         </div>
       </div>
       <div class="footer-nav">
@@ -109,6 +129,10 @@ footer {
   h3 {
     margin: 1.25rem 0;
   }
+
+  & .footer-partners {
+    text-wrap: nowrap;
+  }
 }
 
 .footer-wrapper > * > * {
@@ -142,5 +166,9 @@ ul {
   & a {
     text-decoration: underline;
   }
+}
+
+.backers :deep(a) {
+  text-decoration: underline;
 }
 </style>

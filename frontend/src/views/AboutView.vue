@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 </script>
 
@@ -42,14 +43,10 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
       <h2 id="license">License</h2>
       <p>
         Unless otherwise noted, all content on this site is released under a
-        <a
-          href="https://creativecommons.org/licenses/by-sa/4.0/deed.en"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Creative Commons Attribution 4.0 International License
-        </a>
-        .
+        <ExternalLinkAtom
+          :href="'https://creativecommons.org/licenses/by-sa/4.0/deed.en'"
+          :label="'Creative Commons Attribution 4.0 International License'"
+        />.
       </p>
     </template>
   </StaticContentComponent>

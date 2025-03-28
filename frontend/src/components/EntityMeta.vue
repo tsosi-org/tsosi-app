@@ -8,6 +8,7 @@ import { getCountryLabel } from "@/utils/data-utils"
 import InfrastructureInfoBox from "@/components/InfrastructureInfoBox.vue"
 import EmitterInfoBox from "@/components/EmitterInfoBox.vue"
 import ChipList, { type ChipConfig } from "@/components/atoms/ChipListAtom.vue"
+import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 
 const props = defineProps<{
   entity: EntityDetails
@@ -157,19 +158,15 @@ function breakdownDisclaimer(): boolean {
             <p>
               <span class="wiki-disclaimer">
                 From
-                <a
-                  :href="props.entity.wikipedia_url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Wikipedia</a
-                >
+                <ExternalLinkAtom
+                  :label="'Wikipedia'"
+                  :href="props.entity.wikipedia_url!"
+                />
                 licensed
-                <a
-                  href="https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >CC-BY-SA</a
-                >
+                <ExternalLinkAtom
+                  :label="'CC-BY-SA'"
+                  :href="'https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License'"
+                />
               </span>
             </p>
           </div>
@@ -183,55 +180,55 @@ function breakdownDisclaimer(): boolean {
           v-if="props.entity.infrastructure == null && hasLinks"
           class="entity-header__links"
         >
-          <a
+          <ExternalLinkAtom
             v-if="props.entity.website"
-            class="entity-icon-link"
             :href="props.entity.website"
-            target="_blank"
-            rel="noopener noreferrer"
+            class="entity-icon-link"
           >
-            <font-awesome-icon class="fa-icon" icon="globe" />
-            Website
-          </a>
-          <a
+            <template #default>
+              <font-awesome-icon class="fa-icon" icon="globe" />
+              Website
+            </template>
+          </ExternalLinkAtom>
+          <ExternalLinkAtom
             v-if="rorIdentifier"
-            class="entity-icon-link"
             :href="getRorUrl(rorIdentifier)"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img alt="ROR logo" src="@/assets/img/ror_icon_rgb.svg" />
-            ROR
-          </a>
-          <a
-            v-if="wikidataIdentifier"
             class="entity-icon-link"
-            :href="getWikidataUrl(wikidataIdentifier)"
-            target="_blank"
-            rel="noopener noreferrer"
           >
-            <img alt="Wikidata logo" src="@/assets/img/wikidata_logo.png" />
-            Wikidata
-          </a>
+            <template #default>
+              <img alt="ROR logo" src="@/assets/img/ror_icon_rgb.svg" />
+              ROR
+            </template>
+          </ExternalLinkAtom>
+          <ExternalLinkAtom
+            v-if="wikidataIdentifier"
+            :href="getWikidataUrl(wikidataIdentifier)"
+            class="entity-icon-link"
+          >
+            <template #default>
+              <img alt="Wikidata logo" src="@/assets/img/wikidata_logo.png" />
+              Wikidata
+            </template>
+          </ExternalLinkAtom>
         </div>
       </div>
       <div v-if="bottomButtons.length > 0" class="entity-header__buttons">
         <div v-for="(button, index) of bottomButtons" :key="index">
-          <a
+          <ExternalLinkAtom
             v-if="button.link"
             class="special-button"
             :class="{ inverse: button.inverse }"
             :href="button.link"
-            target="_blank"
-            rel="noopener noreferre"
           >
-            {{ button.label }}
-            <font-awesome-icon
-              v-if="button.icon"
-              :icon="button.icon"
-              class="fa-icon"
-            />
-          </a>
+            <template #default>
+              {{ button.label }}
+              <font-awesome-icon
+                v-if="button.icon"
+                :icon="button.icon"
+                class="fa-icon"
+              />
+            </template>
+          </ExternalLinkAtom>
           <div v-else class="special-button">
             {{ button.label }}
             <font-awesome-icon

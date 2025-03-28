@@ -83,21 +83,11 @@ function updateHeaderHome() {
             <span class="number-emphasis">
               {{ emitters.length }}
             </span>
-            institutions from
+            organizations from
             <span class="number-emphasis">
               {{ countries.length.toString() }}
             </span>
             countries that contributed to sustain
-            <!-- Either a popup or href to anchor tag
-            <InfoButtonAtom
-              :label="infrastructures.length.toString()"
-              class="number-emphasis"
-            >
-              <template #popup>
-                <InfrastructurePopup />
-              </template>
-            </InfoButtonAtom>
-            -->
             <RouterLink to="#partner-banner" class="number-emphasis">
               {{ infrastructures.length.toString() }}
             </RouterLink>

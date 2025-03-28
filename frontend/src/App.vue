@@ -5,13 +5,27 @@ import HeaderLayout from "@/layouts/HeaderLayout.vue"
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import { refDataPromise } from "@/singletons/ref-data"
 import FooterLayout from "@/layouts/FooterLayout.vue"
+import DynamicDialog from "primevue/dynamicdialog"
+import { useDialog } from "primevue/usedialog"
+import SiteInConstructionAtom from "./components/atoms/SiteInConstructionAtom.vue"
 
 const loading = ref(true)
 const route = useRoute()
+const dialog = useDialog()
 
 onMounted(async () => {
   await onInit()
   setTimeout(() => scrollToHash(true), scrollTimeout)
+  setTimeout(
+    () =>
+      dialog.open(SiteInConstructionAtom, {
+        props: {
+          modal: true,
+          baseZIndex: 10000,
+        },
+      }),
+    500,
+  )
 })
 
 watch(
@@ -41,6 +55,7 @@ function scrollToHash(retry: boolean) {
 </script>
 
 <template>
+  <DynamicDialog />
   <Loader v-show="loading" width="200px"></Loader>
   <template v-if="!loading">
     <HeaderLayout />

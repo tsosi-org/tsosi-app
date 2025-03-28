@@ -64,16 +64,30 @@ function onDrawerToggle(show: boolean) {
       <div v-show="bigHeader" class="header-citation">
         <h2>Transparency to Sustain Open Science Infrastructure</h2>
       </div>
-      <NavigationListAtom
-        v-show="!bigHeader"
-        :color="$dt('neutral.50').value"
-        :header="true"
-        font-size="20px"
-        class="d-flex"
-        style="gap: 0"
-      />
+      <div
+        style="
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 1.5rem;
+          padding-right: 3rem;
+        "
+      >
+        <SearchBar
+          v-show="!bigHeader"
+          width="330px"
+          :as-growing-button="true"
+        />
 
-      <SearchBar v-show="!bigHeader" width="330px" />
+        <NavigationListAtom
+          v-show="!bigHeader"
+          :color="$dt('neutral.50').value"
+          :header="true"
+          font-size="20px"
+          class="d-flex"
+          style="gap: 0"
+        />
+      </div>
     </nav>
 
     <!-- Small screens header -->
