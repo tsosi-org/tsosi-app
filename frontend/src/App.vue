@@ -24,7 +24,7 @@ onMounted(async () => {
           baseZIndex: 10000,
         },
       }),
-    500,
+    scrollTimeout + 500,
   )
 })
 

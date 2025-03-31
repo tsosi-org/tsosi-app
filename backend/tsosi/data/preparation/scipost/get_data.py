@@ -109,7 +109,7 @@ def get_scipost_raw_data(
 
 
 def filter_transfers(df: pd.DataFrame):
-    mask = (df["status"].isin(["paid", "invoiced"])) & (
+    mask = (df["status"].isin(["paid"])) & (
         ~df["payment_date"].isna() | ~df["invoice_date"].isna()
     )
     filtered = df[mask].reset_index(drop=True)
