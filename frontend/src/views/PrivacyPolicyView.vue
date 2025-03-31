@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 </script>
 
@@ -78,8 +79,11 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         Saint Martin d'Hères, France
         <br />
         <br />
-
-        or with the email included on the about page.
+        <CodeBlockAtom
+          :content="'contact (tsosi.org)'"
+          :inline="true"
+          :background="true"
+        />
       </p>
 
       <h2>Changes to this privacy policy</h2>

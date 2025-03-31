@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import StaticContentComponent from "@/views/StaticContentView.vue"
-import EmailAtom from "@/components/atoms/EmailAtom.vue"
+import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 </script>
 
@@ -35,7 +35,11 @@ import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
         is owned by Université Grenoble Alpes, 621 Avenue Centrale, 38400
         Saint-Martin-d'Hères, France. All defaults to all rights reserved unless
         otherwise specified. Contact TSOSI
-        <EmailAtom user="contact" domain="tsosi.org" :as-mail-to="true" />.
+        <CodeBlockAtom
+          :content="'contact (tsosi.org)'"
+          :inline="true"
+          :background="true"
+        />
       </p>
 
       <h2>Disclaimer</h2>

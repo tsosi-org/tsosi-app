@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import EmailAtom from "./EmailAtom.vue"
+import CodeBlockAtom from "./CodeBlockAtom.vue"
 </script>
 
 <template>
@@ -14,7 +14,7 @@ import EmailAtom from "./EmailAtom.vue"
         <br />
         Enjoy your visit!
       </p>
-      <EmailAtom :user="'contact'" :domain="'tsosi.org'" />
+      <CodeBlockAtom :content="'contact (tsosi.org)'" />
     </div>
   </div>
 </template>

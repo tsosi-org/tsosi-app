@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticContentComponent from "@/views/StaticContentView.vue"
+import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 </script>
 
 <template>
@@ -37,7 +38,11 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
       <h2>Contact</h2>
       <p>
         For any question feel free to reach us at
-        <kbd>contact[the famous symbol]tsosi.org</kbd>
+        <CodeBlockAtom
+          :content="'contact (tsosi.org)'"
+          :inline="true"
+          :background="true"
+        />
       </p>
 
       <h2 id="license">License</h2>
