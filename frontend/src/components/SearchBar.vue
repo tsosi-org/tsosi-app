@@ -98,15 +98,18 @@ const virtualScrollerHeight = computed(() => {
 
 function showResults(event: Event) {
   if (props.asGrowingButton && !isFocused.value) {
+    const wasOpen = isOpen.value
     isFocused.value = true
-    // Trigger the results popup after the searchbar animation is finished
-    setTimeout(() => showResults(event), 800)
-    return
+    if (!wasOpen) {
+      // Trigger the results popup after the searchbar animation is finished
+      setTimeout(() => showResults(event), 800)
+      return
+    }
   }
+  highlightedIndex.value = undefined
   // @ts-expect-error PrimeVue component declaration omits basic
   // VueJS attributes..
   op.value!.show(event, input.value!.$el)
-  highlightedIndex.value = undefined
 }
 
 function resetSearchBar() {
@@ -188,7 +191,8 @@ async function updateHighlightedResult() {
 
 function focusOut() {
   isFocused.value = false
-  op.value!.hide()
+  highlightedIndex.value = undefined
+  // op.value!.hide()
 }
 </script>
 
@@ -213,7 +217,7 @@ function focusOut() {
       ref="op"
       :baseZIndex="9999"
       :dt="{ gutter: 0 }"
-      :style="`--width: ${elementWidth}`"
+      :style="`--width: ${elementWidth};`"
     >
       <div class="search-bar-overlay">
         <div v-if="filteredResults.length == 0" class="search-howto">

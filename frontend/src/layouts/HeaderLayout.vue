@@ -204,10 +204,6 @@ header.home {
     height: min(var(--content-height), 50px);
   }
 
-  &.desktop .logo {
-    height: min(var(--content-height), 100px);
-  }
-
   & nav {
     display: grid;
     grid-template-columns: 1fr;
@@ -217,9 +213,18 @@ header.home {
     margin: auto;
     height: 100%;
   }
-  &.desktop nav {
-    font-size: 2.25rem;
-    grid-template-columns: 30% 1fr;
+
+  &.desktop {
+    .logo {
+      height: min(var(--content-height), 100px);
+      margin-left: 0;
+    }
+
+    nav {
+      font-size: 2.25rem;
+      grid-template-columns: 30% 1fr;
+      display: flex;
+    }
   }
 }
 
