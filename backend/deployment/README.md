@@ -97,3 +97,11 @@ poetry run python -m deployment.deploy <SERVER_NAME>
 Options:
 * `--branch` - The branch used to pull the code from (only for back-end, front-end is built locally).
 * `--skip-front-build` - Whether to use already built front-end files in `frontend/dist` or to build new ones.
+
+## SSL certificates
+
+We use certbot to automatically get certificates from letsencrypt.
+Just follow the tutorial on certbot page: https://certbot.eff.org/instructions?ws=nginx&os=snap.
+
+Certifiate data is stored in `/etc/letsencrypt/live/{{ server_name }}/`
+

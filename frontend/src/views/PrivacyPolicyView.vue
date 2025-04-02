@@ -1,6 +1,53 @@
 <script setup lang="ts">
 import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticContentComponent from "@/views/StaticContentView.vue"
+import { ref, inject, computed, watch, onMounted } from "vue"
+
+const matomoCheckboxValue = ref(false)
+const optOutStatus = ref(false)
+const matomoTracker = inject("Matomo")
+const matomoOptOutLabel = computed(() =>
+  optOutStatus.value
+    ? "You are currently opted out. Uncheck this box to opt-in. "
+    : "You are not opted out. Check this box to opt-out.",
+)
+
+watch(optOutStatus, () => {
+  matomoCheckboxValue.value = optOutStatus.value
+})
+
+onMounted(() => {
+  const status = isOptedOut()
+  if (status !== undefined) {
+    optOutStatus.value = status
+  }
+})
+
+function toggleOptOut() {
+  const status = isOptedOut()
+  if (status === undefined) {
+    return
+  }
+  if (isOptedOut()) {
+    // @ts-expect-error matomo plugin has no types
+    matomoTracker.forgetUserOptOut()
+    optOutStatus.value = false
+  } else {
+    // @ts-expect-error matomo plugin has no types
+    matomoTracker.optUserOut()
+    optOutStatus.value = true
+  }
+}
+
+function isOptedOut(): boolean | undefined {
+  if (!matomoTracker) {
+    console.log("Matomo tracker is not available.")
+    return undefined
+  }
+  // @ts-expect-error matomo plugin has no types
+  return matomoTracker.isUserOptedOut()
+}
 </script>
 
 <template>
@@ -38,13 +85,26 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
       </ul>
 
       <h2>Collected data</h2>
-      <p>We collect browsing logs when you visit our website:</p>
+      <p>We collect basic browsing logs when you visit our website:</p>
       <ul>
         <li>Your IP address</li>
         <li>Date</li>
         <li>Request made (in the form of a URL)</li>
         <li>Browser type</li>
         <li>Response status (HTTP status code)</li>
+      </ul>
+
+      <p v-if="matomoTracker">
+        We aggregate and analyze the actions you take on our website using
+        <ExternalLinkAtom :href="'https://matomo.org'" :label="'Matomo'" />.
+        <br />
+        We collect the following data:
+      </p>
+      <ul v-if="matomoTracker">
+        <li>Your anonimized IP address</li>
+        <li>The date</li>
+        <li>The performed action (click, download, navigation)</li>
+        <li>The URL of the page where you performed the action</li>
       </ul>
 
       <h2>Recipient of the data collection</h2>
@@ -84,6 +144,24 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
           :inline="true"
           :background="true"
         />
+      </p>
+      <p v-if="matomoTracker">
+        <br />
+        Additionally, you may choose to prevent this website from aggregating
+        and analyzing the actions you take here. Doing so will protect your
+        privacy, but will also prevent TSOSI from learning from your actions and
+        creating a better experience for you and other users.
+      </p>
+      <p v-if="matomoTracker">
+        <input
+          type="checkbox"
+          id="matomo-opt-out"
+          v-model="matomoCheckboxValue"
+          @click="toggleOptOut"
+        />
+        <label for="matomo-opt-out" style="margin-left: 1em"
+          ><strong>{{ matomoOptOutLabel }}</strong></label
+        >
       </p>
 
       <h2>Changes to this privacy policy</h2>

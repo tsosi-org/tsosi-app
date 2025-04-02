@@ -37,9 +37,9 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
             :href="'https://www.univ-grenoble-alpes.fr/english/'"
           />
           <br />
-          Powered by
+          Operated by
           <ExternalLinkAtom
-            :label="'Grenoble Alps Research Scientific Computing and Data Infrastructure (GRICAD)'"
+            :label="'Grenoble Alps Research Scientific Computing and Data Infrastructure'"
             :href="'https://gricad.univ-grenoble-alpes.fr/index_en.html'"
           />
         </div>
@@ -133,6 +133,10 @@ footer {
   & .footer-partners {
     text-wrap: nowrap;
   }
+
+  & .backers {
+    margin-top: 2.45rem; /* Margin used to align the end of the content with the infrastructures column end */
+  }
 }
 
 .footer-wrapper > * > * {
@@ -168,7 +172,10 @@ ul {
   }
 }
 
-.backers :deep(a) {
-  text-decoration: underline;
+.backers {
+  line-height: 1.5;
+  & :deep(a) {
+    text-decoration: underline;
+  }
 }
 </style>

@@ -1,12 +1,14 @@
 import "@/assets/css/main.css"
 
-import { createApp } from "vue"
+import { createApp, provide } from "vue"
 import App from "./App.vue"
 import router from "./router"
 import PrimeVue from "primevue/config"
 import Aura from "@primevue/themes/aura"
 import { definePreset } from "@primevue/themes"
 import DialogService from "primevue/dialogservice"
+// @ts-expect-error No available types for vue-matomo
+import VueMatomo from "vue-matomo"
 import { library } from "@fortawesome/fontawesome-svg-core"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 import {
@@ -128,6 +130,30 @@ app.component("font-awesome-icon", FontAwesomeIcon)
 
 app.use(router)
 
+// Matomo plugin for Vue.js
+const hasMatomoInfo =
+  import.meta.env.VITE_MATOMO_HOST && import.meta.env.VITE_MATOMO_SITE_ID
+if (hasMatomoInfo) {
+  app.use(VueMatomo, {
+    host: import.meta.env.VITE_MATOMO_HOST,
+    siteId: import.meta.env.VITE_MATOMO_SITE_ID,
+    router: router,
+    // We need cookies to uniquely identify users
+    disableCookies: false,
+    preInitActions: [["trackPageView"], ["HeatmapSessionRecording::disable"]],
+  })
+}
 app.mount("#app")
 
 export const appContext = app._context
+
+// if (hasMatomoInfo) {
+//   // @ts-expect-error Piwik is added by matomo script
+//   if (!window.Piwik || !(typeof window.Piwik.getAsyncTracker == "function")) {
+//     console.log("Matomo async tracker could not be loaded")
+//   } else {
+//     // @ts-expect-error Piwik is added by matomo script
+//     const tracker = window.Piwik.getAsyncTracker()
+//     provide("matomoTracker", tracker)
+//   }
+// }
