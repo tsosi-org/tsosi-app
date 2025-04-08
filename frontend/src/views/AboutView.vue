@@ -39,7 +39,7 @@ import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
       <p>
         For any question feel free to reach us at
         <CodeBlockAtom
-          :content="'contact (tsosi.org)'"
+          :content="'contact @(tsosi.org)'"
           :inline="true"
           :background="true"
         />

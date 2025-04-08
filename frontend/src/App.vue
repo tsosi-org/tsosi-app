@@ -16,16 +16,18 @@ const dialog = useDialog()
 onMounted(async () => {
   await onInit()
   setTimeout(() => scrollToHash(true), scrollTimeout)
-  setTimeout(
-    () =>
-      dialog.open(SiteInConstructionAtom, {
-        props: {
-          modal: true,
-          baseZIndex: 10000,
-        },
-      }),
-    scrollTimeout + 500,
-  )
+  if (import.meta.env.VITE_WELCOME_POPUP === "true") {
+    setTimeout(
+      () =>
+        dialog.open(SiteInConstructionAtom, {
+          props: {
+            modal: true,
+            baseZIndex: 10000,
+          },
+        }),
+      scrollTimeout + 500,
+    )
+  }
 })
 
 watch(
