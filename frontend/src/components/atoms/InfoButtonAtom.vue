@@ -23,8 +23,9 @@ function attachEvents() {
   }
   addClickEventListener(iconButton.value, toggle)
   if (!isTouchScreen.value) {
-    // Might be causing the need for double click on touch screen ?
-    // the focusin definitely does but the mouse enter as well ?
+    // The mouseenter or mouseleave causes issues on touch screen with the
+    // need to click twice to show the popup.
+    // Obviously same with focusin but this one was expected.
     iconButton.value.addEventListener("focusin", show)
     iconButton.value.addEventListener("mouseenter", show)
     iconButton.value.addEventListener("mouseleave", triggerHide)

@@ -146,18 +146,24 @@ p {
   color: var(--color-error);
 }
 
-a.wikidata-inline-link::before {
-  --img-ratio: 1.78;
-  --img-height: 1.3em;
-  --img-width: calc(var(--img-ratio) * var(--img-height));
-  content: '';
+a.wikidata-inline-link {
+  --icon-ratio: 1.78;
+  --icon-height: 1.3em;
+  --icon-width: calc(var(--icon-ratio) * var(--icon-height));
   position: relative;
+  margin-left: calc(var(--icon-width) + 5px);
+}
+
+a.wikidata-inline-link::before {
   background: url("/img/wikidata_icon.svg");
-  height: var(--img-height);
-  width: var(--img-width);
+  content: '';
+  position: absolute;
+  left: calc(-1 * (var(--icon-width) + 3px));
+  top: 0;
+  height: var(--icon-height);
+  width: var(--icon-width);
   display: inline-block;
-  background-size: var(--img-width) var(--img-height);
-  margin: 0 0.2em -0.35em;
+  background-size: var(--icon-width) var(--icon-height);
   background-repeat: no-repeat;
 }
 
