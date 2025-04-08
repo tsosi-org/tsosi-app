@@ -139,3 +139,9 @@ body {
     sans-serif;
   text-rendering: optimizeLegibility;
 }
+
+
+*::selection {
+  color: white;
+  background-color: var(--p-primary-500);
+}

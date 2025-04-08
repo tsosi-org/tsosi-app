@@ -20,7 +20,7 @@ def get_config(
         fields=[
             rdc.FieldRecipientName(constant="SciPost"),
             rdc.FieldRecipientWikidataId(constant="Q52663237"),
-            rdc.FieldEmitterName(field="emitter_name"),
+            rdc.FieldEmitterName(field="emitter"),
             rdc.FieldEmitterCountry(field="emitter_country", is_iso=True),
             rdc.FieldEmitterRorId(field="emitter_ror_id"),
             rdc.FieldEmitterWikidataId(field="emitter_wikidata_id"),
