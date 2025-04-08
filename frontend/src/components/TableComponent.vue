@@ -2,7 +2,6 @@
 import { ref, type Ref, nextTick, useTemplateRef } from "vue"
 import { RouterLink } from "vue-router"
 import DataTable from "primevue/datatable"
-import Menu from "primevue/menu"
 import Column from "primevue/column"
 import Skeleton from "primevue/skeleton"
 import Button from "primevue/button"
@@ -24,11 +23,14 @@ import CustomButton, {
 } from "@/components/atoms/ButtonAtom.vue"
 import Country from "@/components/atoms/CountryAtom.vue"
 import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
+import MenuButtonAtom from "./atoms/MenuButtonAtom.vue"
+import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 
 export interface TableColumnProps extends DataFieldProps {
   sortable?: boolean
   sortField?: string // field used to sort the column. Defaults to fieldLabel
   info?: string
+  currencySelector?: boolean
 }
 
 export interface TableProps {
@@ -45,7 +47,6 @@ export interface TableProps {
   rowUniqueId: string
   skeleton?: boolean
   storeState?: boolean
-  currencySelector?: boolean
   rowSelectable?: boolean
   buttons?: Array<ButtonProps>
   disableExport?: boolean
@@ -55,7 +56,7 @@ export interface TableProps {
 
 const props = defineProps<TableProps>()
 
-const exportMenu = useTemplateRef("export-menu")
+const tableComponent = useTemplateRef("data-table")
 const rowButtonMenu = useTemplateRef("row-button-menu")
 const selectedButtonData: Ref<Record<string, any> | null> = ref(null)
 
@@ -160,8 +161,16 @@ function buttonFromConfig(
   return buttonProps
 }
 
-function toggleExportMenu(event: Event) {
-  exportMenu.value!.toggle(event)
+/**
+ * Scroll the document to the start of the table on page change.
+ */
+function onPageChange() {
+  if (!tableComponent.value) {
+    return
+  }
+  // @ts-expect-error PrimeVue component declartaion omits basic
+  // VueJS attributes..
+  tableComponent.value.$el.scrollIntoView({ behavior: "instant" })
 }
 </script>
 
@@ -172,14 +181,16 @@ function toggleExportMenu(event: Event) {
   <DataTable
     class="tsosi-table"
     :value="props.data"
-    ref="dt"
-    paginator
+    ref="data-table"
+    :paginator="props.data.length > 20 ? true : undefined"
     :rows="20"
     :rowsPerPageOptions="[10, 20, 50, 100]"
     :sortField="defaultSortFieldFunction()"
     :sortOrder="props.defaultSort?.sortOrder"
     selectionMode="single"
     :dataKey="props.rowUniqueId"
+    @page="onPageChange"
+    :dt="{ row: { color: 'var(--color-text)' } }"
   >
     <template v-if="props.header" #header>
       <div class="table-header">
@@ -190,29 +201,17 @@ function toggleExportMenu(event: Event) {
           </span>
         </h2>
         <div class="table-header__actions">
-          <CurrencySelector v-if="props.currencySelector" />
           <template v-if="!props.disableExport">
-            <Button
-              label="Export"
-              type="button"
-              @click="toggleExportMenu"
-              aria-haspopup="true"
-              :aria-controls="`table-export-menu-${props.id}`"
-            >
-              <template #icon>
-                <font-awesome-icon icon="download" />
-              </template>
-            </Button>
-            <Menu
-              ref="export-menu"
+            <MenuButtonAtom
               :id="`table-export-menu-${props.id}`"
-              :model="exportItems"
-              :popup="true"
-            >
-              <template #itemicon="{ item }">
-                <font-awesome-icon :icon="item.icon" />
-              </template>
-            </Menu>
+              :button="{
+                id: `table-export-button-${props.id}`,
+                label: 'Export',
+                type: 'action',
+                icon: 'download',
+              }"
+              :items="exportItems"
+            />
           </template>
         </div>
       </div>
@@ -225,14 +224,17 @@ function toggleExportMenu(event: Event) {
     <Column
       v-for="column of columns"
       :field="column.field"
-      :header="column.title"
       :sortable="column.sortable ? true : undefined"
       :sortField="getSortFieldFunction(column)"
       :key="column.id"
     >
       <!-- Header template -->
-      <template v-if="column.info" #header>
-        <InfoButtonAtom :content="column.info" />
+      <template #header>
+        <InfoButtonAtom v-if="column.info" :content="column.info" />
+        <span class="p-datatable-column-title">
+          {{ column.title }}
+        </span>
+        <CurrencySelector v-if="column.currencySelector" />
       </template>
 
       <!-- Row template -->
@@ -248,14 +250,11 @@ function toggleExportMenu(event: Event) {
         </RouterLink>
       </template>
       <template v-else-if="column.type == 'externalLink'" #body="{ data }">
-        <a
+        <ExternalLinkAtom
           v-if="getItemLabel(data, column)"
           :href="getItemLink(data, column.fieldLink)"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {{ getItemLabel(data, column) }}
-        </a>
+          :label="getItemLabel(data, column)"
+        />
       </template>
       <template v-else-if="column.type == 'country'" #body="{ data }">
         <Country :code="getItemLabel(data, column)" />
@@ -294,9 +293,38 @@ function toggleExportMenu(event: Event) {
       </div>
     </div>
   </Popover>
+
+  <!--
+    The export menu is located in the table's header when it's displayed
+    otherwise at the bottom here
+  -->
+  <div class="table-export" v-if="!props.disableExport && !props.header">
+    <h3 style="display: inline-block; margin-right: min(1em, 2vw)">
+      Export data:
+    </h3>
+    <div style="display: inline-flex; gap: min(1em, 3vw); align-items: center">
+      <MenuButtonAtom
+        :id="`table-export-menu-${props.id}`"
+        :button="{
+          id: `table-export-button-${props.id}`,
+          label: 'Export',
+          type: 'action',
+          icon: 'download',
+        }"
+        :items="exportItems"
+      />
+    </div>
+    <div>
+      <span>See our <RouterLink to="/pages/faq/">policy</RouterLink>.</span>
+    </div>
+  </div>
 </template>
 
 <style scoped>
+.tsosi-table {
+  scroll-margin-top: calc(var(--regular-header-height) + 50px);
+}
+
 .table-header {
   display: flex;
   flex-wrap: wrap;

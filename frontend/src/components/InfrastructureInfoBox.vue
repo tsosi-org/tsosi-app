@@ -3,6 +3,7 @@ import { type EntityDetails } from "@/singletons/ref-data"
 import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 import { RouterLink } from "vue-router"
 import { formatDateWithPrecision } from "@/utils/data-utils"
+import Panel from "primevue/panel"
 
 const props = defineProps<{
   data: EntityDetails
@@ -13,31 +14,15 @@ console.log(`Full width: ${props.fullWidth}`)
 </script>
 
 <template>
-  <section
+  <Panel
     v-if="props.data.infrastructure"
-    class="info-box infrastructure"
-    :class="{ expand: props.fullWidth }"
+    toggleable
+    class="info-box"
+    :dt="{ border: 'inherit', borderRadius: 'inherit' }"
   >
-    <div v-if="props.data.date_inception" class="info-item">
-      <h3>Inception date</h3>
-      <span>
-        {{ props.data.date_inception.getFullYear() }}
-      </span>
-    </div>
-    <div
-      v-if="
-        props.data.infrastructure.date_data_start &&
-        props.data.infrastructure.date_data_end
-      "
-      class="info-item"
-    >
-      <h3>Data coverage</h3>
-      <span>
-        {{ props.data.infrastructure.date_data_start.getFullYear() }} to
-        {{ props.data.infrastructure.date_data_end.getFullYear() }}
-      </span>
-    </div>
-
+    <template #header>
+      <h2 class="info-box-header">Data perimeter</h2>
+    </template>
     <div class="info-item">
       <h3>
         <span>Disclosed amounts</span>
@@ -45,16 +30,18 @@ console.log(`Full width: ${props.fullWidth}`)
           v-if="props.data.infrastructure.hide_amount"
           style="margin-left: 0.5em"
         >
-          <template #default>
+          <template #popup>
             The individual funding amounts are not disclosed,
-            <RouterLink to="/faq#partner-definition">see our FAQ</RouterLink>
+            <RouterLink to="/pages/faq#partner-definition"
+              >see our FAQ</RouterLink
+            >
           </template>
         </InfoButtonAtom>
       </h3>
       <span v-if="props.data.infrastructure.hide_amount">
-        The transfert amounts are hidden.
+        The transfer amounts are hidden.
       </span>
-      <span v-else> The transfert amounts are displayed. </span>
+      <span v-else> The transfer amounts are displayed. </span>
     </div>
 
     <div v-if="props.data.infrastructure.date_data_update" class="info-item">
@@ -68,13 +55,31 @@ console.log(`Full width: ${props.fullWidth}`)
         }}
       </span>
     </div>
+
+    <div
+      v-if="
+        props.data.infrastructure.date_data_start &&
+        props.data.infrastructure.date_data_end
+      "
+      class="info-item"
+    >
+      <h3>Time coverage</h3>
+      <span>
+        {{ props.data.infrastructure.date_data_start.getFullYear() }}
+        to
+        {{ props.data.infrastructure.date_data_end.getFullYear() }}
+      </span>
+    </div>
+
     <div v-if="props.breakdownDisclaimer" class="info-item">
       <h3>Supporter breakdown</h3>
       <span>
         The data does not include the supporters breakdown before 2021, but only
         the intermediary like a library consortia,
-        <RouterLink to="/faq#partner-definition"> see more in FAQ </RouterLink>.
+        <RouterLink to="/pages/faq#partner-definition">
+          see more in FAQ </RouterLink
+        >.
       </span>
     </div>
-  </section>
+  </Panel>
 </template>

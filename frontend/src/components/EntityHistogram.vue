@@ -14,9 +14,8 @@ import Select from "primevue/select"
 import Checkbox from "primevue/checkbox"
 import CurrencySelector from "./CurrencySelector.vue"
 import { type DataFieldProps, exportCSV, exportJSON } from "@/utils/data-utils"
-import Button from "primevue/button"
-import Menu from "primevue/menu"
 import { type TooltipItem } from "chart.js"
+import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
 
 export interface EntityHistogramProps {
   entity: DeepReadonly<Entity>
@@ -39,11 +38,11 @@ interface ChartData {
 const metricOptions = [
   {
     code: "sum",
-    name: "Metric: Sum",
+    name: "Sum of funding",
   },
   {
     code: "count",
-    name: "Metric: Count",
+    name: "Count of funding",
   },
 ]
 const props = defineProps<EntityHistogramProps>()
@@ -52,17 +51,18 @@ const dataLoaded = ref(false)
 const loading = ref(true)
 const chartData: Ref<ChartData | undefined> = ref()
 const chartOptions: Ref<object | undefined> = ref()
-const chartTitle = computed(() =>
+const chartTitle =
+  "Distribution of funding by year of receipt and continent of supporters"
+const yAxisTitle = computed(() =>
   metric.value.code == "sum"
-    ? `Total value (${selectedCurrency.value.id})`
-    : "Number of transferts",
+    ? `Total amount of funding (${selectedCurrency.value.id})`
+    : "Total number of funding",
 )
 
 // Chart controls
 const metric = ref(metricOptions[0])
 const stacked: Ref<boolean> = ref(false)
 
-const exportMenu = useTemplateRef("export-menu")
 const chartComponent = useTemplateRef("chart")
 
 onMounted(async () => {
@@ -165,14 +165,14 @@ function getChartOptions() {
         stacked: true,
         title: {
           display: true,
-          text: "Year",
+          text: "Year of receipt of funding",
         },
       },
       y: {
         stacked: true,
         title: {
           display: true,
-          text: chartTitle,
+          text: yAxisTitle.value,
         },
       },
     },
@@ -234,7 +234,7 @@ const exportItems = [
 
 function getFileName(): string {
   const baseName = props.entity.name.replace(/\s+/g, "_")
-  const chartTitleClean = chartTitle.value.replace(/\s+/g, "_")
+  const chartTitleClean = chartTitle.replace(/\s+/g, "_")
   return `TSOSI_${baseName}_${chartTitleClean}`
 }
 
@@ -269,7 +269,7 @@ async function downloadData(format: "json" | "csv") {
   const fields: DataFieldProps[] = []
   fields.push({
     id: "x",
-    title: "Year",
+    title: "Year of receipt of funding",
     field: "x",
     type: "number",
   })
@@ -287,53 +287,16 @@ async function downloadData(format: "json" | "csv") {
   }
   exportJSON(fields, exportData, getFileName())
 }
-
-function toggleExportMenu(event: Event) {
-  exportMenu.value!.toggle(event)
-}
 </script>
 
 <template>
   <div class="chart-wrapper">
     <div class="chart-header">
       <h2 class="chart-title">
-        <template v-if="metric.code == 'sum'">
-          Overall funding per year in {{ selectedCurrency.name }}
-        </template>
-        <template v-else> Number of transferts per year </template>
+        {{ chartTitle }}
       </h2>
-      <div class="chart-controls">
-        <div class="check-box-wrapper">
-          <Checkbox v-model="stacked" inputId="histogramStacked" binary />
-          <label for="histogramStacked"> Grouped </label>
-        </div>
-        <Select v-model="metric" :options="metricOptions" optionLabel="name" />
-        <CurrencySelector />
-        <template v-if="!props.disableExport">
-          <Button
-            label="Export"
-            type="button"
-            @click="toggleExportMenu"
-            aria-haspopup="true"
-            :aria-controls="`histogram-export-menu-${props.entity.id}`"
-          >
-            <template #icon>
-              <font-awesome-icon icon="download" />
-            </template>
-          </Button>
-          <Menu
-            ref="export-menu"
-            :id="`histogram-export-menu-${props.entity.id}`"
-            :model="exportItems"
-            :popup="true"
-          >
-            <template #itemicon="{ item }">
-              <font-awesome-icon :icon="item.icon" />
-            </template>
-          </Menu>
-        </template>
-      </div>
     </div>
+
     <div class="chart-container">
       <Loader v-if="loading" width="200px" />
       <Chart
@@ -345,20 +308,53 @@ function toggleExportMenu(event: Event) {
         :options="chartOptions"
       />
     </div>
+
+    <div class="chart-controls">
+      <div class="check-box-wrapper">
+        <Checkbox v-model="stacked" inputId="histogramStacked" binary />
+        <label for="histogramStacked"> Grouped </label>
+      </div>
+      <Select v-model="metric" :options="metricOptions" optionLabel="name" />
+      <CurrencySelector />
+      <template v-if="!props.disableExport">
+        <MenuButtonAtom
+          :id="`histogram-export-menu-${props.entity.id}`"
+          :button="{
+            id: `histogram-export-button-${props.entity.id}`,
+            label: 'Export',
+            type: 'action',
+            icon: 'download',
+          }"
+          :items="exportItems"
+        />
+      </template>
+    </div>
+
+    <div class="chart-description">
+      <div style="padding: 0 min(2vw, 2em)">
+        This graph shows all the funding received by the infrastructure,
+        distributed by year of receipt and by continent of the supporters. The
+        date and amount of funding are received from the infrastructure, while
+        the continent of the supporters comes from ROR and Wikidata.
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .chart-wrapper {
   min-width: 300px;
+
+  & > * {
+    margin-top: 1.5rem;
+  }
+
+  & > *:first-child {
+    margin-top: unset;
+  }
 }
 .chart-header {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  row-gap: 1em;
+  text-align: center;
 }
 
 .chart-controls {
@@ -366,6 +362,7 @@ function toggleExportMenu(event: Event) {
   flex-wrap: wrap;
   flex-direction: row;
   gap: 0.8em;
+  justify-content: end;
 }
 
 .check-box-wrapper {
@@ -383,10 +380,15 @@ function toggleExportMenu(event: Event) {
 .chart-container {
   position: relative;
   height: 30rem;
-  margin-top: 1.5rem;
 }
 
 .chart {
   height: 30rem;
+}
+
+.chart-description {
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
 }
 </style>

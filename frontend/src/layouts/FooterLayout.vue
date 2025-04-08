@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router"
 import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import { $dt } from "@primevue/themes"
 import { isDesktop } from "@/composables/useMediaQuery"
 import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
@@ -14,21 +15,33 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
           <img src="@/assets/img/logo_white.svg" />
         </div>
         <div class="copyright">
-          &copy; Transparency to Sustain Open Science Infrastructure 2025 &bull;
-          <RouterLink to="/about#license">
-            License
-            <img class="logo-inline" src="@/assets/img/logo_cc_heart.svg" />
-          </RouterLink>
+          &copy; TSOSI 2025 default by all rights reserved
+          <RouterLink to="/pages/legal-notice">
+            unless otherwise specified </RouterLink
+          >.
         </div>
         <div class="legal">
-          <ul>
-            <li>
-              <RouterLink to="/privacy-policy">Privacy policy</RouterLink>
-            </li>
-            <li>
-              <RouterLink to="/legal-terms">Terms & conditions</RouterLink>
-            </li>
-          </ul>
+          <RouterLink to="/pages/legal-notice">Legal notice</RouterLink> &bull;
+          <RouterLink to="/pages/privacy-policy">Privacy policy</RouterLink>
+        </div>
+        <div class="backers">
+          Funded by
+          <ExternalLinkAtom
+            :label="'The French Committee for Open Science'"
+            :href="'https://www.ouvrirlascience.fr/the-committee-for-open-science/'"
+          />
+          <br />
+          Led by
+          <ExternalLinkAtom
+            :label="'Université Grenoble Alpes'"
+            :href="'https://www.univ-grenoble-alpes.fr/english/'"
+          />
+          <br />
+          Operated by
+          <ExternalLinkAtom
+            :label="'Grenoble Alps Research Scientific Computing and Data Infrastructure'"
+            :href="'https://gricad.univ-grenoble-alpes.fr/index_en.html'"
+          />
         </div>
       </div>
       <div class="footer-nav">
@@ -49,6 +62,7 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
 
 <style scoped>
 footer {
+  margin-top: 2em;
   line-height: 2.5;
   color: var(--p-neutral-50);
   background-color: var(--p-neutral-950);
@@ -115,6 +129,14 @@ footer {
   h3 {
     margin: 1.25rem 0;
   }
+
+  & .footer-partners {
+    text-wrap: nowrap;
+  }
+
+  & .backers {
+    margin-top: 2.45rem; /* Margin used to align the end of the content with the infrastructures column end */
+  }
 }
 
 .footer-wrapper > * > * {
@@ -144,5 +166,16 @@ ul {
 
 .copyright {
   color: var(--p-neutral-400);
+
+  & a {
+    text-decoration: underline;
+  }
+}
+
+.backers {
+  line-height: 1.5;
+  & :deep(a) {
+    text-decoration: underline;
+  }
 }
 </style>

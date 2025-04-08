@@ -18,19 +18,27 @@ import {
   parsePointCoordinates,
   getCountryCoordinates,
   getCountryLabel,
+  exportCSV,
+  exportJSON,
+  type DataFieldProps,
 } from "@/utils/data-utils"
 import { type Entity } from "@/singletons/ref-data"
 import { type Feature } from "geojson"
 import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
 import CountryItemList from "@/components/CountryItemList.vue"
 import { createComponent } from "@/utils/dom-utils"
-import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
+import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
+import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
+import { isDesktop } from "@/composables/useMediaQuery"
 
 export interface EntityMapProps {
-  infrastructures: Entity[]
+  id: string
+  infrastructures?: Entity[]
   supporters: Entity[]
-  title?: string
+  title: string
   dataLoaded?: boolean
+  exportTitleBase?: string
+  disableExport?: boolean
 }
 
 const props = defineProps<EntityMapProps>()
@@ -42,7 +50,11 @@ const tileBaseUrl =
 const loading = ref(true)
 const mapElement = useTemplateRef("tsosi-map")
 const layers: Ref<Record<string, L.FeatureGroup>> = ref({})
-const plottedEntities: Ref<{ total: number; value: number } | null> = ref(null)
+const plottedSupporters: Ref<{
+  total: number
+  value: number
+  countries: number
+} | null> = ref(null)
 // Do not use a ref, it messes up some leaflet features
 let map: L.Map | null = null
 const houseSvg = `
@@ -88,10 +100,12 @@ async function onInit() {
 
   const options: L.MapOptions = {
     maxBoundsViscosity: 1,
-    maxBounds: [
-      [-85, -181],
-      [85, 181],
-    ],
+    // Having max bounds can cause issue with the popups, that may be out of
+    // reach.
+    // maxBounds: [
+    //   [-89, -181],
+    //   [89, 181],
+    // ],
   }
   const mapObject = L.map(mapElement.value as HTMLElement, options)
   L.tileLayer(tileBaseUrl, {
@@ -113,10 +127,18 @@ async function updateMarkers() {
   if (!map || !props.dataLoaded) {
     return
   }
+  // Clean the map
+  for (const layer of Object.values(layers.value)) {
+    map.removeLayer(layer)
+  }
+
   const newLayers: Record<string, L.FeatureGroup> = {}
-  const emitterRatio = {
+  const emittersRecap = {
     total: props.supporters.length,
     value: 0,
+    countries: new Set(
+      props.supporters.map((e) => e.country).filter((c) => c != null),
+    ).size,
   }
   // Construct individual emitters layer
   const emitterFeatures: Feature[] = []
@@ -135,7 +157,7 @@ async function updateMarkers() {
         },
       }
       emitterFeatures.push(feature)
-      emitterRatio.value += 1
+      emittersRecap.value += 1
     } else if (item.country) {
       if (!(item.country in emitterCountries)) {
         emitterCountries[item.country] = []
@@ -183,7 +205,7 @@ async function updateMarkers() {
           coordinates: [...countryCoordinates],
         },
       })
-      emitterRatio.value += emitterCountries[key].length
+      emittersRecap.value += emitterCountries[key].length
     }
     if (countryFeatures.length) {
       newLayers.countries = L.geoJSON(countryFeatures, {
@@ -215,7 +237,7 @@ async function updateMarkers() {
   }
   // Construct infrastructures layers
   const infraFeatures: Feature[] = []
-  for (const item of props.infrastructures) {
+  for (const item of props.infrastructures || []) {
     const coordinates = parsePointCoordinates(item.coordinates)
     if (!coordinates) {
       continue
@@ -232,7 +254,7 @@ async function updateMarkers() {
     }
     infraFeatures.push(feature)
   }
-  if (infraFeatures) {
+  if (infraFeatures.length) {
     newLayers.infra = L.geoJSON(infraFeatures, {
       pointToLayer: (_, latlng) =>
         L.marker(latlng, {
@@ -255,7 +277,7 @@ async function updateMarkers() {
     layer.addTo(map)
   }
   layers.value = newLayers
-  plottedEntities.value = emitterRatio
+  plottedSupporters.value = emittersRecap
   loading.value = false
   const bonds = L.latLngBounds([])
   Object.values(layers.value).forEach((group) =>
@@ -277,67 +299,186 @@ function cleanPopup(element: App) {
     element.unmount()
   }, 400)
 }
+
+const exportItems = [
+  {
+    label: "Export CSV",
+    icon: "download",
+    command: () => downloadData("csv"),
+  },
+  {
+    label: "Export JSON",
+    icon: "download",
+    command: () => downloadData("json"),
+  },
+]
+
+function getFileName(): string {
+  let baseName = "TSOSI"
+  if (props.exportTitleBase) {
+    baseName += "_"
+    baseName += props.exportTitleBase.replace(/\s+/g, "_")
+  }
+  baseName += "_"
+  baseName += props.title.replace(/\s+/g, "_")
+  return baseName
+}
+
+function downloadData(format: "json" | "csv") {
+  if (!props.dataLoaded || props.supporters.length == 0) {
+    return
+  }
+  const exportData = []
+
+  for (const item of props.supporters) {
+    const coordinates = parsePointCoordinates(item.coordinates)
+    exportData.push({
+      id: item.id,
+      name: item.name,
+      latitude: coordinates?.lat,
+      longitude: coordinates?.lon,
+      country: item.country,
+    })
+  }
+
+  const fields: DataFieldProps[] = [
+    {
+      id: "id",
+      title: "id",
+      field: "id",
+      type: "string",
+    },
+    {
+      id: "name",
+      title: "name",
+      field: "name",
+      type: "string",
+    },
+    {
+      id: "latitude",
+      title: "latitude",
+      field: "latitude",
+      type: "number",
+    },
+    {
+      id: "longitude",
+      title: "longitude",
+      field: "longitude",
+      type: "number",
+    },
+    {
+      id: "country",
+      title: "country",
+      field: "country",
+      type: "country",
+    },
+  ]
+  const fileName = getFileName()
+  if (format == "csv") {
+    exportCSV(fields, exportData, fileName)
+    return
+  }
+  exportJSON(fields, exportData, fileName)
+}
 </script>
 
 <template>
-  <div class="map-wrapper">
+  <div class="map-wrapper" :class="{ desktop: isDesktop }">
     <div class="map-header" v-if="props.title">
       <h2 class="map-title">{{ props.title }}</h2>
-      <span v-if="plottedEntities">
-        Showing {{ plottedEntities.value }} out of
-        {{ plottedEntities.total }} funders ({{
-          (
-            Math.round(
-              (10 * (100 * plottedEntities.value)) / plottedEntities.total,
-            ) / 10
-          ).toString()
-        }}%)
+      <span v-if="plottedSupporters">
+        {{ plottedSupporters.total }} supporters from
+        {{ plottedSupporters.countries }} different countries
       </span>
-      <Skeleton v-else width="10em" border-radius="5px" height="1em"></Skeleton>
+      <Skeleton
+        v-else
+        width="10em"
+        border-radius="5px"
+        height="1em"
+        style="display: inline-block"
+      ></Skeleton>
     </div>
-    <div v-show="!loading" class="map-legend">
-      <div v-if="layers.emitters" class="legend-item">
-        <div class="legend-icon circle-icon" v-html="circleSvg"></div>
-        <span>Individual Funders</span>
-      </div>
-      <div v-if="layers.countries" class="legend-item">
-        <div class="legend-icon diamond-icon" v-html="diamondSvg"></div>
-        <span>
-          Countries
-          <InfoButtonAtom>
-            <template #default>
-              <span>
-                Gather all funders from the given country without a precise
-                location information.
-              </span>
-            </template>
-          </InfoButtonAtom>
-        </span>
-      </div>
-      <div v-if="layers.infra" class="legend-item">
-        <div class="legend-icon house-icon" v-html="houseSvg"></div>
-        <span>Supported Infrastructures</span>
-      </div>
-    </div>
-    <div v-show="loading" class="map-legend">
-      <div class="legend-item">
-        <Skeleton shape="circle" size="1rem"></Skeleton>
-        <Skeleton width="10ch" border-radius="3px" height="0.9rem"></Skeleton>
-      </div>
-      <div class="legend-item">
-        <Skeleton shape="circle" size="1rem"></Skeleton>
-        <Skeleton width="10ch" border-radius="3px"></Skeleton>
-      </div>
-      <div class="legend-item">
-        <Skeleton shape="circle" size="1rem"></Skeleton>
-        <Skeleton width="10ch" border-radius="3px"></Skeleton>
-      </div>
-    </div>
+
     <div class="map-container">
       <div v-show="loading" class="loader-wrapper">
         <Loader width="200px"></Loader>
       </div>
       <div class="map" ref="tsosi-map"></div>
+    </div>
+    <div style="position: relative">
+      <div v-show="!loading" class="map-legend">
+        <div v-if="layers.emitters" class="legend-item">
+          <div class="legend-icon circle-icon" v-html="circleSvg"></div>
+          <span>Individual supporters</span>
+        </div>
+        <div v-if="layers.countries" class="legend-item">
+          <div class="legend-icon diamond-icon" v-html="diamondSvg"></div>
+          <span>
+            Countries
+            <InfoButtonAtom>
+              <template #popup>
+                <span>
+                  Gather all funders from the given country without a precise
+                  location information.
+                </span>
+              </template>
+            </InfoButtonAtom>
+          </span>
+        </div>
+        <div v-if="layers.infra" class="legend-item">
+          <div class="legend-icon house-icon" v-html="houseSvg"></div>
+          <span>Supported infrastructures</span>
+        </div>
+      </div>
+
+      <div v-if="!props.disableExport" class="map-export-menu">
+        <MenuButtonAtom
+          :id="`${props.id}-export-menu`"
+          :button="{
+            id: `${props.id}-export-button`,
+            label: 'Export',
+            type: 'action',
+            icon: 'download',
+          }"
+          :items="exportItems"
+        />
+      </div>
+
+      <div v-show="loading" class="map-legend">
+        <div class="legend-item">
+          <Skeleton shape="circle" size="1rem"></Skeleton>
+          <Skeleton width="10ch" border-radius="3px" height="0.9rem"></Skeleton>
+        </div>
+        <div class="legend-item">
+          <Skeleton shape="circle" size="1rem"></Skeleton>
+          <Skeleton width="10ch" border-radius="3px"></Skeleton>
+        </div>
+        <div class="legend-item">
+          <Skeleton shape="circle" size="1rem"></Skeleton>
+          <Skeleton width="10ch" border-radius="3px"></Skeleton>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-description" style="margin: 0 auto; width: fit-content">
+      <div style="padding: 0 min(2vw, 2em)">
+        This world map represents the locations of all the entities that have
+        financially contributed to the infrastructure. Supporters with a
+        specific location are represented by circles, while those for which
+        TSOSI only has information at the country level are represented by
+        diamond shapes. The location data comes from ROR and Wikidata.
+        <span v-if="plottedSupporters">
+          {{ plottedSupporters.value }} supporters out of
+          {{ plottedSupporters.total }} are included in the world map.
+        </span>
+        <Skeleton
+          v-else
+          width="10em"
+          border-radius="5px"
+          height="1em"
+          style="display: inline-block"
+        ></Skeleton>
+      </div>
     </div>
   </div>
 </template>
@@ -346,6 +487,14 @@ function cleanPopup(element: App) {
 .map-wrapper {
   position: relative;
   width: 100%;
+
+  &.desktop {
+    & .map-export-menu {
+      position: absolute;
+      top: -0.5em;
+      right: 0;
+    }
+  }
 }
 
 .loader-wrapper {
@@ -378,12 +527,16 @@ function cleanPopup(element: App) {
   } */
 }
 
+.map-header {
+  text-align: center;
+}
 .map-legend {
   display: flex;
   flex-wrap: wrap;
   row-gap: 0.5em;
   column-gap: 1.5em;
   justify-content: center;
+  margin: 1em 0;
 }
 
 .legend-item {
@@ -408,7 +561,9 @@ function cleanPopup(element: App) {
 }
 
 .diamond-icon {
-  fill: #e7a824;
+  fill: #216d95;
+  fill-opacity: 0.8;
+  /* fill: #e7a824; */
   stroke: #686868;
 }
 
@@ -422,5 +577,10 @@ function cleanPopup(element: App) {
   fill-opacity: 0.8;
   stroke-width: 10;
   stroke: #216d95;
+}
+
+.map-export-menu {
+  text-align: center;
+  margin-bottom: 1em;
 }
 </style>

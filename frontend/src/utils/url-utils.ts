@@ -2,8 +2,8 @@ export function getEntityBaseUrl(): string {
   return `/entities/`
 }
 
-export function getTransfertBaseUrl(): string {
-  return "/transferts/"
+export function getTransferBaseUrl(): string {
+  return "/transfers/"
 }
 
 export function getEntityUrl(entity_id: string): string {

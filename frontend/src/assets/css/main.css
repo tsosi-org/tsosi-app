@@ -1,4 +1,6 @@
-@import "./base.css";
+@layer reset, primeui;
+
+@import "./base.css" layer(reset);
 
 #body.drawer-open {
   overflow: hidden;
@@ -91,6 +93,10 @@ a,
   text-decoration: underline;
 }
 
+a.p-menu-item-link {
+  text-decoration: unset;
+}
+
 .chip-link:hover {
   background-color: var(--p-surface-200);
 }
@@ -109,7 +115,7 @@ h2, h3, h4, h5, h6 {
   border-radius: 4px;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6, .as-heading {
   font-family: 
     Mount,
     Verdana,
@@ -128,17 +134,6 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-.static-content {
-  & h1,
-  & h2,
-  & h3,
-  & h4,
-  & h5,
-  & h6 {
-    padding: 0.5em 0;
-  }
-}
-
 p {
   margin: 5px 0;
 }
@@ -151,9 +146,30 @@ p {
   color: var(--color-error);
 }
 
+a.wikidata-inline-link {
+  --icon-ratio: 1.78;
+  --icon-height: 1.3em;
+  --icon-width: calc(var(--icon-ratio) * var(--icon-height));
+  position: relative;
+  margin-left: calc(var(--icon-width) + 5px);
+}
 
-.p-popover.p-component::before,
-.p-popover.p-component::after {
+a.wikidata-inline-link::before {
+  background: url("/img/wikidata_icon.svg");
+  content: '';
+  position: absolute;
+  left: calc(-1 * (var(--icon-width) + 3px));
+  top: 0;
+  height: var(--icon-height);
+  width: var(--icon-width);
+  display: inline-block;
+  background-size: var(--icon-width) var(--icon-height);
+  background-repeat: no-repeat;
+}
+
+
+.p-popover.p-component.popover-no-arrow::before,
+.p-popover.p-component.popover-no-arrow::after {
   display: none;
 }
 
@@ -164,29 +180,30 @@ p {
  primevue styling system.
 */
 .info-box {
+  font-size: 1rem;
   --info-box-color: var(--p-primary-color);
-  padding: 1em;
-  max-width: min(100%, 400px);
-  border: 2px solid;
+  padding: min(1em, 3vw) min(1rem, 1vw);
+  border: 3px solid;
   border-color: var(--p-surface-200);
   border-radius: 5px;
-  /* box-shadow: 0 0 5px 2px var(--p-surface-300); */
+  color: inherit;
   height: fit-content;
-
-  &.expand {
-    max-width: unset;
-  }
 }
 
-.info-box > * {
+.info-box .info-item {
   margin-bottom: 0.5em;
 }
 
-.info-box > *:last-child {
+.info-box .info-item:last-child {
   margin-bottom: unset;
 }
 
 .info-item h3 {
   color: var(--info-box-color);
   font-size: 1.05rem;
+}
+
+h2.info-box-header {
+  font-size: 1.15em;
+  color: var(--color-heading);
 }

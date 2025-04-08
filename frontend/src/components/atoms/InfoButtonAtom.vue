@@ -2,11 +2,13 @@
 import Popover from "primevue/popover"
 import { onMounted, useTemplateRef } from "vue"
 import { addClickEventListener } from "@/utils/dom-utils"
+import { isTouchScreen } from "@/composables/useMediaQuery"
 
 export interface InfoButtonProps {
   icon?: string
   label?: string
   content?: string
+  showCallback?: () => any
 }
 const props = defineProps<InfoButtonProps>()
 const popup = useTemplateRef("popup")
@@ -20,8 +22,14 @@ function attachEvents() {
     return
   }
   addClickEventListener(iconButton.value, toggle)
-  iconButton.value.addEventListener("mouseenter", show)
-  iconButton.value.addEventListener("mouseleave", triggerHide)
+  if (!isTouchScreen.value) {
+    // The mouseenter or mouseleave causes issues on touch screen with the
+    // need to click twice to show the popup.
+    // Obviously same with focusin but this one was expected.
+    iconButton.value.addEventListener("focusin", show)
+    iconButton.value.addEventListener("mouseenter", show)
+    iconButton.value.addEventListener("mouseleave", triggerHide)
+  }
 }
 
 function toggle(event: Event) {
@@ -29,7 +37,11 @@ function toggle(event: Event) {
 }
 
 function show(event: Event) {
+  hidePopup = false
   popup.value?.show(event)
+  if (props.showCallback) {
+    props.showCallback()
+  }
 }
 
 function hide(_: Event) {
@@ -39,6 +51,7 @@ function hide(_: Event) {
 }
 
 function triggerHide(event: Event) {
+  hidePopup = true
   setTimeout(() => hide(event), 200)
 }
 
@@ -50,20 +63,22 @@ function popupLeave(event: Event) {
 
 <template>
   <div class="info-button" ref="icon-button" tabindex="0">
-    <font-awesome-icon v-if="props.icon" :icon="props.icon">
-    </font-awesome-icon>
-    <span
-      v-else-if="props.label"
-      class="info-button-label"
-      style="text-decoration: underline"
-    >
-      {{ props.label }}
-    </span>
-    <font-awesome-icon
-      v-else
-      icon="circle-question"
-      class="info-icon"
-    ></font-awesome-icon>
+    <slot name="body">
+      <font-awesome-icon v-if="props.icon" :icon="props.icon">
+      </font-awesome-icon>
+      <span
+        v-else-if="props.label"
+        class="info-button-label"
+        style="text-decoration: underline"
+      >
+        {{ props.label }}
+      </span>
+      <font-awesome-icon
+        v-else
+        icon="circle-question"
+        class="info-icon"
+      ></font-awesome-icon>
+    </slot>
     <Popover
       ref="popup"
       :baseZIndex="1000"
@@ -72,8 +87,9 @@ function popupLeave(event: Event) {
       @mouseleave="popupLeave"
     >
       <div class="info-popup">
-        <slot></slot>
-        <div v-if="props.content" v-html="props.content"></div>
+        <slot name="popup">
+          <div v-if="props.content" v-html="props.content"></div>
+        </slot>
       </div>
     </Popover>
   </div>
@@ -81,9 +97,10 @@ function popupLeave(event: Event) {
 
 <style scoped>
 .info-button {
-  display: inline;
+  display: inline-block;
   position: relative;
   border-radius: 2px;
+  padding: 2px;
 }
 
 .info-button:focus,
@@ -93,7 +110,7 @@ function popupLeave(event: Event) {
 }
 
 .popup-wrapper::before {
-  all: unset;
+  /* all: unset; */
 }
 
 .info-popup {

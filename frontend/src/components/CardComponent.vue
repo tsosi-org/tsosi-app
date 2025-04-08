@@ -8,7 +8,7 @@ const props = defineProps<{ width?: string }>()
       <slot name="header"> </slot>
     </div>
     <div class="card-body">
-      <div class="card-title" style="text-align: center">
+      <div class="card-title as-heading" style="text-align: center">
         <slot name="title"></slot>
       </div>
       <div class="card-content">
@@ -31,10 +31,20 @@ const props = defineProps<{ width?: string }>()
   border-radius: 12px;
   display: flex;
   flex-direction: column;
+  transition:
+    transform 0.2s linear,
+    box-shadow 0.2s linear;
 
   &.width {
     width: v-bind(width);
   }
+
+  /* &:hover {
+    transform: translate(-2px, -5px);
+    box-shadow:
+      rgba(0, 0, 0, 0.1) 0px 1px 3px 0px,
+      rgba(0, 0, 0, 0.1) 2px 5px 2px -1px;
+  } */
 }
 
 .card-header {
@@ -52,6 +62,8 @@ const props = defineProps<{ width?: string }>()
 .card-title {
   font-size: 1.25rem;
   font-weight: 500;
+
+  color: var(--color-heading);
 }
 
 .card-content {

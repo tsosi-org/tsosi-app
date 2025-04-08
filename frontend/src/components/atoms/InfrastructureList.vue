@@ -2,10 +2,8 @@
 import { getInfrastructures } from "@/singletons/ref-data"
 import { RouterLink } from "vue-router"
 import { getEntityUrl } from "@/utils/url-utils"
-import { shuffleArray } from "@/utils/data-utils"
 
 const infras = getInfrastructures()
-shuffleArray(infras)
 </script>
 
 <template>

@@ -15,7 +15,7 @@ def entity_logo_path(instance: Entity, filename: str) -> str:
 
 class Entity(TimestampedModel):
     """
-    Represents an entity involved in a transfert.
+    Represents an entity involved in a transfer.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -59,7 +59,7 @@ class Entity(TimestampedModel):
     # Coordinates according to WGS84 coordinates system in form `POINT(LNG LAT)`
     coordinates = models.TextField(null=True)
 
-    ##  Clc booleans indicating if the entity is involved in 1+ transfert
+    ##  Clc booleans indicating if the entity is involved in 1+ transfer
     #   as an emitter, recipient, agent
     is_emitter = models.BooleanField(default=False)
     is_recipient = models.BooleanField(default=False)
@@ -94,12 +94,41 @@ class InfrastructureDetails(TimestampedModel):
     )
     infra_finder_url = models.URLField(max_length=256, null=True)
     posi_url = models.URLField(max_length=256, null=True)
-    is_scoss_awarded = models.BooleanField(default=False)
+    support_url = models.URLField(max_length=256, null=True)
+
+    date_scoss_start = models.DateField(null=True)
+    date_scoss_end = models.DateField(null=True)
+
+    legal_entity_description = models.TextField(null=True)
+
     hide_amount = models.BooleanField(default=False)
     # Clc fields
     date_data_update = models.DateField(null=True)
     date_data_start = models.DateField(null=True)
     date_data_end = models.DateField(null=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(date_scoss_start__isnull=True)
+                    & models.Q(date_scoss_end__isnull=True)
+                )
+                | (
+                    models.Q(date_scoss_start__isnull=False)
+                    & models.Q(date_scoss_end__isnull=False)
+                ),
+                name="infrastructure_details_scoss_dates_coherency_1",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(date_scoss_start__isnull=True)
+                    & models.Q(date_scoss_end__isnull=True)
+                )
+                | (models.Q(date_scoss_start__lte=models.F("date_scoss_end"))),
+                name="infrastructure_details_scoss_dates_coherency_2",
+            ),
+        ]
 
 
 class EntityType(TimestampedModel):

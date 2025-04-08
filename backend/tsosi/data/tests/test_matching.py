@@ -4,7 +4,7 @@ print(sys.path)
 
 import pandas as pd
 from tsosi.data.entity_matching import match_entities
-from tsosi.models.transfert import (
+from tsosi.models.transfer import (
     MATCH_CRITERIA_SAME_NAME_COUNTRY,
     MATCH_CRITERIA_SAME_NAME_ONLY,
     MATCH_CRITERIA_SAME_NAME_URL,

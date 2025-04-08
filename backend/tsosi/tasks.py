@@ -198,7 +198,7 @@ def post_ingestion_pipeline():
     2 - Launch identifier setup
     """
     tasks: list[Callable] = [
-        enrichment.update_transfert_date_clc,
+        enrichment.update_transfer_date_clc,
         enrichment.update_entity_roles_clc,
         enrichment.update_infrastructure_metrics,
     ]

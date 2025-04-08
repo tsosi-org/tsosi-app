@@ -8,6 +8,8 @@ import {
 import { RouterLink } from "vue-router"
 import Country from "@/components/atoms/CountryAtom.vue"
 import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
+import { nullValues } from "@/utils/data-utils"
+import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 
 export interface SummaryProps {
   data: Record<string, any>
@@ -22,7 +24,10 @@ const props = defineProps<SummaryProps>()
   <div class="summary">
     <template v-for="field of props.fields" :key="field.id">
       <div
-        v-if="getItemLabel(props.data, field) || field.type == 'boolean'"
+        v-if="
+          !nullValues.includes(getItemLabel(props.data, field)) ||
+          field.type == 'boolean'
+        "
         class="summary-field"
       >
         <div class="summary-label">
@@ -37,12 +42,11 @@ const props = defineProps<SummaryProps>()
             {{ getItemLabel(props.data, field) }}
           </RouterLink>
 
-          <a
+          <ExternalLinkAtom
             v-else-if="field.type == 'externalLink'"
             :href="getItemLink(props.data, field.fieldLink)"
-          >
-            {{ getItemLabel(props.data, field) }}
-          </a>
+            :label="getItemLabel(props.data, field)"
+          />
 
           <Country
             v-else-if="field.type == 'country'"

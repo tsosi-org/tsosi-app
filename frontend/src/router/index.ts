@@ -2,9 +2,11 @@ import { createRouter, createWebHistory } from "vue-router"
 import HomeView from "@/views/HomeView.vue"
 import EntityView from "@/views/EntityView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
-import TransfertView from "@/views/TransfertView.vue"
+import TransferView from "@/views/TransferView.vue"
 import FaqView from "@/views/FaqView.vue"
 import AboutView from "@/views/AboutView.vue"
+import LegalNotices from "@/views/LegalNotices.vue"
+import PrivacyPolicyView from "@/views/PrivacyPolicyView.vue"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,19 +22,29 @@ const router = createRouter({
       component: EntityView,
     },
     {
-      path: "/transferts/:id",
-      name: "transfert",
-      component: TransfertView,
+      path: "/transfers/:id",
+      name: "transfer",
+      component: TransferView,
     },
     {
-      path: "/faq",
+      path: "/pages/faq",
       name: "faq",
       component: FaqView,
     },
     {
-      path: "/about",
+      path: "/pages/about",
       name: "about",
       component: AboutView,
+    },
+    {
+      path: "/pages/legal-notice",
+      name: "legal-notice",
+      component: LegalNotices,
+    },
+    {
+      path: "/pages/privacy-policy",
+      name: "privacy-policy",
+      component: PrivacyPolicyView,
     },
     {
       path: "/:pathMatch(.*)*",
@@ -42,7 +54,18 @@ const router = createRouter({
   ],
   scrollBehavior(to, from, savedPosition) {
     if (to.hash) {
-      return { el: to.hash }
+      const scrollData: { [id: string]: any } = { el: to.hash, top: undefined }
+      const el = document.querySelector(to.hash)
+      if (!el) {
+        return scrollData
+      }
+      const styles = window.getComputedStyle(el)
+      // Retrieve the scroll-margin-top property
+      const scrollMarginTop = styles.getPropertyValue("scroll-margin-top")
+      if (scrollMarginTop) {
+        scrollData.top = parseInt(scrollMarginTop)
+      }
+      return scrollData
     } else if (savedPosition) {
       return savedPosition
     }

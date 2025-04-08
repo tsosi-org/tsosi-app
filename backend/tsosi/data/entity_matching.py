@@ -6,7 +6,7 @@ from tsosi.models.static_data import (
     REGISTRY_ROR,
     REGISTRY_WIKIDATA,
 )
-from tsosi.models.transfert import (
+from tsosi.models.transfer import (
     MATCH_CRITERIA_SAME_NAME_COUNTRY,
     MATCH_CRITERIA_SAME_NAME_ONLY,
     MATCH_CRITERIA_SAME_NAME_URL,

@@ -1,8 +1,40 @@
 import { appContext } from "@/main"
 import { createApp, type Component } from "vue"
 
-export function changeTitle(title: string) {
-  document.title = "TSOSI - " + title
+const updateMetaTags = false
+export function changeMetaDescripion(desc: string) {
+  const metaDesc: HTMLMetaElement | null = document.querySelector(
+    "meta[name='description']",
+  )
+  if (metaDesc && updateMetaTags) {
+    metaDesc.content = desc
+  }
+  const ogDesc: HTMLMetaElement | null = document.querySelector(
+    "meta[property='og:description']",
+  )
+  if (ogDesc && updateMetaTags) {
+    ogDesc.content = desc
+  }
+}
+
+export function changeMetaTitle(title: string) {
+  const newTitle = "TSOSI - " + title
+  document.title = newTitle
+  const ogTitle: HTMLMetaElement | null = document.querySelector(
+    "meta[property='og:title']",
+  )
+  if (ogTitle && updateMetaTags) {
+    ogTitle.content = newTitle
+  }
+}
+
+export function changeMetaUrl(current: boolean, url?: string) {
+  const ogUrl: HTMLMetaElement | null = document.querySelector(
+    "meta[property='og:url']",
+  )
+  if (ogUrl && updateMetaTags) {
+    ogUrl.content = current ? window.location.href : url || ""
+  }
 }
 
 export function createComponent(

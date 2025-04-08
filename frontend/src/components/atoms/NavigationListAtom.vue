@@ -2,26 +2,24 @@
 import { RouterLink } from "vue-router"
 
 const props = defineProps<{
-  color?: string
-  fontSize?: string
-  header?: boolean
+  color: string
 }>()
 </script>
 
 <template>
   <ul>
     <li>
-      <RouterLink to="/faq">FAQ</RouterLink>
+      <RouterLink to="/pages/faq">FAQ</RouterLink>
     </li>
     <li>
-      <RouterLink to="/about">About</RouterLink>
+      <RouterLink to="/pages/about">About</RouterLink>
     </li>
   </ul>
 </template>
 
 <style scoped>
 ul {
-  --local-color: v-bind($props.color);
+  --local-color: v-bind(props.color);
   --this-lh: 1;
   --this-fs: 20px;
   padding: 0;

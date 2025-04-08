@@ -17,7 +17,7 @@ The preparation process is basically to install and enable all services used by 
 
 * `deployer` user created for deployment process. This user will execute all necessary commands on the server to run the Tsosi app, such as updating files and starting services. You must enable SSH login with your SSH key. The user will need access to the /var/www folder for deployment along with sudo rights for a few service commands. You can add the following permissions by running `sudo visudo`:
     ```
-    deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart nginx, /usr/bin/systemctl start nginx, /usr/bin/systemctl stop nginx, /usr/bin/systemctl status nginx 
+    deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart nginx, /usr/bin/systemctl start nginx, /usr/bin/systemctl stop nginx, /usr/bin/systemctl status nginx, /usr/bin/systemctl reload nginx
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart tsosi_gunicorn, /usr/bin/systemctl start tsosi_gunicorn, /usr/bin/systemctl stop tsosi_gunicorn, /usr/bin/systemctl status tsosi_gunicorn
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart redis-server, /usr/bin/systemctl start redis-server, /usr/bin/systemctl stop redis-server, /usr/bin/systemctl status redis-server
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart tsosi_celery, /usr/bin/systemctl start tsosi_celery, /usr/bin/systemctl stop tsosi_celery, /usr/bin/systemctl status tsosi_celery
@@ -97,3 +97,11 @@ poetry run python -m deployment.deploy <SERVER_NAME>
 Options:
 * `--branch` - The branch used to pull the code from (only for back-end, front-end is built locally).
 * `--skip-front-build` - Whether to use already built front-end files in `frontend/dist` or to build new ones.
+
+## SSL certificates
+
+We use certbot to automatically get certificates from letsencrypt.
+Just follow the tutorial on certbot page: https://certbot.eff.org/instructions?ws=nginx&os=snap.
+
+Certifiate data is stored in `/etc/letsencrypt/live/{{ server_name }}/`
+

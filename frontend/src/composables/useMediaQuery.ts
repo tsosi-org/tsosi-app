@@ -1,4 +1,4 @@
-import { ref, type Ref, unref, onMounted, onUnmounted } from "vue"
+import { ref, type Ref, unref, onMounted, onUnmounted, computed } from "vue"
 
 /**
  * Returns the result of the given media query as a ref.
@@ -31,3 +31,7 @@ export function useMediaQuery(query: string | Ref<string>, global = false) {
 }
 
 export const isDesktop = useMediaQuery("(min-width: 1000px)", true)
+
+export const isTouchScreen = computed(
+  () => !useMediaQuery("(pointer: fine)").value,
+)

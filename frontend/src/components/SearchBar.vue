@@ -4,34 +4,59 @@ import InputIcon from "primevue/inputicon"
 import InputText from "primevue/inputtext"
 import Popover from "primevue/popover"
 import VirtualScroller from "primevue/virtualscroller"
-import { onMounted, ref, type Ref, computed } from "vue"
+import {
+  onMounted,
+  ref,
+  type Ref,
+  computed,
+  watch,
+  useTemplateRef,
+  nextTick,
+} from "vue"
 import { getEntities } from "@/singletons/ref-data"
 import { getEntityUrl } from "@/utils/url-utils"
 import { RouterLink } from "vue-router"
 
-export interface SearchBarProps {
-  width?: string
-  placeHolder?: string
-}
-
-const props = defineProps<SearchBarProps>()
-const searchTerm = ref("")
 interface searchResult {
   name: string
   url: string
   matchable: string[]
+  highlighted?: boolean
 }
+export interface SearchBarProps {
+  width?: string
+  placeHolder?: string
+  asGrowingButton?: boolean
+}
+
+const props = defineProps<SearchBarProps>()
+const searchTerm = ref("")
 const searchResults: Ref<Array<searchResult>> = ref([])
 const filteredResults: Ref<Array<searchResult>> = ref([])
 const loading = ref(true)
-const op = ref()
+const op = useTemplateRef("op")
+const input = useTemplateRef("input")
+const virtualScroll = useTemplateRef("virtual-scroll")
+const highlightedIndex: Ref<number | undefined> = ref(undefined)
+const isFocused = ref(false)
+const isOpen = computed(() => {
+  return (
+    !props.asGrowingButton || searchTerm.value.length > 0 || isFocused.value
+  )
+})
+const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
+const computedWidth = computed(() =>
+  isOpen.value ? elementWidth.value : "100px",
+)
 
-const itemSize = 35
+const itemSize = 40
 
 onMounted(async () => getEntitiesForSearch())
+watch(highlightedIndex, updateHighlightedResult)
 
 function onSearch(event: Event) {
   const query = searchTerm.value.trim().toLowerCase()
+  highlightedIndex.value = undefined
   if (searchResults.value.length == 0 || !query.length) {
     filteredResults.value = []
     return
@@ -71,17 +96,104 @@ const virtualScrollerHeight = computed(() => {
   return `${size > 300 ? 300 : size}px`
 })
 
-const showResults = (event: Event) => {
-  op.value.show(event)
+function showResults(event: Event) {
+  if (props.asGrowingButton && !isFocused.value) {
+    const wasOpen = isOpen.value
+    isFocused.value = true
+    if (!wasOpen) {
+      // Trigger the results popup after the searchbar animation is finished
+      setTimeout(() => showResults(event), 800)
+      return
+    }
+  }
+  highlightedIndex.value = undefined
+  // @ts-expect-error PrimeVue component declaration omits basic
+  // VueJS attributes..
+  op.value!.show(event, input.value!.$el)
 }
 
-function resetSearchBar(event: Event) {
-  op.value.hide(event)
+function resetSearchBar() {
+  op.value!.hide()
   searchTerm.value = ""
   filteredResults.value = []
+  highlightedIndex.value = undefined
 }
 
-const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
+function getHighlighted(): HTMLElement | null {
+  return document.querySelector(".search-result.highlighted")
+}
+
+function onKeyDown(event: KeyboardEvent) {
+  if (!["ArrowDown", "ArrowUp", "Enter"].includes(event.key)) {
+    return
+  }
+  if (event.key == "Enter") {
+    getHighlighted()?.click()
+    return
+  }
+  const resultsLength = filteredResults.value.length
+  if (resultsLength == 0) {
+    return
+  }
+
+  event.stopImmediatePropagation()
+
+  if (event.key === "ArrowDown") {
+    if (highlightedIndex.value === undefined) {
+      highlightedIndex.value = 0
+    } else if (highlightedIndex.value < resultsLength - 1) {
+      highlightedIndex.value += 1
+    }
+  } else if (event.key === "ArrowUp") {
+    if (highlightedIndex.value && highlightedIndex.value > 0) {
+      highlightedIndex.value -= 1
+      // @ts-expect-error PrimeVue component declaration omits basic
+      // VueJS attributes..
+      const inputEl: HTMLInputElement = input.value.$el
+      inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length)
+      setTimeout(
+        () =>
+          inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length),
+        50,
+      )
+    }
+  }
+}
+
+async function updateHighlightedResult() {
+  filteredResults.value.forEach((res) => (res.highlighted = false))
+  if (highlightedIndex.value === undefined) {
+    return
+  }
+  const data = filteredResults.value
+  data[highlightedIndex.value].highlighted = true
+  filteredResults.value = data
+  if (!virtualScroll.value) {
+    return
+  }
+  await nextTick()
+  const highlighted = getHighlighted()
+  if (!highlighted) {
+    return
+  }
+  const rect = highlighted?.getBoundingClientRect()
+  // @ts-expect-error PrimeVue component declaration omits basic
+  // VueJS attributes..
+  const virtEl: HTMLElement = virtualScroll.value.$el
+  const virtRect = virtEl.getBoundingClientRect()
+
+  if (rect.top < virtRect.top) {
+    virtEl.scrollBy(0, rect.top - virtRect.top)
+  } else if (rect.bottom > virtRect.bottom) {
+    virtEl.scrollBy(0, rect.bottom - virtRect.bottom)
+  }
+}
+
+function focusOut() {
+  isFocused.value = false
+  highlightedIndex.value = undefined
+  // op.value!.hide()
+}
 </script>
 
 <template>
@@ -91,18 +203,22 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
         <font-awesome-icon icon="magnifying-glass" />
       </InputIcon>
       <InputText
+        ref="input"
         v-model="searchTerm"
         :placeholder="props.placeHolder ?? 'Search'"
         @input="onSearch"
         @focus="showResults"
+        @focusout="focusOut"
+        :onKeydown="onKeyDown"
         style="width: 100%"
       />
     </IconField>
     <Popover
       ref="op"
+      class="popover-no-arrow"
       :baseZIndex="9999"
       :dt="{ gutter: 0 }"
-      :style="`--width: ${elementWidth}`"
+      :style="`--width: ${elementWidth};`"
     >
       <div class="search-bar-overlay">
         <div v-if="filteredResults.length == 0" class="search-howto">
@@ -121,6 +237,7 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
         </div>
         <VirtualScroller
           v-else
+          ref="virtual-scroll"
           :items="filteredResults"
           :itemSize="itemSize"
           class="search-results"
@@ -128,15 +245,18 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
           :scroll-height="virtualScrollerHeight"
         >
           <template #item="{ item }">
-            <div class="search-result" :style="{ height: itemSize + 'px' }">
-              <RouterLink
-                :to="item.url"
-                @click="resetSearchBar"
-                class="search-result-text"
-              >
+            <RouterLink
+              :to="item.url"
+              @click="resetSearchBar"
+              class="search-result"
+              :style="{ height: itemSize + 'px' }"
+              :class="{ highlighted: item.highlighted }"
+              :title="item.name"
+            >
+              <span class="search-result-text">
                 {{ item.name }}
-              </RouterLink>
-            </div>
+              </span>
+            </RouterLink>
           </template>
         </VirtualScroller>
       </div>
@@ -165,7 +285,8 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
 
 .search-bar-input {
   display: inline-block;
-  width: v-bind(elementWidth);
+  width: v-bind(computedWidth);
+  transition: width 0.1s ease-in;
 }
 .search-bar-overlay {
   --content-width: calc(var(--width) - 20px);
@@ -188,6 +309,16 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
   align-items: center;
   text-wrap: nowrap;
   max-width: var(--content-width);
+  padding: 2px 4px;
+  border-radius: 4x;
+  text-decoration: unset;
+
+  &.highlighted,
+  &:hover {
+    cursor: pointer;
+    background-color: var(--p-surface-200);
+    text-decoration: underline;
+  }
 }
 
 .search-result-text {

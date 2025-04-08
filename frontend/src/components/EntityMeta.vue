@@ -1,81 +1,107 @@
 <script setup lang="ts">
+import { computed, watch, ref, type Ref, onMounted } from "vue"
 import { type EntityDetails } from "@/singletons/ref-data"
 import Image from "./atoms/ImageAtom.vue"
-import Chip from "primevue/chip"
-import { getRorUrl } from "@/utils/url-utils"
+import { getRorUrl, getWikidataUrl } from "@/utils/url-utils"
 import { isDesktop } from "@/composables/useMediaQuery"
 import { getCountryLabel } from "@/utils/data-utils"
 import InfrastructureInfoBox from "@/components/InfrastructureInfoBox.vue"
 import EmitterInfoBox from "@/components/EmitterInfoBox.vue"
-
-interface IconLabel {
-  label: string
-  icon?: string
-  iconText?: string
-  link?: string
-}
+import ChipList, { type ChipConfig } from "@/components/atoms/ChipListAtom.vue"
+import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 
 const props = defineProps<{
   entity: EntityDetails
 }>()
 
-const logoWidth = "200px"
+const logoWidth = computed(() => (isDesktop.value ? "225px" : "125px"))
+const logoHeight = computed(() => (isDesktop.value ? "125px" : "125px"))
+const isInfrastructure = computed(() => props.entity.infrastructure != null)
+const rorIdentifier = computed(() => {
+  const ids = props.entity.identifiers.filter((id) => id.registry == "ror")
+  if (ids.length > 0) {
+    return ids[0].value
+  }
+  return null
+})
+const wikidataIdentifier = computed(() => {
+  const ids = props.entity.identifiers.filter((id) => id.registry == "wikidata")
+  if (ids.length > 0) {
+    return ids[0].value
+  }
+  return null
+})
 
-const iconLabels: Array<IconLabel> = []
-if (props.entity.country) {
-  iconLabels.push({
-    icon: "location-dot",
-    label: getCountryLabel(props.entity.country),
-  })
-}
+const hasLinks = computed(
+  () =>
+    (props.entity.website || rorIdentifier.value || wikidataIdentifier.value) !=
+    null,
+)
 
-if (props.entity.date_inception) {
-  iconLabels.push({
-    icon: "calendar",
-    label: `Since ${props.entity.date_inception.getFullYear()}`,
-  })
-}
+const headerChips: Ref<Array<ChipConfig>> = ref([])
+const bottomButtons: Ref<Array<any>> = ref([])
 
-if (props.entity.website) {
-  iconLabels.push({
-    icon: "arrow-up-right-from-square",
-    label: "Website",
-    link: props.entity.website,
-  })
-}
+watch(() => props.entity, loadChips)
+onMounted(() => loadChips())
 
-props.entity.identifiers
-  .filter((id) => id.registry == "ror")
-  .map((id) =>
-    iconLabels.push({
-      icon: "arrow-up-right-from-square",
-      iconText: "ROR ID:",
-      label: id.value,
-      link: getRorUrl(id.value),
-    }),
-  )
+function loadChips() {
+  if (props.entity.country) {
+    const countryName = getCountryLabel(props.entity.country)
+    const countryChip: ChipConfig = {
+      icon: "location-dot",
+      label: countryName,
+    }
+    const legalEntityDesc =
+      props.entity.infrastructure?.legal_entity_description
+    if (legalEntityDesc) {
+      countryChip.info = legalEntityDesc
+    }
+    headerChips.value.push(countryChip)
+  }
 
-// Infrastructure specific chips
-if (props.entity.infrastructure) {
-  if (props.entity.infrastructure.infra_finder_url) {
-    iconLabels.push({
-      icon: "arrow-up-right-from-square",
-      label: "InfraFinder",
-      link: props.entity.infrastructure.infra_finder_url,
+  if (props.entity.date_inception) {
+    headerChips.value.push({
+      icon: "calendar",
+      label: `Since ${props.entity.date_inception.getFullYear()}`,
     })
   }
-  if (props.entity.infrastructure.posi_url) {
-    iconLabels.push({
-      icon: "arrow-up-right-from-square",
-      label: "POSI",
-      link: props.entity.infrastructure.posi_url,
-    })
-  }
-  if (props.entity.infrastructure.is_scoss_awarded) {
-    iconLabels.push({
-      icon: "square-check",
-      label: "SCOSS awarded",
-    })
+
+  // Infrastructure specific chips
+  if (props.entity.infrastructure) {
+    if (props.entity.infrastructure.posi_url) {
+      bottomButtons.value.push({
+        // icon: "arrow-up-right-from-square",
+        label: "Committed to POSI",
+        link: props.entity.infrastructure.posi_url,
+      })
+    }
+    if (props.entity.infrastructure.infra_finder_url) {
+      bottomButtons.value.push({
+        // icon: "arrow-up-right-from-square",
+        label: "Included in InfraFinder",
+        link: props.entity.infrastructure.infra_finder_url,
+      })
+    }
+    if (
+      props.entity.infrastructure?.date_scoss_start &&
+      props.entity.infrastructure?.date_scoss_end
+    ) {
+      const dateStart =
+        props.entity.infrastructure.date_scoss_start.getFullYear()
+      const dateEnd = props.entity.infrastructure.date_scoss_end.getFullYear()
+      bottomButtons.value.push({
+        // icon: "square-check",
+        label: `SCOSS selected for ${dateStart}-${dateEnd}`,
+      })
+    }
+
+    if (props.entity.infrastructure.support_url) {
+      bottomButtons.value.push({
+        label: "SUPPORT",
+        link: props.entity.infrastructure.support_url,
+        inverse: true,
+      })
+    }
   }
 }
 
@@ -88,46 +114,58 @@ function breakdownDisclaimer(): boolean {
 
 <template>
   <div class="entity-meta" :class="{ desktop: isDesktop }">
-    <div>
-      <div v-if="isDesktop" class="entity-header-desktop">
-        <div>
+    <section class="entity-header">
+      <div class="entity-header__title">
+        <h1 class="entity-title">
+          {{ props.entity.name }}
+        </h1>
+        <ChipList
+          :chips="headerChips"
+          :center="!isDesktop"
+          :style="{ justifyContent: 'center', marginTop: '1rem' }"
+        />
+      </div>
+
+      <div
+        class="entity-header__grid"
+        :class="{ 'three-columns': hasLinks && !isInfrastructure }"
+      >
+        <div v-if="isDesktop || props.entity?.logo" class="entity-header__logo">
           <Image
             :src="props.entity?.logo"
             :width="logoWidth"
-            :height="'150px'"
+            :height="logoHeight"
             :center="true"
           />
         </div>
-        <div style="display: flex; flex-direction: column; gap: 1em">
-          <h1 class="entity-title">
-            <span>{{ props.entity.name }}</span>
-          </h1>
-          <div v-if="props.entity.wikipedia_extract">
+
+        <div class="entiy-header__desc">
+          <!--
+            Description (manual) takes precedence on automatically
+            fetched Wikipedia sumamry
+          -->
+          <div v-if="props.entity.description">
+            <p>
+              {{ props.entity.description }}
+            </p>
+          </div>
+          <div v-else-if="props.entity.wikipedia_extract">
             <p>
               {{ props.entity.wikipedia_extract }}
             </p>
             <p>
               <span class="wiki-disclaimer">
                 From
-                <a
-                  :href="props.entity.wikipedia_url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Wikipedia</a
-                >
+                <ExternalLinkAtom
+                  :label="'Wikipedia'"
+                  :href="props.entity.wikipedia_url!"
+                />
                 licensed
-                <a
-                  href="https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >CC-BY-SA</a
-                >
+                <ExternalLinkAtom
+                  :label="'CC-BY-SA'"
+                  :href="'https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License'"
+                />
               </span>
-            </p>
-          </div>
-          <div v-else-if="props.entity.description">
-            <p>
-              {{ props.entity.description }}
             </p>
           </div>
           <div v-else>
@@ -135,137 +173,188 @@ function breakdownDisclaimer(): boolean {
             {{ props.entity.name }} from 2XXX to 2XXX.
           </div>
         </div>
-      </div>
 
-      <div v-else class="entity-header-mobile">
         <div
-          style="
-            display: flex;
-            gap: 2em;
-            margin-bottom: 1em;
-            place-items: center;
-          "
+          v-if="props.entity.infrastructure == null && hasLinks"
+          class="entity-header__links"
         >
-          <Image
-            :src="props.entity?.logo"
-            :width="'60px'"
-            :height="'50px'"
-            :center="true"
-          />
-          <h1 class="entity-title">
-            <span>{{ props.entity.name }}</span>
-          </h1>
-        </div>
-        <div v-if="props.entity.wikipedia_extract" class="entity-description">
-          <p>
-            {{ props.entity.wikipedia_extract }}
-          </p>
-          <p>
-            <span class="wiki-disclaimer">
-              From
-              <a
-                :href="props.entity.wikipedia_url"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Wikipedia</a
-              >
-              licensed
-              <a
-                href="https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License"
-                target="_blank"
-                rel="noopener noreferrer"
-                >CC-BY-SA</a
-              >
-            </span>
-          </p>
-        </div>
-        <div v-else>
-          Open Access list of financial support made or received by
-          {{ props.entity.name }} from 2XXX to 2XXX.
-        </div>
-      </div>
-
-      <div class="icon-label-list">
-        <div v-for="(iconLabel, index) of iconLabels" :key="index">
-          <a
-            v-if="iconLabel.link"
-            :href="iconLabel.link"
-            target="_blank"
-            rel="noopener noreferrer"
+          <ExternalLinkAtom
+            v-if="props.entity.website"
+            :href="props.entity.website"
+            class="entity-icon-link"
           >
-            <Chip
-              class="chip-link"
-              :label="iconLabel.label"
-              :dt="{ gap: '0.8em', padding: { y: '0.6em', x: '1em' } }"
-              pt:root:class="chip-link"
-              pt:label:class="chip-link-label"
-            >
-              <template #icon>
-                <div class="chip-icon-group">
-                  <font-awesome-icon
-                    v-if="iconLabel.icon"
-                    class="icon"
-                    :icon="iconLabel.icon"
-                  />
-                  <span v-if="iconLabel.iconText">{{
-                    iconLabel.iconText
-                  }}</span>
-                </div>
-              </template>
-            </Chip>
-          </a>
-          <Chip
-            v-else
-            :label="iconLabel.label"
-            :dt="{ gap: '0.8em', padding: { y: '0.6em', x: '1em' } }"
-          >
-            <template #icon>
-              <div class="chip-icon-group">
-                <font-awesome-icon
-                  v-if="iconLabel.icon"
-                  class="icon"
-                  :icon="iconLabel.icon"
-                />
-                <span v-if="iconLabel.iconText">{{ iconLabel.iconText }}</span>
-              </div>
+            <template #default>
+              <font-awesome-icon class="fa-icon" icon="globe" />
+              Website
             </template>
-          </Chip>
+          </ExternalLinkAtom>
+          <ExternalLinkAtom
+            v-if="rorIdentifier"
+            :href="getRorUrl(rorIdentifier)"
+            class="entity-icon-link"
+          >
+            <template #default>
+              <img alt="ROR logo" src="@/assets/img/ror_icon_rgb.svg" />
+              ROR
+            </template>
+          </ExternalLinkAtom>
+          <ExternalLinkAtom
+            v-if="wikidataIdentifier"
+            :href="getWikidataUrl(wikidataIdentifier)"
+            class="entity-icon-link"
+          >
+            <template #default>
+              <img alt="Wikidata logo" src="@/assets/img/wikidata_logo.png" />
+              Wikidata
+            </template>
+          </ExternalLinkAtom>
         </div>
       </div>
-    </div>
-    <InfrastructureInfoBox
-      v-if="props.entity.infrastructure"
-      :data="props.entity as EntityDetails"
-      style="margin: 1em 0"
-      :full-width="true"
-      :breakdown-disclaimer="breakdownDisclaimer()"
-    />
-    <EmitterInfoBox v-else />
+      <div v-if="bottomButtons.length > 0" class="entity-header__buttons">
+        <div v-for="(button, index) of bottomButtons" :key="index">
+          <ExternalLinkAtom
+            v-if="button.link"
+            class="special-button"
+            :class="{ inverse: button.inverse }"
+            :href="button.link"
+          >
+            <template #default>
+              {{ button.label }}
+              <font-awesome-icon
+                v-if="button.icon"
+                :icon="button.icon"
+                class="fa-icon"
+              />
+            </template>
+          </ExternalLinkAtom>
+          <div v-else class="special-button">
+            {{ button.label }}
+            <font-awesome-icon
+              v-if="button.icon"
+              :icon="button.icon"
+              class="fa-icon"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="data-info">
+      <InfrastructureInfoBox
+        v-if="props.entity.infrastructure"
+        :data="props.entity"
+        :full-width="false"
+        :breakdown-disclaimer="breakdownDisclaimer()"
+      />
+      <EmitterInfoBox v-else />
+    </section>
   </div>
 </template>
 
 <style scoped>
-.entity-meta.desktop {
-  display: grid;
-  grid-template-columns: 1fr 350px;
-  column-gap: 1em;
+.entity-meta > * {
+  margin-bottom: min(2em, 4vh);
 }
 
-.entity-header {
+.entity-meta.desktop {
+  & .entity-header__grid {
+    --first-col: v-bind("logoWidth");
+    grid-template-columns: calc(var(--first-col) + 50px) 1fr;
+    justify-items: initial;
+    gap: 2em;
+
+    & > div:first-child {
+      margin: auto;
+    }
+  }
+
+  & .entity-header__logo {
+    grid-column: 1;
+  }
+
+  & .entity-header__desc {
+    grid-column: 2;
+  }
+
+  & .entity-header__links {
+    grid-column: 3;
+    grid-row: 1;
+    flex-direction: column;
+    width: 150px;
+  }
+
+  & .entity-icon-link {
+    width: 100%;
+    padding: 0.75rem 1.25rem;
+
+    & .icon,
+    & img {
+      margin-right: 0.2rem;
+    }
+  }
+
+  & .entity-header__grid.three-columns {
+    grid-template-columns: calc(var(--first-col) + 50px) 1fr 200px;
+  }
+}
+
+.entity-header__logo {
   text-align: center;
 }
 
-.entity-header-desktop {
-  --first-col: v-bind("logoWidth");
-  display: grid;
-  grid-template-columns: calc(var(--first-col) + 50px) 1fr;
-  gap: 1em;
-  padding: 1em;
+.data-info {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
 
-  & > div:first-child {
-    margin: auto;
-    padding-top: 0.5em;
+  /*
+  width: fit-content;
+
+  & > * {
+    width: min(90vw, 400px);
   }
+  */
+}
+
+.entity-header__grid {
+  display: grid;
+  grid-template-columns: 100%;
+  justify-items: center;
+  align-items: center;
+  gap: 1em;
+  column-gap: 3em;
+  margin: 1em 0;
+}
+
+.entity-header__title {
+  position: relative;
+  text-align: center;
+  flex-direction: column;
+  gap: 1em;
+  z-index: 2;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(
+      255,
+      255,
+      255,
+      0.8
+    ); /* Black with 50% transparency */
+    z-index: -1; /* Ensure overlay is on top of the image */
+  }
+}
+
+.entity-title {
+  font-size: 3rem;
+  line-height: 1.25;
 }
 
 .wiki-disclaimer {
@@ -277,18 +366,91 @@ function breakdownDisclaimer(): boolean {
   }
 }
 
-.icon-label-list {
+.entity-header__links {
   display: flex;
-  flex-wrap: wrap;
   flex-direction: row;
-  row-gap: 1em;
-  column-gap: 2em;
-  padding: 1em;
+  width: 100%;
+  column-gap: 1.5rem;
+  row-gap: 0.25rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: auto;
+  padding: 1rem 0;
+  border-radius: 15px;
+  box-shadow:
+    rgba(0, 0, 0, 0.1) 0px 1px 3px 0px,
+    rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
 }
 
-.chip-icon-group {
-  display: inline-flex;
-  gap: 0.5em;
+.entity-icon-link {
+  display: flex;
+  flex-direction: row;
+  gap: 0.65rem;
   align-items: center;
+  text-decoration: unset;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+
+  padding: 0.2rem 0.25rem;
+  &:hover {
+    background-color: var(--p-surface-100);
+    text-decoration: underline;
+  }
+
+  & img {
+    width: 3rem;
+  }
+
+  & .fa-icon {
+    width: 3rem;
+    font-size: 2.25rem;
+    color: var(--p-primary-700);
+  }
+}
+
+.entity-header__buttons {
+  padding: 0.7rem 0;
+  display: flex;
+  gap: min(3rem, 5vw);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.special-button {
+  --color-1: var(--p-primary-600);
+  --color-2: var(--p-primary-700);
+  --color-invert: white;
+  display: inline-block;
+  column-gap: 1em;
+  align-items: baseline;
+  padding: 0.6rem 1.25rem;
+  border: 2px solid var(--color-1);
+  background-color: var(--color-1);
+  color: var(--color-invert);
+  border-radius: 4px;
+  text-decoration: unset;
+  transition: all 0.2s ease-out;
+
+  & > .fa-icon {
+    margin-left: 0.75rem;
+  }
+
+  &.inverse {
+    background-color: var(--color-invert);
+    color: var(--color-2);
+    font-weight: 700;
+  }
+}
+
+a.special-button:hover,
+a.special-button:focus-visible {
+  background-color: var(--color-invert);
+  color: var(--color-2);
+
+  &.inverse {
+    background-color: var(--color-1);
+    color: var(--color-invert);
+  }
 }
 </style>

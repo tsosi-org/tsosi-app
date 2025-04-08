@@ -3,6 +3,7 @@ import {
   initDateWithPrecision,
   initDateProperty,
   type DateWithPrecision,
+  shuffleArray,
 } from "@/utils/data-utils"
 
 interface ApiData {
@@ -15,7 +16,7 @@ interface Identifier extends ApiData {
   registry_url?: string
 }
 
-export type TransfertEntityType = "emitter" | "recipient" | "agent"
+export type TransferEntityType = "emitter" | "recipient" | "agent"
 
 export interface Country extends ApiData {
   capital: string
@@ -31,8 +32,10 @@ export interface Country extends ApiData {
 export interface InfrastructureDetails extends ApiData {
   infra_finder_url?: string
   posi_url?: string
-  is_scoss_awarded: boolean
-  is_partner: boolean
+  support_url?: string
+  date_scoss_start?: Date
+  date_scoss_end?: Date
+  legal_entity_description?: string
   hide_amount: boolean
   date_data_update?: Date
   date_data_start?: Date
@@ -61,7 +64,7 @@ export interface EntityDetails extends Entity {
   is_agent: boolean
 }
 
-export interface Transfert extends ApiData {
+export interface Transfer extends ApiData {
   id: string
   emitter_id: string
   emitter?: DeepReadonly<Entity>
@@ -77,7 +80,7 @@ export interface Transfert extends ApiData {
   source: string
 }
 
-export interface TransfertDetails extends Transfert {
+export interface TransferDetails extends Transfer {
   date_agreement: DateWithPrecision | null
   date_invoice: DateWithPrecision | null
   date_payment: DateWithPrecision | null
@@ -103,8 +106,9 @@ export type RefData = {
   countries: DeepReadonly<Record<string, Country>>
   entities: DeepReadonly<Record<string, Entity>>
   currencies: DeepReadonly<Record<string, Currency>>
-  transferts?: Transfert[]
+  transfers?: Transfer[]
   initialized: boolean
+  infrastructures: DeepReadonly<Entity>[]
 }
 
 export interface PaginatedResults<T> {
@@ -125,6 +129,7 @@ const refData: RefData = {
   entities: {},
   currencies: {},
   initialized: false,
+  infrastructures: [],
 }
 
 /**
@@ -138,6 +143,7 @@ async function _initRefData(): Promise<boolean> {
     getCountries(),
     getCurrencies(),
   ])
+  getInfrastructures()
   refData.initialized = true
   const correctlyLoaded = !promiseResults.some((res) => res == null)
   return correctlyLoaded
@@ -182,7 +188,7 @@ export async function getEntities(): Promise<DeepReadonly<
   if (refData.initialized) {
     return refData.entities
   }
-  const result = await get("entities/summary/?format=json", true)
+  const result = await get("entities/all/", true)
   if (result.error || !result.data) {
     return null
   }
@@ -208,6 +214,8 @@ export async function getEntityDetails(
     initDateProperty(val, "date_inception")
     if (val.infrastructure) {
       for (const property of [
+        "date_scoss_start",
+        "date_scoss_end",
         "date_data_start",
         "date_data_end",
         "date_data_update",
@@ -220,50 +228,50 @@ export async function getEntityDetails(
   return null
 }
 
-function processTransfertEntities<T extends Transfert>(transfert: T) {
-  transfert.emitter = refData.entities[transfert.emitter_id]
-  transfert.recipient = refData.entities[transfert.recipient_id]
-  transfert.agent = transfert.agent_id
-    ? refData.entities[transfert.agent_id]
+function processTransferEntities<T extends Transfer>(transfer: T) {
+  transfer.emitter = refData.entities[transfer.emitter_id]
+  transfer.recipient = refData.entities[transfer.recipient_id]
+  transfer.agent = transfer.agent_id
+    ? refData.entities[transfer.agent_id]
     : undefined
-  initDateWithPrecision(transfert.date_clc)
+  initDateWithPrecision(transfer.date_clc)
 }
 
 /**
- * Get transfert list from the API and process the result data:
+ * Get transfer list from the API and process the result data:
  *  - Process entities: fill emitter, recipient and agent with the refData's entities.
  *  - Process date_clc: create date object from raw string.
  * @param entity_id
  * @returns
  */
-export async function getTransferts(
+export async function getTransfers(
   entityId?: string,
-): Promise<Transfert[] | null> {
+): Promise<Transfer[] | null> {
   const queryParams = new URLSearchParams({})
   if (entityId) {
     queryParams.set("entity_id", entityId)
   }
-  const result = await get("transferts/all/", true, queryParams)
+  const result = await get("transfers/all/", true, queryParams)
   if (result.error || !result.data) {
     return null
   }
-  const data = result.data as Transfert[]
-  for (const transfert of data) {
-    processTransfertEntities(transfert)
+  const data = result.data as Transfer[]
+  for (const transfer of data) {
+    processTransferEntities(transfer)
   }
   return data
 }
 
-export async function getTransfertDetails(
-  transfertId: string,
-): Promise<TransfertDetails | null> {
-  const url = `transferts/${transfertId}`
+export async function getTransferDetails(
+  transferId: string,
+): Promise<TransferDetails | null> {
+  const url = `transfers/${transferId}`
   const result = await get(url, true)
   if (result.error) {
     return null
   }
-  const transfert = result.data as TransfertDetails
-  processTransfertEntities(transfert)
+  const transfer = result.data as TransferDetails
+  processTransferEntities(transfer)
   for (const f of [
     "date_agreement",
     "date_payment",
@@ -271,9 +279,9 @@ export async function getTransfertDetails(
     "date_start",
     "date_end",
   ]) {
-    initDateWithPrecision(transfert[f])
+    initDateWithPrecision(transfer[f])
   }
-  return transfert
+  return transfer
 }
 
 export async function getCurrencies(): Promise<DeepReadonly<
@@ -317,8 +325,19 @@ export async function getEmittersForEntity(
   return result.data as Entity[]
 }
 
+/**
+ * The infrastructures order is random, but we keep the order throughout the
+ * navigation to avoid strange effects.
+ * @returns
+ */
 export function getInfrastructures(): DeepReadonly<Entity>[] {
-  return Object.values(refData.entities).filter((e) => e.is_recipient)
+  if (!refData.initialized) {
+    refData.infrastructures = Object.values(refData.entities).filter(
+      (e) => e.is_recipient,
+    )
+    shuffleArray(refData.infrastructures)
+  }
+  return refData.infrastructures
 }
 
 export function getEmitters(): DeepReadonly<Entity>[] {

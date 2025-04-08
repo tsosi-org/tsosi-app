@@ -16,7 +16,7 @@ TSOSI back-end serves the following purposes:
 
 * `models` - It contains the declaration of all the database models, using Django ORM.
 
-* `data` - It contains all the application logic to prepare, ingest, update and enrich the transferts data.
+* `data` - It contains all the application logic to prepare, ingest, update and enrich the transfers data.
 
 
 ## Data 
@@ -43,11 +43,11 @@ The output of this preparation is ready to be ingested in our database.
 
 ### [Data ingestion](data/ingestion.py)
 
-This contains the code to ingest a prepared dataset of transferts.
+This contains the code to ingest a prepared dataset of transfers.
 
 * The ingestion process tries to match the given entities with existing ones, using their name, country and PIDs.
 
-* It will then create the new entities, the transferts, the provided identifiers and all the matching data.
+* It will then create the new entities, the transfers, the provided identifiers and all the matching data.
 
 * Everything is encapsulated in the function ̀`ingest_new_records`.
 
@@ -68,8 +68,8 @@ This file is dedicated to the task of merging similar entities.
 
 ### [Currencies](data/currencies/currency_rates.py)
 
-This contains the code to fetch the rates of the supported currencies and to convert the transfert amounts in those currencies.
+This contains the code to fetch the rates of the supported currencies and to convert the transfer amounts in those currencies.
 
 * We rely on the [BIS data portal](https://data.bis.org) to fetch the historical currency rates 
 
-* We only fetch the rates for the timeline spanned by the transferts in the database and for the distinct currencies present in the transfert table.   
+* We only fetch the rates for the timeline spanned by the transfers in the database and for the distinct currencies present in the transfer table.   

@@ -51,21 +51,43 @@ function onDrawerToggle(show: boolean) {
   >
     <!-- Large screen header -->
     <nav v-if="isDesktop" class="container">
-      <RouterLink style="line-height: 0" to="/" @click="closeDrawers">
-        <img class="logo" src="@/assets/img/logo_white.svg" />
-      </RouterLink>
-      <div v-show="bigHeader" class="header-citation">
-        Transparency to Sustain Open Science Infrastructure
+      <div class="logo-container" style="width: 330px">
+        <RouterLink
+          style="line-height: 0; display: block; width: fit-content"
+          to="/"
+          @click="closeDrawers"
+        >
+          <img class="logo" src="@/assets/img/logo_white.svg" />
+        </RouterLink>
       </div>
-      <NavigationListAtom
-        v-show="!bigHeader"
-        :color="$dt('neutral.50').value"
-        :header="true"
-        font-size="20px"
-        class="d-flex"
-        style="gap: 0"
-      />
-      <SearchBar v-show="!bigHeader" width="330px" />
+
+      <div v-show="bigHeader" class="header-citation">
+        <h2>Transparency to Sustain Open Science Infrastructure</h2>
+      </div>
+      <div
+        style="
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 1.5rem;
+          padding-right: 3rem;
+        "
+      >
+        <SearchBar
+          v-show="!bigHeader"
+          width="330px"
+          :as-growing-button="true"
+        />
+
+        <NavigationListAtom
+          v-show="!bigHeader"
+          :color="$dt('neutral.50').value"
+          :header="true"
+          font-size="20px"
+          class="d-flex"
+          style="gap: 0"
+        />
+      </div>
     </nav>
 
     <!-- Small screens header -->
@@ -162,7 +184,7 @@ header {
   height: var(--header-height);
   overflow: hidden;
   transform: translate(0, -100%);
-  transition: all 0.3s ease-in-out;
+  transition: all 0.2s ease-in-out;
 
   &.header-visible {
     transform: unset;
@@ -182,10 +204,6 @@ header.home {
     height: min(var(--content-height), 50px);
   }
 
-  &.desktop .logo {
-    height: min(var(--content-height), 100px);
-  }
-
   & nav {
     display: grid;
     grid-template-columns: 1fr;
@@ -195,17 +213,28 @@ header.home {
     margin: auto;
     height: 100%;
   }
-  &.desktop nav {
-    font-size: 2.25rem;
-    grid-template-columns: 40% 1fr;
+
+  &.desktop {
+    .logo {
+      height: min(var(--content-height), 100px);
+      margin-left: 0;
+    }
+
+    nav {
+      font-size: 2.25rem;
+      grid-template-columns: 30% 1fr;
+      display: flex;
+    }
   }
 }
 
-.header-citation {
+.header-citation,
+.header-citation h2 {
   font-style: italic;
   color: white;
   font-weight: 500;
   text-align: center;
+  font-size: inherit;
 }
 
 .desktop .header-citation {

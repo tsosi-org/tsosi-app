@@ -5,9 +5,11 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
 
 <template>
   <div>
-    Partner infrastructures:
+    <p>Partner infrastructures:</p>
     <InfrastructureList />
-    <RouterLink to="/faq#partner-definition">See our FAQ</RouterLink>
-    to know more about partner infrastructures.
+    <p>
+      <RouterLink to="/pages/faq#partner-definition">See our FAQ</RouterLink>
+      to know more about partner infrastructures.
+    </p>
   </div>
 </template>

@@ -222,7 +222,7 @@ def deploy(
 
     # Restart services
     ssh_execute(server, "sudo systemctl restart tsosi_gunicorn")
-    ssh_execute(server, "sudo systemctl restart nginx")
+    ssh_execute(server, "sudo systemctl reload nginx")
     if restart_celery:
         ssh_execute(server, "sudo systemctl restart tsosi_celery")
         ssh_execute(server, "sudo systemctl restart tsosi_celery_beat")

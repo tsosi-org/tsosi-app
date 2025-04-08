@@ -8,7 +8,7 @@ from .identifier import (
     Registry,
 )
 from .source import DataLoadSource, DataSource
-from .transfert import Transfert, TransfertEntityMatching
+from .transfer import Transfer, TransferEntityMatching
 
 
 def empty_db():
@@ -16,7 +16,7 @@ def empty_db():
     Delete all rows of all TSOSI models.
     """
     print("Emptying database...")
-    Transfert.objects.all().delete()
+    Transfer.objects.all().delete()
     Identifier.objects.all().delete()
     Entity.objects.all().delete()
     Registry.objects.all().delete()

@@ -1,11 +1,14 @@
-import "./assets/css/main.css"
+import "@/assets/css/main.css"
 
 import { createApp } from "vue"
-import App from "./App.vue"
-import router from "./router"
+import App from "@/App.vue"
+import router from "@/router"
 import PrimeVue from "primevue/config"
 import Aura from "@primevue/themes/aura"
 import { definePreset } from "@primevue/themes"
+import DialogService from "primevue/dialogservice"
+// @ts-expect-error No available types for vue-matomo
+import VueMatomo from "vue-matomo"
 import { library } from "@fortawesome/fontawesome-svg-core"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 import {
@@ -28,6 +31,7 @@ import {
   faXmark,
   faCheck,
   faCalendar,
+  faGlobe,
 } from "@fortawesome/free-solid-svg-icons"
 
 const app = createApp(App)
@@ -71,6 +75,16 @@ const MyPreset = definePreset(Aura, {
           color: "{primary.900}",
         },
       },
+      tabpanel: {
+        padding: "min(1.125rem, 5vh) min(0.875rem, 1vw)",
+        color: "var(--p-neutral-950)",
+      },
+    },
+    dialog: {
+      color: "var(--p-neutral-950)",
+    },
+    inputtext: {
+      paddingX: "0",
     },
   },
 })
@@ -80,9 +94,13 @@ app.use(PrimeVue, {
     preset: MyPreset,
     options: {
       darkModeSelector: false,
+      // The cssLayer enables primevue styling to be applied aftef
+      // our custom CSS.
+      cssLayer: true,
     },
   },
 })
+app.use(DialogService)
 
 // Registering used Font Awesome icons
 const usedIcons = [
@@ -105,12 +123,26 @@ const usedIcons = [
   faXmark,
   faCheck,
   faCalendar,
+  faGlobe,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)
 
 app.use(router)
 
+// Matomo plugin for Vue.js
+const hasMatomoInfo =
+  import.meta.env.VITE_MATOMO_HOST && import.meta.env.VITE_MATOMO_SITE_ID
+if (hasMatomoInfo) {
+  app.use(VueMatomo, {
+    host: import.meta.env.VITE_MATOMO_HOST,
+    siteId: import.meta.env.VITE_MATOMO_SITE_ID,
+    router: router,
+    // We need cookies to uniquely identify users
+    disableCookies: false,
+    preInitActions: [["trackPageView"], ["HeatmapSessionRecording::disable"]],
+  })
+}
 app.mount("#app")
 
 export const appContext = app._context

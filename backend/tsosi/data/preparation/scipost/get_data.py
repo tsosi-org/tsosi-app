@@ -1,10 +1,5 @@
-import json
-import re
-from datetime import date
-
 import pandas as pd
 import requests
-from django.core.exceptions import ImproperlyConfigured
 from tsosi.app_settings import app_settings
 
 SCIPOST_TOKEN_URL = "https://scipost.org/o/token/"
@@ -113,7 +108,48 @@ def get_scipost_raw_data(
     return df
 
 
+def filter_transfers(df: pd.DataFrame):
+    mask = (df["status"].isin(["paid"])) & (
+        ~df["payment_date"].isna() | ~df["invoice_date"].isna()
+    )
+    filtered = df[mask].reset_index(drop=True)
+    return filtered
+
+
 def pre_process_data(df: pd.DataFrame):
-    data = df.copy()
+    data = filter_transfers(df)
+    # Columns manipulation
+    subsidies = pd.json_normalize(data["subsidy"]).add_prefix("subsidy_")
+    data = pd.concat([data.drop(columns=["subsidy"]), subsidies], axis=1)
+    data.rename(
+        columns={
+            "subsidy_organization.name": "emitter",
+            "subsidy_organization.orgtype": "emitter_type",
+            "subsidy_organization.country": "emitter_country",
+            "subsidy_organization.ror_id": "emitter_ror_id",
+            "subsidy_subsidy_type": "subsidy_type",
+            "subsidy_amount_publicly_shown": "amount_publicly_shown",
+        },
+        inplace=True,
+    )
+
+    # Actual processing
+    data["subsidy_url"] = "https://scipost.org" + data["subsidy_url"]
     data["hide_amount"] = ~data["amount_publicly_shown"]
-    return data
+
+    cols_of_interest = [
+        "amount",
+        "invoice_date",
+        "payment_date",
+        "emitter",
+        "emitter_type",
+        "emitter_country",
+        "emitter_ror_id",
+        "subsidy_description",
+        "subsidy_url",
+        "subsidy_type",
+        "hide_amount",
+        "subsidy_date_from",
+        "subsidy_date_until",
+    ]
+    return data[cols_of_interest].copy()

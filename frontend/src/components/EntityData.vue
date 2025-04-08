@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import {
   getEmittersForEntity,
-  getTransferts,
+  getTransfers,
   type EntityDetails,
   type Entity,
-  type Transfert,
-  type TransfertEntityType,
+  type Transfer,
+  type TransferEntityType,
 } from "@/singletons/ref-data"
-import { ref, type Ref, onMounted, watch, computed } from "vue"
+import { ref, type Ref, onMounted, watch, computed, useTemplateRef } from "vue"
 import EntityHistogram from "@/components/EntityHistogram.vue"
 import Table, { type TableColumnProps } from "@/components/TableComponent.vue"
-import { getEntityBaseUrl, getTransfertBaseUrl } from "@/utils/url-utils"
+import { getEntityBaseUrl, getTransferBaseUrl } from "@/utils/url-utils"
 import { selectedCurrency } from "@/singletons/currencyStore"
 import type { ButtonProps } from "@/components/atoms/ButtonAtom.vue"
-import { fillTransfertAmountCurrency } from "@/utils/data-utils"
+import { fillTransferAmountCurrency } from "@/utils/data-utils"
 import Tabs from "primevue/tabs"
 import TabList from "primevue/tablist"
 import Tab from "primevue/tab"
@@ -25,11 +25,11 @@ const props = defineProps<{
   entity: EntityDetails
 }>()
 
-const transferts: Ref<Record<TransfertEntityType, Transfert[]> | null> =
-  ref(null)
+const transfers: Ref<Record<TransferEntityType, Transfer[]> | null> = ref(null)
 const showAmount: Ref<boolean> = ref(true)
 // Tabs
 const activeTab = ref("0")
+const tabs = useTemplateRef("entity-tabs")
 // This ref is used to trigger chart data fetching only when the tab is
 // selected
 const chartTabTriggered = ref(false)
@@ -37,17 +37,17 @@ const emittersData: Ref<Entity[]> = ref([])
 const mapDataLoaded = ref(false)
 
 onMounted(async () => {
-  updateTransferts()
+  updateTransfers()
 })
 
 watch(selectedCurrency, () => {
-  if (!transferts.value) {
+  if (!transfers.value) {
     return
   }
-  const updatedTransferts = transferts.value
-  for (const key in updatedTransferts) {
-    updatedTransferts[key as TransfertEntityType].forEach((t) =>
-      fillTransfertAmountCurrency(
+  const updatedTransfers = transfers.value
+  for (const key in updatedTransfers) {
+    updatedTransfers[key as TransferEntityType].forEach((t) =>
+      fillTransferAmountCurrency(
         t,
         selectedCurrency.value.id,
         amountColumn,
@@ -57,52 +57,61 @@ watch(selectedCurrency, () => {
   }
 })
 watch(activeTab, () => {
-  if (activeTab.value == "1") {
+  if (activeTab.value == "1" && chartTabTriggered.value !== true) {
     chartTabTriggered.value = true
   }
 })
 watch(chartTabTriggered, () => {
   if (chartTabTriggered.value === true) {
+    // Scroll the tab panel back to top for the first
+    if (tabs.value != null) {
+      // @ts-expect-error PrimeVue component declaration omits basic
+      // VueJS attributes..
+      const tabPanelEl: HTMLElement = tabs.value.$el
+      if (tabPanelEl.getBoundingClientRect().top < 0) {
+        tabPanelEl.scrollIntoView({ behavior: "instant" })
+      }
+    }
     updateMapData()
   }
 })
 
-async function updateTransferts() {
-  const rawTransferts = await getTransferts(props.entity.id)
-  if (!rawTransferts) {
+async function updateTransfers() {
+  const rawTransfers = await getTransfers(props.entity.id)
+  if (!rawTransfers) {
     return
   }
 
-  const sortedTransferts: { [key in TransfertEntityType]: Transfert[] } = {
+  const sortedTransfers: { [key in TransferEntityType]: Transfer[] } = {
     emitter: [],
     recipient: [],
     agent: [],
   }
-  let transfertWithAmount = false
-  for (const transfert of rawTransferts) {
-    fillTransfertAmountCurrency(
-      transfert,
+  let transferWithAmount = false
+  for (const transfer of rawTransfers) {
+    fillTransferAmountCurrency(
+      transfer,
       selectedCurrency.value.id,
       amountColumn,
       currencyColumn,
     )
-    if (transfert.amount) {
-      transfertWithAmount = true
+    if (transfer.amount) {
+      transferWithAmount = true
     }
-    if (transfert.emitter_id == props.entity.id) {
-      sortedTransferts["emitter"].push(transfert)
-    } else if (transfert.recipient_id == props.entity.id) {
-      sortedTransferts["recipient"].push(transfert)
-    } else if (transfert.agent_id == props.entity.id) {
-      sortedTransferts["agent"].push(transfert)
+    if (transfer.emitter_id == props.entity.id) {
+      sortedTransfers["emitter"].push(transfer)
+    } else if (transfer.recipient_id == props.entity.id) {
+      sortedTransfers["recipient"].push(transfer)
+    } else if (transfer.agent_id == props.entity.id) {
+      sortedTransfers["agent"].push(transfer)
     } else {
       console.warn(
-        `Following transfert does not involve entity ${props.entity.id}: ${transfert}`,
+        `Following transfer does not involve entity ${props.entity.id}: ${transfer}`,
       )
     }
   }
-  showAmount.value = transfertWithAmount
-  transferts.value = sortedTransferts
+  showAmount.value = transferWithAmount
+  transfers.value = sortedTransfers
 }
 
 const currencyColumn = "__currency"
@@ -160,7 +169,7 @@ const baseTableColumns: TableColumnProps[] = [
       suffixType: "field",
     },
     sortable: true,
-    info: "When a transfert is done through another entity like a library consortia, it appears in this column.",
+    info: "When a transfer is done through another entity like a library consortia, it appears in this column.",
   },
   {
     id: "amount",
@@ -174,18 +183,19 @@ const baseTableColumns: TableColumnProps[] = [
     title: "Currency",
     field: currencyColumn,
     type: "string",
+    currencySelector: true,
   },
 ]
 
 /**
- * Adapt the transfert table columns according to parameters and the data to
+ * Adapt the transfer table columns according to parameters and the data to
  * display.
  * @param showAmount
  * @param removedColumns
  */
 function getTableColumns(
   showAmount: boolean,
-  transferts: Transfert[],
+  transfers: Transfer[],
   removedColumns: string[] = [],
 ): TableColumnProps[] {
   let columns = baseTableColumns.filter(
@@ -194,7 +204,7 @@ function getTableColumns(
   if (!showAmount) {
     columns = columns.filter((col) => !["amount", "currency"].includes(col.id))
   }
-  if (transferts.every((t) => t.agent == null)) {
+  if (transfers.every((t) => t.agent == null)) {
     columns = columns.filter((col) => col.id != "agent")
   }
   return columns
@@ -202,86 +212,60 @@ function getTableColumns(
 
 const buttons: Array<ButtonProps> = [
   {
-    id: "transfertDetails",
+    id: "transferDetails",
     icon: "magnifying-glass",
     type: "pageLink",
     linkConfig: {
-      base: getTransfertBaseUrl(),
+      base: getTransferBaseUrl(),
       suffix: "id",
       suffixType: "field",
     },
   },
 ]
 
+// Config for the supporter transfer table
 const exportString = `TSOSI_${props.entity.name.replace(/\s+/g, "_")}`
-const emitterTableProps = computed(() => {
-  if (!transferts.value?.emitter.length) {
+const supporterTableProps = computed(() => {
+  if (!transfers.value?.emitter.length && !transfers.value?.agent.length) {
     return null
+  }
+  const toRemoveCols = []
+  const supporterData = [...transfers.value.emitter, ...transfers.value.agent]
+  // If there are no transfers as an agent, remove the emitterCountry column to
+  // lighten the layout
+  if (!transfers.value.agent?.length) {
+    toRemoveCols.push("emitterCountry")
   }
   return {
     id: `${props.entity.id}-emitter`,
-    data: transferts.value.emitter,
-    columns: getTableColumns(showAmount.value, transferts.value.emitter, [
-      "emitter",
-      "emitterCountry",
-    ]),
+    data: supporterData,
+    columns: getTableColumns(showAmount.value, supporterData, toRemoveCols),
     defaultSort: {
       sortField: "date_clc",
       sortOrder: -1,
     },
-    header: {
-      title: "Transferts emitted",
-    },
     rowUniqueId: "id",
-    currencySelector: showAmount.value,
     buttons: buttons,
     exportTitle: exportString,
   }
 })
 
+// Config for the infrastructure transfer table
 const recipientTableProps = computed(() => {
-  if (!transferts.value?.recipient.length) {
+  if (!transfers.value?.recipient.length) {
     return null
   }
   return {
     id: `${props.entity.id}-recipient`,
-    data: transferts.value.recipient,
-    columns: getTableColumns(showAmount.value, transferts.value.recipient, [
+    data: transfers.value.recipient,
+    columns: getTableColumns(showAmount.value, transfers.value.recipient, [
       "recipient",
     ]),
     defaultSort: {
       sortField: "date_clc",
       sortOrder: -1,
     },
-    header: {
-      title: "Transferts received",
-    },
     rowUniqueId: "id",
-    currencySelector: showAmount.value,
-    buttons: buttons,
-    exportTitle: exportString,
-  }
-})
-
-const agentTableProps = computed(() => {
-  if (!transferts.value?.agent.length) {
-    return null
-  }
-  return {
-    id: `${props.entity.id}-agent`,
-    data: transferts.value.agent,
-    columns: getTableColumns(showAmount.value, transferts.value.agent, [
-      "agent",
-    ]),
-    defaultSort: {
-      sortField: "date_clc",
-      sortOrder: -1,
-    },
-    header: {
-      title: "Transferts as an intermediary",
-    },
-    rowUniqueId: "id",
-    currencySelector: showAmount.value,
     buttons: buttons,
     exportTitle: exportString,
   }
@@ -292,13 +276,11 @@ const skeletonTableProps = computed(() => {
     id: `${props.entity.id}-skeleton-table`,
     data: new Array(20).fill({ field: "dummy" }),
     columns: getTableColumns(showAmount.value, []),
-    header: {
-      title: "Transferts",
-    },
     rowUniqueId: "id",
     skeleton: true,
     exportTitle: exportString,
     hideCount: true,
+    disableExport: true,
   }
 })
 
@@ -313,7 +295,7 @@ async function updateMapData() {
 
 <template>
   <div v-if="props.entity.is_recipient">
-    <Tabs v-model:value="activeTab">
+    <Tabs v-model:value="activeTab" ref="entity-tabs">
       <TabList class="tab-list">
         <Tab value="0" as="button">
           <span class="tab-header">
@@ -330,27 +312,30 @@ async function updateMapData() {
       </TabList>
       <TabPanels>
         <TabPanel value="0">
-          <div v-if="!transferts">
+          <div v-if="!transfers">
             <!-- @vue-ignore -->
             <Table v-bind="skeletonTableProps"></Table>
           </div>
-          <div v-if="transferts" class="transfert-tables">
-            <Table v-if="emitterTableProps" v-bind="emitterTableProps"></Table>
+          <div v-if="transfers" class="transfer-tables">
             <Table
               v-if="recipientTableProps"
               v-bind="recipientTableProps"
             ></Table>
-            <Table v-if="agentTableProps" v-bind="agentTableProps"></Table>
+            <Table
+              v-if="supporterTableProps"
+              v-bind="supporterTableProps"
+            ></Table>
           </div>
         </TabPanel>
         <TabPanel value="1">
           <div class="data-chart-panel">
             <div v-if="chartTabTriggered" class="dataviz-wrapper">
               <EntityMap
+                :id="`entity-map-${props.entity.id}`"
                 :supporters="emittersData"
-                :infrastructures="[props.entity]"
-                title="Funder locations"
+                :title="'Location of the supporters'"
                 :data-loaded="mapDataLoaded"
+                :export-title-base="props.entity.name"
               />
             </div>
             <div v-if="chartTabTriggered" class="dataviz-wrapper">
@@ -362,14 +347,13 @@ async function updateMapData() {
     </Tabs>
   </div>
   <div v-else>
-    <div v-if="!transferts">
+    <div v-if="!transfers">
       <!-- @vue-ignore -->
       <Table v-bind="skeletonTableProps"></Table>
     </div>
-    <div v-if="transferts" class="transfert-tables">
-      <Table v-if="emitterTableProps" v-bind="emitterTableProps"></Table>
+    <div v-if="transfers" class="transfer-tables">
       <Table v-if="recipientTableProps" v-bind="recipientTableProps"></Table>
-      <Table v-if="agentTableProps" v-bind="agentTableProps"></Table>
+      <Table v-if="supporterTableProps" v-bind="supporterTableProps"></Table>
     </div>
   </div>
 </template>
@@ -390,17 +374,17 @@ async function updateMapData() {
   font-size: 1.3em;
 }
 
-.transfert-tables > * {
+.transfer-tables > * {
   margin-bottom: 2em;
 }
 
-.transfert-tables > *:last-child {
+.transfer-tables > *:last-child {
   margin-bottom: initial;
 }
 
 .data-chart-panel {
   width: 100%;
-  padding: 1em;
+  padding: 1em 0;
 
   & > * {
     margin-bottom: 4rem;

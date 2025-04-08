@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, useTemplateRef } from "vue"
+import { ref, watch, onMounted, useTemplateRef, onBeforeMount } from "vue"
 
 const props = defineProps<{
   src?: string
@@ -11,26 +11,31 @@ const props = defineProps<{
 
 const loading = ref(true)
 const imgElement = useTemplateRef("img")
+const width = ref("")
+const height = ref("")
+const containerPadding = ref("")
+const iconFontSize = ref("")
 
 const sizeDefault = "50px"
-const width = props.width ?? sizeDefault
-const height = props.height ?? width
-const containerPadding = props.containerPadding ?? "5px"
-const iconFontSize = `min(calc(${width} - 2 * ${containerPadding}) / 2, 100px)`
 
+onBeforeMount(() => updateImageDimensions())
+watch(() => props.width && props.height, updateImageDimensions)
 onMounted(() => {
   imgElement.value?.addEventListener("load", () => {
     loading.value = false
   })
 })
+
+function updateImageDimensions() {
+  width.value = props.width ?? sizeDefault
+  height.value = props.height ?? width.value
+  containerPadding.value = props.containerPadding ?? "5px"
+  iconFontSize.value = `min(calc(${width.value} - 2 * ${containerPadding.value}) / 2, 100px)`
+}
 </script>
 
 <template>
-  <figure
-    class="img-container"
-    :class="{ center: props.center }"
-    :style="{ width: width, padding: containerPadding }"
-  >
+  <figure class="img-container" :class="{ center: props.center }">
     <font-awesome-icon v-show="loading" class="icon" icon="image" />
     <img
       v-if="props.src"
@@ -45,9 +50,9 @@ onMounted(() => {
 <style scoped>
 .img-container {
   font-size: 1rem;
-  width: v-bind("width");
-  height: v-bind("height");
-  padding: v-bind("containerPadding");
+  width: v-bind(width);
+  height: v-bind(height);
+  padding: v-bind(containerPadding);
   text-align: center;
   flex-shrink: 0;
 

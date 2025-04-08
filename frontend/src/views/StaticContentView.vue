@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { changeTitle } from "@/utils/dom-utils"
+import { changeMetaTitle } from "@/utils/dom-utils"
 
 export interface StaticContentComponentProps {
   title: string
 }
 const props = defineProps<StaticContentComponentProps>()
 
-changeTitle(props.title)
+changeMetaTitle(props.title)
 </script>
 
 <template>
@@ -23,5 +23,16 @@ changeTitle(props.title)
   font-size: 2.5rem;
   text-align: center;
   padding-top: 0;
+}
+
+.static-content {
+  & :deep(h1),
+  & :deep(h2),
+  & :deep(h3),
+  & :deep(h4),
+  & :deep(h5),
+  & :deep(h6) {
+    margin: 1em 0 0.5em 0;
+  }
 }
 </style>
