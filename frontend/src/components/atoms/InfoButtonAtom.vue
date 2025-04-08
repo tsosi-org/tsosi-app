@@ -2,6 +2,7 @@
 import Popover from "primevue/popover"
 import { onMounted, useTemplateRef } from "vue"
 import { addClickEventListener } from "@/utils/dom-utils"
+import { isTouchScreen } from "@/composables/useMediaQuery"
 
 export interface InfoButtonProps {
   icon?: string
@@ -21,15 +22,17 @@ function attachEvents() {
     return
   }
   addClickEventListener(iconButton.value, toggle)
-  iconButton.value.addEventListener("focusin", show)
-  iconButton.value.addEventListener("mouseenter", show)
-  iconButton.value.addEventListener("mouseleave", triggerHide)
+  if (!isTouchScreen.value) {
+    // Might be causing the need for double click on touch screen ?
+    // the focusin definitely does but the mouse enter as well ?
+    iconButton.value.addEventListener("focusin", show)
+    iconButton.value.addEventListener("mouseenter", show)
+    iconButton.value.addEventListener("mouseleave", triggerHide)
+  }
 }
 
 function toggle(event: Event) {
   popup.value?.toggle(event)
-  // Might be causing the need for double click on touch screen ?
-  event.stopImmediatePropagation()
 }
 
 function show(event: Event) {
