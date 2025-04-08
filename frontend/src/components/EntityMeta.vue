@@ -51,12 +51,10 @@ function loadChips() {
       icon: "location-dot",
       label: countryName,
     }
-    const backerName = props.entity.infrastructure?.backer_name
-    if (backerName) {
-      countryChip.info = `
-        ${props.entity.name} is maintained by ${backerName},
-        located in ${countryName}
-      `
+    const legalEntityDesc =
+      props.entity.infrastructure?.legal_entity_description
+    if (legalEntityDesc) {
+      countryChip.info = legalEntityDesc
     }
     headerChips.value.push(countryChip)
   }

@@ -7,7 +7,11 @@ import {
 } from "@/singletons/ref-data"
 import { useRoute, useRouter } from "vue-router"
 import { ref, type Ref, onBeforeMount, watch } from "vue"
-import { changeTitle } from "@/utils/dom-utils"
+import {
+  changeMetaTitle,
+  changeMetaDescripion,
+  changeMetaUrl,
+} from "@/utils/dom-utils"
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import EntityMeta from "@/components/EntityMeta.vue"
 import EntityData from "@/components/EntityData.vue"
@@ -16,6 +20,8 @@ const route = useRoute()
 const router = useRouter()
 
 const entity: Ref<DeepReadonly<EntityDetails> | null> = ref(null)
+
+watch(entity, onEntityChange)
 
 onBeforeMount(async () => {
   const result = await getEntitySummary(route.params.id as string)
@@ -30,10 +36,13 @@ async function onEntityChange() {
   if (!entity.value) {
     return
   }
-  changeTitle(entity.value.name)
+  changeMetaTitle(entity.value.name)
+  const desc = entity.value.is_recipient
+    ? `Explore the funding made to sustain ${entity.value.name}`
+    : `Explore the funding performed by ${entity.value.name}`
+  changeMetaDescripion(desc)
+  changeMetaUrl(true)
 }
-
-watch(entity, onEntityChange)
 </script>
 
 <template>

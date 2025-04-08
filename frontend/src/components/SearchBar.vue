@@ -215,6 +215,7 @@ function focusOut() {
     </IconField>
     <Popover
       ref="op"
+      class="popover-no-arrow"
       :baseZIndex="9999"
       :dt="{ gutter: 0 }"
       :style="`--width: ${elementWidth};`"

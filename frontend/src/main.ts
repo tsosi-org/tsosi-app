@@ -1,8 +1,8 @@
 import "@/assets/css/main.css"
 
-import { createApp, provide } from "vue"
-import App from "./App.vue"
-import router from "./router"
+import { createApp } from "vue"
+import App from "@/App.vue"
+import router from "@/router"
 import PrimeVue from "primevue/config"
 import Aura from "@primevue/themes/aura"
 import { definePreset } from "@primevue/themes"
@@ -146,14 +146,3 @@ if (hasMatomoInfo) {
 app.mount("#app")
 
 export const appContext = app._context
-
-// if (hasMatomoInfo) {
-//   // @ts-expect-error Piwik is added by matomo script
-//   if (!window.Piwik || !(typeof window.Piwik.getAsyncTracker == "function")) {
-//     console.log("Matomo async tracker could not be loaded")
-//   } else {
-//     // @ts-expect-error Piwik is added by matomo script
-//     const tracker = window.Piwik.getAsyncTracker()
-//     provide("matomoTracker", tracker)
-//   }
-// }

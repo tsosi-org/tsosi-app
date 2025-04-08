@@ -35,7 +35,7 @@ export interface InfrastructureDetails extends ApiData {
   support_url?: string
   date_scoss_start?: Date
   date_scoss_end?: Date
-  backer_name?: string
+  legal_entity_description?: string
   hide_amount: boolean
   date_data_update?: Date
   date_data_start?: Date
@@ -188,7 +188,7 @@ export async function getEntities(): Promise<DeepReadonly<
   if (refData.initialized) {
     return refData.entities
   }
-  const result = await get("entities/summary/?format=json", true)
+  const result = await get("entities/all/", true)
   if (result.error || !result.data) {
     return null
   }

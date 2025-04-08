@@ -99,7 +99,7 @@ class InfrastructureDetails(TimestampedModel):
     date_scoss_start = models.DateField(null=True)
     date_scoss_end = models.DateField(null=True)
 
-    backer_name = models.CharField(max_length=128, null=True)
+    legal_entity_description = models.TextField(null=True)
 
     hide_amount = models.BooleanField(default=False)
     # Clc fields

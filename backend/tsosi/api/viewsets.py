@@ -70,21 +70,10 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
     queryset = Entity.objects.filter(is_active=True).prefetch_related(
         "identifiers", "identifiers__registry"
     )
-    serializer_class = EntityDetailsSerializer
+    serializer_class = EntitySerializer
     filter_backends = [OrderingFilter]
     ordering = ["name"]
     ordering_fields = ["name"]
-
-    @action(
-        detail=False, methods=["get"], permission_classes=[BypassPagination]
-    )
-    def summary(self, request, *args, **kwargs):
-        """
-        Retrieve all entities with EntitySerializer.
-        """
-        self.pagination_class = None
-        self.serializer_class = EntitySerializer
-        return self.list(request, *args, **kwargs)
 
     @action(
         detail=False, methods=["get"], permission_classes=[BypassPagination]
@@ -96,12 +85,16 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
             raise ValidationError(f"`entity_id` query parameter if missing.")
 
         self.pagination_class = None
-        self.serializer_class = EntitySerializer
         ids = Transfer.objects.filter(recipient_id=entity_id).values_list(
             "emitter_id", flat=True
         )
         self.queryset = Entity.objects.filter(id__in=ids).distinct()
         return self.list(request, *args, **kwargs)
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return EntityDetailsSerializer
+        return super().get_serializer_class()
 
 
 class TransferFilter(filters.FilterSet):

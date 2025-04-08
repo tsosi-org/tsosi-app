@@ -7,6 +7,7 @@ export interface InfoButtonProps {
   icon?: string
   label?: string
   content?: string
+  showCallback?: () => any
 }
 const props = defineProps<InfoButtonProps>()
 const popup = useTemplateRef("popup")
@@ -20,18 +21,23 @@ function attachEvents() {
     return
   }
   addClickEventListener(iconButton.value, toggle)
+  iconButton.value.addEventListener("focusin", show)
   iconButton.value.addEventListener("mouseenter", show)
   iconButton.value.addEventListener("mouseleave", triggerHide)
 }
 
 function toggle(event: Event) {
   popup.value?.toggle(event)
+  // Might be causing the need for double click on touch screen ?
   event.stopImmediatePropagation()
 }
 
 function show(event: Event) {
   hidePopup = false
   popup.value?.show(event)
+  if (props.showCallback) {
+    props.showCallback()
+  }
 }
 
 function hide(_: Event) {
@@ -75,7 +81,6 @@ function popupLeave(event: Event) {
       class="popup-wrapper"
       @mouseenter="hidePopup = false"
       @mouseleave="popupLeave"
-      :dt="{ gutter: '0' }"
     >
       <div class="info-popup">
         <slot name="popup">
@@ -101,7 +106,7 @@ function popupLeave(event: Event) {
 }
 
 .popup-wrapper::before {
-  all: unset;
+  /* all: unset; */
 }
 
 .info-popup {

@@ -146,9 +146,24 @@ p {
   color: var(--color-error);
 }
 
+a.wikidata-inline-link::before {
+  --img-ratio: 1.78;
+  --img-height: 1.3em;
+  --img-width: calc(var(--img-ratio) * var(--img-height));
+  content: '';
+  position: relative;
+  background: url("/img/wikidata_icon.svg");
+  height: var(--img-height);
+  width: var(--img-width);
+  display: inline-block;
+  background-size: var(--img-width) var(--img-height);
+  margin: 0 0.2em -0.35em;
+  background-repeat: no-repeat;
+}
 
-.p-popover.p-component::before,
-.p-popover.p-component::after {
+
+.p-popover.p-component.popover-no-arrow::before,
+.p-popover.p-component.popover-no-arrow::after {
   display: none;
 }
 

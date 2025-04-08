@@ -1,2 +1,2 @@
 User-agent: *
-Disallow: /pages/legal-notice
+Disallow: /

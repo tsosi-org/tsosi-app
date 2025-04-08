@@ -8,6 +8,7 @@ export interface ChipConfig {
   iconText?: string
   link?: string
   info?: string
+  showCallback?: () => any
 }
 
 const props = defineProps<{

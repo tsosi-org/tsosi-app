@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { changeTitle } from "@/utils/dom-utils"
+import { changeMetaTitle } from "@/utils/dom-utils"
 
 export interface StaticContentComponentProps {
   title: string
 }
 const props = defineProps<StaticContentComponentProps>()
 
-changeTitle(props.title)
+changeMetaTitle(props.title)
 </script>
 
 <template>

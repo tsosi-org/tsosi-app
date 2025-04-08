@@ -1,6 +1,5 @@
-from datetime import UTC, date
-
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.utils import timezone
 from tsosi.app_settings import app_settings
 
@@ -71,8 +70,13 @@ SUPPORTED_INFRASTRUCTURES = [
             "date_scoss_start": "2017-01-01",
             "date_scoss_end": "2020-01-01",
             "hide_amount": True,
-            "backer_name": "Infrastructure Services for Open Access (IS4OA)",
             "support_url": "https://doaj.org/support/",
+            "legal_entity_description": """
+                The legal entity is located in Denmark, see
+                <a href="https://www.wikidata.org/wiki/Q1227538" rel="noopener noreferrer" target="_blank" class="wikidata-inline-link">
+                    DOAJ on wikidata
+                </a>.
+            """,
         },
     },
     {
@@ -85,7 +89,7 @@ SUPPORTED_INFRASTRUCTURES = [
             "name": "OAPEN & Directory of Open Access Books",
             "website": "https://www.doabooks.org",
             "country": "NL",
-            "description": """OAPEN supports the transition to open access for academic books by providing open infrastructure services to stakeholders, including the DOAB (Directory of Open Access Books), on which OAPEN works in partnership with Open Edition.""",
+            "description": """DOAB & OAPEN are dedicated to peer-reviewed open access books. DOAB is a discovery service and OAPEN is a repository for open access academic books.""",
             "manual_logo": True,
             "date_inception": "2010-01-01",  # Inception date of OAPEN - DOAB was launched in 2013
             "is_partner": True,
@@ -96,8 +100,17 @@ SUPPORTED_INFRASTRUCTURES = [
             "date_scoss_start": "2019-12-01",
             "date_scoss_end": "2022-12-01",
             "hide_amount": True,
-            "backer_name": "OAPEN Foundation and OpenEdition",
-            "support_url": "https://oapen.org/librarians/15963583-support-oapen-libraries",
+            "support_url": "https://www.doabooks.org/en/librarians/how-to-become-a-doab-supporter",
+            "legal_entity_description": """
+                DOAB & OAPEN have the same legal entity, located in the Netherlands.
+                See
+                <a href="https://www.wikidata.org/wiki/Q21750281" rel="noopener noreferrer" target="_blank" class="wikidata-inline-link">
+                    DOAB on wikidata
+                </a>,
+                <a href="https://www.wikidata.org/wiki/Q109123141" rel="noopener noreferrer" target="_blank" class="wikidata-inline-link">
+                    OAPEN on wikidata
+                </a>.
+            """,
         },
         "static_logo": "LOGO_oapen_doab.png",
     },
@@ -109,10 +122,18 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_website": "https://operas-eu.org",
             "name": "OPERAS",
             "website": "https://operas-eu.org",
+            "description": """OPERAS is the Research Infrastructure supporting open scholarly communication in the social sciences and humanities (SSH) in the European Research Area. Its mission is to coordinate and federate resources in Europe to efficiently address the scholarly communication needs of European researchers in the field of SSH.""",
             "is_partner": True,
         },
         "infrastructure": {
             "posi_url": "https://operas-eu.org/principles-of-open-scholarly-infrastructure-posi",
+            "support_url": "https://operas-eu.org/about/want-to-know-more/want-to-join-operas/",
+            "legal_entity_description": """
+                The legal entity is located in Belgium, see
+                <a href="https://www.wikidata.org/wiki/Q54879577" rel="noopener noreferrer" target="_blank" class="wikidata-inline-link">
+                    OPERAS on wikidata
+                </a>.
+            """,
         },
     },
     {
@@ -124,11 +145,18 @@ SUPPORTED_INFRASTRUCTURES = [
             "name": "Peer Community In",
             "website": "https://peercommunityin.org",
             "is_partner": True,
+            "description": """PCI is a non-profit organisation of researchers offering peer review, recommendation and publication of scientific articles in open access for free.""",
         },
         "infrastructure": {
             "infra_finder_url": "https://infrafinder.investinopen.org/solutions/peer-community-in",
             "posi_url": "https://peercommunityin.org/2024/04/11/posi/",
             "support_url": "https://peercommunityin.org/endorse-and-financially-support-pci/",
+            "legal_entity_description": """
+                The legal entity is located in France, see
+                <a href="https://www.wikidata.org/wiki/Q97368331" rel="noopener noreferrer" target="_blank" class="wikidata-inline-link">
+                    PCI on wikidata
+                </a>.
+            """,
         },
     },
     {
@@ -140,18 +168,25 @@ SUPPORTED_INFRASTRUCTURES = [
             "name": "SciPost",
             "website": "https://scipost.org",
             "is_partner": True,
+            "description": """SciPost is a complete diamond open access publishing infrastructure serving professional scientists worldwide.""",
         },
         "infrastructure": {
             "posi_url": "https://scipost.org/posi",
             "date_scoss_start": "2024-12-01",
             "date_scoss_end": "2027-12-01",
-            "backer_name": "SciPost Foundation",
             "support_url": "https://scipost.org/sponsors/",
+            "legal_entity_description": """
+                The legal entity is located in the Netherlands, see
+                <a href="https://www.wikidata.org/wiki/Q52663237" rel="noopener noreferrer" target="_blank" class="wikidata-inline-link">
+                    SciPost on wikidata
+                </a>.
+            """,
         },
     },
 ]
 
 
+@transaction.atomic
 def update_partners():
     """
     Create or update partners Entity data.

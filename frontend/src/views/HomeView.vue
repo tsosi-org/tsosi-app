@@ -5,7 +5,11 @@ import {
   getPartners,
   type Entity,
 } from "@/singletons/ref-data"
-import { changeTitle } from "@/utils/dom-utils"
+import {
+  changeMetaTitle,
+  changeMetaDescripion,
+  changeMetaUrl,
+} from "@/utils/dom-utils"
 import EntityMap from "@/components/EntityMap.vue"
 import CardComponent from "@/components/CardComponent.vue"
 import { shuffleArray } from "@/utils/data-utils"
@@ -17,7 +21,11 @@ import { onBeforeMount, onMounted, onUnmounted } from "vue"
 import { togglePageNoHeader, setBigHeader } from "@/singletons/fixedHeaderStore"
 import Carousel from "primevue/carousel"
 
-changeTitle("Home")
+changeMetaUrl(true)
+changeMetaDescripion(
+  "Web platform visualizing the funding made to Open Science Infrastructures.",
+)
+changeMetaTitle("TSOSI - Transparency to Sustain Open Science Infrastructure")
 
 const infrastructures = getInfrastructures() as Entity[]
 const partners = getPartners() as Entity[]
