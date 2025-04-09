@@ -140,7 +140,7 @@ function isOptedOut(): boolean | undefined {
         <br />
         <br />
         <CodeBlockAtom
-          :content="'contact @(tsosi.org)'"
+          :content="'contact (@tsosi.org)'"
           :inline="true"
           :background="true"
         />
