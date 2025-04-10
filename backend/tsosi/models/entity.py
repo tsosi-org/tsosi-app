@@ -10,7 +10,12 @@ from .utils import TimestampedModel
 
 def entity_logo_path(instance: Entity, filename: str) -> str:
     """Return the file path where to store the entity logo file"""
-    return f"{instance.id}/{filename}"
+    return f"{instance.id}/logo/{filename}"
+
+
+def entity_icon_path(instance: Entity, filename: str) -> str:
+    """Return the file path where to store the entity icon file"""
+    return f"{instance.id}/icon/{filename}"
 
 
 class Entity(TimestampedModel):
@@ -37,6 +42,9 @@ class Entity(TimestampedModel):
         "self", on_delete=models.RESTRICT, null=True
     )
     merged_criteria = models.CharField(max_length=512, null=True)
+    icon = models.ImageField(
+        upload_to=entity_icon_path, max_length=256, null=True
+    )
 
     ## CLC fields filled from raw data and PID records.
     name = models.CharField(max_length=512)

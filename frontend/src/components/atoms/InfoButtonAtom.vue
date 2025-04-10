@@ -34,6 +34,7 @@ function attachEvents() {
 
 function toggle(event: Event) {
   popup.value?.toggle(event)
+  event.stopImmediatePropagation()
 }
 
 function show(event: Event) {

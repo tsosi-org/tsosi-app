@@ -78,12 +78,13 @@ SUPPORTED_INFRASTRUCTURES = [
                 </a>.
             """,
         },
+        "static_icon": "doaj_icon.png",
     },
     {
         "id": "doab_oapen",
         "pid": {"registry_id": REGISTRY_CUSTOM, "value": DOAB_OAPEN_ID},
         "entity": {
-            "raw_name": "OAPEN & Directory of Open Access Books",
+            "raw_name": "OAPEN & DOAB",
             "raw_website": "https://www.doabooks.org",
             "raw_country": "NL",
             "name": "OAPEN & Directory of Open Access Books",
@@ -113,6 +114,7 @@ SUPPORTED_INFRASTRUCTURES = [
             """,
         },
         "static_logo": "LOGO_oapen_doab.png",
+        "static_icon": "doab_icon.ico",
     },
     {
         "id": "operas",
@@ -135,6 +137,7 @@ SUPPORTED_INFRASTRUCTURES = [
                 </a>.
             """,
         },
+        "static_icon": "operas_icon.png",
     },
     {
         "id": "pci",
@@ -158,6 +161,7 @@ SUPPORTED_INFRASTRUCTURES = [
                 </a>.
             """,
         },
+        "static_icon": "pci_icon.jpg",
     },
     {
         "id": "scipost",
@@ -182,6 +186,7 @@ SUPPORTED_INFRASTRUCTURES = [
                 </a>.
             """,
         },
+        "static_icon": "scipost_icon.png",
     },
 ]
 
@@ -195,6 +200,7 @@ def update_partners():
     for infra in SUPPORTED_INFRASTRUCTURES:
         create = False
         static_logo: str | None = infra.get("static_logo")
+        static_icon: str | None = infra.get("static_icon")
         try:
             identifier = Identifier.objects.get(**infra["pid"])
             entity = identifier.entity
@@ -212,6 +218,11 @@ def update_partners():
                     app_settings.TSOSI_APP_DATA_DIR / "assets" / static_logo
                 )
                 replace_model_file(entity, "logo", file_path)
+            if static_icon:
+                file_path = str(
+                    app_settings.TSOSI_APP_DATA_DIR / "assets" / static_icon
+                )
+                replace_model_file(entity, "icon", file_path)
             entity.save()
             details = InfrastructureDetails(**infra["infrastructure"])
             details.entity = entity
@@ -248,6 +259,11 @@ def update_partners():
                 continue
             file_path = app_settings.TSOSI_APP_DATA_DIR / "assets" / static_logo
             replace_model_file(entity, "logo", str(file_path))
+        if static_icon:
+            file_path = str(
+                app_settings.TSOSI_APP_DATA_DIR / "assets" / static_icon
+            )
+            replace_model_file(entity, "icon", file_path)
 
 
 # These are the same IDs as the supported infrastructures.

@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand
 from tsosi.models import empty_db
 
 

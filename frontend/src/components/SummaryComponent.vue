@@ -10,6 +10,7 @@ import Country from "@/components/atoms/CountryAtom.vue"
 import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 import { nullValues } from "@/utils/data-utils"
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
+import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
 
 export interface SummaryProps {
   data: Record<string, any>
@@ -35,8 +36,13 @@ const props = defineProps<SummaryProps>()
           }}<InfoButtonAtom v-if="field.info" :content="field.info" />&nbsp;:
         </div>
         <div class="summary-value">
+          <EntityLinkDataAtom
+            v-if="field.type == 'entityLink'"
+            :data="props.data"
+            :data-field="field"
+          />
           <RouterLink
-            v-if="field.type == 'pageLink'"
+            v-else-if="field.type == 'pageLink'"
             :to="getItemLink(props.data, field.fieldLink)"
           >
             {{ getItemLabel(props.data, field) }}
@@ -109,7 +115,7 @@ const props = defineProps<SummaryProps>()
 .summary-label {
   color: var(--p-primary-800);
   font-weight: 700;
-  flex: 0 0 min(50%, 150px);
+  flex: 0 0 min(35%, 150px);
   text-align: right;
 }
 

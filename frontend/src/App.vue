@@ -61,8 +61,8 @@ function scrollToHash(retry: boolean) {
   <Loader v-show="loading" width="200px"></Loader>
   <template v-if="!loading">
     <HeaderLayout />
-    <main id="main" class="page-content" :key="$route.path">
-      <RouterView v-if="!loading" />
+    <main id="main" class="page-content">
+      <RouterView v-if="!loading" :key="$route.path" />
     </main>
     <FooterLayout />
   </template>

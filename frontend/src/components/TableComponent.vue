@@ -25,12 +25,14 @@ import Country from "@/components/atoms/CountryAtom.vue"
 import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 import MenuButtonAtom from "./atoms/MenuButtonAtom.vue"
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
+import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
 
 export interface TableColumnProps extends DataFieldProps {
   sortable?: boolean
   sortField?: string // field used to sort the column. Defaults to fieldLabel
   info?: string
   currencySelector?: boolean
+  nullValueTemplate?: string
 }
 
 export interface TableProps {
@@ -118,7 +120,7 @@ async function download(format: "json" | "csv") {
   exportJSON(props.columns, props.data, fileName)
 }
 
-const exportItems = ref([
+const exportItems = [
   {
     label: "Export CSV",
     icon: "download",
@@ -129,7 +131,7 @@ const exportItems = ref([
     icon: "download",
     command: () => download("json"),
   },
-])
+]
 
 /**
  * Toggle the button menu element when there are multiple buttons per row.
@@ -241,6 +243,9 @@ function onPageChange() {
       <template v-if="props.skeleton" #body>
         <Skeleton></Skeleton>
       </template>
+      <template v-else-if="column.type == 'entityLink'" #body="{ data }">
+        <EntityLinkDataAtom :data="data" :dataField="column" />
+      </template>
       <template v-else-if="column.type == 'pageLink'" #body="{ data }">
         <RouterLink
           v-if="getItemLabel(data, column)"
@@ -260,7 +265,13 @@ function onPageChange() {
         <Country :code="getItemLabel(data, column)" />
       </template>
       <template v-else #body="{ data }">
-        {{ formatItemLabel(data, column) }}
+        <div
+          v-if="column.nullValueTemplate && !formatItemLabel(data, column)"
+          v-html="column.nullValueTemplate"
+        ></div>
+        <span v-else>
+          {{ formatItemLabel(data, column) }}
+        </span>
       </template>
     </Column>
 

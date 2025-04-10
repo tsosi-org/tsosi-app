@@ -42,8 +42,6 @@
   }
 }
 
-
-
 .top-drawer {
   position: fixed !important;
   top: 0;
@@ -206,4 +204,18 @@ a.wikidata-inline-link::before {
 h2.info-box-header {
   font-size: 1.15em;
   color: var(--color-heading);
+}
+
+/*
+  Utility classes
+*/
+
+.data-label {
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-size: 0.9em;
+
+  &.hidden-amount {
+    background: var(--p-neutral-200);
+  }
 }

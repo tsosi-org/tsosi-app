@@ -49,6 +49,7 @@ export interface Entity extends ApiData {
   identifiers: Identifier[]
   coordinates?: string
   logo?: string
+  icon?: string
   is_recipient: boolean
   is_partner: boolean
 }

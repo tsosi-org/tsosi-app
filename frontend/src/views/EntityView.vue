@@ -6,7 +6,13 @@ import {
   type DeepReadonly,
 } from "@/singletons/ref-data"
 import { useRoute, useRouter } from "vue-router"
-import { ref, type Ref, onBeforeMount, watch } from "vue"
+import {
+  shallowRef,
+  type ShallowRef,
+  onBeforeMount,
+  watch,
+  onBeforeUnmount,
+} from "vue"
 import {
   changeMetaTitle,
   changeMetaDescripion,
@@ -16,14 +22,13 @@ import Loader from "@/components/atoms/LoaderAtom.vue"
 import EntityMeta from "@/components/EntityMeta.vue"
 import EntityData from "@/components/EntityData.vue"
 
-const route = useRoute()
-const router = useRouter()
-
-const entity: Ref<DeepReadonly<EntityDetails> | null> = ref(null)
+const entity: ShallowRef<DeepReadonly<EntityDetails> | null> = shallowRef(null)
 
 watch(entity, onEntityChange)
 
 onBeforeMount(async () => {
+  const route = useRoute()
+  const router = useRouter()
   const result = await getEntitySummary(route.params.id as string)
   if (result == null) {
     router.replace({ name: "NotFound", query: { target: route.path } })
@@ -43,6 +48,10 @@ async function onEntityChange() {
   changeMetaDescripion(desc)
   changeMetaUrl(true)
 }
+
+onBeforeUnmount(() => {
+  entity.value = null
+})
 </script>
 
 <template>

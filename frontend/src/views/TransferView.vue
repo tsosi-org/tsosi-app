@@ -59,7 +59,7 @@ const dataConfig: Array<DataFieldProps> = [
     id: "emitter",
     title: "Emitter",
     field: "emitter",
-    type: "pageLink",
+    type: "entityLink",
     fieldLabel: "emitter.name",
     fieldLink: {
       base: getEntityBaseUrl(),
@@ -77,7 +77,7 @@ const dataConfig: Array<DataFieldProps> = [
     id: "recipient",
     title: "Recipient",
     field: "recipient",
-    type: "pageLink",
+    type: "entityLink",
     fieldLabel: "recipient.name",
     fieldLink: {
       base: getEntityBaseUrl(),
@@ -89,7 +89,7 @@ const dataConfig: Array<DataFieldProps> = [
     id: "agent",
     title: "Agent",
     field: "agent",
-    type: "pageLink",
+    type: "entityLink",
     fieldLabel: "agent.name",
     fieldLink: {
       base: getEntityBaseUrl(),

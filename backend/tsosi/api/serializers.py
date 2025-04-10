@@ -44,6 +44,7 @@ class EntitySerializer(BaseEntitySerializer):
             "identifiers",
             "coordinates",
             "logo",
+            "icon",
             "is_recipient",
             "is_partner",
         ]
@@ -67,6 +68,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "date_inception",
             "description",
             "logo",
+            "icon",
             "wikipedia_url",
             "wikipedia_extract",
             "identifiers",
