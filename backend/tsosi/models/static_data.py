@@ -87,10 +87,10 @@ SUPPORTED_INFRASTRUCTURES = [
             "raw_name": "OAPEN & DOAB",
             "raw_website": "https://www.doabooks.org",
             "raw_country": "NL",
-            "name": "OAPEN & Directory of Open Access Books",
+            "name": "OAPEN & DOAB",
             "website": "https://www.doabooks.org",
             "country": "NL",
-            "description": """DOAB & OAPEN are dedicated to peer-reviewed open access books. DOAB is a discovery service and OAPEN is a repository for open access academic books.""",
+            "description": """OAPEN is an open infrastructure dedicated to promoting and supporting the transition to open access for books. The Directory of Open Access Books (DOAB) is an open, global, and trusted community-driven discovery service that indexes and provides free access to scholarly, peer-reviewed open access books.""",
             "manual_logo": True,
             "date_inception": "2010-01-01",  # Inception date of OAPEN - DOAB was launched in 2013
             "is_partner": True,
