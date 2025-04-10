@@ -190,6 +190,12 @@ def deploy(
         f"cd {release_dir}/{django_folder}/ "
         f"&& {poetry_bin} run python manage.py migrate",
     )
+    # Custom tasks to execute after each deployment
+    ssh_execute(
+        server,
+        f"cd {release_dir}/{django_folder}/ "
+        f"&& {poetry_bin} run python manage.py update_partners",
+    )
 
     # Copy front files in release folder
     ssh_execute(server, f"mkdir -p {release_dir}/public")
