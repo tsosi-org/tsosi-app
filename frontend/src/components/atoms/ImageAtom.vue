@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, useTemplateRef, onBeforeMount } from "vue"
+import { ref, onMounted, useTemplateRef, computed } from "vue"
 
 const props = defineProps<{
   src?: string
@@ -9,29 +9,23 @@ const props = defineProps<{
   center?: boolean
 }>()
 
+const sizeDefault = "50px"
 const loading = ref(true)
 const imgElement = useTemplateRef("img")
-const width = ref("")
-const height = ref("")
-const containerPadding = ref("")
-const iconFontSize = ref("")
 
-const sizeDefault = "50px"
+const imgWidth = computed(() => props.width ?? sizeDefault)
+const imgHeight = computed(() => props.height ?? imgWidth.value)
+const imgContainerPadding = computed(() => props.containerPadding ?? "5px")
+const iconFontSize = computed(
+  () =>
+    `min(calc(${imgWidth.value} - 2 * ${imgContainerPadding.value}) / 2, 100px)`,
+)
 
-onBeforeMount(() => updateImageDimensions())
-watch(() => props.width && props.height, updateImageDimensions)
 onMounted(() => {
   imgElement.value?.addEventListener("load", () => {
     loading.value = false
   })
 })
-
-function updateImageDimensions() {
-  width.value = props.width ?? sizeDefault
-  height.value = props.height ?? width.value
-  containerPadding.value = props.containerPadding ?? "5px"
-  iconFontSize.value = `min(calc(${width.value} - 2 * ${containerPadding.value}) / 2, 100px)`
-}
 </script>
 
 <template>
@@ -50,9 +44,9 @@ function updateImageDimensions() {
 <style scoped>
 .img-container {
   font-size: 1rem;
-  width: v-bind(width);
-  height: v-bind(height);
-  padding: v-bind(containerPadding);
+  width: v-bind(imgWidth);
+  height: v-bind(imgHeight);
+  padding: v-bind(imgContainerPadding);
   text-align: center;
   flex-shrink: 0;
 
