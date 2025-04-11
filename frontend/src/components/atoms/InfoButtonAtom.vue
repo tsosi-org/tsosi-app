@@ -27,6 +27,7 @@ function attachEvents() {
     // need to click twice to show the popup.
     // Obviously same with focusin but this one was expected.
     iconButton.value.addEventListener("focusin", show)
+    iconButton.value.addEventListener("focusout", triggerHide)
     iconButton.value.addEventListener("mouseenter", show)
     iconButton.value.addEventListener("mouseleave", triggerHide)
   }

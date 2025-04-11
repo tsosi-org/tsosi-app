@@ -2,6 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
 from tsosi.app_settings import app_settings
+from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
 from .entity import Entity, InfrastructureDetails
 from .identifier import (
@@ -62,6 +63,7 @@ SUPPORTED_INFRASTRUCTURES = [
             "name": "Directory of Open Access Journals",
             "website": "https://doaj.org",
             "is_partner": True,
+            "short_name": "DOAJ",
             "description": """DOAJ is a unique and extensive index of diverse open access journals from around the world, driven by a growing community, and is committed to insuring quality content is freely available online for everyone.""",
         },
         "infrastructure": {
@@ -145,6 +147,7 @@ SUPPORTED_INFRASTRUCTURES = [
         "entity": {
             "raw_name": "Peer Community In",
             "raw_website": "https://peercommunityin.org",
+            "short_name": "PCI",
             "name": "Peer Community In",
             "website": "https://peercommunityin.org",
             "is_partner": True,
@@ -201,6 +204,12 @@ def update_partners():
         create = False
         static_logo: str | None = infra.get("static_logo")
         static_icon: str | None = infra.get("static_icon")
+        # Normalize string values
+        for k, v in infra["entity"].items():
+            infra["entity"][k] = clean_cell_value(v)
+        for k, v in infra["infrastructure"].items():
+            infra["infrastructure"][k] = clean_cell_value(v)
+
         try:
             identifier = Identifier.objects.get(**infra["pid"])
             entity = identifier.entity

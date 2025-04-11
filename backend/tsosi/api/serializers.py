@@ -40,6 +40,7 @@ class EntitySerializer(BaseEntitySerializer):
         fields = [
             "id",
             "name",
+            "short_name",
             "country",
             "identifiers",
             "coordinates",
@@ -63,6 +64,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
         fields = [
             "id",
             "name",
+            "short_name",
             "country",
             "website",
             "date_inception",

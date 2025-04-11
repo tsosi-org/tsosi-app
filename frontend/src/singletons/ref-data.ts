@@ -45,6 +45,7 @@ export interface InfrastructureDetails extends ApiData {
 export interface Entity extends ApiData {
   id: string
   name: string
+  short_name?: string
   country?: string
   identifiers: Identifier[]
   coordinates?: string

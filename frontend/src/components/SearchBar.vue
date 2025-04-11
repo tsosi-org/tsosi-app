@@ -80,14 +80,17 @@ async function getEntitiesForSearch() {
       entity.name.toLowerCase(),
       ...entity.identifiers.map((i) => i.value.toLowerCase()),
     ]
+    if (entity.short_name) {
+      matchable.push(entity.short_name.toLocaleLowerCase())
+    }
     const entityResult = {
       name: entity.name,
       url: getEntityUrl(id),
       matchable: matchable,
     }
     baseData.push(entityResult)
-    searchResults.value = baseData
   }
+  searchResults.value = baseData
   loading.value = false
 }
 
@@ -192,7 +195,9 @@ async function updateHighlightedResult() {
 function focusOut() {
   isFocused.value = false
   highlightedIndex.value = undefined
-  // op.value!.hide()
+  if (!searchTerm.value) {
+    op.value!.hide()
+  }
 }
 </script>
 

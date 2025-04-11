@@ -87,7 +87,7 @@ const dataConfig: Array<DataFieldProps> = [
   },
   {
     id: "agent",
-    title: "Agent",
+    title: "Intermediary",
     field: "agent",
     type: "entityLink",
     fieldLabel: "agent.name",

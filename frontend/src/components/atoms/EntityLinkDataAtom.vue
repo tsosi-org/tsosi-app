@@ -42,7 +42,7 @@ onBeforeMount(() => {
       :container-padding="'0px'"
     />
     <span class="entity-label">
-      {{ entity.name }}
+      {{ entity.short_name || entity.name }}
     </span>
   </RouterLink>
 </template>

@@ -31,10 +31,14 @@ class Entity(TimestampedModel):
         validators=[MinLengthValidator(2), MaxLengthValidator(2)],
     )
     raw_website = models.URLField(max_length=256, null=True)
-    # Description text used when no Wikipedia extract is available.
-    # This should only be used for entity with a Custom registry ID.
+    # Description text taking is prioritized over the Wikipedia extract.
+    # It corresponds to a manual input, only for the infrastructures for now.
     description = models.TextField(null=True)
+    # This overrides the default behavior of fetching the logo from wikimedia.
+    # To be verified.
     manual_logo = models.BooleanField(default=False)
+    # Short name for an entity.
+    short_name = models.CharField(max_length=128, null=True)
 
     is_active = models.BooleanField(default=True)
     is_matchable = models.BooleanField(default=True)
