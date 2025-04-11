@@ -81,7 +81,7 @@ async function getEntitiesForSearch() {
       ...entity.identifiers.map((i) => i.value.toLowerCase()),
     ]
     if (entity.short_name) {
-      matchable.push(entity.short_name.toLocaleLowerCase())
+      matchable.push(entity.short_name.toLowerCase())
     }
     const entityResult = {
       name: entity.name,
@@ -233,7 +233,7 @@ function focusOut() {
           You can search for infrastructures or supporters:
           <ul>
             <li>
-              Search by name: e.g. "Peer Community In" or "University Grenoble
+              Search by name: e.g. "Peer Community In" or "Université Grenoble
               Alpes"
             </li>
             <li>Search by ROR ID: e.g. "0315saa81" or "02rx3b187"</li>
