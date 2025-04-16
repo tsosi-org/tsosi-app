@@ -39,14 +39,23 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
         ]
         .copy()
     )
+    merging_self = to_merge[to_merge["entity_id"] == to_merge["merged_with_id"]]
+    if not merging_self.empty:
+        logger.warning(
+            "Requested self-merging for the following entities, "
+            "discarded from the merged entities: \n"
+            f"{merging_self["entity_id"].to_list()}"
+        )
+        to_merge = to_merge.drop(merging_self.index).reset_index(drop=True)
+
     if len(to_merge) == 0:
         return
 
     # TODO: entities inputed in the function have null match_criteria.
     # This should be set beforehand and not in this function.
-    to_merge["match_criteria"] = "merged"
+    to_merge["match_criteria"] = to_merge["match_criteria"].fillna("merged")
+    # to_merge["entity_id"] = to_merge["entity_id"].apply(str)
 
-    to_merge["entity_id"] = to_merge["entity_id"].apply(str)
     # 0 - Check for duplicated entity_id inputs
     grouped_by_entity = (
         to_merge.groupby("entity_id")
@@ -83,7 +92,7 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
         logger.info("No entity to merge.")
         return
 
-    e_to_update["id"] = e_to_update["id"].apply(str)
+    # e_to_update["id"] = e_to_update["id"].apply(str)
     e_to_update["merged_with_id"] = e_to_update["id"].map(
         mapping["merged_with_id"]
     )
@@ -114,8 +123,8 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
         )
         if t_to_update.empty:
             continue
-        t_to_update["id"] = t_to_update["id"].apply(str)
-        t_to_update[entity_field] = t_to_update[entity_field].apply(str)
+        # t_to_update["id"] = t_to_update["id"].apply(str)
+        # t_to_update[entity_field] = t_to_update[entity_field].apply(str)
         t_to_update["original_entity_id"] = t_to_update[entity_field].copy()
         t_to_update[entity_field] = t_to_update[entity_field].map(
             mapping["merged_with_id"]

@@ -258,7 +258,7 @@ def trigger_new_identifier_fetching(sender, **kwargs):
         logger.info("Skipped triggering of new identifier fetching.")
         return
     registries = kwargs.get("registries")
-    if isinstance(registries, list):
+    if isinstance(registries, list) and registries:
         logger.info(
             f"Triggering new identifier fetching for registries: {registries}"
         )

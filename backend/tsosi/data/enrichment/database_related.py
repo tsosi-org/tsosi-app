@@ -22,7 +22,7 @@ from tsosi.data.pid_registry.ror import (
     ror_record_extractor,
 )
 from tsosi.data.pid_registry.wikidata import WIKIDATA_EXTRACT_MAPPING
-from tsosi.data.preparation.cleaning_utils import clean_url
+from tsosi.data.preparation.cleaning_utils import clean_cell_value, clean_url
 from tsosi.data.signals import identifiers_created
 from tsosi.data.task_result import TaskResult
 from tsosi.data.utils import clean_null_values
@@ -122,7 +122,7 @@ def ingest_entity_identifier_relations(
         .rename(columns={"value": "identifier_value", "id": "identifier_id"})
         .set_index("identifier_id")
     )
-    existing_relations["entity_id"] = existing_relations["entity_id"].apply(str)
+    # existing_relations["entity_id"] = existing_relations["entity_id"].apply(str)
     existing_relations["relation"] = existing_relations.apply(
         lambda row: (row["entity_id"], row["identifier_value"]), axis=1
     )
@@ -279,22 +279,26 @@ def entities_with_identifier_data() -> pd.DataFrame:
     This dataset is used to update the Entity's calculated fields based
     on PID records.
     """
-    entities = Entity.objects.filter(
-        is_active=True, identifiers__isnull=False
-    ).values(
-        "id",
-        # Raw values
-        "raw_name",
-        "raw_country",
-        "raw_website",
-        # Values to be clc
-        "name",
-        "country",
-        "website",
-        "wikipedia_url",
-        "logo_url",
-        "coordinates",
-        "date_inception",
+    entities = (
+        Entity.objects.filter(
+            is_active=True, identifiers__current_version__isnull=False
+        )
+        .distinct("id")  # de-duplicated entities from the above left join
+        .values(
+            "id",
+            # Raw values
+            "raw_name",
+            "raw_country",
+            "raw_website",
+            # Values to be clc
+            "name",
+            "country",
+            "website",
+            "wikipedia_url",
+            "logo_url",
+            "coordinates",
+            "date_inception",
+        )
     )
     entities = pd.DataFrame.from_records(entities)
     if entities.empty:
@@ -310,6 +314,7 @@ def entities_with_identifier_data() -> pd.DataFrame:
     if identifiers.empty:
         return pd.DataFrame()
 
+    # Extract ROR record data
     ror_ids = identifiers[
         identifiers["registry_id"] == REGISTRY_ROR
     ].reset_index(drop=True)
@@ -319,12 +324,13 @@ def entities_with_identifier_data() -> pd.DataFrame:
     ror_ids = pd.concat([ror_ids, ror_extract], axis=1)
     ror_ids.drop(columns=["registry_id", "record"], inplace=True)
     entities = entities.merge(
-        ror_ids.set_index("entity_id"),
+        ror_ids,
         left_on="id",
         right_on="entity_id",
         how="left",
     )
 
+    # Extract Wikidata record data
     wikidata_ids = identifiers[
         identifiers["registry_id"] == REGISTRY_WIKIDATA
     ].reset_index(drop=True)
@@ -340,11 +346,14 @@ def entities_with_identifier_data() -> pd.DataFrame:
     )
     wikidata_ids.drop(columns=["registry_id", "record"], inplace=True)
     entities = entities.merge(
-        wikidata_ids.set_index("entity_id"),
+        wikidata_ids,
         left_on="id",
         right_on="entity_id",
         how="left",
     )
+
+    # Format and clean record data.
+    # entities["id"] = entities["id"].apply(str)
     # Add missing columns, if any
     expected_cols = [
         *[f"ror_{name}" for name in ROR_EXTRACT_MAPPING.keys()],
@@ -352,6 +361,7 @@ def entities_with_identifier_data() -> pd.DataFrame:
     ]
     for col in expected_cols:
         if col in entities.columns:
+            entities[col] = entities[col].apply(clean_cell_value)
             continue
         entities[col] = None
 
@@ -468,10 +478,10 @@ def new_identifiers_from_records() -> TaskResult:
     # Mismatching ROR ID
     ror_check = entities.copy()
     ror_check["ror_doublon"] = ~(
-        ror_check["ror_id"].isnull() | ror_check["wikidata_ror_id"].isnull()
+        ror_check["ror_id"].isna() | ror_check["wikidata_ror_id"].isna()
     )
-    ror_check["ror_id_diff"] = ~ror_check["ror_id"].eq(
-        ror_check["wikidata_ror_id"]
+    ror_check["ror_id_diff"] = ~(
+        ror_check["ror_id"].eq(ror_check["wikidata_ror_id"])
     )
 
     mismatching_rors = ror_check[
@@ -559,7 +569,8 @@ def new_identifiers_from_records() -> TaskResult:
         result.data_modified = True
         new_identifier_registries.append(REGISTRY_WIKIDATA)
 
-    identifiers_created.send(None, registries=new_identifier_registries)
+    if new_identifier_registries:
+        identifiers_created.send(None, registries=new_identifier_registries)
     return result
 
 
