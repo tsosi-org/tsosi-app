@@ -29,9 +29,11 @@ def test_currency_iso_from_value():
         BaseTestData(args=["USDPOI"], result="USD"),
         BaseTestData(args=[None], result=None),
         BaseTestData(args=[12], result=None),
-        BaseTestData(args=["UUU"], result=None),
+        BaseTestData(args=["UUU"], result="UUU"),
         BaseTestData(
-            args=["UUU"], kwargs={"error": True}, exception=DataValidationError
+            args=["bad input"],
+            kwargs={"error": True},
+            exception=DataValidationError,
         ),
     ]
     base_test_function(currency_iso_from_value, test_data)
@@ -56,11 +58,9 @@ def test_country_iso_from_name():
         BaseTestData(args=["USA"], result="US"),
         BaseTestData(args=["Russia"], result="RU"),
         BaseTestData(args=["Canada"], result="CA"),
-        BaseTestData(args=["FR"], result=None),
+        BaseTestData(args=["FR"], result="FR"),
         BaseTestData(args=[102], result=None),
-        BaseTestData(
-            args=["FR"], kwargs={"error": True}, exception=DataValidationError
-        ),
+        BaseTestData(args=["FR"], kwargs={"error": True}, result="FR"),
         BaseTestData(
             args=[102], kwargs={"error": True}, exception=DataValidationError
         ),

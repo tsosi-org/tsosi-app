@@ -143,7 +143,9 @@ function breakdownDisclaimer(): boolean {
             v-if="!props.entity.logo"
             :style="`margin-top: ${isDesktop ? '-10px' : '-30px'};`"
           >
-            <span :style="`display: inline-block; max-width: ${logoWidth};`">
+            <span
+              :style="`display: inline-block; max-width: ${isDesktop ? '125px' : '125px'};`"
+            >
               Logo not found, see
               <RouterLink :to="'/pages/faq#missing-logo'">
                 how to add it </RouterLink

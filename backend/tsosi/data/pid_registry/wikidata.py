@@ -1,33 +1,13 @@
 """
 Contains methods to fetch records from Wikimedia projects:
 Wikidata, Wikipedia and Wikimedia Commons.
-
-#### API Rate limits ####
-
-WIKIDATA SPARQL:
-https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Query_limits
----
-    - One client (user agent + IP) is allowed 60 seconds of processing time
-    each 60 seconds
-    - One client is allowed 30 error queries per minute
----
-
-WIKIPEDIA REST API:
-https://en.wikipedia.org/api/rest_v1/
----
-Limit your clients to no more than 200 requests/s to this API. Each
-API endpoint's documentation may detail more specific usage limits.
----
-
-
-WIKIMEDIA COMMONS:
-
 """
 
 import logging
 import re
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
 from itertools import chain as it_chain
 from json import JSONDecodeError
 from urllib.parse import quote, urlencode
@@ -60,9 +40,9 @@ ALLOWED_IMG_FILE_FORMATS = [
 
 
 @dataclass(kw_only=True)
-class WikidataRecordApiResult(ApiResult):
-    id: str
-    record: dict = field(default_factory=dict)
+class WikidataSparqlApiResult(ApiResult):
+    identifiers: Sequence[str]
+    records: dict = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -79,26 +59,43 @@ class WikimediaFileApiResult(ApiResult):
 
 
 async def fetch_wikidata_sparql_query(
-    session: aiohttp.ClientSession, query: str
+    session: aiohttp.ClientSession, identifiers: Sequence[str]
 ) -> list:
     """
     Query the Wikidata SPARQL query service with the given query.
     """
+    result = WikidataSparqlApiResult(identifiers=identifiers)
+    correct_ids = [id for id in identifiers if re.match(WIKIDATA_ID_REGEX, id)]
+    if not correct_ids:
+        result.error = True
+        result.error_msg = "Malformed Wikidata Identifiers."
+        return result
+
+    ids_part = "\n\t\t".join([f"wd:{id}" for id in correct_ids])
+    query = WIKIDATA_RECORD_QUERY_TEMPLATE.format(ids_part=ids_part)
     params = {"query": query, "format": "json"}
+    result.info = query
     try:
         async with session.post(
             WIKIDATA_SPARQL_ENDPOINT, params=params
         ) as response:
+            result.http_status = response.status
             if response.status < 200 or response.status > 300:
                 raise HTTPStatusError(f"Wrong status code: {response.status}")
-            results: dict = await response.json()
+            content: dict = await response.json()
+            result.records = content.get("results", {}).get("bindings", [])
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         # Log the error
-        logger.warning(
-            f"Failed to query the wikipedia sparql endpoint with query:\n {query}"
+        msg = (
+            f"Failed to query the wikipedia sparql endpoint with query:\n"
+            f"{query}"
         )
-        return []
-    return results.get("results", {}).get("bindings", [])
+        logger.warning(msg)
+        result.error = True
+        result.error_msg = msg
+
+    result.timestamp = datetime.now(UTC)
+    return result
 
 
 WIKIDATA_RECORD_QUERY_TEMPLATE = """
@@ -156,6 +153,70 @@ WIKIDATA_EXTRACT_MAPPING = {
 }
 
 
+def process_wikidata_results(result: WikidataSparqlApiResult) -> pd.DataFrame:
+    """ """
+    if result.error:
+        df = pd.DataFrame()
+        df["id"] = result.identifiers
+        df["error"] = result.error
+        df["error_msg"] = result.error_msg
+        df["record"] = None
+        df["http_status"] = result.http_status
+        df["timestamp"] = result.timestamp
+        df["info"] = result.info
+        clean_null_values(df)
+        return df
+
+    df = pd.DataFrame.from_records(result.records)
+    df.rename(columns=WIKIDATA_EXTRACT_MAPPING, inplace=True)
+    # Flatten the wikdiata results
+    for col in df.columns:
+        df[col] = df[col].map(lambda x: x if pd.isnull(x) else x["value"])
+    # Add missing columns
+    for c in WIKIDATA_EXTRACT_MAPPING.values():
+        if c not in df.columns:
+            df[c] = None
+
+    ## Result data cleaning
+    # There might be duplicated rows per item when there are multiple values
+    # for one of the queried relations.
+    # Ideally, we need to take the best value for each relation when there's
+    # a way to filter.
+    bad_logo_url_mask = ~(
+        df["logo_url"].str.startswith("http://commons.wikimedia.org")
+        | df["logo_url"].str.startswith("https://commons.wikimedia.org")
+    )
+    df.loc[bad_logo_url_mask, "logo_url"] = None
+
+    df["id"] = df["id"].apply(lambda x: x.split("/")[-1])
+
+    bad_label_mask = df["name"] == df["id"]
+    df.loc[bad_label_mask, "name"] = None
+
+    df = df.groupby("id").first().reset_index()
+
+    clean_null_values(df)
+    df["record"] = df.apply(lambda row: row.to_dict(), axis=1)
+    df = df[["id", "record"]].copy()
+
+    df["error"] = result.error
+    df["error_msg"] = result.error_msg
+    df["http_status"] = result.http_status
+    df["info"] = result.info
+
+    # Add an empty row for missing records that were not returned by the API
+    extra_ids = pd.DataFrame({"id": result.identifiers})
+    to_append = extra_ids[~extra_ids["id"].isin(df["id"])].copy()
+    if not to_append.empty:
+        to_append["error"] = True
+        to_append["error_msg"] = "Item not returned by Wikidata SPARQL query."
+        df = pd.concat([df, to_append], axis=0)
+
+    df["timestamp"] = result.timestamp
+    clean_null_values(df)
+    return df
+
+
 async def fetch_wikidata_records_data(
     identifiers: Sequence[str],
 ) -> pd.DataFrame:
@@ -164,49 +225,14 @@ async def fetch_wikidata_records_data(
         print("No identifiers to fetch wikidata records for.")
         return pd.DataFrame()
 
-    queries: list[str] = []
-    for chunk in chunk_sequence(identifiers, 40):
-        queries.append(format_wikidata_record_query(chunk))
+    identifier_chunks: list[str] = [c for c in chunk_sequence(identifiers, 40)]
 
     results = await perform_http_func_batch(
-        queries, fetch_wikidata_sparql_query, max_conns=10
+        identifier_chunks, fetch_wikidata_sparql_query, max_conns=5
     )
-    results = list(it_chain.from_iterable(results))
-    if len(results) == 0:
-        return pd.DataFrame()
 
-    df = pd.DataFrame.from_records(results)
-    # Flatten the results
-    for col in df.columns:
-        df[col] = df[col].map(lambda x: x if pd.isnull(x) else x["value"])
-
-    ## Result data cleaning
-    # There might be duplicated rows per item when there are multiple values
-    # for one of the queried relations.
-    # Ideally, we need to take the best value for each relation when there's
-    # a way to filter.
-    bad_logo_url_mask = ~(
-        df["logoUrl"].str.startswith("http://commons.wikimedia.org")
-        | df["logoUrl"].str.startswith("https://commons.wikimedia.org")
-    )
-    df.loc[bad_logo_url_mask, "logoUrl"] = None
-    df["item"] = df["item"].apply(lambda x: x.split("/")[-1])
-    bad_label_mask = df["itemLabel"] == df["item"]
-    df.loc[bad_label_mask, "itemLabel"] = None
-
-    df = df.groupby("item").first().reset_index()
-    df.rename(columns=WIKIDATA_EXTRACT_MAPPING, inplace=True)
-    # Add missing columns
-    for c in WIKIDATA_EXTRACT_MAPPING.values():
-        if c not in df.columns:
-            df[c] = None
-
-    clean_null_values(df)
-    df["record"] = df.apply(lambda row: row.to_dict(), axis=1)
-    # Add no error for compatibility
-    df["error"] = False
-
-    return df[["id", "record", "error"]].copy()
+    processed = pd.concat([process_wikidata_results(r) for r in results])
+    return processed
 
 
 def format_wikipedia_page_title(title: str) -> str:
@@ -228,8 +254,10 @@ async def fetch_wikipedia_page_extract(
     result = WikipediaSummaryApiResult(title=title)
     query_params = {"redirect": True}
     url = f"{WIKIPEDIA_SUMMARY_API_ENDPOINT}/{title}?{urlencode(query_params)}"
+    result.info = url
     try:
         async with session.get(url) as response:
+            result.http_status = response.status
             if response.status < 200 or response.status > 300:
                 raise HTTPStatusError(f"Wrong status code: {response.status}")
             summary: dict = await response.json()
@@ -237,10 +265,11 @@ async def fetch_wikipedia_page_extract(
 
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         result.error = True
-        result.error_message = f"Error while querying Wikipedia with url {url}"
-        result.error_message += f"\nOriginal exception:\n{e}"
-        logger.warning(result.error_message)
+        result.error_msg = f"Error while querying Wikipedia with url {url}"
+        result.error_msg += f"\nOriginal exception:\n{e}"
+        logger.warning(result.error_msg)
 
+    result.timestamp = datetime.now(UTC)
     return result
 
 
@@ -260,18 +289,23 @@ async def fetch_wikimedia_file(
     The URL is expected to reference a Wikimedia file.
     """
     result = WikimediaFileApiResult(url=url)
+    result.info = url
     try:
-        async with session.get(url, allow_redirects=True) as resp:
-            if resp.status < 200 or resp.status >= 300:
-                raise HTTPStatusError(f"Wrong HTTP status code {resp.status}")
-            result.file_bytes = await resp.read()
-            result.final_url = str(resp.url)
+        async with session.get(url, allow_redirects=True) as response:
+            result.http_status = response.status
+            if response.status < 200 or response.status >= 300:
+                raise HTTPStatusError(
+                    f"Wrong HTTP status code {response.status}"
+                )
+            result.file_bytes = await response.read()
+            result.final_url = str(response.url)
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         result.error = True
-        result.error_message = f"Error while querying {url}"
-        result.error_message += f"Original exception:\n{e}"
-        logger.warning(result.error_message)
+        result.error_msg = f"Error while querying {url}"
+        result.error_msg += f"Original exception:\n{e}"
+        logger.warning(result.error_msg)
 
+    result.timestamp = datetime.now(UTC)
     return result
 
 

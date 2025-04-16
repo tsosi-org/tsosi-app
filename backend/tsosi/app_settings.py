@@ -95,5 +95,31 @@ class AppSettings:
                 )
         return val
 
+    @property
+    def IDENTIFIER_FETCH_RETRY(self) -> int:
+        """
+        The maximum number of attempts for fetching an individual identifier
+        record when it repeatedly failed over a given time window.
+        """
+        return self._setting("IDENTIFIER_FETCH_RETRY", 3)
+
+    @property
+    def IDENTIFIER_FETCH_DAYS(self) -> int:
+        """The above-mentioned time window, in days."""
+        return self._setting("IDENTIFIER_FETCH_DAYS", 1)
+
+    @property
+    def WIKI_FETCH_RETRY(self) -> int:
+        """
+        The maximum number of attempts for fetching a wiki-related resource
+        when it repeatedly failed over a given time window
+        """
+        return self._setting("WIKI_FETCH_RETRY", 3)
+
+    @property
+    def WIKI_FETCH_DAYS(self) -> int:
+        """The above-mentioned time window, in days."""
+        return self._setting("WIKI_FETCH_DAYS", 1)
+
 
 app_settings = AppSettings()

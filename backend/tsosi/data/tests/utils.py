@@ -9,6 +9,7 @@ class BaseTestData:
     args: Iterable[Any] = field(default=list)
     kwargs: dict[str, Any] = field(default_factory=dict)
     result: Any | None = None
+    # Callable that must evaluate to True if the result is the expected one
     test_result: Callable | None = None
     exception: Type[Exception] | None = None
 
@@ -27,4 +28,6 @@ def base_test_function(func: Callable, test_data: Iterable[BaseTestData]):
         if test.test_result is not None:
             assert test.test_result(result)
         else:
-            assert result == test.result
+            assert result == test.result or (
+                result is None and test.result is None
+            ), f"Expected {test.result}, got {result}"

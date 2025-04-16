@@ -1,5 +1,6 @@
 import asyncio
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Callable, Sequence
 
 import aiohttp
@@ -14,8 +15,11 @@ class HTTPStatusError(Exception):
 
 @dataclass(kw_only=True)
 class ApiResult:
+    info: str | None = None
+    http_status: int | None = None
+    timestamp: datetime | None = None
     error: bool = False
-    error_message: str | None = None
+    error_msg: str | None = None
 
 
 async def perform_http_func_batch[

@@ -5,6 +5,7 @@ import uuid
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 
+from .api_request import ApiRequest
 from .utils import TimestampedModel
 
 
@@ -59,16 +60,21 @@ class Entity(TimestampedModel):
     )
     website = models.URLField(max_length=256, null=True)
     date_inception = models.DateField(null=True)
+
     logo_url = models.CharField(max_length=256, null=True)
     logo = models.ImageField(
         upload_to=entity_logo_path, max_length=256, null=True
     )
     date_logo_fetched = models.DateTimeField(null=True)
+
     wikipedia_url = models.CharField(max_length=512, null=True)
     wikipedia_extract = models.TextField(null=True)
     date_wikipedia_fetched = models.DateTimeField(null=True)
+
     is_partner = models.BooleanField(default=False)
     # Coordinates according to WGS84 coordinates system in form `POINT(LNG LAT)`
+    # TODO: Use two distinct fields, `lon` & `lat` for coordinates as we will
+    # never use something else than point coordinates.
     coordinates = models.TextField(null=True)
 
     ##  Clc booleans indicating if the entity is involved in 1+ transfer
@@ -146,3 +152,36 @@ class InfrastructureDetails(TimestampedModel):
 class EntityType(TimestampedModel):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=128)
+
+
+ENTITY_REQUEST_WIKIPEDIA_EXTRACT = "wikipedia_extract"
+ENTITY_REQUEST_WIKIMEDIA_LOGO = "wikimedia_logo"
+ENTITY_REQUEST_CHOICES = {
+    ENTITY_REQUEST_WIKIPEDIA_EXTRACT: "Wikipedia extract",
+    ENTITY_REQUEST_WIKIMEDIA_LOGO: "Wikimedia logo",
+}
+
+
+class EntityRequest(ApiRequest):
+    """
+    Model to log every external API requests made to enrich the entity
+    model.
+    """
+
+    entity = models.ForeignKey(
+        Entity, null=False, on_delete=models.CASCADE, related_name="requests"
+    )
+    type = models.CharField(
+        choices=ENTITY_REQUEST_CHOICES, null=False, max_length=32
+    )
+
+    class Meta(ApiRequest.Meta):
+        constraints = [*ApiRequest.Meta.constraints]
+        constraints.append(
+            models.CheckConstraint(
+                condition=models.Q(
+                    type__in=list(ENTITY_REQUEST_CHOICES.keys())
+                ),
+                name="valid_entity_request_type_choice",
+            )
+        )

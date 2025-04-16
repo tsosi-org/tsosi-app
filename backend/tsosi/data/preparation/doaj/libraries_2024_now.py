@@ -51,12 +51,15 @@ def get_config(
     )
 
 
-def get_fixture_config(year: int, file_path: str) -> rdc.RawDataConfigFromFile:
+def get_fixture_config(
+    year: int, file_path: str, date_data: date
+) -> rdc.RawDataConfigFromFile:
     source = rdc.DataLoadSource(
         data_source_id="doaj_library",
         year=year,
         full_data=True,
         data_load_name=file_path.split("/")[-1],
+        date_data_obtained=date_data,
     )
     return rdc.RawDataConfigFromFile(
         "doaj_library_2024+",

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
+from .api_request import ApiRequest
 from .entity import Entity
 from .utils import MATCH_SOURCE_CHOICES, TimestampedModel
 
@@ -112,3 +113,18 @@ class IdentifierEntityMatching(TimestampedModel):
                 name="identifier_entity_valid_match_source_choices",
             ),
         ]
+
+
+class IdentifierRequest(ApiRequest):
+    """
+    Model to log every requests performed to fetch the identifier records.
+    This is used to stop requesting the registry when the request keeps
+    failing.
+    """
+
+    identifier = models.ForeignKey(
+        Identifier,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="requests",
+    )

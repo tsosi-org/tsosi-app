@@ -647,7 +647,7 @@ class RawDataConfig:
         clean_null_values(df)
         return df
 
-    def generate_data_file(self):
+    def generate_data_file(self, output_folder=None):
         """
         Generate a data file in the TSOSI format, ready for ingestion.
         """
@@ -658,7 +658,9 @@ class RawDataConfig:
         if self.source.full_data:
             file_name += f"_full"
         file_name += ".json"
-        file_path = app_settings.DATA_EXPORT_FOLDER / file_name
+        if output_folder is None:
+            output_folder = app_settings.DATA_EXPORT_FOLDER
+        file_path = output_folder / file_name
         ingestion_config = DataIngestionConfig(
             date_generated=datetime.now(UTC).isoformat(timespec="seconds"),
             source=self.source.serialize(),

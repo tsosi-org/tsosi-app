@@ -3,10 +3,9 @@ from datetime import datetime
 
 import pandas as pd
 from django.db import transaction
+from tsosi.data.db_utils import bulk_create_from_df, bulk_update_from_df
 from tsosi.models import Entity, Transfer, TransferEntityMatching
 from tsosi.models.transfer import TRANSFER_ENTITY_TYPES
-
-from .db_utils import bulk_create_from_df, bulk_update_from_df
 
 logger = logging.getLogger(__name__)
 
