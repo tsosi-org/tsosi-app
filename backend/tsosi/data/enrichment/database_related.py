@@ -17,6 +17,7 @@ from tsosi.data.db_utils import (
     bulk_update_from_df,
     date_extremas_from_queryset,
 )
+from tsosi.data.exceptions import DataException
 from tsosi.data.pid_registry.ror import (
     ROR_EXTRACT_MAPPING,
     ror_record_extractor,
@@ -54,19 +55,23 @@ def ingest_entity_identifier_relations(
     """
     Ingest the given entity <-> identifier relations for the given registry.
 
-    Logic:    
     0 - Drop duplicates tuples (PID, entity) in input.
-        Check coherency for duplicated entities. \\
+        Check coherency for duplicated entities.
+
     1 - Get the existing (PID value, Entity) relations & drop duplicated
-        tuples (PID, entity) between input & existing \\
+        tuples (PID, entity) between input & existing
+
     2 - Get duplicated entities between input & mapping. Detach the existing
         relations for those entities (a new one will be created).
-        --then-> Update existing relations with detached identifiers. \\
+        --then-> Update existing relations with detached identifiers.
+
     3 - Handle identifiers in input that exist but are not attached
         to any entity
-        --then-> Update existing relations \\
+        --then-> Update existing relations
+
     4 - Create all new PIDs not in the existing relations
-        --then-> Update existing relations with new relations. \\
+        --then-> Update existing relations with new relations.
+
     5 - All remaining rows in input should be merged according to the existing
         relations, as all identifiers in input now exist and are attached
         to an entity.
@@ -74,16 +79,20 @@ def ingest_entity_identifier_relations(
 
     :param data:            The dataframe of entity - identifier relations.
                             It must contain the columns:
-                                `entity_id`
-                                `identifier_value`
-                                `match_source`
-                                `match_criteria`
+
+                            - `entity_id`
+                            - `identifier_value`
+                            - `match_source`
+                            - `match_criteria`
     :param registry_id:     The ID of the considered PID registry.
     :param date_update:     The date to register as `date_last_updated`
     """
 
+    new_relations = data.copy(deep=True)
+    new_relations["entity_id"] = new_relations["entity_id"].astype("string")
+
     ## Consistency check - duplicated entity_id in the input data.
-    new_relations = data.drop_duplicates(
+    new_relations = new_relations.drop_duplicates(
         subset=["entity_id", "identifier_value"]
     )[["entity_id", "identifier_value", "match_source", "match_criteria"]]
     grouped_by_entity = (
@@ -100,7 +109,7 @@ def ingest_entity_identifier_relations(
     )
     duplicates = grouped_by_entity[grouped_by_entity["number"] > 1]
     if not duplicates.empty:
-        raise Exception(
+        raise DataException(
             f"""
             Error while ingesting entity - identifier relations.
             The following entities have different associated identifiers:
@@ -122,13 +131,18 @@ def ingest_entity_identifier_relations(
         .rename(columns={"value": "identifier_value", "id": "identifier_id"})
         .set_index("identifier_id")
     )
-    # existing_relations["entity_id"] = existing_relations["entity_id"].apply(str)
-    existing_relations["relation"] = existing_relations.apply(
-        lambda row: (row["entity_id"], row["identifier_value"]), axis=1
+    existing_relations["entity_id"] = existing_relations["entity_id"].astype(
+        "string"
+    )
+    existing_relations["relation"] = list(
+        zip(
+            existing_relations["entity_id"],
+            existing_relations["identifier_value"],
+        )
     )
 
-    new_relations["relation"] = new_relations.apply(
-        lambda row: (row["entity_id"], row["identifier_value"]), axis=1
+    new_relations["relation"] = list(
+        zip(new_relations["entity_id"], new_relations["identifier_value"])
     )
     new_relations.set_index("entity_id")
 
@@ -156,7 +170,7 @@ def ingest_entity_identifier_relations(
 
     # 3 - Handle input relations involving existing detached identifiers
     detached_relations = existing_relations[
-        existing_relations["entity_id"].isnull()
+        existing_relations["entity_id"].isna()
     ]
     mask = new_relations["identifier_value"].isin(
         detached_relations["identifier_value"]

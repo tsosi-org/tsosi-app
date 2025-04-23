@@ -96,8 +96,13 @@ def test_update_logo(storage):
     assert e_requests[0].entity.id == entity.id
 
 
+@pytest.fixture
+def wiki_logo_retry(settings):
+    settings.TSOSI_WIKI_FETCH_RETRY = 2
+
+
 @pytest.mark.django_db
-def test_update_corrupted_logo(storage):
+def test_update_corrupted_logo(storage, wiki_logo_retry):
     """TODO: Mock the call to Wikimedia API."""
     print("Testing the update of a logo with a corrupted url.")
     entity = EntityFactory.create(

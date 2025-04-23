@@ -216,6 +216,7 @@ def process_identifier_data():
     """
     enrichment.update_entity_from_pid_records()
     enrichment.new_identifiers_from_records()
+    compute_analytics.delay()
 
 
 @shared_task(base=TsosiLockedTask)

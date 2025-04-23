@@ -3,12 +3,17 @@ from typing import Generic, TypeVar
 from factory import Faker, SubFactory
 from factory.django import DjangoModelFactory
 from tsosi.models import (
+    DataLoadSource,
     Entity,
     EntityRequest,
     Identifier,
+    IdentifierEntityMatching,
     IdentifierRequest,
     IdentifierVersion,
+    Transfer,
 )
+from tsosi.models.identifier import MATCH_CRITERIA_FROM_INPUT
+from tsosi.models.static_data import MATCH_SOURCE_MANUAL
 
 T = TypeVar("T")
 
@@ -56,6 +61,7 @@ class IdentifierFactory(BaseTypingFactory[Identifier]):
     class Meta:
         model = Identifier
 
+    value = Faker("ean8")
     entity = SubFactory(EntityFactory)
 
 
@@ -72,3 +78,41 @@ class IdentifierVersionFactory(BaseTypingFactory[IdentifierVersion]):
 
     identifier = SubFactory(IdentifierFactory)
     value = Faker("json")
+
+
+class DataLoadSourceFactory(BaseTypingFactory[DataLoadSource]):
+    class Meta:
+        model = DataLoadSource
+
+    data_source_id = "pci"
+    data_load_name = "test_load"
+    date_data_obtained = Faker("date")
+
+
+class TransferFactory(BaseTypingFactory[Transfer]):
+    class Meta:
+        model = Transfer
+
+    data_load_source = SubFactory(DataLoadSourceFactory)
+    date_payment = Faker("date")
+    emitter = SubFactory(EntityFactory)
+    recipient = SubFactory(EntityFactory)
+    agent = SubFactory(EntityFactory)
+    raw_data = Faker(
+        "json",
+        data_columns={"amount": "pyint", "emitter": "company", "url": "url"},
+    )
+    original_id = Faker("pyint")
+    original_amount_field = "amount"
+
+
+class IdentifierEntityMatchingFactory(
+    BaseTypingFactory[IdentifierEntityMatching]
+):
+    class Meta:
+        model = IdentifierEntityMatching
+
+    entity = SubFactory(EntityFactory)
+    identifier = SubFactory(IdentifierFactory)
+    match_criteria = MATCH_CRITERIA_FROM_INPUT
+    match_source = MATCH_SOURCE_MANUAL
