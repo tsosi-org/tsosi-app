@@ -215,8 +215,17 @@ def process_identifier_data():
     updated.
     """
     enrichment.update_entity_from_pid_records()
-    enrichment.new_identifiers_from_records()
     compute_analytics.delay()
+
+
+@shared_task(base=TsosiLockedTask)
+def new_wikidata_identifers_from_records():
+    enrichment.new_identifiers_from_records(REGISTRY_WIKIDATA)
+
+
+@shared_task(base=TsosiLockedTask)
+def new_ror_identifers_from_records():
+    enrichment.new_identifiers_from_records(REGISTRY_ROR)
 
 
 @shared_task(base=TsosiLockedTask)
@@ -242,6 +251,11 @@ def trigger_identifier_data_processing(sender, **kwargs):
         return
     logger.info("Triggering identifier data processing.")
     process_identifier_data.delay_on_commit()
+    registry_id = kwargs.get("registry_id")
+    if registry_id == REGISTRY_WIKIDATA:
+        new_ror_identifers_from_records.delay_on_commit()
+    elif registry_id == REGISTRY_ROR:
+        new_wikidata_identifers_from_records.delay_on_commit()
 
 
 def trigger_wiki_data_update(sender, **kwargs):

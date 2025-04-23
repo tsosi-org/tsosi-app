@@ -261,6 +261,14 @@ def ingest_entity_identifier_relations(
     to_merge["match_criteria"] = MATCH_CRITERIA_MERGED
     merge_entities(to_merge, date_update)
 
+    # 6 - Detach all identifiers still attached to inactive entities
+    Identifier.objects.filter(entity__is_active=False).update(
+        entity_id=None, date_last_updated=date_update
+    )
+    IdentifierEntityMatching.objects.filter(
+        entity__is_active=False, date_end__isnull=True
+    ).update(date_end=date_update, date_last_updated=date_update)
+
     logger.info(f"Finished ingesting new Identifier - Entity relations.")
 
 
@@ -466,15 +474,33 @@ def update_entity_from_pid_records() -> TaskResult:
     return result
 
 
-def new_identifiers_from_records() -> TaskResult:
+def new_identifiers_from_records(registry_id: str) -> TaskResult:
     """
     Retrieve and ingest new entity <-> identifier relationships from PID data.
+    This has to be performed sequentially per registry so that the used
+    dataset is refreshed after entity/identifier update.
     """
-    logger.info("Creating new identifiers from existing records.")
     result = TaskResult(partial=False)
 
+    if registry_id == REGISTRY_ROR:
+        base_col = "ror_id"
+        new_col = "wikidata_ror_id"
+        match_criteria = MATCH_CRITERIA_FROM_WIKIDATA
+        force = False
+    elif registry_id == REGISTRY_WIKIDATA:
+        base_col = "wikidata_id"
+        new_col = "ror_wikidata_id"
+        match_criteria = MATCH_CRITERIA_FROM_ROR
+        force = True
+    else:
+        raise DataException(f"Unsupported registry: {registry_id}")
+
+    logger.info(
+        f"Creating new {registry_id} identifiers from existing records."
+    )
     entities = entities_with_identifier_data()
     if entities.empty:
+        logger.info(f"No {registry_id} identifier to create.")
         return result
 
     entities = entities[
@@ -488,103 +514,47 @@ def new_identifiers_from_records() -> TaskResult:
         ]
     ].copy()
 
-    ## Check for PID coherency
-    # Mismatching ROR ID
-    ror_check = entities.copy()
-    ror_check["ror_doublon"] = ~(
-        ror_check["ror_id"].isna() | ror_check["wikidata_ror_id"].isna()
-    )
-    ror_check["ror_id_diff"] = ~(
-        ror_check["ror_id"].eq(ror_check["wikidata_ror_id"])
-    )
-
-    mismatching_rors = ror_check[
-        ror_check["ror_doublon"] & ror_check["ror_id_diff"]
-    ]
-    if not mismatching_rors.empty:
+    check = entities.copy(deep=True)
+    check["_doublon"] = ~(check[base_col].isna() | check[new_col].isna())
+    check["_diff"] = ~(check[base_col].eq(check[new_col]))
+    mismatch = check[check["_doublon"] & check["_diff"]]
+    if not mismatch.empty:
         msgs = []
         msgs.append(
-            "The following entities have mismatching ROR ID from Wikidata:"
+            f"The following entities have mismatching {registry_id} PID:"
         )
 
-        for _, row in mismatching_rors.iterrows():
+        for _, row in mismatch.iterrows():
             msgs.append(
                 f"Entity: {row["name"]} -- "
-                f"ROR ID: {row["ror_id"]} -- "
-                f"Wiki ROR ID: {row["wikidata_ror_id"]}"
+                f"PID in DB: {row[base_col]} -- "
+                f"New PID from record: {row[new_col]}"
             )
+        if force:
+            msgs = ["[NOT DROPPING THE RELS]", *msgs]
+        else:
+            entities.drop(mismatch.index, inplace=True)
         logger.warning("\n".join(msgs))
-        entities.drop(mismatching_rors.index, inplace=True)
 
-    # Mismatching Wikidata ID
-    wiki_check = entities.copy()
-    wiki_check["wiki_doublon"] = ~(
-        entities["wikidata_id"].isnull() | entities["ror_wikidata_id"].isnull()
+    entities["_new_pid"] = entities[base_col].isna() & ~entities[new_col].isna()
+    new_rels = entities[entities["_new_pid"]][["id", new_col]].reset_index(
+        drop=True
     )
-    wiki_check["wiki_id_diff"] = ~wiki_check["wikidata_id"].eq(
-        wiki_check["ror_wikidata_id"]
-    )
-
-    mismatching_wikis = wiki_check[
-        wiki_check["wiki_doublon"] & wiki_check["wiki_id_diff"]
-    ]
-    if not mismatching_wikis.empty:
-        msg = (
-            "The following entities have mismatching Wikidata ID " "from ROR:\n"
-        )
-        for ind, row in mismatching_wikis.iterrows():
-            msg += (
-                f"Entity: {row["name"]} -- "
-                f"Wikidata ID: {row["wikidata_id"]} -- "
-                f"ROR Wikid ID: {row["ror_wikidata_id"]}"
-            )
-        logger.warning(msg)
-        entities.drop(mismatching_wikis.index, inplace=True)
-
-    if entities.empty:
+    if new_rels.empty:
+        logger.info(f"No {registry_id} identifier to create.")
         return result
 
-    # Build new relations to ingest
-    new_identifier_registries = []
+    new_rels.rename(
+        columns={"id": "entity_id", new_col: "identifier_value"}, inplace=True
+    )
+    new_rels["match_source"] = MATCH_SOURCE_AUTOMATIC
+    new_rels["match_criteria"] = match_criteria
+
     now = timezone.now()
-    entities["new_ror"] = (
-        entities["ror_id"].isnull() & ~entities["wikidata_ror_id"].isnull()
-    )
-    ror_rels = entities[entities["new_ror"]][
-        ["id", "wikidata_ror_id"]
-    ].reset_index(drop=True)
-    if not ror_rels.empty:
-        ror_rels.rename(
-            columns={"id": "entity_id", "wikidata_ror_id": "identifier_value"},
-            inplace=True,
-        )
-        ror_rels["match_source"] = MATCH_SOURCE_AUTOMATIC
-        ror_rels["match_criteria"] = MATCH_CRITERIA_FROM_WIKIDATA
-        ingest_entity_identifier_relations(ror_rels, REGISTRY_ROR, now)
-        result.data_modified = True
-        new_identifier_registries.append(REGISTRY_ROR)
+    ingest_entity_identifier_relations(new_rels, registry_id, now)
 
-    entities["new_wikidata"] = (
-        entities["wikidata_id"].isnull() & ~entities["ror_wikidata_id"].isnull()
-    )
-    wikidata_rels = entities[entities["new_wikidata"]][
-        ["id", "ror_wikidata_id"]
-    ].reset_index(drop=True)
-    if not wikidata_rels.empty:
-        wikidata_rels.rename(
-            columns={"ror_wikidata_id": "identifier_value", "id": "entity_id"},
-            inplace=True,
-        )
-        wikidata_rels["match_source"] = MATCH_SOURCE_AUTOMATIC
-        wikidata_rels["match_criteria"] = MATCH_CRITERIA_FROM_ROR
-        ingest_entity_identifier_relations(
-            wikidata_rels, REGISTRY_WIKIDATA, now
-        )
-        result.data_modified = True
-        new_identifier_registries.append(REGISTRY_WIKIDATA)
-
-    if new_identifier_registries:
-        identifiers_created.send(None, registries=new_identifier_registries)
+    result.data_modified = True
+    identifiers_created.send(None, registries=[registry_id])
     return result
 
 
