@@ -4,7 +4,7 @@ import {
   getCurrencies as getRefCurrencies,
 } from "@/singletons/ref-data"
 
-const defaultCurrency: Currency = {
+export const defaultCurrency: Currency = {
   id: "EUR",
   name: "Euro",
 }
@@ -13,7 +13,7 @@ const defaultCurrency: Currency = {
  * Special Currency object to represent selecting the original currency of an
  * object.
  */
-const originalCurrency = {
+export const originalCurrency = {
   id: "_original",
   name: "Original currency",
 }

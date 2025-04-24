@@ -29,8 +29,16 @@ def get_config(
             rdc.FieldAmount(field="amount"),
             rdc.FieldHideAmount(field="hide_amount"),
             rdc.FieldCurrency(constant="EUR"),
-            rdc.FieldDatePayment(field="payment_date"),
-            rdc.FieldDateInvoice(field="invoice_date"),
+            rdc.FieldDatePayment(
+                field="payment_date",
+                format="%Y-%m-%d",
+                date_precision=DATE_PRECISION_DAY,
+            ),
+            rdc.FieldDateInvoice(
+                field="invoice_date",
+                format="%Y-%m-%d",
+                date_precision=DATE_PRECISION_DAY,
+            ),
             rdc.FieldDateStart(
                 field="subsidy_date_from",
                 format="%Y-%m-%d",

@@ -406,6 +406,7 @@ const citations = [
     height: var(--arrow-size);
     border-bottom: 4px solid var(--box-color);
     border-right: 4px solid var(--box-color);
+    border-radius: 4px;
     animation: arrow-anim 1s linear infinite;
   }
 
