@@ -105,7 +105,7 @@ const citations = [
     <section class="banner banner-dark">
       <div class="container">
         <div class="regular-content content-section">
-          <div class="banner-title data-summary">
+          <h2 class="banner-title data-summary">
             So far, TSOSI includes
             <span class="number-emphasis">
               {{ emitters.length }}
@@ -118,7 +118,7 @@ const citations = [
             <RouterLink to="#partner-banner">
               partner's infrastructure
             </RouterLink>
-          </div>
+          </h2>
 
           <EntityMap
             class="home-map"
@@ -256,7 +256,7 @@ const citations = [
 
 <style scoped>
 #home > *:first-child {
-  padding-top: 3vh;
+  padding-top: 15vh;
 }
 
 #home.mobile {

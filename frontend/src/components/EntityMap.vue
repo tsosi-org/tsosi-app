@@ -434,9 +434,16 @@ const legendDt = {
       style="margin-top: 1em"
     >
       <AccordionPanel value="0">
-        <AccordionHeader>
+        <AccordionHeader
+          :pt="{ toggleicon: { style: 'position: absolute; left: 4px;' } }"
+        >
           <div
-            style="display: flex; width: 100%; justify-content: space-between"
+            style="
+              display: flex;
+              width: 100%;
+              margin-left: 1rem;
+              justify-content: space-between;
+            "
           >
             <h2>Legend</h2>
             <div v-if="!props.disableExport" class="map-export-menu">
