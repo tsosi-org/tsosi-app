@@ -418,6 +418,7 @@ async function updateMapData() {
                 :title="'Location of the supporters'"
                 :data-loaded="mapDataLoaded"
                 :export-title-base="props.entity.name"
+                :show-legend="true"
               />
             </div>
             <div v-if="chartTabTriggered" class="dataviz-wrapper">

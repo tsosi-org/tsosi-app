@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-const props = defineProps<{ width?: string }>()
+const props = defineProps<{ width?: string; noBody?: boolean }>()
 </script>
 
 <template>
@@ -7,7 +7,7 @@ const props = defineProps<{ width?: string }>()
     <div class="card-header">
       <slot name="header"> </slot>
     </div>
-    <div class="card-body">
+    <div v-if="!props.noBody" class="card-body">
       <div class="card-title as-heading" style="text-align: center">
         <slot name="title"></slot>
       </div>
@@ -21,8 +21,6 @@ const props = defineProps<{ width?: string }>()
 <style scoped>
 .card {
   position: relative;
-  width: v-bind(width);
-  min-height: 5rem;
 
   background: white;
   box-shadow:

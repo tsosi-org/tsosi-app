@@ -37,6 +37,7 @@ const menu = useTemplateRef("menu")
 
 function toggleMenu(event: Event) {
   menu.value!.toggle(event)
+  event.stopPropagation()
 }
 </script>
 

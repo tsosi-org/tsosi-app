@@ -199,6 +199,7 @@ export async function getEntities(): Promise<DeepReadonly<
     mapping[e.id] = e
   })
   refData.entities = mapping
+  console.log(`${Array.from(Object.keys(mapping)).length} entities`)
   return refData.entities
 }
 

@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import {
-  getEmitters,
-  getInfrastructures,
-  getPartners,
-  type Entity,
-} from "@/singletons/ref-data"
+import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg"
+import cosoLogoUrl from "@/assets/img/coso-black-logo.svg"
+import { getEmitters, getPartners, type Entity } from "@/singletons/ref-data"
 import {
   changeMetaTitle,
   changeMetaDescripion,
@@ -14,12 +11,12 @@ import EntityMap from "@/components/EntityMap.vue"
 import CardComponent from "@/components/CardComponent.vue"
 import { shuffleArray } from "@/utils/data-utils"
 import ImageAtom from "@/components/atoms/ImageAtom.vue"
-import SearchBar from "@/components/SearchBar.vue"
 import { getEntityUrl } from "@/utils/url-utils"
-import { isDesktop } from "@/composables/useMediaQuery"
-import { onBeforeMount, onMounted, onUnmounted } from "vue"
+import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery"
+import { onBeforeMount, onMounted, onUnmounted, computed } from "vue"
 import { togglePageNoHeader, setBigHeader } from "@/singletons/fixedHeaderStore"
 import Carousel from "primevue/carousel"
+import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 
 changeMetaUrl(true)
 changeMetaDescripion(
@@ -27,7 +24,6 @@ changeMetaDescripion(
 )
 changeMetaTitle("TSOSI - Transparency to Sustain Open Science Infrastructure")
 
-const infrastructures = getInfrastructures() as Entity[]
 const partners = getPartners() as Entity[]
 shuffleArray(partners)
 
@@ -38,6 +34,20 @@ emitters.forEach((e) => {
   if (e.country && !countries.includes(e.country)) {
     countries.push(e.country)
   }
+})
+
+const breakPoint1 = useMediaQuery("(min-width: 850px)", false)
+const breakPoint2 = useMediaQuery("(min-width: 550px)", false)
+const partnerLogoWidth = computed(() => {
+  if (breakPoint1.value) {
+    console.log("Breakpoint 1")
+    return "175px"
+  } else if (breakPoint2.value) {
+    console.log("Breakpoint 2")
+    return "150px"
+  }
+  console.log("No breakpoint")
+  return "100px"
 })
 
 onBeforeMount(() => {
@@ -58,27 +68,36 @@ onUnmounted(() => {
 function updateHeaderHome() {
   setBigHeader(window.scrollY < 70)
 }
+
+const citations = [
+  "TSOSI spotlights all the organizations that have supported open science infrastructure",
+  "The more we highlight those who have funded, the more funders we will attract",
+  "TSOSI aims to make funding to open science infrastructure the norm",
+]
 </script>
 
 <template>
-  <div id="home" :class="{ 'home-mobile': !isDesktop }">
+  <div id="home" :class="{ mobile: !isDesktop }">
     <section class="banner">
       <div class="container">
-        <div class="regular-content content-section citation">
-          <div>
-            <h2>
-              No reason to hide a contribution made to an Open Science
-              Infrastructure.
-            </h2>
-          </div>
-          <div class="hr"></div>
-          <div class="subtitle">
-            TSOSI was born of the idea that all funding, subsidies and support
-            should be transparent, so that we can better understand the issues
-            behind the OS infrastructures.
-            <br />
-            <RouterLink to="/pages/about"> Read more. </RouterLink>
-          </div>
+        <div class="content-section">
+          <Carousel
+            :value="citations"
+            :num-visible="1"
+            :num-scroll="1"
+            circular
+            :autoplay-interval="5000"
+          >
+            <template #item="slotProps">
+              <div class="citation">
+                <h2>
+                  <span>
+                    {{ slotProps.data }}
+                  </span>
+                </h2>
+              </div>
+            </template>
+          </Carousel>
         </div>
       </div>
     </section>
@@ -86,7 +105,7 @@ function updateHeaderHome() {
     <section class="banner banner-dark">
       <div class="container">
         <div class="regular-content content-section">
-          <div class="data-summary">
+          <div class="banner-title data-summary">
             So far, TSOSI includes
             <span class="number-emphasis">
               {{ emitters.length }}
@@ -95,166 +114,139 @@ function updateHeaderHome() {
             <span class="number-emphasis">
               {{ countries.length.toString() }}
             </span>
-            countries that contributed to sustain
-            <RouterLink to="#partner-banner" class="number-emphasis">
-              {{ infrastructures.length.toString() }}
+            countries that have financially contributed to
+            <RouterLink to="#partner-banner">
+              partner's infrastructure
             </RouterLink>
-            Open Science Infrastructures.
           </div>
-        </div>
-      </div>
-    </section>
-    <section class="banner">
-      <div class="container">
-        <div class="regular-content content-section">
+
           <EntityMap
             class="home-map"
             :id="'home-supporters-map'"
             :supporters="emitters"
-            :title="'Location of the supporters'"
             :data-loaded="true"
+            :export-title-base="'overall supporters'"
           />
         </div>
       </div>
     </section>
 
-    <section id="partner-banner" class="banner banner-dark">
+    <section id="partner-banner" class="banner">
       <div class="container">
         <div class="regular-content content-section">
-          <h1 style="text-align: center">Our Partners</h1>
-          <Carousel
-            :value="partners"
-            :numVisible="4"
-            :numScroll="1"
-            circular
-            :responsive-options="[
-              {
-                breakpoint: '1150px',
-                numVisible: 3,
-                numScroll: 1,
-              },
-              {
-                breakpoint: '850px',
-                numVisible: 2,
-                numScroll: 1,
-              },
-              {
-                breakpoint: '600px',
-                numVisible: 1,
-                numScroll: 1,
-              },
-            ]"
-          >
-            <template #item="slotProps">
-              <RouterLink
-                :to="getEntityUrl(slotProps.data.id)"
-                class="card-link"
-              >
-                <CardComponent>
-                  <template #header>
-                    <ImageAtom
-                      :src="slotProps.data.logo"
-                      :width="'150px'"
-                      :center="true"
-                    />
-                  </template>
-                  <template #title>
-                    {{ slotProps.data.name }}
-                  </template>
-                </CardComponent>
-              </RouterLink>
-            </template>
-          </Carousel>
+          <h2 class="banner-title" style="text-align: center">
+            For its launching, TSOSI includes data from the partners
+            infrastructure
+          </h2>
 
           <!-- TO BE REMOVED once carousel is validated -->
-          <div class="partner-cards" style="display: none">
-            <CardComponent
+          <div class="partner-cards">
+            <RouterLink
+              :to="getEntityUrl(entity.id)"
               v-for="entity of partners"
-              :entity="entity"
               :key="entity.id"
+              class="card-link"
             >
-              <template #header>
-                <ImageAtom
-                  :src="entity.logo"
-                  width="max(min(17vw, 12rem), 150px)"
-                  :center="true"
-                />
-              </template>
-              <template #title>
-                <RouterLink :to="getEntityUrl(entity.id)">
-                  {{ entity.name }}
-                </RouterLink>
-              </template>
-            </CardComponent>
+              <CardComponent :no-body="true">
+                <template #header>
+                  <ImageAtom
+                    :src="entity.logo"
+                    :width="partnerLogoWidth"
+                    :center="true"
+                  />
+                </template>
+              </CardComponent>
+            </RouterLink>
           </div>
-
-          <SearchBar
-            width="min(80vw, 800px)"
-            class="large"
-            place-holder="Search for institutions"
-          />
         </div>
       </div>
     </section>
 
-    <section id="explain-banner" class="banner">
+    <section id="explain-banner" class="banner banner-dark">
       <div class="container">
         <div class="regular-content content-section">
-          <div
-            class="explain-cards"
-            style="
-              display: flex;
-              flex-direction: row;
-              flex-wrap: wrap;
-              gap: 1.5em;
-              justify-content: space-around;
-            "
-          >
-            <CardComponent width="24rem">
-              <template #title>
-                <h3 class="as-h1">Why ?</h3>
-              </template>
-              <template #content>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. In
-                interdum, odio in aliquam ornare, nunc tellus euismod mi, vitae
-                varius enim risus vel quam. Proin fringilla nec quam vel
-                consectetur. Cras pharetra tempus dapibus. Sed libero turpis,
-                dapibus et tortor id, vestibulum congue sapien. Phasellus erat
-                mi, interdum eu euismod aliquam, ultricies nec nibh. Etiam nec
-                malesuada elit. Nunc scelerisque metus eget turpis rhoncus
-                egestas.
-              </template>
-            </CardComponent>
-            <CardComponent width="24rem">
-              <template #title>
-                <h3 class="as-h1">How ?</h3>
-              </template>
-              <template #content>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. In
-                interdum, odio in aliquam ornare, nunc tellus euismod mi, vitae
-                varius enim risus vel quam. Proin fringilla nec quam vel
-                consectetur. Cras pharetra tempus dapibus. Sed libero turpis,
-                dapibus et tortor id, vestibulum congue sapien. Phasellus erat
-                mi, interdum eu euismod aliquam, ultricies nec nibh. Etiam nec
-                malesuada elit. Nunc scelerisque metus eget turpis rhoncus
-                egestas.
-              </template>
-            </CardComponent>
-            <CardComponent width="24rem">
-              <template #title>
-                <h3 class="as-h1">When ?</h3>
-              </template>
-              <template #content>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. In
-                interdum, odio in aliquam ornare, nunc tellus euismod mi, vitae
-                varius enim risus vel quam. Proin fringilla nec quam vel
-                consectetur. Cras pharetra tempus dapibus. Sed libero turpis,
-                dapibus et tortor id, vestibulum congue sapien. Phasellus erat
-                mi, interdum eu euismod aliquam, ultricies nec nibh. Etiam nec
-                malesuada elit. Nunc scelerisque metus eget turpis rhoncus
-                egestas.
-              </template>
-            </CardComponent>
+          <h2 class="banner-title" style="text-align: center">
+            How does it work?
+          </h2>
+          <div class="explain-boxes">
+            <div class="explain-box" style="--l-pos: 80px">
+              <h3>1. We collect financial data from TSOSI partners</h3>
+              <p>
+                For its launching, the data comes from partners infrastructure
+              </p>
+            </div>
+            <div class="explain-box" style="--l-pos: calc(100% - 80px)">
+              <h3>2. We enrich data with ROR and Wikidata identifiers</h3>
+              <p>
+                Which allows to deduplicate and retrieve descriptions and logos
+                from Wikipedia
+              </p>
+            </div>
+            <div class="explain-box">
+              <h3>3. We ingest data in TSOSI software</h3>
+              <p>
+                So that everyone can explore this data, and wants to contribute
+                to open infrastructure
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="join-banner" class="banner">
+      <div class="container">
+        <div class="regular-content content-section">
+          <div class="grid-2-cols">
+            <div>
+              <h2 class="banner-title" style="text-align: center">
+                How to join TSOSI?
+              </h2>
+              <div style="max-width: 700px; margin: 0 auto">
+                <p :style="`margin-top: ${isDesktop ? '4em' : '2em'}`">
+                  The project started in September 2024, and the platform was
+                  launched in June 2025. Any support and feedback are really
+                  welcome. If you represent an institution, a consortium or an
+                  infrastructure, feel free to drop us a line
+                  <CodeBlockAtom
+                    :content="'contact (@tsosi.org)'"
+                    :inline="true"
+                    :background="true"
+                  />
+                </p>
+              </div>
+            </div>
+            <div>
+              <h2 class="banner-title" style="text-align: center">
+                Who is behind TSOSI?
+              </h2>
+              <div
+                style="
+                  max-width: 700px;
+                  margin: 0 auto;
+                  display: flex;
+                  flex-wrap: wrap;
+                  justify-content: space-around;
+                  align-items: center;
+                "
+              >
+                <ImageAtom
+                  :src="ugaLogoUrl"
+                  :width="isDesktop ? '150px' : '125px'"
+                  :center="true"
+                />
+                <ImageAtom
+                  :src="cosoLogoUrl"
+                  :width="isDesktop ? '200px' : '150px'"
+                  :center="true"
+                />
+              </div>
+              <div style="text-align: center">
+                <RouterLink :to="'/pages/about'">
+                  See governance and partners
+                </RouterLink>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -267,40 +259,32 @@ function updateHeaderHome() {
   padding-top: 3vh;
 }
 
-.home-mobile {
+#home.mobile {
   .citation,
   .citation h2 {
     font-size: 2.8rem;
-
-    & .subtitle {
-      width: initial;
-    }
   }
 
-  .data-summary {
+  .banner-title {
     font-size: 1.75rem;
+  }
+
+  .grid-2-cols {
+    grid-template-columns: 1fr;
   }
 }
 
 .citation {
-  padding: 0 min(0.8em, 4vw);
-
-  & .hr {
-    content: "";
-    height: 2px;
-    width: 50%;
-    /* margin-left: min(1em, 4vw); */
-    background-color: var(--color-heading);
-  }
-
-  & .subtitle {
-    font-size: 1rem;
-    width: 50%;
-  }
+  height: 100%;
+  margin: auto auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
-.citation,
 .citation h2 {
+  max-width: 1000px;
   font-size: 5rem;
   font-weight: 400;
   line-height: 1.4;
@@ -310,18 +294,7 @@ function updateHeaderHome() {
   max-width: 100%;
 }
 
-.home-mobile {
-  & .partner-cards {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    & :deep(.card) {
-      width: min(100%, 450px);
-    }
-  }
-}
-
 .data-summary {
-  font-size: 2.25rem;
   padding: min(1rem, 3vw);
   border-radius: 20px;
   font-weight: 700;
@@ -330,30 +303,34 @@ function updateHeaderHome() {
 .banner {
   width: 100%;
   padding: 4vh 0;
+
+  &.banner-dark {
+    background-color: var(--p-gray-100);
+  }
 }
 
-.banner-dark {
-  background-color: var(--p-gray-100);
+.banner-title {
+  font-size: 2.5rem;
+  text-align: left;
 }
 
 .partner-cards {
-  margin: 2rem 0;
-  display: grid;
-  row-gap: 2em;
-  column-gap: 1.25em;
-  grid-template-columns: 1fr;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  margin: 2rem auto;
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 1em;
+  column-gap: 2em;
   justify-content: space-around;
+  max-width: 800px;
 }
 
 .card-link {
   display: block;
   text-decoration: unset;
-  margin: 8px 1.5em;
-  /* height: calc(100% - 16px); */
 
-  & :deep(.card) {
-    min-height: 250px;
+  &:deep(.card) {
+    padding: 10px;
+    box-shadow: unset;
   }
 
   &:hover,
@@ -375,16 +352,6 @@ function updateHeaderHome() {
   }
 }
 
-.explain-cards :deep(.card) {
-  color: white;
-  background: transparent
-    linear-gradient(115deg, var(--p-primary-400), 30%, var(--p-primary-700));
-  /* background-color: var(--p-primary-700); */
-
-  & :deep(h3) {
-    color: white;
-  }
-}
 .content-section {
   display: flex;
   flex-direction: column;
@@ -401,6 +368,46 @@ function updateHeaderHome() {
 }
 
 .home-map :deep(.map-container) {
-  height: 40rem;
+  height: min(40rem, 75vh);
+}
+
+.explain-box {
+  --b-margin: 5rem;
+  --box-color: var(--b-col, var(--p-surface-300));
+  position: relative;
+  padding: 2em;
+  border-radius: 20px;
+  max-width: 650px;
+  margin: 0 auto var(--b-margin);
+  border: 2px solid var(--box-color);
+
+  & h3 {
+    font-size: 1.5rem;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: calc(100% + 2px);
+    left: var(--l-pos, calc(50% - 1px));
+    height: var(--b-margin);
+    width: 2px;
+    background-color: var(--box-color);
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+
+    &::after {
+      all: unset;
+    }
+  }
+}
+
+.grid-2-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2em;
+  row-gap: 4em;
 }
 </style>
