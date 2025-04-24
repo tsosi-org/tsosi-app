@@ -388,11 +388,25 @@ const citations = [
   &::after {
     content: "";
     position: absolute;
-    top: calc(100% + 2px);
+    top: calc(100% + 1px);
     left: var(--l-pos, calc(50% - 1px));
-    height: var(--b-margin);
+    height: calc(var(--b-margin) + 2px);
     width: 2px;
     background-color: var(--box-color);
+  }
+
+  &::before {
+    --arrow-size: 14px;
+    content: "";
+    position: absolute;
+    top: calc(100% + 1px + var(--b-margin) - var(--arrow-size));
+    left: calc(var(--l-pos, calc(50%)) + 1px - (var(--arrow-size) / 2));
+    transform: rotate(45deg);
+    width: var(--arrow-size);
+    height: var(--arrow-size);
+    border-bottom: 4px solid var(--box-color);
+    border-right: 4px solid var(--box-color);
+    animation: arrow-anim 1s linear infinite;
   }
 
   &:last-child {
@@ -401,6 +415,24 @@ const citations = [
     &::after {
       all: unset;
     }
+    &::before {
+      all: unset;
+    }
+  }
+}
+
+@keyframes arrow-anim {
+  0% {
+    opacity: 0.2;
+    transform: translateY(-5rem) rotate(45deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2.5rem) rotate(45deg);
+  }
+  100% {
+    opacity: 0.2;
+    transform: rotate(45deg);
   }
 }
 
