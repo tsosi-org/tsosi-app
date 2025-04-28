@@ -35,6 +35,18 @@ const props = defineProps<{
   entity: EntityDetails
 }>()
 
+const noHistogramIds =
+  import.meta.env.VITE_INFRA_HISTOGRAM_OPT_OUT?.split(",") || []
+// Whether to display the histogram
+const displayHistogram = computed(() => {
+  if (!noHistogramIds.length) {
+    return true
+  }
+  return !props.entity.identifiers.some((id) =>
+    noHistogramIds.includes(id.value),
+  )
+})
+
 // Refs for test.
 // There seems to be Memory leak because of the datatable component,
 // mainly caused by this skeleton table.
@@ -421,7 +433,10 @@ async function updateMapData() {
                 :show-legend="true"
               />
             </div>
-            <div v-if="chartTabTriggered" class="dataviz-wrapper">
+            <div
+              v-if="displayHistogram && chartTabTriggered"
+              class="dataviz-wrapper"
+            >
               <EntityHistogram :entity="props.entity" class="entity-chart" />
             </div>
           </div>
