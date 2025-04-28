@@ -13,7 +13,7 @@ from tsosi.models import (
     Transfer,
 )
 from tsosi.models.identifier import MATCH_CRITERIA_FROM_INPUT
-from tsosi.models.static_data import MATCH_SOURCE_MANUAL
+from tsosi.models.static_data import MATCH_SOURCE_MANUAL, REGISTRY_ROR
 
 T = TypeVar("T")
 
@@ -61,6 +61,7 @@ class IdentifierFactory(BaseTypingFactory[Identifier]):
     class Meta:
         model = Identifier
 
+    registry_id = REGISTRY_ROR
     value = Faker("ean8")
     entity = SubFactory(EntityFactory)
 

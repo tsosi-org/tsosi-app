@@ -31,6 +31,7 @@ from tsosi.models import (
     Entity,
     Identifier,
     IdentifierEntityMatching,
+    IdentifierVersion,
     InfrastructureDetails,
     Transfer,
 )
@@ -260,14 +261,6 @@ def ingest_entity_identifier_relations(
     )
     to_merge["match_criteria"] = MATCH_CRITERIA_MERGED
     merge_entities(to_merge, date_update)
-
-    # 6 - Detach all identifiers still attached to inactive entities
-    Identifier.objects.filter(entity__is_active=False).update(
-        entity_id=None, date_last_updated=date_update
-    )
-    IdentifierEntityMatching.objects.filter(
-        entity__is_active=False, date_end__isnull=True
-    ).update(date_end=date_update, date_last_updated=date_update)
 
     logger.info(f"Finished ingesting new Identifier - Entity relations.")
 
@@ -717,3 +710,40 @@ def update_infrastructure_metrics():
             ],
         )
     logger.info(f"Updated {len(data)} infrastructure metrics.")
+
+
+def identifier_versions_for_processing() -> pd.DataFrame:
+    """ """
+    queryset = IdentifierVersion.objects.values(
+        "id", "identifier_id", "record", "date_start"
+    )
+
+    data = pd.DataFrame.from_records(queryset)
+    if data.empty:
+        return data
+
+    # Remove unique version per ID
+    grouped = data.groupby("identifier_id")["id"].count().reset_index()
+    to_remove_list = grouped[grouped["id"] == 1]["identifier_id"].to_list()
+    to_drop = data[data["identifier_id"].isin(to_remove_list)]
+    data = data.drop(to_drop.index).reset_index(drop=True)
+
+    return data
+
+
+def process_identifier_versions() -> TaskResult:
+    """
+    Analyze and clean multiple versions of the same identifier.
+
+    1 - Flag whether there's important change between successive versions.
+        We must flag both the old and newer versions to not delete them
+
+    2 - Delete detached versions not flagged above.
+    """
+    result = TaskResult(partial=False)
+    data = identifier_versions_for_processing()
+    if data.empty:
+        logger.info("No identifier versions to process.")
+        return result
+
+    data = data.sort_values(["identifier_id", "date_start"])

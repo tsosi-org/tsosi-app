@@ -22,7 +22,7 @@ def test_entities_for_logo_update():
         logo_url="http://commons.wikimedia.org/wiki/Special:FilePath/Logo%20Universit%C3%A9%20Grenoble-Alpes%20%282020%29.jpg"
     )
     # Default
-    entities = entities_for_logo_update(query_threshold=3)
+    entities = entities_for_logo_update(query_threshold=2)
     assert len(entities) == 1
     assert entities[0].id == entity.id
 
@@ -33,7 +33,7 @@ def test_entities_for_logo_update():
     entities = entities_for_logo_update(query_threshold=2)
     assert len(entities) == 0
 
-    # Recently fetched extract
+    # Old extract
     entity.date_logo_fetched = now - timedelta(days=30)
     entity.save()
     entities = entities_for_logo_update(query_threshold=2)

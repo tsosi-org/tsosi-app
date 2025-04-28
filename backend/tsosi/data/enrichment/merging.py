@@ -5,28 +5,36 @@ import pandas as pd
 from django.db import transaction
 from tsosi.data.db_utils import bulk_create_from_df, bulk_update_from_df
 from tsosi.data.exceptions import DataException
-from tsosi.models import Entity, Transfer, TransferEntityMatching
+from tsosi.models import (
+    Entity,
+    Identifier,
+    IdentifierEntityMatching,
+    Transfer,
+    TransferEntityMatching,
+)
 from tsosi.models.transfer import MATCH_CRITERIA_MERGED, TRANSFER_ENTITY_TYPES
 
 logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def merge_entities(entities: pd.DataFrame, date_update: datetime):
+def merge_entities(
+    entities: pd.DataFrame,
+    date_update: datetime,
+    detach_ids: bool = True,
+):
     """
     Merge the given entities.
 
-    1 - Update the `merged_with` value of the entities to me merged.
+    1 - Update the entities to me merged info and flag them as inactive.
 
-    2 - Concatenate the static fields from the entity it was merged with.
-        Note that Identifiers are not handled by this method so their
-        re-assignement should be handled before calling this method.
+    2 - Detach all identifiers attached to the merged entities.
 
-    3 - Update all transfers referencing the original entity to reference
-        the new one.
+    3 - For the merge target entities: concatenate the static fields
+        from all the entities that was merged with them.
 
-    4 - Add an entry in TransferEntityMatching for all the (Transfer, Entity)
-        combinations.
+    4 - Update all transfers referencing the original entities to reference
+        the new ones and create new TransferEntityMatching entries.
 
     :param entities:    The DataFrame of entities to be merged.
                         It must contain the columns:
@@ -39,6 +47,8 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
                         - `match_source` - The match source to input in step 4
 
     :param date_update: The datetime object to use as the update date.
+    :param detach_ids:  Whether to detach the identifiers attached to the
+                        merged entities (step 2). Default `True`.
     """
     # Prepare data
     # Check required columns and remove duplicate rows
@@ -140,7 +150,16 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
     )
     logger.info(f"Updated {len(to_merge)} Entity records.")
 
-    # 2 - Update entities that were merged with other
+    # 2 - Detach all identifiers still attached to the merged entities
+    if detach_ids:
+        Identifier.objects.filter(
+            entity__id__in=e_to_update["id"].to_list()
+        ).update(entity_id=None, date_last_updated=date_update)
+        IdentifierEntityMatching.objects.filter(
+            entity__id__in=e_to_update["id"].to_list(), date_end__isnull=True
+        ).update(date_end=date_update, date_last_updated=date_update)
+
+    # 3 - Update entities that were merged with other
     m_entities = pd.DataFrame.from_records(
         Entity.objects.filter(
             id__in=e_to_update["merged_with_id"].to_list()
@@ -174,8 +193,8 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
     m_entities["date_last_updated"] = date_update
     bulk_update_from_df(Entity, m_entities, m_entities.columns.to_list())
 
+    # 4 - Update all transfers referencing these entities
     for e_type in TRANSFER_ENTITY_TYPES:
-        # 3 - Update all transfers referencing these entities
         entity_field = f"{e_type}_id"
         kwargs = {f"{entity_field}__in": entity_list}
         t_to_update = pd.DataFrame.from_records(
@@ -197,7 +216,7 @@ def merge_entities(entities: pd.DataFrame, date_update: datetime):
             f"Updated {len(t_to_update)} Transfer records with entity type `{e_type}`"
         )
 
-        # 3 - Create new TransferEntityMatching records
+        # Create new TransferEntityMatching records
         t_to_update["transfer_entity_type"] = e_type
         t_to_update = t_to_update.merge(
             to_merge[["entity_id", "match_criteria", "match_source"]].rename(

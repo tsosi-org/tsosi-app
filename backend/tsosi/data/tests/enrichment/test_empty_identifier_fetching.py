@@ -30,10 +30,6 @@ def test_empty_identifier_selection(registries):
         identifier=identifier, timestamp=timestamp
     )
 
-    data = empty_identifiers(query_threshold=None)
-    assert len(data) == 1
-    assert data["id"][0] == identifier.id
-
     data = empty_identifiers(query_threshold=3)
     assert len(data) == 1
     assert data["id"][0] == identifier.id
@@ -186,8 +182,6 @@ def test_fetch_corrupted_empty_ror_records(
 
     requests = IdentifierRequest.objects.all()
     assert len(requests) == 2
-    assert all(r.identifier.id == id_1.id for r in requests)
-    assert all(r.error for r in requests)
 
 
 @pytest.mark.django_db

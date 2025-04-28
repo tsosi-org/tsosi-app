@@ -5,15 +5,21 @@ import pytest
 from tsosi.data.enrichment.merging import merge_entities
 from tsosi.data.exceptions import DataException
 from tsosi.models import (
-    DataLoadSource,
     Entity,
+    Identifier,
+    IdentifierEntityMatching,
     Transfer,
     TransferEntityMatching,
 )
 from tsosi.models.transfer import MATCH_CRITERIA_MERGED
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 
-from ..factories import EntityFactory, TransferFactory
+from ..factories import (
+    EntityFactory,
+    IdentifierEntityMatchingFactory,
+    IdentifierFactory,
+    TransferFactory,
+)
 
 
 @pytest.mark.django_db
@@ -133,3 +139,73 @@ def test_multi_merging():
 
     with pytest.raises(DataException):
         merge_entities(merge_data, datetime.now(UTC))
+
+
+@pytest.mark.django_db
+def test_detach_ids_true(registries):
+    """Test the update of identifiers of merged entities"""
+    print("Testing merging entities with `detach_ids=True`")
+    e_1 = EntityFactory.create()
+    e_2 = EntityFactory.create()
+    i_1 = IdentifierFactory.create(entity=e_1)
+    i_e_1 = IdentifierEntityMatchingFactory.create(
+        entity=i_1.entity, identifier=i_1
+    )
+
+    merge_data = pd.DataFrame(
+        [
+            {
+                "entity_id": e_1.id,
+                "merged_with_id": e_2.id,
+                "merged_criteria": "Test merge",
+                "match_criteria": MATCH_CRITERIA_MERGED,
+                "match_source": MATCH_SOURCE_AUTOMATIC,
+            },
+        ]
+    )
+    date_update = datetime.now(UTC)
+    merge_entities(merge_data, date_update)
+
+    e_1 = Entity.objects.get(id=e_1.id)
+    i_1 = Identifier.objects.get(id=i_1.id)
+    i_e_1 = IdentifierEntityMatching.objects.get(id=i_e_1.id)
+
+    assert e_1.merged_with == e_2
+    assert not e_1.is_active
+    assert i_1.entity is None
+    assert i_e_1.date_end == date_update
+
+
+@pytest.mark.django_db
+def test_detach_ids_false(registries):
+    """Test the update of identifiers of merged entities"""
+    print("Testing merging entities with `detach_ids=False`")
+    e_1 = EntityFactory.create()
+    e_2 = EntityFactory.create()
+    i_1 = IdentifierFactory.create(entity=e_1)
+    i_e_1 = IdentifierEntityMatchingFactory.create(
+        entity=i_1.entity, identifier=i_1
+    )
+
+    merge_data = pd.DataFrame(
+        [
+            {
+                "entity_id": e_1.id,
+                "merged_with_id": e_2.id,
+                "merged_criteria": "Test merge",
+                "match_criteria": MATCH_CRITERIA_MERGED,
+                "match_source": MATCH_SOURCE_AUTOMATIC,
+            },
+        ]
+    )
+    date_update = datetime.now(UTC)
+    merge_entities(merge_data, date_update, detach_ids=False)
+
+    e_1 = Entity.objects.get(id=e_1.id)
+    i_1 = Identifier.objects.get(id=i_1.id)
+    i_e_1 = IdentifierEntityMatching.objects.get(id=i_e_1.id)
+
+    assert e_1.merged_with == e_2
+    assert not e_1.is_active
+    assert i_1.entity == e_1
+    assert i_e_1.date_end is None

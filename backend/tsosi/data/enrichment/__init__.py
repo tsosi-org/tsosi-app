@@ -1,8 +1,8 @@
 from .analytics import compute_analytics
 from .api_related import (
     fetch_empty_identifier_records,
+    refresh_identifier_records,
     update_logos,
-    update_registry_data,
     update_wikipedia_extract,
 )
 from .database_related import (

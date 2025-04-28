@@ -10,9 +10,8 @@ from urllib.parse import unquote
 
 import pandas as pd
 from django.core.files.images import ImageFile
-from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.db import transaction
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, F, Q, QuerySet
 from django.utils import timezone
 from tsosi.app_settings import app_settings
 from tsosi.data.db_utils import bulk_create_from_df, bulk_update_from_df
@@ -80,7 +79,7 @@ def empty_identifiers(
     :param registry_id:     Optional registry ID used to filter the identifiers.
     :param query_threshold: If not-null, filter out the identifiers with more
                             entries in the IdentifierRequest than the threshold
-                            over the last 7 days
+                            over the `IDENTIFIER_FETCH_DAYS` setting
     """
     queryset = Identifier.objects.filter(
         entity__isnull=False, current_version__isnull=True
@@ -128,6 +127,10 @@ def fetch_empty_identifier_records(
     if use_tokens:
         identifiers, result.partial = token_bucket.consume_for_df(identifiers)
     if identifiers.empty:
+        if result.partial:
+            logger.info(
+                f"Bucket exhausted for registry {registry_id}. Retry later."
+            )
         logger.info(
             f"There are no empty identifiers for registry {registry_id}."
         )
@@ -154,7 +157,7 @@ def fetch_empty_identifier_records(
     )
 
     # Create IdentifierVersion
-    identifier_versions = identifiers[~identifiers["record"].isnull()].copy()
+    identifier_versions = identifiers[~identifiers["record"].isna()].copy()
     if identifier_versions.empty:
         logger.info(
             f"No records found for the queried {len(identifiers)} identifiers."
@@ -207,28 +210,195 @@ def fetch_empty_identifier_records(
     return result
 
 
-## Identifier update
-def update_registry_data() -> TaskResult:
+## Identifier refresh
+def identifiers_for_refresh(
+    registry_id: str | None = None, query_threshold: int | None = None
+) -> pd.DataFrame:
     """
-    TODO: Routine to work with the external registry data.
-    1 - For every active identifiers, fetch the record and compare with
-        current version.
-    2 - Create new version if required and flag whether
-        the IdentifierEntityMatching should be reviewed.
-    3 - Populate/update the clc field at the entity level from the records data:
-        a - Name
-        b - Country
-        c - Url
-        d - Logo
-        e - Wikipedia extract
+    Retrieve the Identifier records that need to be updated.
+
+    :param registry_id:     Optional registry ID used to filter the identifiers.
+    :param query_threshold: If not-null, filter out the identifiers with more
+                            entries in the IdentifierRequest than the threshold
+                            over the `IDENTIFIER_FETCH_DAYS` setting.
     """
-    pass
+    fetched_date_condition = timezone.now() - timezone.timedelta(
+        days=app_settings.IDENTIFIER_REFRESH_DAYS
+    )
+    queryset = Identifier.objects.select_related("current_version").filter(
+        entity__isnull=False,
+        current_version__isnull=False,
+        current_version__date_last_fetched__lt=fetched_date_condition,
+    )
+    if registry_id is not None:
+        queryset = queryset.filter(registry_id=registry_id)
+
+    if query_threshold is None:
+        query_threshold = app_settings.IDENTIFIER_FETCH_RETRY
+    time_threshold = timezone.now() - timedelta(
+        days=app_settings.IDENTIFIER_FETCH_DAYS
+    )
+    queryset = queryset.annotate(
+        request_nb=Count(
+            "requests", filter=Q(requests__timestamp__gt=time_threshold)
+        )
+    ).filter(request_nb__lt=query_threshold)
+
+    instances = queryset.values(
+        "id",
+        "registry_id",
+        "value",
+        "current_version_id",
+        record=F("current_version__value"),
+    )
+    return pd.DataFrame.from_records(instances)
+
+
+@transaction.atomic
+def refresh_identifier_records(
+    registry_id: str, use_tokens: bool = True
+) -> TaskResult:
+    """
+    Routine to refresh the identifier records.
+
+    TODO: Harmonize with `fetch_empty_identifier_records`. Most of the
+    code is the same.
+
+    1 - For every active identifiers, fetch the current record and compare with
+        existing version.
+
+    2 - Create a new version if the existing and new record differ.
+
+    3 - Send the identifiers_fetched signal to trigger further processing.
+    """
+    logger.info(f"Refreshing identifier records for registry {registry_id}")
+    if registry_id == REGISTRY_ROR:
+        func = fetch_ror_records
+        token_bucket = ROR_TOKEN_BUCKET
+    elif registry_id == REGISTRY_WIKIDATA:
+        func = fetch_wikidata_records_data
+        token_bucket = WIKIDATA_TOKEN_BUCKET
+    else:
+        logger.error(f"Unknown identifier registry")
+        raise ValueError(f"Unknown identifier registry {registry_id}")
+
+    result = TaskResult(partial=False, countdown=token_bucket.refill_period)
+    identifiers = identifiers_for_refresh(registry_id)
+    if use_tokens:
+        identifiers, result.partial = token_bucket.consume_for_df(identifiers)
+    if identifiers.empty:
+        if result.partial:
+            logger.info(
+                f"Bucket exhausted for registry {registry_id}. Retry later."
+            )
+        logger.info(
+            f"There are no empty identifiers for registry {registry_id}."
+        )
+        return result
+
+    records = asyncio.run(func(identifiers["value"]))
+
+    # Log API requests
+    id_requests = records.copy()
+    id_requests["identifier_id"] = id_requests["id"].map(
+        identifiers.set_index("value")["id"]
+    )
+    log_identifier_requests(id_requests)
+
+    # Process results
+    records = records if records.empty else records[records["error"] == False]
+    result.partial = result.partial or len(records) != len(identifiers)
+    if records.empty:
+        logger.info(f"No records correctly fetched for registry {registry_id}.")
+        return result
+
+    identifiers["new_record"] = identifiers["value"].map(
+        records.set_index("id")["record"]
+    )
+    # Discard the ones with empty record
+    identifiers = identifiers[~identifiers["new_record"].isna()]
+
+    identifiers["_diff"] = ~identifiers["record"].eq(identifiers["new_record"])
+
+    no_change = identifiers[~identifiers["_diff"]][
+        ["current_version_id"]
+    ].copy()
+    new_records = identifiers[identifiers["_diff"]].copy()
+    del identifiers
+
+    date_update = timezone.now()
+
+    ## Handle un-changed records
+    if not no_change.empty:
+        no_change["date_last_updated"] = date_update
+        no_change["date_last_fetched"] = date_update
+
+        no_change.rename(columns={"current_version_id": "id"}, inplace=True)
+        bulk_update_from_df(
+            IdentifierVersion,
+            no_change,
+            ["id", "date_last_updated", "date_last_fetched"],
+        )
+
+    ## Handle modified records
+    if new_records.empty:
+        return result
+    # Update old versions
+    new_records["date_last_updated"] = date_update
+    old_versions = new_records[
+        ["current_version_id", "date_last_updated"]
+    ].copy()
+    old_versions["date_end"] = date_update
+    old_versions.rename(columns={"current_version_id": "id"}, inplace=True)
+    bulk_update_from_df(
+        IdentifierVersion, old_versions, ["id", "date_end", "date_last_updated"]
+    )
+
+    # Create new versions
+    new_versions = new_records[
+        ["id", "new_record", "date_last_updated"]
+    ].rename(
+        columns={
+            "id": "identifier_id",
+            "new_record": "value",
+        }
+    )
+    new_versions["date_created"] = date_update
+    new_versions["date_start"] = date_update
+    new_versions["date_last_fetched"] = date_update
+    fields = [
+        "identifier_id",
+        "value",
+        "date_start",
+        "date_last_fetched",
+        "date_created",
+        "date_last_updated",
+    ]
+    bulk_create_from_df(
+        IdentifierVersion, new_versions, fields, "identifier_version_id"
+    )
+
+    # Update identifier's current version
+    cols_map = {
+        "identifier_id": "id",
+        "identifier_version_id": "current_version_id",
+        "date_last_updated": "date_last_updated",
+    }
+    id_update = new_versions[cols_map.keys()].rename(columns=cols_map)
+    bulk_update_from_df(Identifier, id_update, cols_map.values())
+
+    logger.info(
+        f"Updated {len(new_versions)} new identifier versions "
+        f"for registry {registry_id}"
+    )
+    identifiers_fetched.send(
+        None, registry_id=registry_id, count=len(new_versions)
+    )
+    result.data_modified = True
+    return result
 
 
 #### Wiki-related
-WIKIPEDIA_DATE_THRESHOLD_DAYS = 7
-
-
 def log_entity_requests(results: pd.DataFrame):
     """
     Log the request results in the `EntityRequest` table.
@@ -281,7 +451,7 @@ def entities_for_wikipedia_extract_update(
 
     # Last fetch condition
     date_value = timezone.now() - timezone.timedelta(
-        days=WIKIPEDIA_DATE_THRESHOLD_DAYS
+        days=app_settings.WIKI_REFRESH_DAYS
     )
     date_condition = Q(date_wikipedia_fetched__isnull=True) | Q(
         date_wikipedia_fetched__lt=date_value
@@ -410,7 +580,7 @@ def entities_for_logo_update(
 
     # Last fetch condition
     date_value = timezone.now() - timezone.timedelta(
-        days=WIKIPEDIA_DATE_THRESHOLD_DAYS
+        days=app_settings.WIKI_REFRESH_DAYS
     )
     date_condition = Q(date_logo_fetched__isnull=True) | Q(
         date_logo_fetched__lt=date_value
