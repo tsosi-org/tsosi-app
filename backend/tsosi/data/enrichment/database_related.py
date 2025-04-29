@@ -712,10 +712,15 @@ def update_infrastructure_metrics():
     logger.info(f"Updated {len(data)} infrastructure metrics.")
 
 
-def identifier_versions_for_processing() -> pd.DataFrame:
+def identifier_versions_for_cleaning() -> pd.DataFrame:
     """ """
-    queryset = IdentifierVersion.objects.values(
-        "id", "identifier_id", "record", "date_start"
+    queryset = IdentifierVersion.objects.select_related("identifier").values(
+        "id",
+        "identifier_id",
+        "value",
+        "date_start",
+        "date_end",
+        registry_id=F("identifier__registry_id"),
     )
 
     data = pd.DataFrame.from_records(queryset)
@@ -731,19 +736,102 @@ def identifier_versions_for_processing() -> pd.DataFrame:
     return data
 
 
-def process_identifier_versions() -> TaskResult:
+def clean_identifier_versions() -> TaskResult:
     """
     Analyze and clean multiple versions of the same identifier.
-
-    1 - Flag whether there's important change between successive versions.
-        We must flag both the old and newer versions to not delete them
-
-    2 - Delete detached versions not flagged above.
+    Versions without significant change w/ the previous one should be discarded.
     """
     result = TaskResult(partial=False)
-    data = identifier_versions_for_processing()
+    data = identifier_versions_for_cleaning()
     if data.empty:
         logger.info("No identifier versions to process.")
         return result
 
+    # Extract useful data from ROR records.
+    # Wikidata records are already processed when queried.
+    ror_mask = data["registry_id"] == REGISTRY_ROR
+    data.loc[ror_mask.index, "value"] = data[ror_mask]["value"].apply(
+        ror_record_extractor
+    )
+
+    # Sort versions by date to compute diff between successive versions
     data = data.sort_values(["identifier_id", "date_start"])
+    data: pd.DataFrame = pd.concat(
+        [
+            data,
+            data[["identifier_id", "value"]].add_prefix("_next_").shift(-1),
+        ],
+        axis=1,
+    )
+
+    data["_value_same"] = data["value"].eq(data["_next_value"])
+    # Whether the next row should be merged with the current one
+    data["_merge_next"] = (
+        data["identifier_id"] == data["_next_identifier_id"]
+    ) & data["_value_same"]
+    # Used for cumsum.
+    # The versions with same `_merge_cumsum` should be merged together
+    # The value is updated only when the previous row's `_merge_next` is false
+    data["_merge_incr"] = data["_merge_next"].map({True: 0, False: 1})
+    data["_merge_cumsum"] = data["_merge_incr"].cumsum().shift(1, fill_value=0)
+
+    # We can now merge the rows with equal identifier_id & _merge_cumsum
+    grouped = (
+        data.groupby(["identifier_id", "_merge_cumsum"])
+        .agg(
+            id=pd.NamedAgg(column="id", aggfunc="first"),
+            date_start=pd.NamedAgg(column="date_start", aggfunc="min"),
+            date_end_max=pd.NamedAgg(column="date_end", aggfunc="max"),
+            date_end_null=pd.NamedAgg(
+                column="date_end", aggfunc=lambda x: x.isna().any()
+            ),
+            merged_ids_list=pd.NamedAgg(column="id", aggfunc=lambda x: list(x)),
+            group_count=pd.NamedAgg(column="id", aggfunc="count"),
+        )
+        .reset_index()
+    )
+    grouped["date_end"] = grouped["date_end_max"]
+    mask = grouped["date_end_null"]
+    grouped.loc[mask, "date_end"] = pd.NaT
+    grouped["has_merged"] = grouped["group_count"] > 1
+
+    # Delete all versions not in grouped
+    v_kept_ids = grouped["id"].to_list()
+    v_to_delete = data[~data["id"].isin(v_kept_ids)]["id"].to_list()
+    if v_to_delete:
+        IdentifierVersion.objects.filter(id__in=v_to_delete).delete()
+        logger.info(f"Deleted {len(v_to_delete)} redondant IdentifierVersion.")
+
+    # Update versions with updated data
+    now = timezone.now()
+
+    v_to_update = grouped[grouped["has_merged"]].copy()
+    if v_to_update.empty:
+        return
+
+    clean_null_values(v_to_update)
+    v_to_update["date_last_updated"] = now
+    bulk_update_from_df(
+        IdentifierVersion,
+        v_to_update,
+        ["id", "date_start", "date_end", "date_last_updated"],
+    )
+    logger.info(
+        f"Updated {len(v_to_update)} IdentifierVersion with merged ones."
+    )
+
+    # Update identifier's new current version
+    id_to_update = v_to_update[v_to_update["date_end"].isna()].copy()
+    if id_to_update.empty:
+        return result
+
+    id_to_update = id_to_update[
+        ["id", "identifier_id", "date_last_updated"]
+    ].rename(columns={"id": "current_version_id", "identifier_id": "id"})
+    bulk_update_from_df(
+        Identifier,
+        id_to_update,
+        ["id", "current_version_id", "date_last_updated"],
+    )
+
+    return result

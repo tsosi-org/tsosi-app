@@ -7,14 +7,15 @@ from .data.signals import (
 )
 from .tasks import (
     trigger_identifier_data_processing,
+    trigger_identifier_versions_cleaning,
     trigger_new_identifier_fetching,
     trigger_post_ingestion_pipeline,
-    trigger_wiki_data_update,
 )
 
+# New transfers
 transfers_created.connect(trigger_post_ingestion_pipeline)
-
-identifiers_fetched.connect(trigger_identifier_data_processing)
-
-identifiers_fetched.connect(trigger_wiki_data_update)
+# New identifiers
 identifiers_created.connect(trigger_new_identifier_fetching)
+# New identifier versions
+identifiers_fetched.connect(trigger_identifier_data_processing)
+identifiers_fetched.connect(trigger_identifier_versions_cleaning)

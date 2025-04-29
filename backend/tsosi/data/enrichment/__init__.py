@@ -6,6 +6,7 @@ from .api_related import (
     update_wikipedia_extract,
 )
 from .database_related import (
+    clean_identifier_versions,
     new_identifiers_from_records,
     update_entity_from_pid_records,
     update_entity_roles_clc,

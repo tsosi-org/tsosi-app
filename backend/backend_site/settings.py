@@ -38,7 +38,7 @@ TSOSI_OPTIONAL_SETTINGS = [
     "TSOSI_SCIPOST_AUTH",
     # Only used by the `ingest_all` management command
     "TSOSI_TO_INGEST_DIR",
-    # Only used by background tasks
+    # Only used by background tasks & Celery
     "TSOSI_REDIS_DB",
     "TSOSI_REDIS_HOST",
     "TSOSI_REDIS_PORT",
@@ -253,6 +253,12 @@ TSOSI_CELERY_TASK_SERIALIZER = "json"
 TSOSI_CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 TSOSI_CELERY_BEAT_SCHEDULER = "tsosi.scheduler:DatabaseSchedulerWithCleanup"
 TSOSI_CELERY_BEAT_SCHEDULE = {
+    # Hourly
+    "periodic-clc-fields-updates": {
+        "task": "tsosi.tasks.update_clc_fields",
+        "schedule": crontab(minute="30"),
+    },
+    # Daily
     "periodic-identifier-update": {
         "task": "tsosi.tasks.identifier_update",
         "schedule": crontab(minute="0", hour="21"),
@@ -261,8 +267,9 @@ TSOSI_CELERY_BEAT_SCHEDULE = {
         "task": "tsosi.tasks.update_wiki_data",
         "schedule": crontab(minute="0", hour="23"),
     },
+    # Weekly
     "periodic-currency-update": {
         "task": "tsosi.tasks.currency_rates_workflow",
-        "schedule": crontab(minute="0", hour="21", day_of_week="sun"),
+        "schedule": crontab(minute="0", hour="22", day_of_week="sun"),
     },
 }

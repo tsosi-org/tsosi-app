@@ -70,8 +70,18 @@ class IdentifierVersion(TimestampedModel):
     identifier = models.ForeignKey(Identifier, on_delete=models.CASCADE)
     value = models.JSONField()
     date_start = models.DateTimeField(default=timezone.now)
+    # null date_end corresponds to current version
     date_end = models.DateTimeField(null=True)
     date_last_fetched = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["identifier"],
+                condition=models.Q(date_end__isnull=True),
+                name="unique_identifier_version_with_no_date_end",
+            ),
+        ]
 
 
 class IdentifierEntityMatching(TimestampedModel):
