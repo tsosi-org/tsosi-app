@@ -29,7 +29,7 @@ def get_config(
             rdc.FieldAmount(field="Value"),
             rdc.FieldHideAmount(constant=False),
             rdc.FieldCurrency(field="Currency"),
-            rdc.FieldDatePayment(
+            rdc.FieldDatePaymentRecipient(
                 field="Date", format="%Y", date_precision=DATE_PRECISION_YEAR
             ),
         ],

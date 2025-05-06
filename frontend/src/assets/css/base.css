@@ -115,9 +115,7 @@ it's not working.
 }
 
 .init-big-header {
-  *,
-  *::before,
-  *::after {
+  main {
     scroll-margin-top: 0;
   }
 }
@@ -138,4 +136,10 @@ body {
     "Helvetica Neue",
     sans-serif;
   text-rendering: optimizeLegibility;
+}
+
+
+*::selection {
+  color: white;
+  background-color: var(--p-primary-500);
 }

@@ -61,8 +61,8 @@ __all__ = [
     "FieldAgentCustomId",
     "FieldAgentCountry",
     "FieldDateInvoice",
-    "FieldDatePayment",
-    "FieldDateStart",
+    "FieldDatePaymentRecipient",
+    "FieldDatePaymentEmitter" "FieldDateStart",
     "FieldDateEnd",
     "FieldOriginalId",
     "FieldOriginalAmountField",
@@ -227,8 +227,14 @@ class FieldDateInvoice(ConstOrField):
 
 
 @dataclass(kw_only=True)
-class FieldDatePayment(ConstOrField):
-    NAME = "date_payment"
+class FieldDatePaymentRecipient(ConstOrField):
+    NAME = "date_payment_recipient"
+    type = "date"
+
+
+@dataclass(kw_only=True)
+class FieldDatePaymentEmitter(ConstOrField):
+    NAME = "date_payment_emitter"
     type = "date"
 
 
@@ -290,7 +296,8 @@ ALL_FIELDS: list[Type[ConstOrField]] = [
     FieldAgentCustomId,
     FieldAgentCountry,
     FieldDateInvoice,
-    FieldDatePayment,
+    FieldDatePaymentRecipient,
+    FieldDatePaymentEmitter,
     FieldDateStart,
     FieldDateEnd,
     FieldOriginalId,
@@ -299,7 +306,8 @@ ALL_FIELDS: list[Type[ConstOrField]] = [
 
 DATE_FIELDS = [
     FieldDateInvoice,
-    FieldDatePayment,
+    FieldDatePaymentRecipient,
+    FieldDatePaymentEmitter,
     FieldDateStart,
     FieldDateEnd,
 ]
@@ -647,7 +655,7 @@ class RawDataConfig:
         clean_null_values(df)
         return df
 
-    def generate_data_file(self):
+    def generate_data_file(self, output_folder=None):
         """
         Generate a data file in the TSOSI format, ready for ingestion.
         """
@@ -658,7 +666,9 @@ class RawDataConfig:
         if self.source.full_data:
             file_name += f"_full"
         file_name += ".json"
-        file_path = app_settings.DATA_EXPORT_FOLDER / file_name
+        if output_folder is None:
+            output_folder = app_settings.DATA_EXPORT_FOLDER
+        file_path = output_folder / file_name
         ingestion_config = DataIngestionConfig(
             date_generated=datetime.now(UTC).isoformat(timespec="seconds"),
             source=self.source.serialize(),
@@ -697,23 +707,6 @@ class RawDataConfigFromFile(RawDataConfig):
                 f"Supported input types are {INPUT_FILE_TYPES}"
             )
         return df
-
-
-# All configs
-CONFIG_OPERAS = {
-    "id": "operas",
-    "fields": [
-        FieldRecipientName(constant="OPERAS"),
-        FieldRecipientRorId(constant="00rfexj26"),
-        FieldEmitterName(field="Emitter"),
-        FieldEmitterCountry(field="Country"),
-        FieldAmount(field="Value"),
-        FieldCurrency(field="Currency"),
-        FieldDatePayment(
-            field="Date", format="%Y", date_precision=DATE_PRECISION_YEAR
-        ),
-    ],
-}
 
 
 def create_missing_fields(df: pd.DataFrame):

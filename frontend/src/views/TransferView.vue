@@ -59,7 +59,7 @@ const dataConfig: Array<DataFieldProps> = [
     id: "emitter",
     title: "Emitter",
     field: "emitter",
-    type: "pageLink",
+    type: "entityLink",
     fieldLabel: "emitter.name",
     fieldLink: {
       base: getEntityBaseUrl(),
@@ -77,7 +77,7 @@ const dataConfig: Array<DataFieldProps> = [
     id: "recipient",
     title: "Recipient",
     field: "recipient",
-    type: "pageLink",
+    type: "entityLink",
     fieldLabel: "recipient.name",
     fieldLink: {
       base: getEntityBaseUrl(),
@@ -87,9 +87,9 @@ const dataConfig: Array<DataFieldProps> = [
   },
   {
     id: "agent",
-    title: "Agent",
+    title: "Intermediary",
     field: "agent",
-    type: "pageLink",
+    type: "entityLink",
     fieldLabel: "agent.name",
     fieldLink: {
       base: getEntityBaseUrl(),
@@ -128,9 +128,15 @@ const dataConfig: Array<DataFieldProps> = [
     type: "dateWithPrecision",
   },
   {
-    id: "datePayment",
-    title: "Date payment",
-    field: "date_payment",
+    id: "datePaymentRecipient",
+    title: "Date payment received",
+    field: "date_payment_recipient",
+    type: "dateWithPrecision",
+  },
+  {
+    id: "datePaymentEmitter",
+    title: "Date payment emitted",
+    field: "date_payment_emitter",
     type: "dateWithPrecision",
   },
   {

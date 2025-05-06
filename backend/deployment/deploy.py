@@ -86,7 +86,7 @@ def deploy(
     server_name: str,
     branch: str = None,
     skip_front_build=False,
-    restart_celery=False,
+    celery_no_restart=False,
 ):
     """
     Deploy the desired server with current code.
@@ -99,6 +99,7 @@ def deploy(
         "user": server.user,
         "branch": deploy_branch,
         "skip_front_build": skip_front_build,
+        "restart_celery": not celery_no_restart,
     }
     print(
         colored(
@@ -190,6 +191,12 @@ def deploy(
         f"cd {release_dir}/{django_folder}/ "
         f"&& {poetry_bin} run python manage.py migrate",
     )
+    # Custom tasks to execute after each deployment
+    ssh_execute(
+        server,
+        f"cd {release_dir}/{django_folder}/ "
+        f"&& {poetry_bin} run python manage.py update_partners",
+    )
 
     # Copy front files in release folder
     ssh_execute(server, f"mkdir -p {release_dir}/public")
@@ -223,7 +230,7 @@ def deploy(
     # Restart services
     ssh_execute(server, "sudo systemctl restart tsosi_gunicorn")
     ssh_execute(server, "sudo systemctl reload nginx")
-    if restart_celery:
+    if not celery_no_restart:
         ssh_execute(server, "sudo systemctl restart tsosi_celery")
         ssh_execute(server, "sudo systemctl restart tsosi_celery_beat")
     else:
@@ -250,7 +257,7 @@ if __name__ == "__main__":
         default=False,
     )
     parser.add_argument(
-        "--restart-celery",
+        "--celery-no-restart",
         help="If passed, restart tsosi_celery and tsosi_celery_beat services.",
         action=argparse.BooleanOptionalAction,
         default=False,
@@ -260,5 +267,5 @@ if __name__ == "__main__":
         args.server_name,
         args.branch,
         args.skip_front_build,
-        args.restart_celery,
+        args.celery_no_restart,
     )

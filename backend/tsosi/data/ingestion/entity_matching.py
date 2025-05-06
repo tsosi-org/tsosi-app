@@ -13,7 +13,7 @@ from tsosi.models.transfer import (
     MATCH_CRITERIA_SAME_PID,
 )
 
-from .utils import clean_null_values
+from ..utils import clean_null_values
 
 
 def resolve_merging_chain(

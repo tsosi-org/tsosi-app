@@ -1,4 +1,4 @@
-import { getCountry, type Transfer } from "@/singletons/ref-data"
+import { getCountry, type Entity, type Transfer } from "@/singletons/ref-data"
 import { getStaticDataUrl } from "@/utils/url-utils"
 import type { DeepReadonly } from "vue"
 
@@ -10,6 +10,7 @@ export type DataType =
   | "string"
   | "number"
   | "pageLink"
+  | "entityLink"
   | "externalLink"
   | "country"
   | "constant"
@@ -75,6 +76,13 @@ export function getItemLabel(
   } else if (fieldProps.type == "constant") {
     return fieldProps.field
   }
+  return resolveValueFromPath(item, fieldProps.field)
+}
+
+export function getItemValue(
+  item: Record<string, any>,
+  fieldProps: DataFieldProps,
+): any {
   return resolveValueFromPath(item, fieldProps.field)
 }
 

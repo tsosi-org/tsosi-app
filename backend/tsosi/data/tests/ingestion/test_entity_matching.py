@@ -1,9 +1,5 @@
-import sys
-
-print(sys.path)
-
 import pandas as pd
-from tsosi.data.entity_matching import match_entities
+from tsosi.data.ingestion.entity_matching import match_entities
 from tsosi.models.transfer import (
     MATCH_CRITERIA_SAME_NAME_COUNTRY,
     MATCH_CRITERIA_SAME_NAME_ONLY,
@@ -20,6 +16,7 @@ to_match = pd.DataFrame.from_records(
             "website": None,
             "ror_id": "05amyt365",
             "wikidata_id": None,
+            "custom_id": None,
             "expected_entity_id": "1",
             "expected_match_criteria": MATCH_CRITERIA_SAME_PID,
         },
@@ -30,6 +27,7 @@ to_match = pd.DataFrame.from_records(
             "website": None,
             "ror_id": None,
             "wikidata_id": "Q1227538",
+            "custom_id": None,
             "expected_entity_id": "1",
             "expected_match_criteria": MATCH_CRITERIA_SAME_PID,
         },
@@ -40,6 +38,7 @@ to_match = pd.DataFrame.from_records(
             "website": None,
             "ror_id": None,
             "wikidata_id": None,
+            "custom_id": None,
             "expected_entity_id": "2",
             "expected_match_criteria": MATCH_CRITERIA_SAME_NAME_COUNTRY,
         },
@@ -50,6 +49,7 @@ to_match = pd.DataFrame.from_records(
             "website": "https://www.ugent.be",
             "ror_id": None,
             "wikidata_id": None,
+            "custom_id": None,
             "expected_entity_id": "2",
             "expected_match_criteria": MATCH_CRITERIA_SAME_NAME_URL,
         },
@@ -60,6 +60,7 @@ to_match = pd.DataFrame.from_records(
             "website": None,
             "ror_id": None,
             "wikidata_id": None,
+            "custom_id": None,
             "expected_entity_id": "2",
             "expected_match_criteria": MATCH_CRITERIA_SAME_NAME_ONLY,
         },
@@ -70,6 +71,7 @@ to_match = pd.DataFrame.from_records(
             "website": None,
             "ror_id": None,
             "wikidata_id": None,
+            "custom_id": None,
             "expected_entity_id": None,
             "expected_match_criteria": None,
         },
@@ -80,6 +82,7 @@ to_match = pd.DataFrame.from_records(
             "website": None,
             "ror_id": None,
             "wikidata_id": None,
+            "custom_id": None,
             "expected_entity_id": None,
             "expected_match_criteria": None,
         },
@@ -95,6 +98,7 @@ base_entities = pd.DataFrame.from_records(
             "website": "https://doaj.org",
             "ror_id": None,
             "wikidata_id": "Q1227538",
+            "custom_id": None,
             "merged_with_id": None,
         },
         {
@@ -103,6 +107,7 @@ base_entities = pd.DataFrame.from_records(
             "country": "DK",
             "website": "https://doaj.org",
             "ror_id": "05amyt365",
+            "custom_id": None,
             "wikidata_id": None,
             "merged_with_id": None,
         },
@@ -113,6 +118,7 @@ base_entities = pd.DataFrame.from_records(
             "website": "https://www.ugent.be",
             "ror_id": None,
             "wikidata_id": None,
+            "custom_id": None,
         },
         {
             "id": "3",
@@ -121,6 +127,7 @@ base_entities = pd.DataFrame.from_records(
             "website": None,
             "ror_id": None,
             "wikidata_id": None,
+            "custom_id": None,
             "merged_with_id": "2",
         },
     ]

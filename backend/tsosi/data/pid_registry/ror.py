@@ -99,31 +99,36 @@ async def match_ror_record(
     Query the ROR affiliation API with the given organization name.
     If no results is returned, try the ROR query API for inactive organizations.
 
-    :param value:       The organization name to match
     :param session:     The aiohttp ClientSession object
+    :param value:       The organization name to match
     :return result:     The RorAffiliationApiResult
     """
     ror_result = RorAffiliationApiResult(search_value=value)
     search_term = value
     params = {"affiliation": search_term}
     request_url = f"{ROR_API_ENDPOINT}?{urlencode(params)}"
+    ror_result.info = request_url
     try:
         async with session.get(request_url) as response:
+            ror_result.http_status = response.status
             if response.status < 200 or response.status >= 300:
                 raise HTTPStatusError(f"Wrong status code: {response.status}")
             query_response: dict = await response.json()
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
+        ror_result.timestamp = datetime.now(UTC)
         msg = "\n".join(
             [
-                f"Error while querying ROR affiliation API for value {value} with url {request_url}:",
+                f"Error while querying ROR affiliation API for value {value} "
+                f"with url {request_url}:",
                 str(e),
             ]
         )
         ror_result.error = True
-        ror_result.error_message = msg
+        ror_result.error_msg = msg
         logger_console.warning(msg)
         return ror_result
 
+    ror_result.timestamp = datetime.now(UTC)
     query_results = query_response.get("number_of_results", 0)
 
     if query_results > 0:
@@ -139,10 +144,12 @@ async def match_ror_record(
     params = {"query": search_term, "filter": "status:inactive"}
     try:
         async with session.get(request_url) as response:
+            ror_result.http_status = response.status
             if response.status < 200 or response.status >= 300:
                 raise HTTPStatusError(f"Wrong status code: {response.status}")
             query_response: dict = await response.json()
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
+        ror_result.timestamp = datetime.now(UTC)
         msg = "\n".join(
             [
                 f"Error while querying ROR affiliation API for value {value} with url {request_url}:",
@@ -150,14 +157,16 @@ async def match_ror_record(
             ]
         )
         ror_result.error = True
-        ror_result.error_message = msg
+        ror_result.error_msg = msg
         logger_console.warning(msg)
         return ror_result
 
+    ror_result.timestamp = datetime.now(UTC)
     query_results = query_response.get("number_of_results", 0)
     if query_results == 0:
         return ror_result
 
+    ror_result.info = request_url
     ror_result.matched_status = "inactive"
     ror_result.full_results = query_response["items"]
     return ror_result
@@ -226,11 +235,15 @@ def process_ror_matching_result(
     (id, name, country)
     """
     processed_result = RorMatchingResult(
-        search_value=result.search_value, matched_status=result.matched_status
+        search_value=result.search_value,
+        matched_status=result.matched_status,
+        # Copy the base ApiResult variables
+        http_status=result.http_status,
+        error=result.error,
+        error_msg=result.error_msg,
+        info=result.info,
     )
     if result.error or len(result.full_results) == 0:
-        processed_result.error = result.error
-        processed_result.error_message = result.error_message
         return processed_result
 
     matched_org = None
@@ -300,20 +313,23 @@ async def get_ror_record(
     """
     result = RorRecordApiResult(id=id)
     if not re.match(ROR_ID_REGEX, id):
-        result.error_message = f"The provided ID is not a ROR ID: {id}"
+        result.error_msg = f"The provided ID is not a ROR ID: {id}"
         result.error = True
         return result
 
     url = f"{ROR_API_ENDPOINT}/{id}"
+    result.info = url
     try:
         async with session.get(url) as response:
+            result.http_status = response.status
             if response.status < 200 or response.status >= 300:
                 raise HTTPStatusError(
                     f"Wrong HTTP status code: {response.status}"
                 )
             result.record = await response.json()
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
-        result.error_message = "\n".join(
+        result.timestamp = datetime.now(UTC)
+        result.error_msg = "\n".join(
             [
                 f"Error while querying ROR API with url {url}",
                 f"Original exception:",
@@ -321,7 +337,8 @@ async def get_ror_record(
             ]
         )
         result.error = True
-        logger.warning(result.error_message)
+        logger.warning(result.error_msg)
+    result.timestamp = datetime.now(UTC)
     return result
 
 

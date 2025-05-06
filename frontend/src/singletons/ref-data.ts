@@ -45,10 +45,12 @@ export interface InfrastructureDetails extends ApiData {
 export interface Entity extends ApiData {
   id: string
   name: string
+  short_name?: string
   country?: string
   identifiers: Identifier[]
   coordinates?: string
   logo?: string
+  icon?: string
   is_recipient: boolean
   is_partner: boolean
 }
@@ -83,7 +85,8 @@ export interface Transfer extends ApiData {
 export interface TransferDetails extends Transfer {
   date_agreement: DateWithPrecision | null
   date_invoice: DateWithPrecision | null
-  date_payment: DateWithPrecision | null
+  date_payment_recipient: DateWithPrecision | null
+  date_payment_emitter: DateWithPrecision | null
   date_start: DateWithPrecision | null
   date_end: DateWithPrecision | null
   raw_data: Record<string, any>
@@ -197,6 +200,7 @@ export async function getEntities(): Promise<DeepReadonly<
     mapping[e.id] = e
   })
   refData.entities = mapping
+  console.log(`${Array.from(Object.keys(mapping)).length} entities`)
   return refData.entities
 }
 
@@ -274,7 +278,8 @@ export async function getTransferDetails(
   processTransferEntities(transfer)
   for (const f of [
     "date_agreement",
-    "date_payment",
+    "date_payment_recipient",
+    "date_payment_emitter",
     "date_invoice",
     "date_start",
     "date_end",

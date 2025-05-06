@@ -36,7 +36,7 @@ import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
         Saint-Martin-d'Hères, France. All defaults to all rights reserved unless
         otherwise specified. Contact TSOSI
         <CodeBlockAtom
-          :content="'contact (tsosi.org)'"
+          :content="'contact (@tsosi.org)'"
           :inline="true"
           :background="true"
         />

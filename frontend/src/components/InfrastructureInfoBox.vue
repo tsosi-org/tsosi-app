@@ -10,7 +10,6 @@ const props = defineProps<{
   fullWidth?: boolean
   breakdownDisclaimer?: boolean
 }>()
-console.log(`Full width: ${props.fullWidth}`)
 </script>
 
 <template>

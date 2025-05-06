@@ -2,6 +2,10 @@
 import "leaflet/dist/leaflet.css"
 import * as L from "leaflet"
 import Skeleton from "primevue/skeleton"
+import Accordion from "primevue/accordion"
+import AccordionPanel from "primevue/accordionpanel"
+import AccordionHeader from "primevue/accordionheader"
+import AccordionContent from "primevue/accordioncontent"
 import {
   ref,
   onMounted,
@@ -35,10 +39,12 @@ export interface EntityMapProps {
   id: string
   infrastructures?: Entity[]
   supporters: Entity[]
-  title: string
+  title?: string
   dataLoaded?: boolean
   exportTitleBase?: string
   disableExport?: boolean
+  showIconLegend?: boolean
+  showLegend?: boolean
 }
 
 const props = defineProps<EntityMapProps>()
@@ -319,8 +325,10 @@ function getFileName(): string {
     baseName += "_"
     baseName += props.exportTitleBase.replace(/\s+/g, "_")
   }
-  baseName += "_"
-  baseName += props.title.replace(/\s+/g, "_")
+  if (props.title) {
+    baseName += "_"
+    baseName += props.title.replace(/\s+/g, "_")
+  }
   return baseName
 }
 
@@ -380,6 +388,20 @@ function downloadData(format: "json" | "csv") {
   }
   exportJSON(fields, exportData, fileName)
 }
+
+const legendDt = {
+  header: {
+    background: "transparent",
+    active: {
+      background: "transparent",
+      hover: { background: "transparent" },
+    },
+    hover: { background: "transparent" },
+  },
+  content: {
+    background: "transparent",
+  },
+}
 </script>
 
 <template>
@@ -405,81 +427,119 @@ function downloadData(format: "json" | "csv") {
       </div>
       <div class="map" ref="tsosi-map"></div>
     </div>
-    <div style="position: relative">
-      <div v-show="!loading" class="map-legend">
-        <div v-if="layers.emitters" class="legend-item">
-          <div class="legend-icon circle-icon" v-html="circleSvg"></div>
-          <span>Individual supporters</span>
-        </div>
-        <div v-if="layers.countries" class="legend-item">
-          <div class="legend-icon diamond-icon" v-html="diamondSvg"></div>
-          <span>
-            Countries
-            <InfoButtonAtom>
-              <template #popup>
-                <span>
-                  Gather all funders from the given country without a precise
-                  location information.
+
+    <Accordion
+      :value="props.showLegend ? '0' : undefined"
+      :dt="legendDt"
+      style="margin-top: 1em"
+    >
+      <AccordionPanel value="0">
+        <AccordionHeader
+          :pt="{ toggleicon: { style: 'position: absolute; left: 4px;' } }"
+        >
+          <div
+            style="
+              display: flex;
+              width: 100%;
+              margin-left: 1rem;
+              justify-content: space-between;
+            "
+          >
+            <h2>Legend</h2>
+            <div v-if="!props.disableExport" class="map-export-menu">
+              <MenuButtonAtom
+                :id="`${props.id}-export-menu`"
+                :button="{
+                  id: `${props.id}-export-button`,
+                  label: 'Export',
+                  type: 'action',
+                  icon: 'download',
+                }"
+                :items="exportItems"
+              />
+            </div>
+          </div>
+        </AccordionHeader>
+        <AccordionContent>
+          <div class="map-description">
+            <div v-if="props.showIconLegend" style="position: relative">
+              <div v-show="!loading" class="map-legend">
+                <div v-if="layers.emitters" class="legend-item">
+                  <div class="legend-icon circle-icon" v-html="circleSvg"></div>
+                  <span>Individual supporters</span>
+                </div>
+                <div v-if="layers.countries" class="legend-item">
+                  <div
+                    class="legend-icon diamond-icon"
+                    v-html="diamondSvg"
+                  ></div>
+                  <span>
+                    Countries
+                    <InfoButtonAtom>
+                      <template #popup>
+                        <span>
+                          Gather all funders from the given country without a
+                          precise location information.
+                        </span>
+                      </template>
+                    </InfoButtonAtom>
+                  </span>
+                </div>
+                <div v-if="layers.infra" class="legend-item">
+                  <div class="legend-icon house-icon" v-html="houseSvg"></div>
+                  <span>Supported infrastructures</span>
+                </div>
+              </div>
+
+              <div
+                v-if="props.showIconLegend"
+                v-show="loading"
+                class="map-legend"
+              >
+                <div class="legend-item">
+                  <Skeleton shape="circle" size="1rem"></Skeleton>
+                  <Skeleton
+                    width="10ch"
+                    border-radius="3px"
+                    height="0.9rem"
+                  ></Skeleton>
+                </div>
+                <div class="legend-item">
+                  <Skeleton shape="circle" size="1rem"></Skeleton>
+                  <Skeleton width="10ch" border-radius="3px"></Skeleton>
+                </div>
+                <div class="legend-item">
+                  <Skeleton shape="circle" size="1rem"></Skeleton>
+                  <Skeleton width="10ch" border-radius="3px"></Skeleton>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin: 0 auto; width: fit-content">
+              <div>
+                This world map represents the locations of all the entities that
+                have financially contributed to the infrastructure. Supporters
+                with a specific location are represented by circles, while those
+                for which TSOSI only has information at the country level are
+                represented by diamond shapes. The location data comes from ROR
+                and Wikidata.
+                <span v-if="plottedSupporters">
+                  {{ plottedSupporters.value }} supporters out of
+                  {{ plottedSupporters.total }} are included in the world map.
                 </span>
-              </template>
-            </InfoButtonAtom>
-          </span>
-        </div>
-        <div v-if="layers.infra" class="legend-item">
-          <div class="legend-icon house-icon" v-html="houseSvg"></div>
-          <span>Supported infrastructures</span>
-        </div>
-      </div>
-
-      <div v-if="!props.disableExport" class="map-export-menu">
-        <MenuButtonAtom
-          :id="`${props.id}-export-menu`"
-          :button="{
-            id: `${props.id}-export-button`,
-            label: 'Export',
-            type: 'action',
-            icon: 'download',
-          }"
-          :items="exportItems"
-        />
-      </div>
-
-      <div v-show="loading" class="map-legend">
-        <div class="legend-item">
-          <Skeleton shape="circle" size="1rem"></Skeleton>
-          <Skeleton width="10ch" border-radius="3px" height="0.9rem"></Skeleton>
-        </div>
-        <div class="legend-item">
-          <Skeleton shape="circle" size="1rem"></Skeleton>
-          <Skeleton width="10ch" border-radius="3px"></Skeleton>
-        </div>
-        <div class="legend-item">
-          <Skeleton shape="circle" size="1rem"></Skeleton>
-          <Skeleton width="10ch" border-radius="3px"></Skeleton>
-        </div>
-      </div>
-    </div>
-
-    <div class="map-description" style="margin: 0 auto; width: fit-content">
-      <div style="padding: 0 min(2vw, 2em)">
-        This world map represents the locations of all the entities that have
-        financially contributed to the infrastructure. Supporters with a
-        specific location are represented by circles, while those for which
-        TSOSI only has information at the country level are represented by
-        diamond shapes. The location data comes from ROR and Wikidata.
-        <span v-if="plottedSupporters">
-          {{ plottedSupporters.value }} supporters out of
-          {{ plottedSupporters.total }} are included in the world map.
-        </span>
-        <Skeleton
-          v-else
-          width="10em"
-          border-radius="5px"
-          height="1em"
-          style="display: inline-block"
-        ></Skeleton>
-      </div>
-    </div>
+                <Skeleton
+                  v-else
+                  width="10em"
+                  border-radius="5px"
+                  height="1em"
+                  style="display: inline-block"
+                ></Skeleton>
+              </div>
+            </div>
+          </div>
+        </AccordionContent>
+      </AccordionPanel>
+    </Accordion>
   </div>
 </template>
 
@@ -487,14 +547,6 @@ function downloadData(format: "json" | "csv") {
 .map-wrapper {
   position: relative;
   width: 100%;
-
-  &.desktop {
-    & .map-export-menu {
-      position: absolute;
-      top: -0.5em;
-      right: 0;
-    }
-  }
 }
 
 .loader-wrapper {
@@ -581,6 +633,11 @@ function downloadData(format: "json" | "csv") {
 
 .map-export-menu {
   text-align: center;
+  display: inline-block;
+  margin-right: 1.5em;
+}
+
+.map-description > * {
   margin-bottom: 1em;
 }
 </style>

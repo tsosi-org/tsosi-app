@@ -7,7 +7,17 @@ import {
   type Transfer,
   type TransferEntityType,
 } from "@/singletons/ref-data"
-import { ref, type Ref, onMounted, watch, computed, useTemplateRef } from "vue"
+import {
+  ref,
+  shallowRef,
+  type ShallowRef,
+  type Ref,
+  onMounted,
+  watch,
+  computed,
+  useTemplateRef,
+  onBeforeUnmount,
+} from "vue"
 import EntityHistogram from "@/components/EntityHistogram.vue"
 import Table, { type TableColumnProps } from "@/components/TableComponent.vue"
 import { getEntityBaseUrl, getTransferBaseUrl } from "@/utils/url-utils"
@@ -25,7 +35,26 @@ const props = defineProps<{
   entity: EntityDetails
 }>()
 
+const noHistogramIds =
+  import.meta.env.VITE_INFRA_HISTOGRAM_OPT_OUT?.split(",") || []
+// Whether to display the histogram
+const displayHistogram = computed(() => {
+  if (!noHistogramIds.length) {
+    return true
+  }
+  return !props.entity.identifiers.some((id) =>
+    noHistogramIds.includes(id.value),
+  )
+})
+
+// Refs for test.
+// There seems to be Memory leak because of the datatable component,
+// mainly caused by this skeleton table.
+const displaySkeletonTable = ref(true)
+
+// Transfer data
 const transfers: Ref<Record<TransferEntityType, Transfer[]> | null> = ref(null)
+// Stores whether there's at least 1 transfer with a discoled amount
 const showAmount: Ref<boolean> = ref(true)
 // Tabs
 const activeTab = ref("0")
@@ -33,11 +62,15 @@ const tabs = useTemplateRef("entity-tabs")
 // This ref is used to trigger chart data fetching only when the tab is
 // selected
 const chartTabTriggered = ref(false)
-const emittersData: Ref<Entity[]> = ref([])
+const emittersData: ShallowRef<Entity[]> = shallowRef([])
 const mapDataLoaded = ref(false)
 
 onMounted(async () => {
-  updateTransfers()
+  await updateTransfers()
+})
+
+onBeforeUnmount(() => {
+  transfers.value = null
 })
 
 watch(selectedCurrency, () => {
@@ -116,7 +149,7 @@ async function updateTransfers() {
 
 const currencyColumn = "__currency"
 const amountColumn = "__amount"
-const baseTableColumns: TableColumnProps[] = [
+const baseSupporterColumns: TableColumnProps[] = [
   {
     id: "date_clc",
     title: "Date",
@@ -128,7 +161,72 @@ const baseTableColumns: TableColumnProps[] = [
     id: "emitter",
     title: "Supporter",
     field: "emitter",
-    type: "pageLink",
+    type: "entityLink",
+    fieldLabel: "emitter.name",
+    fieldLink: {
+      base: getEntityBaseUrl(),
+      suffix: "emitter.id",
+      suffixType: "field",
+    },
+    sortable: true,
+  },
+  {
+    id: "agent",
+    title: "Intermediary",
+    field: "agent",
+    type: "entityLink",
+    fieldLabel: "agent.name",
+    fieldLink: {
+      base: getEntityBaseUrl(),
+      suffix: "agent.id",
+      suffixType: "field",
+    },
+    sortable: true,
+    info: "When a transfer is done through another entity like a library consortia, it appears in this column.",
+  },
+  {
+    id: "recipient",
+    title: "Beneficiary",
+    field: "recipient",
+    type: "entityLink",
+    fieldLabel: "recipient.name",
+    fieldLink: {
+      base: getEntityBaseUrl(),
+      suffix: "recipient.id",
+      suffixType: "field",
+    },
+    sortable: true,
+  },
+  {
+    id: "amount",
+    title: "Amount",
+    field: amountColumn,
+    type: "number",
+    sortable: true,
+    nullValueTemplate: '<span class="data-label hidden-amount">hidden</span>',
+  },
+  {
+    id: "currency",
+    title: "Currency",
+    field: currencyColumn,
+    type: "string",
+    currencySelector: true,
+  },
+]
+
+const baseInfrastructureColumns: TableColumnProps[] = [
+  {
+    id: "date_clc",
+    title: "Date",
+    field: "date_clc",
+    type: "dateWithPrecision",
+    sortable: true,
+  },
+  {
+    id: "emitter",
+    title: "Supporter",
+    field: "emitter",
+    type: "entityLink",
     fieldLabel: "emitter.name",
     fieldLink: {
       base: getEntityBaseUrl(),
@@ -145,23 +243,10 @@ const baseTableColumns: TableColumnProps[] = [
     sortable: true,
   },
   {
-    id: "recipient",
-    title: "Beneficiary",
-    field: "recipient",
-    type: "pageLink",
-    fieldLabel: "recipient.name",
-    fieldLink: {
-      base: getEntityBaseUrl(),
-      suffix: "recipient.id",
-      suffixType: "field",
-    },
-    sortable: true,
-  },
-  {
     id: "agent",
     title: "Intermediary",
     field: "agent",
-    type: "pageLink",
+    type: "entityLink",
     fieldLabel: "agent.name",
     fieldLink: {
       base: getEntityBaseUrl(),
@@ -177,6 +262,7 @@ const baseTableColumns: TableColumnProps[] = [
     field: amountColumn,
     type: "number",
     sortable: true,
+    nullValueTemplate: '<span class="data-label hidden-amount">hidden</span>',
   },
   {
     id: "currency",
@@ -194,13 +280,12 @@ const baseTableColumns: TableColumnProps[] = [
  * @param removedColumns
  */
 function getTableColumns(
+  baseColumns: TableColumnProps[],
   showAmount: boolean,
   transfers: Transfer[],
   removedColumns: string[] = [],
 ): TableColumnProps[] {
-  let columns = baseTableColumns.filter(
-    (col) => !removedColumns.includes(col.id),
-  )
+  let columns = baseColumns.filter((col) => !removedColumns.includes(col.id))
   if (!showAmount) {
     columns = columns.filter((col) => !["amount", "currency"].includes(col.id))
   }
@@ -235,11 +320,17 @@ const supporterTableProps = computed(() => {
   // lighten the layout
   if (!transfers.value.agent?.length) {
     toRemoveCols.push("emitterCountry")
+    toRemoveCols.push("emitter")
   }
   return {
     id: `${props.entity.id}-emitter`,
     data: supporterData,
-    columns: getTableColumns(showAmount.value, supporterData, toRemoveCols),
+    columns: getTableColumns(
+      baseSupporterColumns,
+      showAmount.value,
+      supporterData,
+      toRemoveCols,
+    ),
     defaultSort: {
       sortField: "date_clc",
       sortOrder: -1,
@@ -258,9 +349,12 @@ const recipientTableProps = computed(() => {
   return {
     id: `${props.entity.id}-recipient`,
     data: transfers.value.recipient,
-    columns: getTableColumns(showAmount.value, transfers.value.recipient, [
-      "recipient",
-    ]),
+    columns: getTableColumns(
+      baseInfrastructureColumns,
+      showAmount.value,
+      transfers.value.recipient,
+      ["recipient"],
+    ),
     defaultSort: {
       sortField: "date_clc",
       sortOrder: -1,
@@ -271,18 +365,18 @@ const recipientTableProps = computed(() => {
   }
 })
 
-const skeletonTableProps = computed(() => {
-  return {
-    id: `${props.entity.id}-skeleton-table`,
-    data: new Array(20).fill({ field: "dummy" }),
-    columns: getTableColumns(showAmount.value, []),
-    rowUniqueId: "id",
-    skeleton: true,
-    exportTitle: exportString,
-    hideCount: true,
-    disableExport: true,
-  }
-})
+const skeletonTableProps = {
+  id: `${props.entity.id}-skeleton-table`,
+  data: new Array(10).fill({ field: "dummy" }),
+  columns: props.entity.is_recipient
+    ? baseInfrastructureColumns
+    : baseSupporterColumns,
+  rowUniqueId: "id",
+  skeleton: true,
+  exportTitle: exportString,
+  hideCount: true,
+  disableExport: true,
+}
 
 async function updateMapData() {
   const emitters = await getEmittersForEntity(props.entity.id)
@@ -312,7 +406,7 @@ async function updateMapData() {
       </TabList>
       <TabPanels>
         <TabPanel value="0">
-          <div v-if="!transfers">
+          <div v-if="!transfers && displaySkeletonTable">
             <!-- @vue-ignore -->
             <Table v-bind="skeletonTableProps"></Table>
           </div>
@@ -336,9 +430,13 @@ async function updateMapData() {
                 :title="'Location of the supporters'"
                 :data-loaded="mapDataLoaded"
                 :export-title-base="props.entity.name"
+                :show-legend="true"
               />
             </div>
-            <div v-if="chartTabTriggered" class="dataviz-wrapper">
+            <div
+              v-if="displayHistogram && chartTabTriggered"
+              class="dataviz-wrapper"
+            >
               <EntityHistogram :entity="props.entity" class="entity-chart" />
             </div>
           </div>
@@ -347,7 +445,7 @@ async function updateMapData() {
     </Tabs>
   </div>
   <div v-else>
-    <div v-if="!transfers">
+    <div v-if="!transfers && displaySkeletonTable">
       <!-- @vue-ignore -->
       <Table v-bind="skeletonTableProps"></Table>
     </div>

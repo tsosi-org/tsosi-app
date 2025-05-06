@@ -130,13 +130,26 @@ function breakdownDisclaimer(): boolean {
         class="entity-header__grid"
         :class="{ 'three-columns': hasLinks && !isInfrastructure }"
       >
-        <div v-if="isDesktop || props.entity?.logo" class="entity-header__logo">
+        <div class="entity-header__logo">
           <Image
+            style="display: inline-block"
             :src="props.entity?.logo"
             :width="logoWidth"
             :height="logoHeight"
             :center="true"
+            :container-padding="'5px'"
           />
+          <div
+            v-if="!props.entity.logo"
+            :style="`margin-top: ${isDesktop ? '-10px' : '-30px'};`"
+          >
+            <span :style="`display: inline-block; max-width: 125px;`">
+              Logo not found, see
+              <RouterLink :to="'/pages/faq#missing-logo'">
+                how to add it
+              </RouterLink>
+            </span>
+          </div>
         </div>
 
         <div class="entiy-header__desc">
@@ -169,8 +182,12 @@ function breakdownDisclaimer(): boolean {
             </p>
           </div>
           <div v-else>
-            Open Access list of financial support made or received by
-            {{ props.entity.name }} from 2XXX to 2XXX.
+            TSOSI relies on Wikidata and Wikipedia to obtain logos and
+            descriptions of entities. Unfortunately, no Wikipedia description
+            has been found for this entity so far. Please see
+            <RouterLink :to="'/pages/faq#missing-description'">
+              how to improve this </RouterLink
+            >.
           </div>
         </div>
 

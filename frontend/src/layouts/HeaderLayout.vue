@@ -65,6 +65,7 @@ function onDrawerToggle(show: boolean) {
         <h2>Transparency to Sustain Open Science Infrastructure</h2>
       </div>
       <div
+        v-show="!bigHeader"
         style="
           display: flex;
           flex-direction: row;
@@ -74,13 +75,12 @@ function onDrawerToggle(show: boolean) {
         "
       >
         <SearchBar
-          v-show="!bigHeader"
+          :place-holder="'Search for infrastructure or institution'"
           width="330px"
-          :as-growing-button="true"
+          :as-growing-button="false"
         />
 
         <NavigationListAtom
-          v-show="!bigHeader"
           :color="$dt('neutral.50').value"
           :header="true"
           font-size="20px"
@@ -215,30 +215,31 @@ header.home {
   }
 
   &.desktop {
-    .logo {
+    & .logo {
       height: min(var(--content-height), 100px);
       margin-left: 0;
     }
 
-    nav {
+    & nav {
       font-size: 2.25rem;
-      grid-template-columns: 30% 1fr;
       display: flex;
+      justify-content: space-between;
+      grid-template-columns: unset;
     }
   }
 }
 
 .header-citation,
 .header-citation h2 {
-  font-style: italic;
   color: white;
   font-weight: 500;
   text-align: center;
   font-size: inherit;
 }
 
-.desktop .header-citation {
-  text-align: initial;
+.desktop .header-citation h2 {
+  text-align: right;
+  max-width: 500px;
 }
 
 nav {

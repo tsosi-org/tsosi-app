@@ -95,5 +95,41 @@ class AppSettings:
                 )
         return val
 
+    @property
+    def IDENTIFIER_FETCH_RETRY(self) -> int:
+        """
+        The maximum number of attempts for fetching an individual identifier
+        record when it repeatedly failed over a given time window.
+        """
+        return self._setting("IDENTIFIER_FETCH_RETRY", 3)
+
+    @property
+    def IDENTIFIER_FETCH_DAYS(self) -> int:
+        """The above-mentioned time window, in days."""
+        return self._setting("IDENTIFIER_FETCH_DAYS", 1)
+
+    @property
+    def IDENTIFIER_REFRESH_DAYS(self) -> int:
+        """The number of days before refreshing existing identifier records."""
+        return self._setting("IDENTIFIER_REFRESH_DAYS", 1)
+
+    @property
+    def WIKI_FETCH_RETRY(self) -> int:
+        """
+        The maximum number of attempts for fetching a wiki-related resource
+        when it repeatedly failed over a given time window
+        """
+        return self._setting("WIKI_FETCH_RETRY", 3)
+
+    @property
+    def WIKI_FETCH_DAYS(self) -> int:
+        """The above-mentioned time window, in days."""
+        return self._setting("WIKI_FETCH_DAYS", 1)
+
+    @property
+    def WIKI_REFRESH_DAYS(self) -> int:
+        """The number of days before refreshing existing wiki-related data."""
+        return self._setting("WIKI_REFRESH_DAYS", 7)
+
 
 app_settings = AppSettings()

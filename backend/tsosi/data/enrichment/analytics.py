@@ -1,6 +1,7 @@
 import logging
 
 import pandas as pd
+from django.db import transaction
 from django.db.models import F
 from tsosi.data.db_utils import bulk_create_from_df
 from tsosi.models import Analytic, Transfer
@@ -8,6 +9,7 @@ from tsosi.models import Analytic, Transfer
 logger = logging.getLogger(__name__)
 
 
+@transaction.atomic
 def compute_analytics():
     """
     Generate analytics table of pre-computed data.
@@ -15,7 +17,7 @@ def compute_analytics():
     logger.info("Computing analytics.")
     transfers = (
         Transfer.objects.prefetch_related("emitter", "recipient", "agent")
-        .all()
+        .filter(amounts_clc__isnull=False, date_clc__isnull=False)
         .values(
             "amounts_clc",
             "date_clc",

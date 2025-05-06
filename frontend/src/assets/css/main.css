@@ -42,8 +42,6 @@
   }
 }
 
-
-
 .top-drawer {
   position: fixed !important;
   top: 0;
@@ -113,6 +111,10 @@ h2, h3, h4, h5, h6 {
   color: var(--color-heading);
   font-weight: 700;
   border-radius: 4px;
+
+  & a {
+    color: var(--color-heading);
+  }
 }
 
 h1, h2, h3, h4, h5, h6, .as-heading {
@@ -206,4 +208,18 @@ a.wikidata-inline-link::before {
 h2.info-box-header {
   font-size: 1.15em;
   color: var(--color-heading);
+}
+
+/*
+  Utility classes
+*/
+
+.data-label {
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-size: 0.9em;
+
+  &.hidden-amount {
+    background: var(--p-neutral-200);
+  }
 }

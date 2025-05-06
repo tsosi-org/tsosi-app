@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
+from .api_request import ApiRequest
 from .entity import Entity
 from .utils import MATCH_SOURCE_CHOICES, TimestampedModel
 
@@ -69,8 +70,18 @@ class IdentifierVersion(TimestampedModel):
     identifier = models.ForeignKey(Identifier, on_delete=models.CASCADE)
     value = models.JSONField()
     date_start = models.DateTimeField(default=timezone.now)
+    # null date_end corresponds to current version
     date_end = models.DateTimeField(null=True)
     date_last_fetched = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["identifier"],
+                condition=models.Q(date_end__isnull=True),
+                name="unique_identifier_version_with_no_date_end",
+            ),
+        ]
 
 
 class IdentifierEntityMatching(TimestampedModel):
@@ -112,3 +123,18 @@ class IdentifierEntityMatching(TimestampedModel):
                 name="identifier_entity_valid_match_source_choices",
             ),
         ]
+
+
+class IdentifierRequest(ApiRequest):
+    """
+    Model to log every requests performed to fetch the identifier records.
+    This is used to stop requesting the registry when the request keeps
+    failing.
+    """
+
+    identifier = models.ForeignKey(
+        Identifier,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="requests",
+    )

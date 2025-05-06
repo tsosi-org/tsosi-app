@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 from typing import Callable
 
 import redis
@@ -10,7 +9,7 @@ from celery.utils.log import get_task_logger
 from redis.lock import Lock
 
 from .app_settings import app_settings
-from .data import analytics, enrichment, ingestion
+from .data import enrichment, ingestion
 from .data.currencies import currency_rates
 from .data.task_result import TaskResult
 from .models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
@@ -185,37 +184,64 @@ def fetch_empty_wikidata_records():
     return enrichment.fetch_empty_identifier_records(REGISTRY_WIKIDATA)
 
 
-@shared_task(base=TsosiLockedTask)
-def compute_analytics():
-    analytics.compute_analytics()
-
-
 @shared_task(base=TsosiTask)
 def post_ingestion_pipeline():
     """
     Pipeline to be run after ingesting new records:
-    1 - Update CLC fields
-    2 - Launch identifier setup
+    1 - Update transfer CLC fields
+    2 - Trigger fetching of currency rates
+    """
+    enrichment.update_transfer_date_clc()
+    update_clc_fields.delay()
+    currency_rates_workflow.delay()
+    return TaskResult(partial=False, data_modified=False)
+
+
+@shared_task(base=TsosiLockedTask)
+def update_clc_fields():
+    """
+    Task to be run everytime the Transfer and Entity tables are modified.
+    This is not linked to a signal but it's explicitely called by other
+    tasks modifiying the related data.
     """
     tasks: list[Callable] = [
-        enrichment.update_transfer_date_clc,
         enrichment.update_entity_roles_clc,
         enrichment.update_infrastructure_metrics,
+        enrichment.compute_analytics,
     ]
-    results = [task() for task in tasks]
-    currency_rates_workflow.delay()
-    compute_analytics.delay()
-    return TaskResult(partial=False, data_modified=True)
+    _ = [t() for t in tasks]
 
 
 @shared_task(base=TsosiLockedTask)
 def process_identifier_data():
     """
-    Pipeline to process the identifier data when some identifiers are
-    updated.
+    Pipeline to update the entity fields based on the identifier data.
     """
     enrichment.update_entity_from_pid_records()
-    enrichment.new_identifiers_from_records()
+    update_clc_fields.delay()
+    update_wiki_data.delay()
+
+
+@shared_task(base=TsosiLockedTask)
+def new_wikidata_identifers_from_records():
+    enrichment.new_identifiers_from_records(REGISTRY_WIKIDATA)
+    update_clc_fields.delay()
+
+
+@shared_task(base=TsosiLockedTask)
+def new_ror_identifers_from_records():
+    enrichment.new_identifiers_from_records(REGISTRY_ROR)
+    update_clc_fields.delay()
+
+
+@shared_task(base=TsosiLockedTask)
+def ror_identifiers_update():
+    return enrichment.refresh_identifier_records(REGISTRY_ROR)
+
+
+@shared_task(base=TsosiLockedTask)
+def wikidata_identifiers_update():
+    return enrichment.refresh_identifier_records(REGISTRY_WIKIDATA)
 
 
 @shared_task(base=TsosiLockedTask)
@@ -223,7 +249,13 @@ def identifier_update():
     """
     Periodic task to update identifier records.
     """
-    task_logger.info("Not implemented")
+    ror_identifiers_update.delay()
+    wikidata_identifiers_update.delay()
+
+
+@shared_task(base=TsosiLockedTask)
+def identifier_version_cleaning():
+    enrichment.clean_identifier_versions()
 
 
 ## Signal handlers to trigger related tasks
@@ -241,16 +273,11 @@ def trigger_identifier_data_processing(sender, **kwargs):
         return
     logger.info("Triggering identifier data processing.")
     process_identifier_data.delay_on_commit()
-
-
-def trigger_wiki_data_update(sender, **kwargs):
-    if not app_settings.TRIGGER_JOBS:
-        logger.info("Skipped triggering of wiki related data")
-        return
     registry_id = kwargs.get("registry_id")
     if registry_id == REGISTRY_WIKIDATA:
-        logger.info("Triggering update of wiki related data.")
-        update_wiki_data.delay_on_commit()
+        new_ror_identifers_from_records.delay_on_commit()
+    elif registry_id == REGISTRY_ROR:
+        new_wikidata_identifers_from_records.delay_on_commit()
 
 
 def trigger_new_identifier_fetching(sender, **kwargs):
@@ -258,7 +285,7 @@ def trigger_new_identifier_fetching(sender, **kwargs):
         logger.info("Skipped triggering of new identifier fetching.")
         return
     registries = kwargs.get("registries")
-    if isinstance(registries, list):
+    if isinstance(registries, list) and registries:
         logger.info(
             f"Triggering new identifier fetching for registries: {registries}"
         )
@@ -267,3 +294,10 @@ def trigger_new_identifier_fetching(sender, **kwargs):
                 fetch_empty_ror_records.delay_on_commit()
             elif registry == REGISTRY_WIKIDATA:
                 fetch_empty_wikidata_records.delay_on_commit()
+
+
+def trigger_identifier_versions_cleaning(sender, **kwargs):
+    if not app_settings.TRIGGER_JOBS:
+        logger.info("Skipped triggering of identifier versions cleaning.")
+        return
+    identifier_version_cleaning.delay_on_commit()

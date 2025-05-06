@@ -25,16 +25,16 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
           <RouterLink to="/pages/privacy-policy">Privacy policy</RouterLink>
         </div>
         <div class="backers">
-          Funded by
-          <ExternalLinkAtom
-            :label="'The French Committee for Open Science'"
-            :href="'https://www.ouvrirlascience.fr/the-committee-for-open-science/'"
-          />
-          <br />
           Led by
           <ExternalLinkAtom
             :label="'Université Grenoble Alpes'"
             :href="'https://www.univ-grenoble-alpes.fr/english/'"
+          />
+          <br />
+          Funded by
+          <ExternalLinkAtom
+            :label="'The French National Fund for Open Science'"
+            :href="'https://www.ouvrirlascience.fr/national-fund-for-open-science/'"
           />
           <br />
           Operated by
@@ -62,7 +62,6 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
 
 <style scoped>
 footer {
-  margin-top: 2em;
   line-height: 2.5;
   color: var(--p-neutral-50);
   background-color: var(--p-neutral-950);

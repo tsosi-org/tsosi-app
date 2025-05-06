@@ -148,6 +148,7 @@ def clean_number_value[
     """
     if not isinstance(value, str):
         return value
+    value = clean_cell_value(value).replace(" ", "")
     value = value.replace(",", ".") if comma_decimal else value.replace(",", "")
     return pd.to_numeric(value, errors="raise" if error else "coerce")
 

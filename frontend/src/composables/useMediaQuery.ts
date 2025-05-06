@@ -1,4 +1,11 @@
-import { ref, type Ref, unref, onMounted, onUnmounted, computed } from "vue"
+import {
+  ref,
+  type Ref,
+  unref,
+  getCurrentScope,
+  onScopeDispose,
+  computed,
+} from "vue"
 
 /**
  * Returns the result of the given media query as a ref.
@@ -22,8 +29,10 @@ export function useMediaQuery(query: string | Ref<string>, global = false) {
   }
 
   if (!global) {
-    onMounted(() => mediaQuery!.addEventListener("change", handler))
-    onUnmounted(() => cleanup())
+    mediaQuery.addEventListener("change", handler)
+    if (getCurrentScope()) {
+      onScopeDispose(cleanup)
+    }
   } else {
     mediaQuery.addEventListener("change", handler)
   }

@@ -8,7 +8,12 @@ import {
   type Entity,
   type DeepReadonly,
 } from "@/singletons/ref-data"
-import { selectedCurrency } from "@/singletons/currencyStore"
+import {
+  selectedCurrency,
+  defaultCurrency,
+  originalCurrency,
+  setSelectedCurrency,
+} from "@/singletons/currencyStore"
 import { getCountryRegion, exportPNG } from "@/utils/data-utils"
 import Select from "primevue/select"
 import Checkbox from "primevue/checkbox"
@@ -67,10 +72,18 @@ const chartComponent = useTemplateRef("chart")
 
 onMounted(async () => {
   await loadData()
+  if (selectedCurrency.value.id == originalCurrency.id) {
+    setSelectedCurrency(defaultCurrency.id)
+  }
   updateChart()
 })
 
-watch(selectedCurrency, updateChart)
+watch(selectedCurrency, () => {
+  if (selectedCurrency.value.id == originalCurrency.id) {
+    return
+  }
+  updateChart()
+})
 watch(metric, updateChart)
 watch(stacked, updateChart)
 

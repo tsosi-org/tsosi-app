@@ -2,6 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
 from tsosi.app_settings import app_settings
+from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
 from .entity import Entity, InfrastructureDetails
 from .identifier import (
@@ -62,6 +63,7 @@ SUPPORTED_INFRASTRUCTURES = [
             "name": "Directory of Open Access Journals",
             "website": "https://doaj.org",
             "is_partner": True,
+            "short_name": "DOAJ",
             "description": """DOAJ is a unique and extensive index of diverse open access journals from around the world, driven by a growing community, and is committed to insuring quality content is freely available online for everyone.""",
         },
         "infrastructure": {
@@ -78,18 +80,19 @@ SUPPORTED_INFRASTRUCTURES = [
                 </a>.
             """,
         },
+        "static_icon": "doaj_icon.png",
     },
     {
         "id": "doab_oapen",
         "pid": {"registry_id": REGISTRY_CUSTOM, "value": DOAB_OAPEN_ID},
         "entity": {
-            "raw_name": "OAPEN & Directory of Open Access Books",
+            "raw_name": "OAPEN & DOAB",
             "raw_website": "https://www.doabooks.org",
             "raw_country": "NL",
-            "name": "OAPEN & Directory of Open Access Books",
+            "name": "OAPEN & DOAB",
             "website": "https://www.doabooks.org",
             "country": "NL",
-            "description": """DOAB & OAPEN are dedicated to peer-reviewed open access books. DOAB is a discovery service and OAPEN is a repository for open access academic books.""",
+            "description": """OAPEN is an open infrastructure dedicated to promoting and supporting the transition to open access for books. The Directory of Open Access Books (DOAB) is an open, global, and trusted community-driven discovery service that indexes and provides free access to scholarly, peer-reviewed open access books.""",
             "manual_logo": True,
             "date_inception": "2010-01-01",  # Inception date of OAPEN - DOAB was launched in 2013
             "is_partner": True,
@@ -113,6 +116,7 @@ SUPPORTED_INFRASTRUCTURES = [
             """,
         },
         "static_logo": "LOGO_oapen_doab.png",
+        "static_icon": "doab_icon.ico",
     },
     {
         "id": "operas",
@@ -135,6 +139,7 @@ SUPPORTED_INFRASTRUCTURES = [
                 </a>.
             """,
         },
+        "static_icon": "operas_icon.png",
     },
     {
         "id": "pci",
@@ -142,6 +147,7 @@ SUPPORTED_INFRASTRUCTURES = [
         "entity": {
             "raw_name": "Peer Community In",
             "raw_website": "https://peercommunityin.org",
+            "short_name": "PCI",
             "name": "Peer Community In",
             "website": "https://peercommunityin.org",
             "is_partner": True,
@@ -158,6 +164,7 @@ SUPPORTED_INFRASTRUCTURES = [
                 </a>.
             """,
         },
+        "static_icon": "pci_icon.jpg",
     },
     {
         "id": "scipost",
@@ -182,6 +189,7 @@ SUPPORTED_INFRASTRUCTURES = [
                 </a>.
             """,
         },
+        "static_icon": "scipost_icon.png",
     },
 ]
 
@@ -195,6 +203,13 @@ def update_partners():
     for infra in SUPPORTED_INFRASTRUCTURES:
         create = False
         static_logo: str | None = infra.get("static_logo")
+        static_icon: str | None = infra.get("static_icon")
+        # Normalize string values
+        for k, v in infra["entity"].items():
+            infra["entity"][k] = clean_cell_value(v)
+        for k, v in infra["infrastructure"].items():
+            infra["infrastructure"][k] = clean_cell_value(v)
+
         try:
             identifier = Identifier.objects.get(**infra["pid"])
             entity = identifier.entity
@@ -212,6 +227,11 @@ def update_partners():
                     app_settings.TSOSI_APP_DATA_DIR / "assets" / static_logo
                 )
                 replace_model_file(entity, "logo", file_path)
+            if static_icon:
+                file_path = str(
+                    app_settings.TSOSI_APP_DATA_DIR / "assets" / static_icon
+                )
+                replace_model_file(entity, "icon", file_path)
             entity.save()
             details = InfrastructureDetails(**infra["infrastructure"])
             details.entity = entity
@@ -248,6 +268,11 @@ def update_partners():
                 continue
             file_path = app_settings.TSOSI_APP_DATA_DIR / "assets" / static_logo
             replace_model_file(entity, "logo", str(file_path))
+        if static_icon:
+            file_path = str(
+                app_settings.TSOSI_APP_DATA_DIR / "assets" / static_icon
+            )
+            replace_model_file(entity, "icon", file_path)
 
 
 # These are the same IDs as the supported infrastructures.

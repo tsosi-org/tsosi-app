@@ -80,14 +80,17 @@ async function getEntitiesForSearch() {
       entity.name.toLowerCase(),
       ...entity.identifiers.map((i) => i.value.toLowerCase()),
     ]
+    if (entity.short_name) {
+      matchable.push(entity.short_name.toLowerCase())
+    }
     const entityResult = {
       name: entity.name,
       url: getEntityUrl(id),
       matchable: matchable,
     }
     baseData.push(entityResult)
-    searchResults.value = baseData
   }
+  searchResults.value = baseData
   loading.value = false
 }
 
@@ -192,7 +195,9 @@ async function updateHighlightedResult() {
 function focusOut() {
   isFocused.value = false
   highlightedIndex.value = undefined
-  // op.value!.hide()
+  if (!searchTerm.value) {
+    op.value!.hide()
+  }
 }
 </script>
 
@@ -228,7 +233,7 @@ function focusOut() {
           You can search for infrastructures or supporters:
           <ul>
             <li>
-              Search by name: e.g. "Peer Community In" or "University Grenoble
+              Search by name: e.g. "Peer Community In" or "Université Grenoble
               Alpes"
             </li>
             <li>Search by ROR ID: e.g. "0315saa81" or "02rx3b187"</li>

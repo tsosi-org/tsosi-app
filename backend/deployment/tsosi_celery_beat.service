@@ -20,4 +20,4 @@ ExecStart=/home/deployer/.local/bin/poetry run celery -A backend_site beat \
 Restart=always
 
 [Install]
-WantedBy=mutli-user.target
+WantedBy=multi-user.target

@@ -77,7 +77,8 @@ class Transfer(TimestampedModel):
     currency = models.ForeignKey(Currency, on_delete=models.RESTRICT, null=True)
     date_clc = DateField(null=True)
     date_invoice = DateField(null=True)
-    date_payment = DateField(null=True)
+    date_payment_recipient = DateField(null=True)
+    date_payment_emitter = DateField(null=True)
     date_start = DateField(null=True)
     date_end = DateField(null=True)
     description = models.TextField()
@@ -90,7 +91,8 @@ class Transfer(TimestampedModel):
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(date_invoice__isnull=False)
-                | models.Q(date_payment__isnull=False)
+                | models.Q(date_payment_recipient__isnull=False)
+                | models.Q(date_payment_emitter__isnull=False)
                 | models.Q(date_start__isnull=False),
                 name="transfer_at_least_one_date",
             ),

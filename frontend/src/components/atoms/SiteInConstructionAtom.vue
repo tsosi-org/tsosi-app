@@ -6,15 +6,17 @@ import CodeBlockAtom from "./CodeBlockAtom.vue"
   <div class="wrapper">
     <div class="message">
       <h1>Welcome on TSOSI!</h1>
-      <p>
-        You are going to navigate on a website in development ; the information
-        is not yet stabilised. Please be indulgent and feel free to contact us
-        for any feedback.
-        <br />
-        <br />
-        Enjoy your visit!
-      </p>
-      <CodeBlockAtom :content="'contact (tsosi.org)'" />
+      <div>
+        <p>
+          You are going to navigate on a website in development ; the
+          information is not yet stabilised. Please be indulgent and feel free
+          to contact us for any feedback.
+          <br />
+          <br />
+        </p>
+        <CodeBlockAtom :content="'contact (@tsosi.org)'" />
+      </div>
+      <p>Enjoy your visit!</p>
     </div>
   </div>
 </template>

@@ -16,16 +16,18 @@ const dialog = useDialog()
 onMounted(async () => {
   await onInit()
   setTimeout(() => scrollToHash(true), scrollTimeout)
-  setTimeout(
-    () =>
-      dialog.open(SiteInConstructionAtom, {
-        props: {
-          modal: true,
-          baseZIndex: 10000,
-        },
-      }),
-    scrollTimeout + 500,
-  )
+  if (import.meta.env.VITE_WELCOME_POPUP === "true") {
+    setTimeout(
+      () =>
+        dialog.open(SiteInConstructionAtom, {
+          props: {
+            modal: true,
+            baseZIndex: 10000,
+          },
+        }),
+      scrollTimeout + 500,
+    )
+  }
 })
 
 watch(
@@ -59,8 +61,8 @@ function scrollToHash(retry: boolean) {
   <Loader v-show="loading" width="200px"></Loader>
   <template v-if="!loading">
     <HeaderLayout />
-    <main id="main" class="page-content" :key="$route.path">
-      <RouterView v-if="!loading" />
+    <main id="main" class="page-content">
+      <RouterView v-if="!loading" :key="$route.path" />
     </main>
     <FooterLayout />
   </template>
