@@ -35,13 +35,20 @@ def get_config(
             rdc.FieldAgentUrl(field="agent_website"),
             rdc.FieldAgentWikidataId(field="agent_wikidata_id"),
             rdc.FieldAgentRorId(field="agent_ror_id"),
-            rdc.FieldDatePayment(
-                constant=Date(
+            rdc.FieldDatePaymentRecipient(
+                field="date_payment_recipient",
+                format="%Y-%m-%d",
+                date_precision=DATE_PRECISION_YEAR,
+                default=Date(
                     value=date(year=2023, month=1, day=1),
                     precision=DATE_PRECISION_YEAR,
-                ).serialize()
+                ).serialize(),
+            ),
+            rdc.FieldDatePaymentEmitter(
+                field="date_payment_emitter", date_precision=DATE_PRECISION_YEAR
             ),
         ],
+        date_columns=["date_payment_recipient", "date_payment_emitter"],
         input_file_name=file_path,
         input_sheet_name=sheet_name,
     )

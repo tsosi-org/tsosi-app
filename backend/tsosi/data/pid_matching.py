@@ -229,10 +229,12 @@ def process_enriched_data(
     df_filtered = df[mask]
     final_enriched_columns = []
     for col_current, col_generic in enriched_columns.items():
-        col_final = f"{entity_type}_{col_generic}"
-        df.loc[df_filtered.index, col_final] = df_filtered[col_current]
+        if not df_filtered[col_current].isna().all():
+            col_final = f"{entity_type}_{col_generic}"
+            df.loc[df_filtered.index, col_final] = df_filtered[col_current]
+            final_enriched_columns.append(col_final)
+
         del df[col_current]
-        final_enriched_columns.append(col_final)
 
     del df["_processed"]
 

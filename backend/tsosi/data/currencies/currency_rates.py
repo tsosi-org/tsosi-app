@@ -364,7 +364,8 @@ def update_currency_rates():
     # Get the time period for which we need to fetch the rates.
     date_fields = [
         "date_invoice",
-        "date_payment",
+        "date_payment_recipient",
+        "date_payment_emitter",
         "date_start",
         "date_end",
     ]

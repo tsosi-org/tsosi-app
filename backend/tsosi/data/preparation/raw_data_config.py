@@ -61,8 +61,8 @@ __all__ = [
     "FieldAgentCustomId",
     "FieldAgentCountry",
     "FieldDateInvoice",
-    "FieldDatePayment",
-    "FieldDateStart",
+    "FieldDatePaymentRecipient",
+    "FieldDatePaymentEmitter" "FieldDateStart",
     "FieldDateEnd",
     "FieldOriginalId",
     "FieldOriginalAmountField",
@@ -227,8 +227,14 @@ class FieldDateInvoice(ConstOrField):
 
 
 @dataclass(kw_only=True)
-class FieldDatePayment(ConstOrField):
-    NAME = "date_payment"
+class FieldDatePaymentRecipient(ConstOrField):
+    NAME = "date_payment_recipient"
+    type = "date"
+
+
+@dataclass(kw_only=True)
+class FieldDatePaymentEmitter(ConstOrField):
+    NAME = "date_payment_emitter"
     type = "date"
 
 
@@ -290,7 +296,8 @@ ALL_FIELDS: list[Type[ConstOrField]] = [
     FieldAgentCustomId,
     FieldAgentCountry,
     FieldDateInvoice,
-    FieldDatePayment,
+    FieldDatePaymentRecipient,
+    FieldDatePaymentEmitter,
     FieldDateStart,
     FieldDateEnd,
     FieldOriginalId,
@@ -299,7 +306,8 @@ ALL_FIELDS: list[Type[ConstOrField]] = [
 
 DATE_FIELDS = [
     FieldDateInvoice,
-    FieldDatePayment,
+    FieldDatePaymentRecipient,
+    FieldDatePaymentEmitter,
     FieldDateStart,
     FieldDateEnd,
 ]
@@ -699,23 +707,6 @@ class RawDataConfigFromFile(RawDataConfig):
                 f"Supported input types are {INPUT_FILE_TYPES}"
             )
         return df
-
-
-# All configs
-CONFIG_OPERAS = {
-    "id": "operas",
-    "fields": [
-        FieldRecipientName(constant="OPERAS"),
-        FieldRecipientRorId(constant="00rfexj26"),
-        FieldEmitterName(field="Emitter"),
-        FieldEmitterCountry(field="Country"),
-        FieldAmount(field="Value"),
-        FieldCurrency(field="Currency"),
-        FieldDatePayment(
-            field="Date", format="%Y", date_precision=DATE_PRECISION_YEAR
-        ),
-    ],
-}
 
 
 def create_missing_fields(df: pd.DataFrame):

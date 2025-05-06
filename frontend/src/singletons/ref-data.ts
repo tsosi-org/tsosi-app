@@ -85,7 +85,8 @@ export interface Transfer extends ApiData {
 export interface TransferDetails extends Transfer {
   date_agreement: DateWithPrecision | null
   date_invoice: DateWithPrecision | null
-  date_payment: DateWithPrecision | null
+  date_payment_recipient: DateWithPrecision | null
+  date_payment_emitter: DateWithPrecision | null
   date_start: DateWithPrecision | null
   date_end: DateWithPrecision | null
   raw_data: Record<string, any>
@@ -277,7 +278,8 @@ export async function getTransferDetails(
   processTransferEntities(transfer)
   for (const f of [
     "date_agreement",
-    "date_payment",
+    "date_payment_recipient",
+    "date_payment_emitter",
     "date_invoice",
     "date_start",
     "date_end",

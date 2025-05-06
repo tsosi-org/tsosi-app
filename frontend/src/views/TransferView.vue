@@ -128,9 +128,15 @@ const dataConfig: Array<DataFieldProps> = [
     type: "dateWithPrecision",
   },
   {
-    id: "datePayment",
-    title: "Date payment",
-    field: "date_payment",
+    id: "datePaymentRecipient",
+    title: "Date payment received",
+    field: "date_payment_recipient",
+    type: "dateWithPrecision",
+  },
+  {
+    id: "datePaymentEmitter",
+    title: "Date payment emitted",
+    field: "date_payment_emitter",
     type: "dateWithPrecision",
   },
   {

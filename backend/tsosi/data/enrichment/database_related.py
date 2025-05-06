@@ -561,7 +561,11 @@ def update_transfer_date_clc(
     logger.info("Updating transfer CLC date.")
     if instances is None:
         instances = Transfer.objects.all().values(
-            "id", "date_invoice", "date_payment", "date_start"
+            "id",
+            "date_invoice",
+            "date_payment_recipient",
+            "date_payment_emitter",
+            "date_start",
         )
     if len(instances) == 0:
         logger.info("No transfer to update CLC date for.")
@@ -580,7 +584,14 @@ def update_transfer_date_clc(
 
     data["date_start"] = data["date_start"].apply(update_date_start)
     data["date_clc"] = (
-        data[["date_payment", "date_invoice", "date_start"]]
+        data[
+            [
+                "date_payment_recipient",
+                "date_payment_emitter",
+                "date_invoice",
+                "date_start",
+            ]
+        ]
         .bfill(axis=1)
         .iloc[:, 0]
     )

@@ -29,7 +29,7 @@ def get_config(
             rdc.FieldAmount(field="amount"),
             rdc.FieldHideAmount(field="hide_amount"),
             rdc.FieldCurrency(constant="EUR"),
-            rdc.FieldDatePayment(
+            rdc.FieldDatePaymentRecipient(
                 field="payment_date",
                 format="%Y-%m-%d",
                 date_precision=DATE_PRECISION_DAY,

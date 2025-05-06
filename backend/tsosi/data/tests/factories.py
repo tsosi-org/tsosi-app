@@ -95,7 +95,7 @@ class TransferFactory(BaseTypingFactory[Transfer]):
         model = Transfer
 
     data_load_source = SubFactory(DataLoadSourceFactory)
-    date_payment = Faker("date")
+    date_payment_recipient = Faker("date")
     emitter = SubFactory(EntityFactory)
     recipient = SubFactory(EntityFactory)
     agent = SubFactory(EntityFactory)
