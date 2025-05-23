@@ -144,16 +144,16 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
 
       <h2 id="data-license">What license is applied to the data?</h2>
       <p>
-       CC-BY-SA license: You must cite tsosi.org and apply the same license, see the
-        <InternalLinkAtom
-          :label="'Legal notice page'"
-          :href="'/legal-notice'"
-        />. Please 
-        <InternalLinkAtom
-          :label="'inform us'"
+      Re-use of TSOSI's data is highly encouraged! Data is shared under a CC-BY-SA license. Just cite tsosi.org and apply the same license — see our 
+    	<InternalLinkAtom
+    	  :label="'Legal notice page'"
+    	  :href="'/legal-notice'"
+    	/>. We’d love to hear about how you’re using the data, so feel free to 
+      	<InternalLinkAtom
+          :label="'let us know'"
           :href="'/faq#contact-us'"
-        />. We'd love to be aware of any re-use.
-      </p>
+        />!
+       </p>
 
       <h2 id="why-dont-i-see-the-supports-made-by-my-organization">Why don’t I see the supports made by my organization?</h2>
       <p>
