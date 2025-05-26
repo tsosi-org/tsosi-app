@@ -326,7 +326,10 @@ function onPageChange() {
       />
     </div>
     <div>
-      <span>See our <RouterLink to="/pages/faq/">policy</RouterLink>.</span>
+      <span>
+        Data shared under a
+        <RouterLink to="/pages/legal-notice/">CC-BY-SA license</RouterLink>.
+      </span>
     </div>
   </div>
 </template>

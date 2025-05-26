@@ -78,7 +78,7 @@ function loadChips() {
     if (props.entity.infrastructure.infra_finder_url) {
       bottomButtons.value.push({
         // icon: "arrow-up-right-from-square",
-        label: "Included in InfraFinder",
+        label: "Included in Infra Finder",
         link: props.entity.infrastructure.infra_finder_url,
       })
     }
@@ -92,6 +92,7 @@ function loadChips() {
       bottomButtons.value.push({
         // icon: "square-check",
         label: `SCOSS selected for ${dateStart}-${dateEnd}`,
+        link: "https://scoss.org/how-it-works/current-funding-calls/",
       })
     }
 
@@ -145,7 +146,7 @@ function breakdownDisclaimer(): boolean {
           >
             <span :style="`display: inline-block; max-width: 125px;`">
               Logo not found, see
-              <RouterLink :to="'/pages/faq#missing-logo'">
+              <RouterLink :to="'/pages/faq#add-logo'">
                 how to add it
               </RouterLink>
             </span>
@@ -185,7 +186,7 @@ function breakdownDisclaimer(): boolean {
             TSOSI relies on Wikidata and Wikipedia to obtain logos and
             descriptions of entities. Unfortunately, no Wikipedia description
             has been found for this entity so far. Please see
-            <RouterLink :to="'/pages/faq#missing-description'">
+            <RouterLink :to="'/pages/faq#add-wiki-description'">
               how to improve this </RouterLink
             >.
           </div>

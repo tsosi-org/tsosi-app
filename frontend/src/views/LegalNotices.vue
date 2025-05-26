@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import StaticContentComponent from "@/views/StaticContentView.vue"
-import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 </script>
 
@@ -34,12 +33,8 @@ import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
         Copyright of this website and the intellectual property contained herein
         is owned by Université Grenoble Alpes, 621 Avenue Centrale, 38400
         Saint-Martin-d'Hères, France. All defaults to all rights reserved unless
-        otherwise specified. Contact TSOSI
-        <CodeBlockAtom
-          :content="'contact (@tsosi.org)'"
-          :inline="true"
-          :background="true"
-        />
+        otherwise specified.
+        <RouterLink :to="'/pages/faq#contact-us'"> Contact TSOSI</RouterLink>.
       </p>
 
       <h2>Disclaimer</h2>

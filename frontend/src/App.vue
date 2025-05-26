@@ -8,6 +8,7 @@ import FooterLayout from "@/layouts/FooterLayout.vue"
 import DynamicDialog from "primevue/dynamicdialog"
 import { useDialog } from "primevue/usedialog"
 import SiteInConstructionAtom from "./components/atoms/SiteInConstructionAtom.vue"
+import { targetElement } from "./utils/dom-utils"
 
 const loading = ref(true)
 const route = useRoute()
@@ -48,6 +49,7 @@ function scrollToHash(retry: boolean) {
   if (hash) {
     const element = document.querySelector(hash)
     if (element) {
+      targetElement(element)
       element.scrollIntoView(true)
     } else if (retry) {
       setTimeout(() => scrollToHash, scrollTimeout, false)
