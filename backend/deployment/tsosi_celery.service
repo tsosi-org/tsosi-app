@@ -18,15 +18,15 @@ WorkingDirectory=/var/www/current/backend
 ExecStart=/home/deployer/.local/bin/poetry run celery -A backend_site multi start tsosi \
     --pidfile=/var/run/celery/%%n.pid \
     --logfile=/var/log/tsosi/celery_%%n%%I.log \
-    --loglevel=INFO --concurrency=2'
+    --loglevel=INFO --concurrency=1
 ExecStop=/home/deployer/.local/bin/poetry run celery -A backend_site multi stopwait tsosi \
     --pidfile=/var/run/celery/%%n.pid \
     --logfile=/var/log/tsosi/celery_%%n%%I.log \
-    --loglevel=INFO --concurrency=2
+    --loglevel=INFO --concurrency=1
 ExecReload=/home/deployer/.local/bin/poetry run celery -A backend_site multi restart tsosi \
     --pidfile=/var/run/celery/%%n.pid \
     --logfile=/var/log/tsosi/celery_%%n%%I.log \
-    --loglevel=INFO --concurrency=2
+    --loglevel=INFO --concurrency=1
 Restart=always
 
 [Install]
