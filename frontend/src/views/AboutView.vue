@@ -119,15 +119,19 @@ import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 
       <h2>Credits</h2>
       <p>
-        Guillaume Alzieu is the data and web engineer, and Maxence Larrieu (
+       <ul>
+       	<li>Maxence Larrieu is the project leader, 
+       		<ExternalLinkAtom
+                :href="'https://orcid.org/0000-0002-1834-3007'"
+                :label="'https://orcid.org/0000-0002-1834-3007'"
+              /> >/li>
+          <li>Guillaume Alzieu is the data and web engineer</li>
+        </ul>
+        Both are based at Grenoble Alpes University, within the 
         <ExternalLinkAtom
-          :href="'https://orcid.org/0000-0002-1834-3007'"
-          :label="'https://orcid.org/0000-0002-1834-3007'"
-        />) is the project leader. We are based in France at Grenoble Alpes University, within the 
-        <ExternalLinkAtom
-          :href="'https://gricad.univ-grenoble-alpes.fr/'"
-          :label="'GRICAD research unit'"
-        />, which operates the TSOSI platform.
+                :href="'https://gricad.univ-grenoble-alpes.fr/en/'"
+                :label="'GRICAD research unit'"
+        />, which operates the TSOSI platform. 
       </p>
       
       <!-- old about page-->
