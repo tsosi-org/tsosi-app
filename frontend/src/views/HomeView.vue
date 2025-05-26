@@ -16,7 +16,6 @@ import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery"
 import { onBeforeMount, onMounted, onUnmounted, computed } from "vue"
 import { togglePageNoHeader, setBigHeader } from "@/singletons/fixedHeaderStore"
 import Carousel from "primevue/carousel"
-import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 
 changeMetaUrl(true)
 changeMetaDescripion(
@@ -136,7 +135,7 @@ const citations = [
         <div class="regular-content content-section">
           <h2 class="banner-title" style="text-align: center">
             For its launching, TSOSI includes data from the partners
-            infrastructure
+            infrastructure:
           </h2>
 
           <!-- TO BE REMOVED once carousel is validated -->
@@ -207,12 +206,10 @@ const citations = [
                   The project started in September 2024, and the platform was
                   launched in June 2025. Any support and feedback are really
                   welcome. If you represent an institution, a consortium or an
-                  infrastructure, feel free to drop us a line
-                  <CodeBlockAtom
-                    :content="'contact (@tsosi.org)'"
-                    :inline="true"
-                    :background="true"
-                  />
+                  infrastructure, feel free to
+                  <RouterLink :to="'/pages/faq#contact-us'">
+                    drop us a line</RouterLink
+                  >.
                 </p>
               </div>
             </div>

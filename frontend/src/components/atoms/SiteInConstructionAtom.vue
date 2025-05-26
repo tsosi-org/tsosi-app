@@ -14,7 +14,7 @@ import CodeBlockAtom from "./CodeBlockAtom.vue"
           <br />
           <br />
         </p>
-        <CodeBlockAtom :content="'contact (@tsosi.org)'" />
+        <CodeBlockAtom :content="'contact (the at symbol) tsosi.org'" />
       </div>
       <p>Enjoy your visit!</p>
     </div>

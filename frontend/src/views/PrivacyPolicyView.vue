@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 import { ref, inject, computed, watch, onMounted } from "vue"
@@ -139,11 +138,7 @@ function isOptedOut(): boolean | undefined {
         Saint Martin d'Hères, France
         <br />
         <br />
-        <CodeBlockAtom
-          :content="'contact (@tsosi.org)'"
-          :inline="true"
-          :background="true"
-        />
+        <RouterLink :to="'/pages/faq#contact-us'"> Contact TSOSI</RouterLink>
       </p>
       <p v-if="matomoTracker">
         <br />

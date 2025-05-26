@@ -12,6 +12,7 @@ const props = defineProps<{
 const sizeDefault = "50px"
 const loading = ref(true)
 const imgElement = useTemplateRef("img")
+const isSvg = computed(() => props.src?.endsWith(".svg"))
 
 const imgWidth = computed(() => props.width ?? sizeDefault)
 const imgHeight = computed(() => props.height ?? imgWidth.value)
@@ -29,7 +30,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <figure class="img-container" :class="{ center: props.center }">
+  <figure class="img-container" :class="{ center: props.center, svg: isSvg }">
     <font-awesome-icon v-show="loading" class="icon" icon="image" />
     <img
       v-if="props.src"
@@ -54,6 +55,11 @@ onMounted(() => {
     display: flex;
     place-items: center;
     place-content: center;
+  }
+
+  &.svg .content {
+    width: 100%;
+    height: 100%;
   }
 }
 

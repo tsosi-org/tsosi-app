@@ -30,7 +30,7 @@ import Panel from "primevue/panel"
       <span>
         The individual transfer amounts may not be disclosed depending on the
         supported infrastructure,
-        <RouterLink to="/pages/faq#partner-definition">see our FAQ</RouterLink>.
+        <RouterLink to="/pages/faq#amounts-hidden">see our FAQ</RouterLink>.
       </span>
     </div>
   </Panel>

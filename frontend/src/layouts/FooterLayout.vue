@@ -15,9 +15,9 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
           <img src="@/assets/img/logo_white.svg" />
         </div>
         <div class="copyright">
-          &copy; TSOSI 2025 default by all rights reserved
+          &copy; 2025 TSOSI under a
           <RouterLink to="/pages/legal-notice">
-            unless otherwise specified </RouterLink
+            Creative Commons BY-SA license</RouterLink
           >.
         </div>
         <div class="legal">
@@ -39,8 +39,8 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
           <br />
           Operated by
           <ExternalLinkAtom
-            :label="'Grenoble Alps Research Scientific Computing and Data Infrastructure'"
-            :href="'https://gricad.univ-grenoble-alpes.fr/index_en.html'"
+            :label="'Grenoble Alpes Research Scientific Computing and Data Infrastructure'"
+            :href="'https://gricad.univ-grenoble-alpes.fr/en/'"
           />
         </div>
       </div>

@@ -27,9 +27,10 @@ const props = defineProps<{
   overflow-x: scroll;
 
   &.inline {
-    display: inline-block;
-    width: fit-content;
+    display: inline;
     overflow-x: unset;
+    word-break: break-all;
+    white-space: break-spaces;
   }
 
   &.background {

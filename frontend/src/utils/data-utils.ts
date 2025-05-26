@@ -1,4 +1,4 @@
-import { getCountry, type Entity, type Transfer } from "@/singletons/ref-data"
+import { getCountry, type Transfer } from "@/singletons/ref-data"
 import { getStaticDataUrl } from "@/utils/url-utils"
 import type { DeepReadonly } from "vue"
 

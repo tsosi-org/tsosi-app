@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router"
+import ExternalLinkAtom from "./ExternalLinkAtom.vue"
 
 const props = defineProps<{
   color: string
@@ -10,6 +11,9 @@ const props = defineProps<{
   <ul>
     <li>
       <RouterLink to="/pages/faq">FAQ</RouterLink>
+    </li>
+    <li>
+      <ExternalLinkAtom :href="'https://blog.tsosi.org'" :label="'Blog'" />
     </li>
     <li>
       <RouterLink to="/pages/about">About</RouterLink>
