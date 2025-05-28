@@ -8,7 +8,7 @@ import { RouterLink } from "vue-router"
 <template>
   <StaticContentComponent title="FAQ">
     <template #default>
-      <h2 id="beta-version">What's the implication of the beta version?</h2>
+      <h2 id="beta-version">What are the implications of the beta version?</h2>
       <ul>
         <li>
           Data scope: The TSOSI platform includes data from 5 infrastructures:
@@ -19,8 +19,8 @@ import { RouterLink } from "vue-router"
         </li>
 
         <li>
-          DOAB and DOAJ date range: The data starts from 2021. Therefore, all
-          supports made before 2021 will not appear in TSOSI
+          DOAB and DOAJ date range: The data starts from 2021. Therefore, all financial 
+          supports made before 2021 will not appear in TSOSI.
         </li>
 
         <li>
@@ -36,7 +36,7 @@ import { RouterLink } from "vue-router"
         </li>
 
         <li>
-          URL of the entities: the weblink to the entities contains identifiers,
+          TSOSI's URL: the weblink to the entities contains identifiers,
           <i>e.g.</i>,
 
           <CodeBlockAtom
@@ -45,7 +45,7 @@ import { RouterLink } from "vue-router"
             :background="true"
           />, which are not persistent. Each time TSOSI ingests new data, this
           URL changes. Therefore, if you would like to share the webpage of a
-          TSOSI's organization, it's best to share also its full name.
+          TSOSI's organization, it's best to also share its full name.
         </li>
       </ul>
 
@@ -153,7 +153,7 @@ import { RouterLink } from "vue-router"
         <RouterLink :to="'/pages/faq#data-provider-infra'">
           partner infrastructures</RouterLink
         >
-        and organizational metadata from the
+        and organization metadata from the
         <ExternalLinkAtom
           :label="'Research Organization Registry'"
           :href="'https://ror.org'"
@@ -167,10 +167,21 @@ import { RouterLink } from "vue-router"
         <i>Financial data</i> are sent by the partner infrastructures and
         enriched semi-manually with ROR and Wikidata identifiers by the TSOSI
         operational team. Thanks to these identifiers, TSOSI software collects
-        <i>organisational metadata</i>: name, alias, country, inception date,
+        <i>organization metadata</i>: name, alias, country, inception date,
         and geographic location come from ROR and Wikidata. The short paragraph
         describing the organization is collected from Wikipedia, while the logo
         comes from Wikimedia Commons.
+      </p>
+
+      <h2 id="contracts-or-transfers">
+        Is TSOSI more related to contracts or transfers between stakeholders?
+      </h2>
+      <p>
+        Two levels can be used to describe support between an organization and an infrastructure. 
+        The first is the administrative level, which relates to contracts, agreements, subscriptions, or programs. 
+        It covers the type of agreement and the terms or conditions involved. The second is the financial level, which includes 
+        the date of the financial transfer, the sender and recipient, and the amount transferred. For its launch, TSOSI focuses solely on the financial level. 
+        Therefore, it does not display information such as the duration of the contracts.
       </p>
 
       <h2 id="data-update-frequency">
@@ -209,9 +220,9 @@ import { RouterLink } from "vue-router"
         Re-use of TSOSI's data is highly encouraged! Data is shared under a
         CC-BY-SA license. Just cite tsosi.org and apply the same license — see
         our
-        <RouterLink :label="''" :to="'/legal-notice'">
+        <RouterLink :label="''" :to="'pages/legal-notice'">
           Legal notice page</RouterLink
-        >. We'd love to hear about how you're using the data, so feel free to
+        > fore more details. We'd love to hear about how you're using the data, so feel free to
         <RouterLink :label="''" :to="'#contact-us'"> let us know</RouterLink>!
       </p>
 
@@ -246,15 +257,16 @@ import { RouterLink } from "vue-router"
         The date field is relative: it can show either when the transfer was
         made or when it was received. Therefore, when a support is made by a
         consortium on behalf of an institution, it's the date of the transfer to
-        the infrastructure that is shown.
+        the infrastructure that is shown. Note also that the date accuracy may vary 
+        according to the data TSOSI received: for its launching, TSOSI has mainly a 
+        yearly accuracy, and sometimes a monthly or even daily accuracy.
       </p>
 
-      <h2 id="amounts-hidden">Why are the support amounts sometimes hidden?</h2>
+      <h2 id="amounts-hidden">Why are the support amounts hidden sometimes?</h2>
       <p>
         Partner infrastructures have the choice to display or not the amount of
         the financial support. TSOSI is new, its data are new, and therefore
-        some infrastructure has made the choice, for the moment, to hide the
-        amount.
+        some infrastructure has made the choice to hide the amount.
       </p>
 
       <h2 id="currency-change">How is the currency change managed?</h2>
@@ -266,12 +278,11 @@ import { RouterLink } from "vue-router"
           Settlements's</ExternalLinkAtom
         >
         (the service provides daily rates). We then compute the rate to be used
-        for each transfer, depending on the accuracy of the the transfer date
-        precision:
+        for each transfer, depending on the accuracy of the transfer date:
       </p>
       <ul>
-        <li>Day precision: exact daily rate</li>
-        <li>Month/Year precision: average rate over the given month/year</li>
+        <li>Day accuracy: exact daily rate</li>
+        <li>Month or Yearly accuracy: average rate over the given month or year</li>
       </ul>
 
       <h2 id="add-data-from-my-institution">
@@ -290,11 +301,11 @@ import { RouterLink } from "vue-router"
         <RouterLink :label="''" :to="'/pages/faq#contact-us'">
           Contact us</RouterLink
         >
-        make that idea real!
+        to make it a reality!
       </p>
 
       <h2 id="entities-hierarchies">
-        Does TSOSI support relationships and hierarchies?
+        Does TSOSI include relationships and hierarchies?
       </h2>
       <p>
         In this beta version, the supporters are not linked between them, and no
