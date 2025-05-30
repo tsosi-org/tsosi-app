@@ -225,6 +225,9 @@ def deploy(
         print("Skipped celery services restart.")
 
     # Keep only N releases on the server
+    # Give ownership to deployer to be able to delete the releases.
+    # Sometimes a *.pyc file gets created with root owner
+    ssh_execute(server, "sudo chown -R deployer:deployer /var/www/releases/")
     ssh_execute(
         server,
         f"""
