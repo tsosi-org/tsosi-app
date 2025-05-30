@@ -28,18 +28,6 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
           </li>
 
           <li>
-            Two levels can be used to describe support between an organization
-            and an infrastructure. The first is the administrative level, which
-            relates to agreements, subscriptions, contracts, or programs. It
-            covers the type of agreement and the terms or conditions involved.
-            The second is the financial level, which includes the date of the
-            financial transfer, the sender and recipient, and the amount
-            transferred. For its initial launch, TSOSI focuses solely on the
-            financial level. Therefore, it does not display information such as
-            the duration of the subscriptions.
-          </li>
-
-          <li>
             TSOSI's URL: the weblink to the entities contains identifiers,
             <i>e.g.</i>
 
@@ -169,6 +157,23 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
       </StaticSectionAtom>
 
       <StaticSectionAtom
+        id="contracts-or-transfers"
+        title="Is TSOSI more related to contracts or transfers between stakeholders?"
+      >
+        <p>
+          Two levels can be used to describe support between an organization and
+          an infrastructure. The first is the administrative level, which
+          relates to contracts, agreements, subscriptions, or programs. It
+          covers the type of agreement and the terms or conditions involved. The
+          second is the financial level, which includes the date of the
+          financial transfer, the sender and recipient, and the amount
+          transferred. For its launch, TSOSI focuses solely on the financial
+          level. Therefore, it does not display information such as the duration
+          of the contracts.
+        </p>
+      </StaticSectionAtom>
+
+      <StaticSectionAtom
         id="data-sources"
         title="What are the data sources of TSOSI?"
       >
@@ -195,23 +200,6 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
           and geographic location come from ROR and Wikidata. The short
           paragraph describing the organization is collected from Wikipedia,
           while the logo comes from Wikimedia Commons.
-        </p>
-      </StaticSectionAtom>
-
-      <StaticSectionAtom
-        id="contracts-or-transfers"
-        title="Is TSOSI more related to contracts or transfers between stakeholders?"
-      >
-        <p>
-          Two levels can be used to describe support between an organization and
-          an infrastructure. The first is the administrative level, which
-          relates to contracts, agreements, subscriptions, or programs. It
-          covers the type of agreement and the terms or conditions involved. The
-          second is the financial level, which includes the date of the
-          financial transfer, the sender and recipient, and the amount
-          transferred. For its launch, TSOSI focuses solely on the financial
-          level. Therefore, it does not display information such as the duration
-          of the contracts.
         </p>
       </StaticSectionAtom>
 
@@ -339,9 +327,10 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
           date:
         </p>
         <ul>
-          <li>Day accuracy: exact daily rate</li>
+          <li>Daily accuracy: exact daily rate</li>
           <li>
-            Month or Yearly accuracy: average rate over the given month or year
+            Month lyor Yearly accuracy: average rate over the given month or
+            year
           </li>
         </ul>
       </StaticSectionAtom>
