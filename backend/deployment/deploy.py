@@ -214,6 +214,16 @@ def deploy(
         server,
         f"ln -s {release_dir} /var/www/current",
     )
+
+    # Restart services
+    ssh_execute(server, "sudo systemctl restart tsosi_gunicorn")
+    ssh_execute(server, "sudo systemctl reload nginx")
+    if not celery_no_restart:
+        ssh_execute(server, "sudo systemctl restart tsosi_celery")
+        ssh_execute(server, "sudo systemctl restart tsosi_celery_beat")
+    else:
+        print("Skipped celery services restart.")
+
     # Keep only N releases on the server
     ssh_execute(
         server,
@@ -226,15 +236,6 @@ def deploy(
         fi
         """,
     )
-
-    # Restart services
-    ssh_execute(server, "sudo systemctl restart tsosi_gunicorn")
-    ssh_execute(server, "sudo systemctl reload nginx")
-    if not celery_no_restart:
-        ssh_execute(server, "sudo systemctl restart tsosi_celery")
-        ssh_execute(server, "sudo systemctl restart tsosi_celery_beat")
-    else:
-        print("Skipped celery services restart.")
 
     print(colored("Deployment successful", "green"))
 

@@ -146,9 +146,7 @@ function breakdownDisclaimer(): boolean {
           >
             <span :style="`display: inline-block; max-width: 125px;`">
               Logo not found, see
-              <RouterLink :to="'/pages/faq#add-logo'">
-                how to add it
-              </RouterLink>
+              <RouterLink :to="'/pages/faq#add-logo'">how to add it</RouterLink>
             </span>
           </div>
         </div>
@@ -186,8 +184,8 @@ function breakdownDisclaimer(): boolean {
             TSOSI relies on Wikidata and Wikipedia to obtain logos and
             descriptions of entities. Unfortunately, no Wikipedia description
             has been found for this entity so far. Please see
-            <RouterLink :to="'/pages/faq#add-wiki-description'">
-              how to improve this </RouterLink
+            <RouterLink :to="'/pages/faq#add-wiki-description'"
+              >how to improve this </RouterLink
             >.
           </div>
         </div>

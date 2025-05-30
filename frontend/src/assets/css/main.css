@@ -85,6 +85,12 @@
   place-content: center;
 }
 
+a {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: break-spaces;
+}
+
 a,
 .chip-link-label {
   color: var(--color-link);
@@ -129,16 +135,6 @@ h1, h2, h3, h4, h5, h6, .as-heading {
     Cantarell,
     "Helvetica Neue",
     sans-serif;
-
-  &.targeted,
-  &:target {
-    background-color: var(--p-primary-50);
-    border-bottom: 2px solid var(--color-target);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    /* outline: 2px solid var(--color-target); */
-    padding-left: 2px;
-  }
 }
 
 p {

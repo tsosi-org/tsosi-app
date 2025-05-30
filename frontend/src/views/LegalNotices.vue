@@ -34,7 +34,7 @@ import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
         is owned by Université Grenoble Alpes, 621 Avenue Centrale, 38400
         Saint-Martin-d'Hères, France. All defaults to all rights reserved unless
         otherwise specified.
-        <RouterLink :to="'/pages/faq#contact-us'"> Contact TSOSI</RouterLink>.
+        <RouterLink :to="'/pages/faq#contact-us'">Contact TSOSI</RouterLink>.
       </p>
 
       <h2>Disclaimer</h2>
@@ -57,8 +57,7 @@ import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
       <p>
         Information on personal data protection for this site is available on
         the
-        <RouterLink to="/pages/privacy-policy/">
-          Privacy policy page </RouterLink
+        <RouterLink to="/pages/privacy-policy/">Privacy policy page</RouterLink
         >.
       </p>
 
