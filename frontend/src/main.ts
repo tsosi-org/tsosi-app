@@ -32,8 +32,11 @@ import {
   faCheck,
   faCalendar,
   faGlobe,
+  faLink,
+  faEnvelope,
+  faAt,
 } from "@fortawesome/free-solid-svg-icons"
-
+import { faGithub } from "@fortawesome/free-brands-svg-icons"
 const app = createApp(App)
 
 // Register PrimeVue library
@@ -124,6 +127,10 @@ const usedIcons = [
   faCheck,
   faCalendar,
   faGlobe,
+  faLink,
+  faGithub,
+  faEnvelope,
+  faAt,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)

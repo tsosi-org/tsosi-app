@@ -54,11 +54,12 @@ const router = createRouter({
     },
   ],
   scrollBehavior(to, from, savedPosition) {
+    const defaultScroll = { el: "#main", top: 500 }
     if (to.hash) {
       const scrollData: { [id: string]: any } = { el: to.hash, top: undefined }
       const el = document.querySelector(to.hash)
       if (!el) {
-        return scrollData
+        return defaultScroll
       }
       const styles = window.getComputedStyle(el)
       // Retrieve the scroll-margin-top property
@@ -73,7 +74,7 @@ const router = createRouter({
     }
     // The top value must be higher than the maximum header-height
     // which is contained in --big-header-height
-    return { el: "#main", top: 500 }
+    return defaultScroll
   },
 })
 

@@ -4,7 +4,6 @@ import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import { $dt } from "@primevue/themes"
 import { isDesktop } from "@/composables/useMediaQuery"
-import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
 </script>
 
 <template>
@@ -44,6 +43,37 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
           />
         </div>
       </div>
+      <div class="footer-links">
+        <h3>Community</h3>
+        <ul>
+          <li>
+            <ExternalLinkAtom href="https://github.com/tsosi-org">
+              <font-awesome-icon
+                icon="fa-brands fa-github"
+                class="link-icon"
+              />Github
+            </ExternalLinkAtom>
+          </li>
+          <li>
+            <ExternalLinkAtom
+              href="https://cloud.univ-grenoble-alpes.fr/apps/forms/embed/sanHSpzrJHqPbCknYcCBDcWy"
+            >
+              <font-awesome-icon
+                icon="fa-solid fa-envelope"
+                class="link-icon"
+              />Newsletter
+            </ExternalLinkAtom>
+          </li>
+          <li>
+            <RouterLink to="/pages/faq#contact-us">
+              <font-awesome-icon
+                icon="fa-solid fa-at"
+                class="link-icon"
+              />Contact
+            </RouterLink>
+          </li>
+        </ul>
+      </div>
       <div class="footer-nav">
         <h3>Navigation</h3>
         <NavigationListAtom
@@ -51,10 +81,6 @@ import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
           font-size="1em"
           style="--gap: 0"
         />
-      </div>
-      <div class="footer-partners">
-        <h3>Infrastructures</h3>
-        <InfrastructureList />
       </div>
     </div>
   </footer>
@@ -129,10 +155,6 @@ footer {
     margin: 1.25rem 0;
   }
 
-  & .footer-partners {
-    text-wrap: nowrap;
-  }
-
   & .backers {
     margin-top: 2.45rem; /* Margin used to align the end of the content with the infrastructures column end */
   }
@@ -176,5 +198,9 @@ ul {
   & :deep(a) {
     text-decoration: underline;
   }
+}
+
+.link-icon {
+  margin-right: 0.5em;
 }
 </style>

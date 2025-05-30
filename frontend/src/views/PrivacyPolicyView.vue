@@ -138,7 +138,7 @@ function isOptedOut(): boolean | undefined {
         Saint Martin d'Hères, France
         <br />
         <br />
-        <RouterLink :to="'/pages/faq#contact-us'"> Contact TSOSI</RouterLink>
+        <RouterLink :to="'/pages/faq#contact-us'">Contact TSOSI</RouterLink>
       </p>
       <p v-if="matomoTracker">
         <br />

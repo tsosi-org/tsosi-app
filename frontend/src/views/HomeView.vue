@@ -21,7 +21,7 @@ changeMetaUrl(true)
 changeMetaDescripion(
   "Web platform visualizing the funding made to Open Science Infrastructures.",
 )
-changeMetaTitle("TSOSI - Transparency to Sustain Open Science Infrastructure")
+changeMetaTitle("Transparency to Sustain Open Science Infrastructure")
 
 const partners = getPartners() as Entity[]
 shuffleArray(partners)

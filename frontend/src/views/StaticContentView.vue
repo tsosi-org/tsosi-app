@@ -19,14 +19,19 @@ changeMetaTitle(props.title)
 </template>
 
 <style scoped>
-.page-title {
+.static-content h1.page-title {
   font-size: 2.5rem;
   text-align: center;
-  padding-top: 0;
+  padding: 0;
 }
 
 .static-content {
   margin-bottom: 2rem;
+  font-size: 1.15rem;
+
+  & :deep(h2) {
+    font-size: 1.5em;
+  }
 
   & :deep(h1),
   & :deep(h2),
@@ -34,7 +39,8 @@ changeMetaTitle(props.title)
   & :deep(h4),
   & :deep(h5),
   & :deep(h6) {
-    margin: 1.5em 0 0.35em 0;
+    margin: 1.65em 0 0.35em 0;
+    padding: 0.35em 0;
   }
 
   & h1.page-title {

@@ -31,9 +31,7 @@ const props = defineProps<{
         >
           <template #popup>
             The individual funding amounts are not disclosed,
-            <RouterLink to="/pages/faq#partner-definition"
-              >see our FAQ</RouterLink
-            >
+            <RouterLink to="/pages/faq#amounts-hidden">see our FAQ</RouterLink>
           </template>
         </InfoButtonAtom>
       </h3>
@@ -75,8 +73,8 @@ const props = defineProps<{
       <span>
         The data does not include the supporters breakdown before 2021, but only
         the intermediary like a library consortia,
-        <RouterLink to="/pages/faq#partner-definition">
-          see more in FAQ </RouterLink
+        <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution"
+          >see more in FAQ </RouterLink
         >.
       </span>
     </div>
