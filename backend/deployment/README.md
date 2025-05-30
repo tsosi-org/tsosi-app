@@ -22,6 +22,7 @@ The preparation process is basically to install and enable all services used by 
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart redis-server, /usr/bin/systemctl start redis-server, /usr/bin/systemctl stop redis-server, /usr/bin/systemctl status redis-server
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart tsosi_celery, /usr/bin/systemctl start tsosi_celery, /usr/bin/systemctl stop tsosi_celery, /usr/bin/systemctl status tsosi_celery
     deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/systemctl restart tsosi_celery_beat, /usr/bin/systemctl start tsosi_celery_beat, /usr/bin/systemctl stop tsosi_celery_beat, /usr/bin/systemctl status tsosi_celery_beat
+    deployer ALL=(ALL:ALL) NOPASSWD: /usr/bin/chown -R deployer\:deployer /var/www/releases/
     ```
 
 * Poetry package manager installed:
