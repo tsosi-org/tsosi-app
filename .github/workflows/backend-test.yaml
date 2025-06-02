@@ -26,10 +26,11 @@ jobs:
       credentials:
         username: guillaume-uga
         password: ${{ secrets.DOCKER_CONTAINER_REGISTRY_TOKEN }}
+    defaults:
+      run:
+        working-directory: /app
 
     steps:
-      - name: Navigate to directory
-        run: cd /app
       - name: Checkout
         uses: actions/checkout@v4
       - name: Create settings file
