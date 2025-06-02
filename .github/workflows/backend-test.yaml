@@ -31,7 +31,7 @@ jobs:
       - name: Navigate to directory
         run: cd /app
       - name: Checkout
-        run: actions/checkout@v4
+        uses: actions/checkout@v4
       - name: Create settings file
         run: cd tsosi-app/backend && cp backend_site/settings_local.example.py backend_site/settings_local.py
       # We would need a way to ignore the log folder in test mode
