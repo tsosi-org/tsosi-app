@@ -28,13 +28,13 @@ jobs:
         password: ${{ secrets.DOCKER_CONTAINER_REGISTRY_TOKEN }}
     defaults:
       run:
-        working-directory: /app
+        working-directory: ./backend
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Create settings file
-        run: cd tsosi-app/backend && cp backend_site/settings_local.example.py backend_site/settings_local.py
+        run: cp backend_site/settings_local.example.py backend_site/settings_local.py
       # We would need a way to ignore the log folder in test mode
       - name: Create log folder
         run: mkdir /var/log/tsosi
