@@ -38,6 +38,8 @@ jobs:
       # We would need a way to ignore the log folder in test mode
       - name: Create log folder
         run: mkdir /var/log/tsosi
+      # Disable virtualenvs so that poetry uses everything in the main
+      # pre-congifureg Python 
       - name: Poetry config
         run: poetry config virtualenvs.create false
       - name: Install missing Python dependecies in case the container is out-of-date
