@@ -106,3 +106,31 @@ SELECT datname as db_name, pg_size_pretty(pg_database_size(datname)) as db_usage
 ## TSOSI App
 
 All the code is placed in the TSOSI application, cf [README.md](tsosi/README.md).
+
+
+## Test docker image
+
+A basic docker image is used to run the tests on GitHub actions.
+Perform the following steps to update image on the Github container registry (used by the workflow).
+
+
+- You need a github token to be able to update the packages (including images) cf [GitHub docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry)
+
+- Login against ghcr.io as mentioned in the doc:
+
+```bash
+export GITHUB_REGISTRY_TOKEN=<YOUR_TOKEN>
+echo $GITHUB_REGISTRY_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+```
+
+- Build the updated image, tag it accordingly and push it to the registry:
+
+```bash
+cd backend
+docker build -t backend-test-env -f test.Dockerfile .
+docker images # Copy the build image's ID
+docker tag <IMAGE_ID> ghcr.io/tsosi-org/backend-test-env:latest
+docker push ghcr.io/tsosi-org/backend-test-env:latestt
+```
+
+
