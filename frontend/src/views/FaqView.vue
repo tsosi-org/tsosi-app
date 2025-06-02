@@ -329,7 +329,7 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
         <ul>
           <li>Daily accuracy: exact daily rate</li>
           <li>
-            Month lyor Yearly accuracy: average rate over the given month or
+            Monthly or Yearly accuracy: average rate over the given month or
             year
           </li>
         </ul>

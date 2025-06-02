@@ -156,6 +156,12 @@ const baseSupporterColumns: TableColumnProps[] = [
     field: "date_clc",
     type: "dateWithPrecision",
     sortable: true,
+    info: "The date field is relative.",
+    infoLink: {
+      href: "/pages/faq#what-does-the-date-column-refer-to",
+      label: "See more in FAQ",
+      type: "internal",
+    },
   },
   {
     id: "emitter",
@@ -221,6 +227,12 @@ const baseInfrastructureColumns: TableColumnProps[] = [
     field: "date_clc",
     type: "dateWithPrecision",
     sortable: true,
+    info: "The date field is relative.",
+    infoLink: {
+      href: "/pages/faq#what-does-the-date-column-refer-to",
+      label: "See more in FAQ",
+      type: "internal",
+    },
   },
   {
     id: "emitter",

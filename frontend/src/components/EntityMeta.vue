@@ -273,6 +273,8 @@ function breakdownDisclaimer(): boolean {
 }
 
 .entity-meta.desktop {
+  --links-max-width: 200px;
+
   & .entity-header__grid {
     --first-col: v-bind("logoWidth");
     grid-template-columns: calc(var(--first-col) + 50px) 1fr;
@@ -296,7 +298,8 @@ function breakdownDisclaimer(): boolean {
     grid-column: 3;
     grid-row: 1;
     flex-direction: column;
-    width: 150px;
+    width: fit-content;
+    max-width: var(--links-max-width);
   }
 
   & .entity-icon-link {
@@ -310,7 +313,9 @@ function breakdownDisclaimer(): boolean {
   }
 
   & .entity-header__grid.three-columns {
-    grid-template-columns: calc(var(--first-col) + 50px) 1fr 200px;
+    grid-template-columns: calc(var(--first-col) + 50px) 1fr var(
+        --links-max-width
+      );
   }
 }
 

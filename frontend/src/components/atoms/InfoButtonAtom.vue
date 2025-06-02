@@ -46,20 +46,20 @@ function show(event: Event) {
   }
 }
 
-function hide(_: Event) {
+function hide() {
   if (hidePopup) {
     popup.value?.hide()
   }
 }
 
-function triggerHide(event: Event) {
+function triggerHide() {
   hidePopup = true
-  setTimeout(() => hide(event), 200)
+  setTimeout(() => hide(), 200)
 }
 
-function popupLeave(event: Event) {
+function popupLeave() {
   hidePopup = true
-  setTimeout(() => hide(event), 200)
+  setTimeout(() => hide(), 200)
 }
 </script>
 
@@ -111,9 +111,9 @@ function popupLeave(event: Event) {
   outline-offset: -1px;
 }
 
-.popup-wrapper::before {
-  /* all: unset; */
-}
+/* .popup-wrapper::before {
+  all: unset;
+} */
 
 .info-popup {
   max-width: min(80vw, 400px);

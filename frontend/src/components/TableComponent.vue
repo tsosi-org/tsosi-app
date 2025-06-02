@@ -31,6 +31,11 @@ export interface TableColumnProps extends DataFieldProps {
   sortable?: boolean
   sortField?: string // field used to sort the column. Defaults to fieldLabel
   info?: string
+  infoLink?: {
+    href: string
+    label: string
+    type: "internal" | "external"
+  }
   currencySelector?: boolean
   nullValueTemplate?: string
 }
@@ -232,7 +237,23 @@ function onPageChange() {
     >
       <!-- Header template -->
       <template #header>
-        <InfoButtonAtom v-if="column.info" :content="column.info" />
+        <InfoButtonAtom v-if="column.info || column.infoLink">
+          <template #popup>
+            <span v-if="column.info"> {{ column.info }}&nbsp; </span>
+            <RouterLink
+              v-if="column.infoLink?.type == 'internal'"
+              :to="column.infoLink.href"
+            >
+              {{ column.infoLink.label }}
+            </RouterLink>
+            <ExternalLinkAtom
+              v-else-if="column.infoLink?.type == 'external'"
+              :href="column.infoLink.href"
+            >
+              {{ column.infoLink.label }}
+            </ExternalLinkAtom>
+          </template>
+        </InfoButtonAtom>
         <span class="p-datatable-column-title">
           {{ column.title }}
         </span>
