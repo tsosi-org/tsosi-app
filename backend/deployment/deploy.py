@@ -257,14 +257,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--skip-front-build",
         help="If passed, do not build fresh front-end files in frontend/dist.",
-        action=argparse.BooleanOptionalAction,
-        default=False,
+        action="store_true",
     )
     parser.add_argument(
         "--celery-no-restart",
         help="If passed, restart tsosi_celery and tsosi_celery_beat services.",
-        action=argparse.BooleanOptionalAction,
-        default=False,
+        action="store_true",
     )
     args = parser.parse_args()
     deploy(

@@ -1,3 +1,5 @@
+import sys
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -35,3 +37,8 @@ TSOSI_SCIPOST_AUTH = {
     "client_id": None,
     "client_secret": None,
 }
+
+# Use SQLite for test
+# TODO: Use a proper PostgreSQL database to mimic prod
+if "test" in sys.argv or "pytest" in sys.modules:
+    DATABASES["default"] = {"ENGINE": "django.db.backends.sqlite3"}

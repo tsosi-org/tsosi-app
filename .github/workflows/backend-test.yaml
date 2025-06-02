@@ -1,0 +1,40 @@
+name: Test Django application
+
+on:
+  push:
+    branches:
+      - main
+    
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "backend-test"
+  cancel-in-progress: false
+
+# Default to bash
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/tsosi-org/backend-test-env:latest
+    steps:
+      - name: Navigate to directory
+        run: cd /app
+      - name: Checkout
+        run: actions/checkout@v4
+      - name: Create settings file
+        run: cd tsosi-app/backend && cp backend_site/settings_local.example.py backend_site/settings_local.py
+      # We would need a way to ignore the log folder in test mode
+      - name: Create log folder
+        run: mkdir /var/log/tsosi
+      - name: Install missing Python dependecies in case the container is out-of-date
+        run: poetry install --no-root
+      - name: Run the Python tests
+        run: poetry run pytest
+        

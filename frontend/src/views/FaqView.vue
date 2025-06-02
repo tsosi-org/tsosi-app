@@ -248,7 +248,7 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
           Re-use of TSOSI's data is highly encouraged! Data is shared under a
           CC-BY-SA license. Just cite tsosi.org and apply the same license — see
           our
-          <RouterLink :label="''" :to="'pages/legal-notice'"
+          <RouterLink :label="''" :to="'/pages/legal-notice'"
             >Legal notice page</RouterLink
           >
           fore more details. We'd love to hear about how you're using the data,
