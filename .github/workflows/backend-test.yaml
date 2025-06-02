@@ -23,6 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/tsosi-org/backend-test-env:latest
+      credentials:
+        username: guillaume-uga
+        password: ${{ secrets.DOCKER_CONTAINER_REGISTRY_TOKEN }}
+
     steps:
       - name: Navigate to directory
         run: cd /app
