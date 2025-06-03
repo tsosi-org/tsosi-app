@@ -59,6 +59,9 @@ function onDrawerToggle(show: boolean) {
         >
           <img class="logo" src="@/assets/img/logo_white.svg" />
         </RouterLink>
+        <RouterLink to="/pages/faq#beta-version" class="beta-badge">
+          Beta version
+        </RouterLink>
       </div>
 
       <div v-show="bigHeader" class="header-citation">
@@ -130,9 +133,14 @@ function onDrawerToggle(show: boolean) {
         </Drawer>
       </div>
 
-      <RouterLink style="line-height: 0" to="/" @click="closeDrawers">
-        <img class="logo" src="@/assets/img/logo_white.svg" />
-      </RouterLink>
+      <div class="logo-container">
+        <RouterLink style="line-height: 0" to="/" @click="closeDrawers">
+          <img class="logo" src="@/assets/img/logo_white.svg" />
+        </RouterLink>
+        <RouterLink to="/pages/faq#beta-version" class="beta-badge">
+          Beta version
+        </RouterLink>
+      </div>
       <div v-show="bigHeader" class="header-citation">
         Transparency to Sustain Open Science Infrastructure
       </div>
@@ -175,7 +183,7 @@ function onDrawerToggle(show: boolean) {
 
 <style scoped>
 header {
-  padding: 0 1rem;
+  padding: 0 min(1rem, 2vw);
   position: fixed;
   top: 0;
   width: 100%;
@@ -188,6 +196,15 @@ header {
 
   &.header-visible {
     transform: unset;
+  }
+
+  &.desktop {
+    & .beta-badge {
+      position: initial;
+      right: unset;
+      bottom: unset;
+      transform: unset;
+    }
   }
 }
 
@@ -243,6 +260,7 @@ header.home {
 }
 
 nav {
+  min-height: 100%;
   font-size: 1rem;
   align-items: center;
   display: flex;
@@ -250,15 +268,35 @@ nav {
 }
 
 .logo {
-  margin: 0.5rem 1rem;
   height: calc(var(--header-height) - 1rem);
   background-color: transparent;
-  /* transition: height 0.3s linear; */
 }
 
 .header-button {
   background-color: var(--p-primary-800);
   border-color: transparent;
   font-size: 1.5rem;
+}
+
+.logo-container {
+  position: relative;
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+}
+
+.beta-badge {
+  font-size: 0.8rem;
+  height: fit-content;
+  background-color: #e5a722;
+  color: white;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-decoration: unset;
+  /* Only for mobile */
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  transform: translate(calc(100% + 0.5rem), 0);
 }
 </style>
