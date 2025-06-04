@@ -187,7 +187,8 @@ function breakdownDisclaimer(): boolean {
             class="entity-header__desc__support"
           >
             <template #default>
-              Find out how to support {{ props.entity.name }}
+              Find out how to support
+              {{ props.entity.short_name || props.entity.name }}
               <span style="white-space: nowrap">
                 financially
                 <font-awesome-icon
