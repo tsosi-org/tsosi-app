@@ -60,7 +60,7 @@ function onDrawerToggle(show: boolean) {
           <img class="logo" src="@/assets/img/logo_white.svg" />
         </RouterLink>
         <RouterLink to="/pages/faq#beta-version" class="beta-badge">
-          Beta version
+          beta version
         </RouterLink>
       </div>
 
@@ -138,7 +138,7 @@ function onDrawerToggle(show: boolean) {
           <img class="logo" src="@/assets/img/logo_white.svg" />
         </RouterLink>
         <RouterLink to="/pages/faq#beta-version" class="beta-badge">
-          Beta version
+          beta version
         </RouterLink>
       </div>
       <div v-show="bigHeader" class="header-citation">
@@ -282,7 +282,7 @@ nav {
   position: relative;
   display: flex;
   align-items: end;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .beta-badge {
@@ -297,6 +297,6 @@ nav {
   position: absolute;
   right: 0;
   bottom: 0;
-  transform: translate(calc(100% + 0.5rem), 0);
+  transform: translate(calc(100% + 0.75rem), 0);
 }
 </style>

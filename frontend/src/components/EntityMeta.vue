@@ -95,14 +95,6 @@ function loadChips() {
         link: "https://scoss.org/how-it-works/current-funding-calls/",
       })
     }
-
-    if (props.entity.infrastructure.support_url) {
-      bottomButtons.value.push({
-        label: "SUPPORT",
-        link: props.entity.infrastructure.support_url,
-        inverse: true,
-      })
-    }
   }
 }
 
@@ -188,6 +180,23 @@ function breakdownDisclaimer(): boolean {
               >how to improve this </RouterLink
             >.
           </div>
+
+          <ExternalLinkAtom
+            v-if="props.entity.infrastructure?.support_url"
+            :href="props.entity.infrastructure.support_url"
+            class="entity-header__desc__support"
+          >
+            <template #default>
+              Find out how to support {{ props.entity.name }}
+              <span style="white-space: nowrap">
+                financially
+                <font-awesome-icon
+                  icon="fa-solid fa-arrow-up-right-from-square"
+                  style="margin-left: 0.25rem"
+                />
+              </span>
+            </template>
+          </ExternalLinkAtom>
         </div>
 
         <div
@@ -472,6 +481,22 @@ a.special-button:focus-visible {
   &.inverse {
     background-color: var(--color-1);
     color: var(--color-invert);
+  }
+}
+
+.entity-header__desc__support {
+  display: block;
+  width: fit-content;
+  text-decoration: unset;
+  padding: 0.6rem 1.25rem;
+  background-color: var(--p-surface-100);
+  border-radius: 8px;
+  transition: all 0.2s ease-out;
+  text-align: center;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--p-surface-200);
   }
 }
 </style>
