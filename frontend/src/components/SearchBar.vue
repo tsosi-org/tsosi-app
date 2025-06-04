@@ -216,6 +216,7 @@ function focusOut() {
         @focusout="focusOut"
         :onKeydown="onKeyDown"
         style="width: 100%"
+        :dt="{ paddingX: '0' }"
       />
     </IconField>
     <Popover

@@ -30,7 +30,7 @@ export interface DataFieldProps {
   type: DataType
   fieldLabel?: string
   fieldLink?: LinkConfig
-  labelGetter?: (data: Record<string, any>) => any
+  labelGetter?: (data: Record<string, any>) => string
   info?: string
 }
 

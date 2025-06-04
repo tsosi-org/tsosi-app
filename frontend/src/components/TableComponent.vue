@@ -1,14 +1,23 @@
 <script setup lang="ts">
-import { ref, type Ref, nextTick, useTemplateRef } from "vue"
+import {
+  ref,
+  watch,
+  computed,
+  type Ref,
+  nextTick,
+  useTemplateRef,
+  onBeforeMount,
+} from "vue"
 import { RouterLink } from "vue-router"
 import DataTable from "primevue/datatable"
+import { FilterMatchMode } from "@primevue/core/api"
+import InputText from "primevue/inputtext"
 import Column from "primevue/column"
 import Skeleton from "primevue/skeleton"
 import Button from "primevue/button"
 import Popover from "primevue/popover"
 import {
   formatItemLabel,
-  type DateWithPrecision,
   type DataFieldProps,
   resolveValueFromPath,
   getItemLabel,
@@ -27,6 +36,10 @@ import MenuButtonAtom from "./atoms/MenuButtonAtom.vue"
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
 
+interface AppliedFilters {
+  [columnId: string]: string
+}
+
 export interface TableColumnProps extends DataFieldProps {
   sortable?: boolean
   sortField?: string // field used to sort the column. Defaults to fieldLabel
@@ -38,6 +51,10 @@ export interface TableColumnProps extends DataFieldProps {
   }
   currencySelector?: boolean
   nullValueTemplate?: string
+  filter?: {
+    enable?: boolean
+    placeHolder?: string
+  }
 }
 
 export interface TableProps {
@@ -48,8 +65,8 @@ export interface TableProps {
     title: string
   }
   defaultSort?: {
-    sortField: string
-    sortOrder: number
+    sortField: string | ((item: any) => any)
+    sortOrder: 1 | 0 | -1
   }
   rowUniqueId: string
   skeleton?: boolean
@@ -62,6 +79,28 @@ export interface TableProps {
 }
 
 const props = defineProps<TableProps>()
+// Holds the declared filters for the DataTable component
+// TODO: Handle the filter layout manually as the filtering
+// processing is done manually.
+const filters: Ref<
+  { [id: string]: { value: any; matchMode: "" } } | undefined
+> = ref({})
+const minDataForFilters = 10
+// Holds the applied filters in the form { columnId: filterValue }
+const appliedFilters: Ref<AppliedFilters> = ref({})
+const filteredData: Ref<Array<Record<string, any>>> = ref([])
+const minWidthWithFilter = "100px"
+const useFilters = computed(
+  () => !props.skeleton && props.data.length >= minDataForFilters,
+)
+
+onBeforeMount(() => {
+  // Prepare filters
+  populateFilters()
+  applyFilters()
+})
+
+watch(appliedFilters, applyFilters)
 
 const tableComponent = useTemplateRef("data-table")
 const rowButtonMenu = useTemplateRef("row-button-menu")
@@ -70,15 +109,6 @@ const selectedButtonData: Ref<Record<string, any> | null> = ref(null)
 function getSortFieldFunction(columnProps: TableColumnProps) {
   if (!columnProps.sortable) {
     return undefined
-  }
-  if (columnProps.type == "country") {
-    return (item: Record<string, any>) => {
-      const country = getItemLabel(item, columnProps)
-      return country ? getCountryLabel(country) : null
-    }
-  } else if (columnProps.type == "dateWithPrecision") {
-    return (item: Record<string, any>) =>
-      getDateWithPrecisionValue(item, columnProps)
   }
   return (item: Record<string, any>) => getSortValue(item, columnProps)
 }
@@ -89,19 +119,16 @@ function getSortValue(
 ): any {
   if (columnProps.sortField) {
     return resolveValueFromPath(item, columnProps.sortField)
+  } else if (columnProps.type == "country") {
+    const country = getItemLabel(item, columnProps)
+    return country ? getCountryLabel(country) : null
+  } else if (columnProps.type == "dateWithPrecision") {
+    // We compare the bare strings for dates as they are correctly formatted
+    // as YYYY-MM-DD.
+    // Using the computed dateObj does not work with multisorting.
+    return resolveValueFromPath(item, columnProps.field + ".value")
   }
-  if (columnProps.type) return getItemLabel(item, columnProps)
-}
-
-function getDateWithPrecisionValue(
-  item: Record<string, any>,
-  columnProps: TableColumnProps,
-): Date | undefined {
-  const date: DateWithPrecision | null = resolveValueFromPath(
-    item,
-    columnProps.field,
-  )
-  return date?.dateObj
+  return getItemLabel(item, columnProps)
 }
 
 function defaultSortFieldFunction() {
@@ -116,13 +143,17 @@ function defaultSortFieldFunction() {
   return getSortFieldFunction(columns[0])
 }
 
+/**
+ * Download the filtered data.
+ * @param format
+ */
 async function download(format: "json" | "csv") {
   const fileName = props.exportTitle || "TSOSI_export"
   if (format == "csv") {
-    exportCSV(props.columns, props.data, fileName)
+    exportCSV(props.columns, filteredData.value, fileName)
     return
   }
-  exportJSON(props.columns, props.data, fileName)
+  exportJSON(props.columns, filteredData.value, fileName)
 }
 
 const exportItems = [
@@ -179,25 +210,125 @@ function onPageChange() {
   // VueJS attributes..
   tableComponent.value.$el.scrollIntoView({ behavior: "instant" })
 }
+
+/**
+ * Populate the filters object for the DataTable component.
+ * Filters not declared in this object are not displayed.
+ */
+function populateFilters() {
+  if (!useFilters.value) {
+    filters.value = undefined
+    return
+  }
+  const newFilters: Record<string, any> = {}
+  props.columns
+    .filter((c) => c.filter != undefined)
+    .forEach((c) => {
+      newFilters[c.field] = {
+        value: null,
+        matchMode: FilterMatchMode.CONTAINS,
+      }
+    })
+  filters.value = newFilters
+}
+
+/**
+ * Update the applied filters.
+ * @param column
+ * @param value
+ */
+async function filter(column: TableColumnProps, value: string) {
+  if (!useFilters.value) {
+    return
+  }
+  // console.log(`Column ${column.title} filter changed. Value: ${value}`)
+  const currentFilters: { [id: string]: any } = {
+    ...appliedFilters.value,
+  }
+  currentFilters[column.id] = value.toLowerCase()
+  appliedFilters.value = currentFilters
+}
+
+/**
+ * Return the non-null applied filters.
+ */
+function getAppliedFilters(): AppliedFilters {
+  return Object.keys(appliedFilters.value).reduce(
+    (newObj: { [id: string]: string }, key) => {
+      const value = appliedFilters.value[key]
+      if (!["", null, undefined].includes(value)) {
+        newObj[key] = value
+      }
+      return newObj
+    },
+    {},
+  )
+}
+
+/**
+ * Filter the input dataset with the applied filters.
+ */
+async function applyFilters() {
+  const newData: Record<string, any>[] = []
+  const filtersToApply = getAppliedFilters()
+  if (Object.keys(filtersToApply).length > 0) {
+    props.data.forEach((item) => {
+      for (const columnId in filtersToApply) {
+        const columnProps = props.columns.filter((c) => c.id == columnId)[0]
+        if (
+          !formatItemLabel(item, columnProps)
+            ?.toString()
+            .toLowerCase()
+            .includes(filtersToApply[columnId])
+        ) {
+          return
+        }
+      }
+      newData.push(item)
+    })
+    filteredData.value = newData
+  } else {
+    filteredData.value = props.data
+  }
+  console.log("Dataset Filtered!")
+}
+
+/**
+ * Wether the given column is used for filtering.
+ * @param column
+ */
+function isColumnFiltered(column: TableColumnProps): boolean {
+  const filters = getAppliedFilters()
+  return Object.keys(filters).includes(column.id)
+}
 </script>
 
 <template>
-  <!-- Params to store table state in local storage.
-    :stateStorage="props.storeState ? 'local' : undefined" :stateKey="`tsosi-table-${props.id}`"
-  -->
   <DataTable
     class="tsosi-table"
-    :value="props.data"
+    :value="filteredData"
     ref="data-table"
     :paginator="props.data.length > 20 ? true : undefined"
     :rows="20"
     :rowsPerPageOptions="[10, 20, 50, 100]"
-    :sortField="defaultSortFieldFunction()"
+    :multi-sort-meta="
+      props.defaultSort
+        ? [
+            {
+              field: defaultSortFieldFunction(),
+              order: props.defaultSort.sortOrder,
+            },
+          ]
+        : undefined
+    "
     :sortOrder="props.defaultSort?.sortOrder"
+    sortMode="multiple"
     selectionMode="single"
     :dataKey="props.rowUniqueId"
     @page="onPageChange"
     :dt="{ row: { color: 'var(--color-text)' } }"
+    v-model:filters="filters"
+    :filterDisplay="filters ? 'row' : undefined"
   >
     <template v-if="props.header" #header>
       <div class="table-header">
@@ -223,6 +354,12 @@ function onPageChange() {
         </div>
       </div>
     </template>
+
+    <template #footer v-if="Object.keys(getAppliedFilters()).length > 0">
+      <div class="table-footer">
+        Showing {{ filteredData.length }} out of {{ props.data.length }} items.
+      </div>
+    </template>
     <!-- Code to forward all of this component's slots to the DataTable slots
     <template v-for="(_, slot) of $slots" v-slot:[slot]="scope">
       <slot :name="slot" v-bind="scope" />
@@ -234,6 +371,13 @@ function onPageChange() {
       :sortable="column.sortable ? true : undefined"
       :sortField="getSortFieldFunction(column)"
       :key="column.id"
+      :pt="{
+        pcColumnFilterButton: { style: 'display: none;' },
+        pcColumnFilterClearButton: { style: 'display: none;' },
+      }"
+      :style="
+        column.filter?.enable ? `min-width: ${minWidthWithFilter}` : undefined
+      "
     >
       <!-- Header template -->
       <template #header>
@@ -258,6 +402,23 @@ function onPageChange() {
           {{ column.title }}
         </span>
         <CurrencySelector v-if="column.currencySelector" />
+      </template>
+
+      <template
+        v-if="useFilters && column.filter?.enable"
+        #filter="{ filterModel }"
+      >
+        <InputText
+          v-model="filterModel.value"
+          type="text"
+          class="table-filter"
+          @input="filter(column, filterModel.value)"
+          :placeholder="column.filter.placeHolder || `Search ${column.title}`"
+          :class="{
+            active: isColumnFiltered(column),
+          }"
+          :style="`width: max(calc(${minWidthWithFilter} - 10px), 100%)`"
+        />
       </template>
 
       <!-- Row template -->
@@ -381,5 +542,13 @@ function onPageChange() {
 .table-header__actions {
   display: flex;
   gap: 0.5em;
+}
+
+.table-filter.active {
+  border: 2px solid #e5a722;
+}
+
+.table-footer {
+  text-align: center;
 }
 </style>

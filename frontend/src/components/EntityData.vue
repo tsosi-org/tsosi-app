@@ -162,6 +162,9 @@ const baseSupporterColumns: TableColumnProps[] = [
       label: "See more in FAQ",
       type: "internal",
     },
+    filter: {
+      enable: true,
+    },
   },
   {
     id: "emitter",
@@ -175,6 +178,9 @@ const baseSupporterColumns: TableColumnProps[] = [
       suffixType: "field",
     },
     sortable: true,
+    filter: {
+      enable: true,
+    },
   },
   {
     id: "agent",
@@ -189,6 +195,9 @@ const baseSupporterColumns: TableColumnProps[] = [
     },
     sortable: true,
     info: "When a transfer is done through another entity like a library consortia, it appears in this column.",
+    filter: {
+      enable: true,
+    },
   },
   {
     id: "recipient",
@@ -202,6 +211,9 @@ const baseSupporterColumns: TableColumnProps[] = [
       suffixType: "field",
     },
     sortable: true,
+    filter: {
+      enable: true,
+    },
   },
   {
     id: "amount",
@@ -233,6 +245,9 @@ const baseInfrastructureColumns: TableColumnProps[] = [
       label: "See more in FAQ",
       type: "internal",
     },
+    filter: {
+      enable: true,
+    },
   },
   {
     id: "emitter",
@@ -246,6 +261,9 @@ const baseInfrastructureColumns: TableColumnProps[] = [
       suffixType: "field",
     },
     sortable: true,
+    filter: {
+      enable: true,
+    },
   },
   {
     id: "emitterCountry",
@@ -253,6 +271,9 @@ const baseInfrastructureColumns: TableColumnProps[] = [
     field: "emitter.country",
     type: "country",
     sortable: true,
+    filter: {
+      enable: true,
+    },
   },
   {
     id: "agent",
@@ -267,6 +288,9 @@ const baseInfrastructureColumns: TableColumnProps[] = [
     },
     sortable: true,
     info: "When a transfer is done through another entity like a library consortia, it appears in this column.",
+    filter: {
+      enable: true,
+    },
   },
   {
     id: "amount",
@@ -345,7 +369,7 @@ const supporterTableProps = computed(() => {
     ),
     defaultSort: {
       sortField: "date_clc",
-      sortOrder: -1,
+      sortOrder: -1 as 0 | 1 | -1,
     },
     rowUniqueId: "id",
     buttons: buttons,
@@ -369,7 +393,7 @@ const recipientTableProps = computed(() => {
     ),
     defaultSort: {
       sortField: "date_clc",
-      sortOrder: -1,
+      sortOrder: -1 as 0 | 1 | -1,
     },
     rowUniqueId: "id",
     buttons: buttons,

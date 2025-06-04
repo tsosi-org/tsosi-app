@@ -2,7 +2,7 @@
 import { getCountryIcon, getCountryLabel } from "@/utils/data-utils"
 
 interface CountryProps {
-  code?: string | null
+  code?: string
 }
 
 const props = defineProps<CountryProps>()

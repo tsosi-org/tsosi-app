@@ -86,9 +86,6 @@ const MyPreset = definePreset(Aura, {
     dialog: {
       color: "var(--p-neutral-950)",
     },
-    inputtext: {
-      paddingX: "0",
-    },
   },
 })
 
