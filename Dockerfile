@@ -24,11 +24,9 @@ RUN poetry install --no-root
 EXPOSE 8000
 
 # Install front dev dependencies.
-RUN curl -fsSL https://deb.nodesource.com/setup_23.x | bash - \
-    && apt-get install -y nodejs
-
-RUN node --version
-RUN npm --version
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+RUN source "$HOME/.nvm/nvm.sh"
+RUN nvm install 24
 
 EXPOSE 5173
 
