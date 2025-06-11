@@ -2,18 +2,15 @@
     "name": "TSOSI Dev env 0.1.1",
     "dockerComposeFile": "docker-compose.yml",
     "service": "app",
-    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "workspaceFolder": "/workspaces/tsosi-app/",
     "forwardPorts": [
-        "5433:5432",   // PostgreSQL - Don't use 5432 because it's already in use by host's Postgre 
         8000,   // Django default dev server
         5173    // Vue.js default dev server 
     ],
     // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	"remoteUser": "root"
-    // TODO: NOT WORKING, IDK why
+	"remoteUser": "root",
     // Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": [
-    //     "cd backend/ && poetry install --no-root",
-    //     "cd frontend && run npm install"
-    // ]
+    // It's executed within the above `workspaceFolder`
+    // We execute init scripts (basically deps installation)
+    "postCreateCommand": "bash init.sh"
 }

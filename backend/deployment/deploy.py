@@ -195,7 +195,7 @@ def deploy(
     ssh_execute(
         server,
         f"cd {release_dir}/{django_folder}/ "
-        f"&& {poetry_bin} run python manage.py update_partners",
+        f"&& {poetry_bin} run python manage.py fill_static_data",
     )
 
     # Copy front files in release folder

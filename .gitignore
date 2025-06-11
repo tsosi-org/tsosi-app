@@ -16,3 +16,6 @@ coverage
 *.log
 npm-debug.log*
 .env.development
+
+# DevOps
+.devcontainer/postgres.env

@@ -35,4 +35,16 @@ RUN npm -v
 
 # JS Packages are installed via a postCreateCommand in devcontainer.json
 
+# Add some utility commands to default user's .bashrc
+RUN echo "\n\
+alias ls='ls --color=auto'\n\
+alias ll='ls --color=auto -alF'\n\
+alias la='ls --color=auto -A'\n\
+alias l='ls --color=auto -lA'\n\
+\n\
+alias grep='grep --color=auto'\n\
+alias fgrep='fgrep --color=auto'\n\
+alias egrep='egrep --color=auto'\n\
+" >> ~/.bashrc
+
 CMD ["sleep", "infinity"]
