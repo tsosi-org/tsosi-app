@@ -15,6 +15,10 @@ if ! [ -f "backend_site/settings_local.py" ]; then
     cp "backend_site/settings_local.dev.py" "backend_site/settings_local.py"
 fi
 
+# Create default log & media directories
+mkdir -p _no_git/logs
+mkdir -p _no_git/media
+
 # Migrate database
 echo -e "\nMigrating database"
 poetry run python manage.py migrate

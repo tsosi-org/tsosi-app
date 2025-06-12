@@ -7,6 +7,7 @@ __pycache__/
 .pytest_cache
 backend/static/
 backend/tsosi/data/to_ingest/
+backend/_no_git/
 
 # Vue app
 frontend/node_modules
