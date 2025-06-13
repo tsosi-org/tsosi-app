@@ -4,11 +4,10 @@ import { type EntityDetails } from "@/singletons/ref-data"
 import Image from "./atoms/ImageAtom.vue"
 import { getRorUrl, getWikidataUrl } from "@/utils/url-utils"
 import { isDesktop } from "@/composables/useMediaQuery"
-import { getCountryLabel } from "@/utils/data-utils"
-import InfrastructureInfoBox from "@/components/InfrastructureInfoBox.vue"
-import EmitterInfoBox from "@/components/EmitterInfoBox.vue"
+import { formatDateWithPrecision, getCountryLabel } from "@/utils/data-utils"
 import ChipList, { type ChipConfig } from "@/components/atoms/ChipListAtom.vue"
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
+import Panel from "primevue/panel"
 
 const props = defineProps<{
   entity: EntityDetails
@@ -98,7 +97,7 @@ function loadChips() {
   }
 }
 
-function breakdownDisclaimer(): boolean {
+function isDoaj(): boolean {
   return props.entity.identifiers.some(
     (val) => val.registry == "ror" && val.value == "05amyt365",
   )
@@ -266,13 +265,69 @@ function breakdownDisclaimer(): boolean {
     </section>
 
     <section class="data-info">
+      <Panel
+        toggleable
+        class="info-box"
+        :dt="{ border: 'inherit', borderRadius: 'inherit' }"
+      >
+        <template #header>
+          <h2 class="info-box-header">To consider before reading the data</h2>
+        </template>
+        <div class="info-box-content">
+          <ul>
+            <li>
+              Each line of the table below shows a financial support,
+              <RouterLink to="/pages/faq#contracts-or-transfers"
+                >see the FAQ</RouterLink
+              >.
+            </li>
+            <li v-if="props.entity.infrastructure?.hide_amount">
+              The amount of the financial contributions are hidden,
+              <RouterLink to="/pages/faq#amounts-hidden">see the FAQ</RouterLink
+              >.
+            </li>
+            <li v-if="!isInfrastructure">
+              For its launch TSOSI includes data from DOAJ, DOAB,
+              PeerCommunityIn, SciPost, and OPERAS.
+            </li>
+            <li v-if="!isInfrastructure">
+              The individual transfer amounts may be hidden depending on the
+              supported infrastructure,
+              <RouterLink to="/pages/faq#amounts-hidden">see the FAQ</RouterLink
+              >.
+            </li>
+            <li v-if="!isInfrastructure">
+              For the DOAB and DOAJ, only supports made since 2021 are included,
+              <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution"
+                >see the FAQ</RouterLink
+              >.
+            </li>
+            <li v-if="!isInfrastructure || isDoaj()">
+              Contributions to DOAJ for 2021 and 2022 include only
+              intermediaries, such as library consortia, and do not show the
+              breakdown by individual supporters.
+            </li>
+            <li v-if="props.entity.infrastructure?.date_data_update">
+              Last data update:
+              {{
+                formatDateWithPrecision(
+                  props.entity.infrastructure.date_data_update,
+                  "day",
+                )
+              }}.
+            </li>
+          </ul>
+        </div>
+      </Panel>
+      <!--
       <InfrastructureInfoBox
         v-if="props.entity.infrastructure"
         :data="props.entity"
         :full-width="false"
-        :breakdown-disclaimer="breakdownDisclaimer()"
+        :breakdown-disclaimer="isDoaj()"
       />
       <EmitterInfoBox v-else />
+      -->
     </section>
   </div>
 </template>
