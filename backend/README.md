@@ -1,4 +1,4 @@
-
+# tsosi-app/backend
 
 Welcome to the TSOSI back-end application, written in Python Django.
 
@@ -6,27 +6,28 @@ Follow the below procedure if you want to setup the application locally.
 
 ## Install python & deps
 
-* Install python 3.12
+* Install python 3.12. The app has not been tested for other Python versions.
 
-* Install pipx & poetry for deps management. Poetry is a python dependency & environment manager. It should prefix any call to CLI programm installed in the project. 
+* Install pipx & poetry for deps management. Poetry is a python dependency & environment manager. It should prefix any call to python CLI program installed in the project. 
     ```bash
     sudo apt install pipx
     pipx ensurepath
     pipx install poetry
     poetry --version
+    # make poetry create virtualenvs in a .venv folder inside the project folder
+    poetry config virtualenvs.in-project true
     ```
 
 * Install python dependencies:
     ```bash
-    # make poetry create virtualenvs in a .venv folder inside the project folder
-    poetry config virtualenvs.in-project true
+    # You need to execute this in backend/ directory where pyproject.toml is located
     poetry install
     ```
 
 * Create a `settings_local.py` file for env. dependent Django settings:
     ```bash
     cd backend_site
-    cp settings_local.example.py settings_local.py
+    cp settings_local.dev.py settings_local.py
     ```
 
 ## Database setup
@@ -37,7 +38,7 @@ Follow the below procedure if you want to setup the application locally.
     createuser -P tsosi_user
     createdb tsosi -O tsosi_user
     ```
-* Create a `settings_local.py` file by copying the `settings_local.example.py` and replace database information with your database and user information.
+* Update your `settings_local.py` file with the database name, user and password information (in the `DATABASES` setting).
 
 * Run the database migrations to get the up-to-date database version.
     ```bash
@@ -46,8 +47,12 @@ Follow the below procedure if you want to setup the application locally.
 
 ## Install redis
 
-* Install Redis manually or run [scripts/install_redis.sh](/scripts/install_redis.sh).
-* Replace Redis connection parameters in your settings_local.py file. The default values should work (connecting with redis://127.0.0.1:6379/0) if you just installed Redis. 
+* Install Redis manually or run our [redis installer script](/scripts/install_redis.sh)
+    ```bash
+    sudo ../scripts/install_redis.sh
+    ```
+    
+* Replace Redis connection parameters in your `settings_local.py` file. The default values should work (connecting with redis://127.0.0.1:6379/0) if you just installed Redis. 
 
 ## Celery
 

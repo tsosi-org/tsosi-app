@@ -12,5 +12,14 @@ echo \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
+
 # Install docker libs
 sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+echo "Docker successfully installed!"
+
+# Add the current user to docker group so that it can run docker engine
+# withour root privileges.
+sudo groupadd docker
+sudo usermod -aG docker $USER
+echo "Current user $USER added to docker group"
+echo "You need to restart your laptop for the new group to be taken into account system wide"

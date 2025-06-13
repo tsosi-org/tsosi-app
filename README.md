@@ -27,17 +27,35 @@ This requires docker to be installed on your machine and to install VSCode's Dev
 
 Install docker using one of the following method:
 
-1. With our docker-installer script (taken from docker docs)
+- With our [docker-installer script](/scripts/install_docker.sh) (bundled from docker docs)
     ```bash
     sudo bash scripts/install_docker.sh
+    # You may need to reboot your machine so that VSCode has access to the docker engine.
     ```
-2. Manual installation, see docker docs. Something like:
-    ```bash
-    sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    ```
-
+- **OR** Manual installation, see [docker docs](https://docs.docker.com/engine/install/ubuntu/).
 
 #### Install DevContainer extension
+
+Install VSCode DevContainer extension: VSCode's DevContainer extension: [ms-vscode-remote.remote-containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+
+### Setup env & settings files
+
+You need to create a `postgres.env` file that will store the Postgres database secrets used by the application.
+
+The easiest is to copy the default one:
+
+```bash
+cp .devcontainer/postgres.example.env .devcontainer/postgres.env
+```
+
+**OPTIONNAL** If you change the default values, you will need to
+manually create your Django settings file ([`settings_local.py`](./backend/backend_site/settings_local.py)) and edit the `DATABASE` setting with the secrets you used for your database:
+
+```bash
+cp backend/backend_site/settings_local.dev.py backend/backend_site/settings_local.py
+# Edit the file
+```
 
 
 ### Build and launch devcontainer

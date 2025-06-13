@@ -118,7 +118,7 @@ def deploy(
     if not skip_front_build:
         os.chdir(frontend_dir)
 
-        cmds = ["npm install", "npm run build"]
+        cmds = ["npm ci", "npm run build"]
         for cmd in cmds:
             print(f"{colored("RUNNING: ", "blue")} {colored(cmd, "yellow")}")
             result = subprocess.run(
