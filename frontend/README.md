@@ -1,6 +1,6 @@
-# frontend
+# tsosi-app/frontend
 
-## Dev deps
+## Install Dev dependencies
 
 - Install Node.js & NPM, using NVM:
 
@@ -34,8 +34,9 @@ The static `country.json` file is a mix of the following sources:
 * Country centroïds are taken from https://github.com/gavinr/world-countries-centroids?tab=readme-ov-file
 
 ---
+---
 
-## Default content from vite setup
+## Default content from project setup
 This template should help get you started developing with Vue 3 in Vite.
 
 ### Recommended IDE Setup

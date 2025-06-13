@@ -118,7 +118,7 @@ def deploy(
     if not skip_front_build:
         os.chdir(frontend_dir)
 
-        cmds = ["npm install", "npm run build"]
+        cmds = ["npm ci", "npm run build"]
         for cmd in cmds:
             print(f"{colored("RUNNING: ", "blue")} {colored(cmd, "yellow")}")
             result = subprocess.run(
@@ -195,7 +195,7 @@ def deploy(
     ssh_execute(
         server,
         f"cd {release_dir}/{django_folder}/ "
-        f"&& {poetry_bin} run python manage.py update_partners",
+        f"&& {poetry_bin} run python manage.py fill_static_data",
     )
 
     # Copy front files in release folder

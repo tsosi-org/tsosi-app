@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - main
+    paths:
+    - 'backend/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+
     
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -34,10 +42,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Create settings file
-        run: cp backend_site/settings_local.example.py backend_site/settings_local.py
-      # We would need a way to ignore the log folder in test mode
-      - name: Create log folder
-        run: mkdir /var/log/tsosi
+        run: cp backend_site/settings_local.test.py backend_site/settings_local.py
       # Disable virtualenvs so that poetry uses everything in the main
       # pre-congifureg Python 
       - name: Poetry config

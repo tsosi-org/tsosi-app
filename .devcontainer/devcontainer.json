@@ -1,0 +1,16 @@
+{
+    "name": "TSOSI Dev env 0.1.1",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspaces/tsosi-app/",
+    "forwardPorts": [
+        8000,   // Django default dev server
+        5173    // Vue.js default dev server 
+    ],
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root",
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // It's executed within the above `workspaceFolder`
+    // We execute init scripts (basically deps installation)
+    "postCreateCommand": "bash init.sh"
+}

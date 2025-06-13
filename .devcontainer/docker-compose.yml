@@ -1,0 +1,42 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
+    # (Adding the "ports" property to this service will not forward from a Codespace.)
+    # ports:
+    #   - "5173:5173"
+    #   - "8000:8000"
+    # Bind workspace repository in dev container and Host
+    volumes:
+      - ..:/workspaces/tsosi-app:cached
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+
+  db:
+    image: postgres:17
+    restart: always
+    # TODO?: use a bind mount with host folder to access database easily ?
+    # volumes:
+    #   - type: bind
+    #     source: /tsosi-postgresql
+    #     target: /var/lib/postgresql/data
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    env_file: "postgres.env"
+    ports:
+      - "5433:5432" # We don't use 5432 bc it might already be used by host 
+
+  # TODO
+  redis:
+    image: redis:8
+    restart: unless-stopped
+    # Redis does not need to be exposed to the outside. If it changes,
+    # this implies security issue (mainly setting up authentication to access it)
+    # because the docker default listens to any requesting host.  
+    # ports:
+    #   - "6380:6379" # Don't use 6379 bc it might already be used by host
+
+volumes:
+  postgres-data:

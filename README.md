@@ -13,77 +13,75 @@ See related [README.md](/backend/README.md) to install and run the Django app lo
 
 See related [README.md](/frontend/README.md) to install and run the Vue.js app locally.
 
-## Local dev using containerized env [WIP]
+## Local dev using containerized env
 
-Install docker
-
-```bash
-sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-```
+You can use the declared VSCode DevContainer to automatically setup a full-fledged
+dev environment and use VSCode within it.
 
 
-### Dev container
+### Requirements
 
-Develop using the provided dev container.
+This requires docker to be installed on your machine and to install VSCode's DevContainer extension: [ms-vscode-remote.remote-containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
 
-Once built and connected to the container, you will need to mark the repository as safe for git if it's mounted from the local one:
-```bash
-git config --global --add safe.directory /workspaces/tsosi-app
-```
+#### Install docker
 
-### Connecting to local database from the container
+Install docker using one of the following method:
 
-You need to configure several things if you're running the app's container with default network mode `bridge`.
-You should be able to access the database correctly if you're running the network mode `host`.
-
-#### Figure out your machine and container IP addresses on docker interface 
-You need to figure out what's your machine IP address on the interface (usually 172.17.0.1), which usually corresponds to the bridge's gateway IP address.
-
-```bash
-docker network inspect bridge
-```
-
-Find the gateway IP adress in the correct bridge along with the container's IP.
-
-#### Edit PostgreSQL config to listen to connection on that interface
-
-You need to make the Postgres server listen for incoming connections on that interface.
-By default, the server only listens to requests to localhost (127.0.0.1) IP and only allows requests from localhost.
-Navigate to the postgres config folder to edit the correct files:
-```bash
-cd /etc/postgresql/{postgres_version}/main
-```
-
-Edit the `postgresql.conf` file to add the found IP address to the listening addresses (ex: `listening_addresses='localhost,172.17.0.1'`).
-
-Edit the `pg_hba.conf` file to add either the docker subnet or only this container to perform queries to the Postgres server.
-
-```
-# Authorize connections for all local docker containers
-host	all		all		172.17.0.0/16		md5
-
-# Only authorize the container with IP 172.17.0.2
-host	all		all		172.17.0.2/32		md5
-```
-
-Restart postgresql service
-```bash
-sudo systemctl restart postgresql
-```
-
-Warning: for the config to work, the docker daemon and maybe even the docker container must be running so that postgres can listen to the correct network.
-You can just restart the service if it's not working.
-
-
-#### Run dev servers
-
-You can't run the dev server at the classic 127.0.0.1 IP address if connections are expected from outside the docker container:
-
-* You can allow all connections by using the wildcard IP address 0.0.0.0
+- With our [docker-installer script](/scripts/install_docker.sh) (bundled from docker docs)
     ```bash
-    python manage.py runserver 0.0.0.0:8000
+    sudo bash scripts/install_docker.sh
+    # You may need to reboot your machine so that VSCode has access to the docker engine.
     ```
-* You can allow only connections from the Host machine by using the container's IP address on the docker network interface (ex: 172.17.0.2).
+- **OR** Manual installation, see [docker docs](https://docs.docker.com/engine/install/ubuntu/).
+
+#### Install DevContainer extension
+
+Install VSCode DevContainer extension: VSCode's DevContainer extension: [ms-vscode-remote.remote-containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+
+### Setup env & settings files
+
+You need to create a `postgres.env` file that will store the Postgres database secrets used by the application.
+
+The easiest is to copy the default one:
+
+```bash
+cp .devcontainer/postgres.example.env .devcontainer/postgres.env
+```
+
+**OPTIONNAL** If you change the default values, you will need to
+manually create your Django settings file ([`settings_local.py`](./backend/backend_site/settings_local.py)) and edit the `DATABASE` setting with the secrets you used for your database:
+
+```bash
+cp backend/backend_site/settings_local.dev.py backend/backend_site/settings_local.py
+# Edit the file
+```
+
+
+### Build and launch devcontainer
+
+Open Command palette (`Ctrl + Maj + p`).
+
+Launch the command **DevContainers: Reopen in container**.
+This will trigger the build of the dev container and open vscode within it, then run our repository [init script](./init.sh).
+
+You're now good to go!
+You can run dev servers as following:
+
+- Django (backend) dev server:
     ```bash
-    python manage.py runserver 172.17.0.2:8000
+    cd backend
+    poetry python manage.py runserver
     ```
+
+- Vite (frontend) dev server:
+    ```bash
+    cd frontend
+    npm run dev
+    ```
+Navigate to [http://localhost:5173](http://localhost:5173).
+
+And also run the celery worker for more advance usage:
+```bash
+poetry run celery -A backend_site worker --concurrency=1 --loglevel=INFO
+```
