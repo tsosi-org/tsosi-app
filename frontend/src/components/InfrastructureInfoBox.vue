@@ -71,7 +71,7 @@ const props = defineProps<{
     <div v-if="props.breakdownDisclaimer" class="info-item">
       <h3>Supporter breakdown</h3>
       <span>
-        The data does not include the supporters breakdown before 2021, but only
+        The data does not include the supporters breakdown before 2023, but only
         the intermediary like a library consortia,
         <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution"
           >see more in FAQ </RouterLink
