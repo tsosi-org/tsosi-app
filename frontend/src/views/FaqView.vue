@@ -28,6 +28,12 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
           </li>
 
           <li>
+            The data of TSOSI are mostly produced manually. The name of the supporters' organization received by TSOSI is handwritten, and the identifiers are added 
+            semi manually by the TSOSI operational team. Therefore, the TSOSI data may contain errors. Please <RouterLink :to="'#contact-us'">Contact us</RouterLink> 
+            if you think you have found one.
+          </li>
+          
+          <li>
             TSOSI's URL: the weblink to the entities contains identifiers,
             <i>e.g.</i>
 
@@ -341,16 +347,12 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
       >
         <p>
           For its next cycle, 2025-26, TSOSI is keen to include other data
-          sources! If you represent a research institution, we invite you to
-          practise open data following the guidelines and schema of the
+          sources! For research institution, the idea is to work with 
           <ExternalLinkAtom
             :label="'openCost'"
             :href="'https://www.opencost.de/en/'"
-          />
-          project. TSOSI will then collect your structured and enriched data.
-          Feel free to
-          <RouterLink :label="''" :to="'#contact-us'">Contact us</RouterLink>
-          to make it a reality!
+          />, which allows institutions to notably practise open data for funding made 
+          in favor of open infrastructures: <RouterLink :to="'#contact-us'">Drop us a line</RouterLink> to be part of this!
         </p>
       </StaticSectionAtom>
 
