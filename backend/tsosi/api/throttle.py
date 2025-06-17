@@ -18,6 +18,9 @@ def is_IP_allowed(ip_address: str | None) -> bool:
     """Whether the IP address starts with withelisted IPV4 ranges."""
     if ip_address is None:
         return False
+    # Only check IPV4 address string
+    if len(ip_address.split(".")) != 4:
+        return False
     for ip_start in app_settings.API_WHITELIST_IPS:
         if ip_address.startswith(ip_start):
             return True
@@ -42,7 +45,7 @@ class TsosiThrottle(AnonRateThrottle):
         if is_origin_whitelist(origin):
             return None
 
-        if is_IP_allowed(request.META.get("REMOTE_ADDR")):
+        if is_IP_allowed(self.get_ident(request)):
             return None
 
         return super().get_cache_key(request, view)

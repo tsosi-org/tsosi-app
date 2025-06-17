@@ -51,6 +51,7 @@ CACHES = {
         "LOCATION": f"redis://{TSOSI_REDIS_HOST}:{TSOSI_REDIS_PORT}/{TSOSI_REDIS_DB}",
     }
 }
+DRF_NUM_PROXIES = 0
 
 if "test" in sys.argv or "pytest" in sys.modules:
     DATABASES["default"] = {"ENGINE": "django.db.backends.sqlite3"}

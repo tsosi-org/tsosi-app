@@ -21,6 +21,7 @@ from .settings_local import (
     DATABASES,
     DEBUG,
     DJANGO_LOG_LEVEL,
+    DRF_NUM_PROXIES,
     ERROR_LOG_FILE,
     MEDIA_ROOT,
     MEDIA_URL,
@@ -251,6 +252,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_THROTTLE_CLASSES": ["tsosi.api.throttle.TsosiThrottle"],
+    "NUM_PROXIES": DRF_NUM_PROXIES,
 }
 
 TSOSI_CELERY_ACCEPT_CONTENT = ["json"]
