@@ -5,6 +5,10 @@ SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
 cd $SCRIPT_DIR
 
+# This need to be re-run once the container is connected to
+# bc poetry config is user-dependent. The one from the docker is not read here.
+poetry config virtualenvs.in-project true
+
 # Install python deps
 echo -e "\nInstalling Python dependencies"
 poetry install --no-root

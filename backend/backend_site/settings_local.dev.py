@@ -22,6 +22,7 @@ MEDIA_ROOT = f"{NO_GIT_DIR}/media/"
 MEDIA_URL = "media/"
 STATIC_URL = "static/"
 ALLOWED_HOSTS = ["127.0.0.1", "172.17.0.1", "localhost"]
+
 TSOSI_MAIN_LOG_FILE = f"{NO_GIT_DIR}/logs/tsosi_app.log"
 TSOSI_DATA_LOG_FILE = f"{NO_GIT_DIR}/logs/tsosi_data.log"
 TSOSI_DJANGO_LOG_FILE = f"{NO_GIT_DIR}/logs/django.log"
@@ -42,6 +43,13 @@ TSOSI_SCIPOST_AUTH = {
     "password": "",
     "client_id": "",
     "client_secret": "",
+}
+TSOSI_API_WHITELIST_IPS = ["127.0.0.1"]
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{TSOSI_REDIS_HOST}:{TSOSI_REDIS_PORT}/{TSOSI_REDIS_DB}",
+    }
 }
 
 if "test" in sys.argv or "pytest" in sys.modules:
