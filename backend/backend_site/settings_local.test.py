@@ -36,6 +36,8 @@ TSOSI_SCIPOST_AUTH = {
 }
 
 CACHES = {}
+DRF_NUM_PROXIES = 0
+
 # Create dirs if not existing
 for path_name in [
     f"{MEDIA_ROOT}/any.png",
