@@ -1,12 +1,9 @@
-import logging
 from urllib.parse import urlparse
 
 from django.conf import settings
 from rest_framework.request import Request
 from rest_framework.throttling import AnonRateThrottle
 from tsosi.app_settings import app_settings
-
-logger = logging.getLogger(__name__)
 
 
 def is_origin_whitelist(origin: str | None) -> bool:
@@ -24,7 +21,6 @@ def is_IP_allowed(ip_address: str | None) -> bool:
     # Only check IPV4 address string
     if len(ip_address.split(".")) != 4:
         return False
-    logger.info(f"Checking if IP address {ip_address} is allowed.")
     for ip_start in app_settings.API_WHITELIST_IPS:
         if ip_address.startswith(ip_start):
             return True
