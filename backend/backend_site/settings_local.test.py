@@ -35,6 +35,7 @@ TSOSI_SCIPOST_AUTH = {
     "client_secret": "",
 }
 
+CACHES = {}
 # Create dirs if not existing
 for path_name in [
     f"{MEDIA_ROOT}/any.png",

@@ -131,5 +131,22 @@ class AppSettings:
         """The number of days before refreshing existing wiki-related data."""
         return self._setting("WIKI_REFRESH_DAYS", 7)
 
+    @property
+    def API_WHITELIST_IPS(self) -> list[str]:
+        """
+        A list of IP prefix strings that should be whitelisted from rate
+        limiting.
+        This is a heuristic to whitelist whole subnet masks, working for UGA
+        because the known masks span exactly either 3 or 4 bytes.
+        """
+        return self._setting("API_WHITELIST_IPS", [])
+
+    @property
+    def API_RATE(self) -> str:
+        """
+        The rate limit for the API, defaults to 10 per minute.
+        """
+        return self._setting("API_RATE", "10/m")
+
 
 app_settings = AppSettings()

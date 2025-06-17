@@ -17,6 +17,7 @@ from celery.schedules import crontab
 
 from .settings_local import (
     ALLOWED_HOSTS,
+    CACHES,
     DATABASES,
     DEBUG,
     DJANGO_LOG_LEVEL,
@@ -44,6 +45,9 @@ TSOSI_OPTIONAL_SETTINGS = [
     "TSOSI_REDIS_PORT",
     # Following settings have defaults
     "TSOSI_TRIGGER_JOBS",
+    # API Rate limiting
+    "TSOSI_API_RATE",
+    "TSOSI_API_WHITELIST_IPS",
 ]
 
 settings_local_module = importlib.import_module("backend_site.settings_local")
@@ -246,6 +250,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+    "DEFAULT_THROTTLE_CLASSES": ["tsosi.api.throttle.TsosiThrottle"],
 }
 
 TSOSI_CELERY_ACCEPT_CONTENT = ["json"]
