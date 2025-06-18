@@ -1,6 +1,9 @@
 """
-Deployment script
-TODO: Instantiate the SSH tunnel only once and re-use it for all commands. 
+Deployment script.
+For usage information, run:
+```
+poetry run python -m deployment.deploy --help
+```
 """
 
 import argparse
@@ -25,6 +28,8 @@ def create_ssh_client(server: ServerConfig):
     """
     Create and return a SSH client used to execute command on the given server
     over SSH.
+
+    :param server:  The target server config.
     """
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -122,6 +127,9 @@ def ssh_execute(
 
 
 def format_dict_string(d: dict, indent="\t") -> str:
+    """
+    Format an indented string from a dict, to be displayed in the terminal.
+    """
     line_sep = f"\n{indent}"
     return f"{indent}{line_sep.join([f'{k}: {v}' for k, v in d.items()])}"
 
@@ -152,7 +160,17 @@ def deploy(
     celery_no_restart=False,
 ):
     """
-    Deploy the desired server using the given branch latest commit.
+    Deploy latest commit code to the desired server.
+
+    :param server_name:         The name of the server to deploy. Ex: `prod`.
+                                The name is the key of the `SERVERS` mapping,
+                                cf. servers.py.
+    :param branch:              The branch name to deploy. Default to `main`.
+    :param skip_front_build:    Whether to skip the build of fresh frontend
+                                files. If `True`, it will copy existing files
+                                in frontend/dist.
+    :param celery_no_restart:   Whether to restart Celery systemd services
+                                on the server. Default to `False`.
     """
     server = get_server(server_name)
     deploy_branch = branch if branch else server.default_branch
@@ -357,7 +375,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "server_name",
-        help=f"The name of the server to deploy, among: {",".join(SERVERS.keys())}",
+        help=f"The name of the server to deploy, among: [{",".join(SERVERS.keys())}]",
     )
     parser.add_argument(
         "--branch",
