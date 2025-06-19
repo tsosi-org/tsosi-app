@@ -11,7 +11,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 # Python deps (managed via Poetry)
 # Install poetry container-wide
 ENV POETRY_HOME=/etc/poetry
-ENV POETRY_VERSION=2.0.1
+ENV POETRY_VERSION=2.1.3
 RUN curl -sSL https://install.python-poetry.org | python3 -
 RUN ln -sf "$POETRY_HOME/venv/bin/poetry" /usr/bin/poetry
 

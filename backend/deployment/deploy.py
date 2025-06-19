@@ -278,7 +278,7 @@ def deploy(
 
     # Install poetry & python deps.
     ssh_execute(
-        "curl -sSL https://install.python-poetry.org | python3 -",
+        "curl -sSL https://install.python-poetry.org | POETRY_VERSION=2.1.3 python3 -",
         ssh_client=ssh_client,
     )
     poetry_bin = "$HOME/.local/bin/poetry"

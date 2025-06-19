@@ -17,8 +17,8 @@ DATABASES = {
 
 SECRET_KEY = "{REPLACE}"
 DEBUG = False
-# This needs to be sync with nginx config
-MEDIA_ROOT = "/tsosi_media"
+# This needs to be sync with nginx config, usually /tsosi_media
+MEDIA_ROOT = "{REPLACE}"
 MEDIA_URL = "media/"
 STATIC_URL = "static/"
 ALLOWED_HOSTS = [
