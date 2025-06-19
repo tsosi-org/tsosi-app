@@ -199,13 +199,13 @@ def deploy(
     current_branch = run_local_cmd(
         "git branch --show-current", print_stdout=False
     ).strip()
-    if current_branch != branch:
+    if current_branch != deploy_branch:
         print(
             colored(
                 f"The current local branch `{current_branch}` "
-                f"does not match the input one `{branch}`.\n"
-                f"Please checkout the branch `{branch}`"
-                f"\n\ngit checkout {branch}",
+                f"does not match the input one `{deploy_branch}`.\n"
+                f"Please checkout the branch `{deploy_branch}`"
+                f"\n\ngit checkout {deploy_branch}",
                 "red",
             )
         )
