@@ -102,6 +102,12 @@ function isDoaj(): boolean {
     (val) => val.registry == "ror" && val.value == "05amyt365",
   )
 }
+
+function isDoab(): boolean {
+  return props.entity.identifiers.some(
+    (val) => val.registry == "_custom" && val.value == "doab_oapen",
+  )
+}
 </script>
 
 <template>
@@ -282,8 +288,14 @@ function isDoaj(): boolean {
               >.
             </li>
             <li v-if="props.entity.infrastructure?.hide_amount">
-              The amount of the financial contributions are hidden,
+              The amount of financial support is hidden,
               <RouterLink to="/pages/faq#amounts-hidden">see the FAQ</RouterLink
+              >.
+            </li>
+            <li v-if="isDoaj() || isDoab()">
+              Financial support is available from 2021,
+              <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution"
+                >see the FAQ</RouterLink
               >.
             </li>
             <li v-if="!isInfrastructure">
@@ -303,9 +315,12 @@ function isDoaj(): boolean {
               >.
             </li>
             <li v-if="!isInfrastructure || isDoaj()">
-              Contributions to DOAJ for 2021 and 2022 include only
-              intermediaries, such as library consortia, and do not show the
-              breakdown by individual supporters.
+              Support to DOAJ for 2021 and 2022, provided through a consortium,
+              includes only the consortium name; a breakdown by individual
+              supporters is not available.
+              <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution"
+                >See the FAQ</RouterLink
+              >.
             </li>
             <li v-if="props.entity.infrastructure?.date_data_update">
               Last data update:
