@@ -12,7 +12,7 @@ from .source import DataLoadSource, DataSource
 from .transfer import Transfer, TransferEntityMatching
 
 
-def empty_db():
+def empty_db(incl_currency=False):
     """
     Delete all rows of all TSOSI models.
     """
@@ -21,6 +21,7 @@ def empty_db():
     Identifier.objects.all().delete()
     Entity.objects.all().delete()
     Registry.objects.all().delete()
-    Currency.objects.all().delete()
     DataSource.objects.all().delete()
+    if incl_currency:
+        Currency.objects.all().delete()
     print("Database emptied.")

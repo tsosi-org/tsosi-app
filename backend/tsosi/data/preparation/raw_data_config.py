@@ -343,6 +343,11 @@ class DataIngestionConfig:
     count: int
     data: list
 
+    def serialize(self) -> dict:
+        data = asdict(self)
+        data["source"] = self.source.serialize()
+        return data
+
 
 class RawDataConfig:
     """
@@ -424,7 +429,7 @@ class RawDataConfig:
         if self.no_date_field:
             raise ValueError("At least 1 date field must be set given.")
 
-    def get_field[T: ConstOrField](self, f_class: Type[T]) -> T:
+    def get_field(self, f_class: Type[ConstOrField]) -> ConstOrField:
         for f in self.fields:
             if f.__class__ == f_class:
                 return f
@@ -671,12 +676,12 @@ class RawDataConfig:
         file_path = output_folder / file_name
         ingestion_config = DataIngestionConfig(
             date_generated=datetime.now(UTC).isoformat(timespec="seconds"),
-            source=self.source.serialize(),
+            source=self.source,
             count=len(data),
-            data=data.to_dict(orient="records"),
+            data=data.sort_index(axis=1).to_dict(orient="records"),
         )
         with open(file_path, "w") as f:
-            json.dump(asdict(ingestion_config), f, indent=2)
+            json.dump(ingestion_config.serialize(), f, indent=2)
 
         logger.info(f"Successfully write TSOSI data file at {file_path}")
 

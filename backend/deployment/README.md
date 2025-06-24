@@ -143,9 +143,14 @@ The prod configuration is the following one:
     notifempty # Don't rotate empty log file. Useful only for date-based rotation.
     copytruncate # Truncate the original log file in place instead of moving it then re-creating it.
     compress # Compress old log files
-    delaycompress # Postpone compression of rotated log files to the next rotation.
 }
 ```
 You can write this config in a new file named `tsosi` in `/etc/logrotate.d/` and voilà!
 
 **Beware** that you need to remove the "comments" for the file to be correctly read by logrotate.
+
+You can run the log rotate command to check the conf syntax with the following command (it will rotate the log if the criterias are met):
+
+```bash
+sudo logrotate /etc/logrotate.conf --debug
+```

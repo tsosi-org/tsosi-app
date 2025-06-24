@@ -435,7 +435,7 @@ def update_entity_from_pid_records() -> TaskResult:
         "website": ["ror_website", "wikidata_website", "raw_website"],
         "logo_url": ["wikidata_logo_url"],
         "wikipedia_url": ["wikidata_wikipedia_url", "ror_wikipedia_url"],
-        "coordinates": ["ror_coordinates", "wikidata_coordinates"],
+        "coordinates": ["wikidata_coordinates", "ror_coordinates"],
         "date_inception": ["ror_date_inception", "wikidata_date_inception"],
     }
     # Compute the value for each field and check if there's a diff with existing

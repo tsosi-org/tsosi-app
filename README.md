@@ -3,7 +3,7 @@
 This is the repository of the TSOSI web platform including both front-end and back-end of the application.
 
 
-## Local dev with manual installation
+## Local dev with manual installation (NOT RECOMMENDED)
 
 ### Backend
 

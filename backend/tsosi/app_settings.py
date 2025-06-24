@@ -76,9 +76,9 @@ class AppSettings:
         ```
         {
             "username": The name of the scipost user with elevated rights,
-            "password": The name of the scipost user with elevated rights,
+            "password": The password of the scipost user with elevated rights,
             "client_id": The ID of the OAuth2 application created to retrieve an auth token,
-            "client_secret": Tee secret of the OAuth2 application created to retrieve an auth token
+            "client_secret": The secret of the OAuth2 application created to retrieve an auth token
         }
         ```
         """

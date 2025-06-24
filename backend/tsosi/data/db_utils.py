@@ -110,7 +110,7 @@ def get_model_class_pk_field(model_class: Type[models.Model]) -> str:
 
 def model_instance_from_row[
     T: models.Model
-](model_class: Type[T], row: pd.Series, fields: dict[str]) -> T:
+](model_class: Type[T], row: pd.Series, fields: Iterable[str]) -> T:
     kwargs = {f: row[f] for f in fields}
     return model_class(**kwargs)
 
@@ -149,7 +149,7 @@ def bulk_create_from_df(
 def bulk_update_from_df(
     model_class: Type[models.Model],
     data: pd.DataFrame,
-    fields: dict[str],
+    fields: Iterable[str],
 ):
     """
     Perform bulk udates of the given model from the given data and fields

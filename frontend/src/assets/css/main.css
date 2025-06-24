@@ -110,6 +110,7 @@ h1,
   color: var(--color-heading);
   font-weight: 900;
   font-size: 28px;
+  text-wrap: balance;
 }
 
 h2, h3, h4, h5, h6 {

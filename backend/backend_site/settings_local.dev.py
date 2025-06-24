@@ -35,11 +35,11 @@ TSOSI_REDIS_DB = "0"
 TSOSI_CELERY_BROKER_URL = (
     f"redis://{TSOSI_REDIS_HOST}:{TSOSI_REDIS_PORT}/{TSOSI_REDIS_DB}"
 )
-TSOSI_DATA_EXPORT_FOLDER = ""
+TSOSI_DATA_EXPORT_FOLDER = f"{NO_GIT_DIR}/fixtures/_exports"
 TSOSI_TO_INGEST_DIR = TSOSI_DATA_EXPORT_FOLDER
 TSOSI_TRIGGER_JOBS = True
 TSOSI_SCIPOST_AUTH = {
-    "username": "",
+    "username": "TSOSI",
     "password": "",
     "client_id": "",
     "client_secret": "",
