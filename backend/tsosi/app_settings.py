@@ -39,11 +39,11 @@ class AppSettings:
         return self._setting("REDIS_HOST", mandatory=True)
 
     @property
-    def REDIS_PORT(self) -> str:
+    def REDIS_PORT(self) -> int:
         return self._setting("REDIS_PORT", mandatory=True)
 
     @property
-    def REDIS_DB(self) -> str:
+    def REDIS_DB(self) -> int:
         return self._setting("REDIS_DB", mandatory=True)
 
     @property

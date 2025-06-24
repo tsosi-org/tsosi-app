@@ -1,6 +1,7 @@
 import logging
 import re
 from datetime import date, datetime
+from typing import Any
 
 import pandas as pd
 import pycountry
@@ -15,8 +16,10 @@ CUSTOM_COUNTRY_MAPPING = {
     "USA": "United States",
     "Russia": "Russian Federation",
 }
-COUNTRY_NAME_MAPPING = {c.name: c for c in pycountry.countries}
-COUNTRY_ALPHA_2_MAPPING = {c.alpha_2: c for c in pycountry.countries}
+COUNTRY_NAME_MAPPING = {c.name: c for c in pycountry.countries}  # type:ignore
+COUNTRY_ALPHA_2_MAPPING = {
+    c.alpha_2: c for c in pycountry.countries  # type:ignore
+}
 
 
 # Field names for the output dataframe
@@ -29,7 +32,7 @@ CURRENCY_MAPPING = {
 }
 
 
-def currency_iso_from_value[T](val: T, error: bool = False) -> str | None:
+def currency_iso_from_value(val, error: bool = False) -> str | None:
     """
     According to the current data, the currency is always represented either by
     its symbol ("$", "£" or "€") or it contains the ISO code with other parasite
@@ -62,7 +65,7 @@ def currency_iso_from_value[T](val: T, error: bool = False) -> str | None:
     return None
 
 
-def country_check_iso[T](val: T, error: bool = False) -> None:
+def country_check_iso(val, error: bool = False) -> None:
     """
     Check that the provided value is a country ISO code.
     """
@@ -76,7 +79,7 @@ def country_check_iso[T](val: T, error: bool = False) -> None:
     logger.error(msg)
 
 
-def country_iso_from_name[T](val: T, error: bool = False) -> str | None:
+def country_iso_from_name(val, error: bool = False) -> str | None:
     """
     Get the country iso 3166-1 alpha-2 code from the input name.
     """
@@ -92,7 +95,7 @@ def country_iso_from_name[T](val: T, error: bool = False) -> str | None:
 
     try:
         results = pycountry.countries.search_fuzzy(val)
-        return results[0].alpha_2
+        return results[0].alpha_2  # type: ignore
     except LookupError:
         pass
     msg = f"The provided country name `{val}` is non-standard."
@@ -102,32 +105,33 @@ def country_iso_from_name[T](val: T, error: bool = False) -> str | None:
     return None
 
 
-def country_name_from_iso[T](code: T) -> T:
+def country_name_from_iso[T: Any](code: T) -> T | str:
     """
     Returns the country name of the given iso 3166-1 alpha-2 code.
     """
     if not isinstance(code, str):
         return code
     if code in COUNTRY_ALPHA_2_MAPPING.keys():
-        return COUNTRY_ALPHA_2_MAPPING[code].name
+        return COUNTRY_ALPHA_2_MAPPING[code].name  # type: ignore
     logger.warning(f"The provided country ISO code `{code}` does not exist.")
     return code
 
 
-def clean_url[T](s: T) -> T:
+def clean_url[T: Any](s: T) -> T | str:
     """
     Add default protocol and remove trailing slash from URL string.
     """
     if not isinstance(s, str):
         return s
+    res = s
     if not s.startswith("https://") and not s.startswith("http://"):
-        s = f"https://{s}"
-    if s[-1] == "/":
-        s = s[:-1]
+        res = f"https://{s}"
+    if res[-1] == "/":
+        res = res[:-1]
     return s
 
 
-def clean_cell_value[T](s: T) -> T:
+def clean_cell_value[T: Any](s: T) -> T | str:
     """
     Clean the value from a spreadsheet cell:
     - Normalize spacing values.
@@ -139,7 +143,7 @@ def clean_cell_value[T](s: T) -> T:
 
 
 def clean_number_value[
-    T
+    T: Any
 ](value: T, comma_decimal=False, error=False) -> T | float:
     """
     Clean a number value by casting in to a number type.
@@ -148,9 +152,9 @@ def clean_number_value[
     """
     if not isinstance(value, str):
         return value
-    value = clean_cell_value(value).replace(" ", "")
-    value = value.replace(",", ".") if comma_decimal else value.replace(",", "")
-    return pd.to_numeric(value, errors="raise" if error else "coerce")
+    res = clean_cell_value(value).replace(" ", "")
+    res = res.replace(",", ".") if comma_decimal else res.replace(",", "")
+    return pd.to_numeric(res, errors="raise" if error else "coerce")
 
 
 def extract_currency_amount(
@@ -195,7 +199,7 @@ def extract_currency_amount(
     return amount, currency
 
 
-def undate[T](x: T, date_format: str = DATE_FORMAT) -> T | str:
+def undate[T: Any](x: T, date_format: str = DATE_FORMAT) -> T | str:
     """
     Return the string representation of the date/datetime input.
     """
@@ -204,7 +208,7 @@ def undate[T](x: T, date_format: str = DATE_FORMAT) -> T | str:
     return x
 
 
-def check_regex(value, regex: re.Pattern, error: bool = False) -> bool:
+def check_regex(value, regex: re.Pattern | str, error: bool = False) -> bool:
     """
     Check whether the provided value matches the given regex.
     """

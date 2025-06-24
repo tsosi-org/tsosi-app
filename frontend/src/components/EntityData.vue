@@ -323,7 +323,10 @@ function getTableColumns(
 ): TableColumnProps[] {
   let columns = baseColumns.filter((col) => !removedColumns.includes(col.id))
   if (!showAmount) {
-    columns = columns.filter((col) => !["amount", "currency"].includes(col.id))
+    const toRemove = props.entity.infrastructure
+      ? ["amount", "currency"]
+      : ["currency"]
+    columns = columns.filter((col) => !toRemove.includes(col.id))
   }
   if (transfers.every((t) => t.agent == null)) {
     columns = columns.filter((col) => col.id != "agent")
