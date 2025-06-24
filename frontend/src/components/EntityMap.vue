@@ -13,6 +13,7 @@ import {
   type Ref,
   nextTick,
   useTemplateRef,
+  computed,
   type App,
   type Component,
 } from "vue"
@@ -34,6 +35,7 @@ import { createComponent } from "@/utils/dom-utils"
 import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
 import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
 import { isDesktop } from "@/composables/useMediaQuery"
+import { layer } from "@fortawesome/fontawesome-svg-core"
 
 export interface EntityMapProps {
   id: string
@@ -61,7 +63,10 @@ const plottedSupporters: Ref<{
   value: number
   countries: number
 } | null> = ref(null)
+const scalingRatio = computed(() => (isDesktop.value ? 1 : 1.25))
+
 // Do not use a ref, it messes up some leaflet features
+let layerGroup: L.LayerGroup | null = null
 let map: L.Map | null = null
 const houseSvg = `
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
@@ -78,16 +83,21 @@ const circleSvg = `
     <path stroke-linecap="round" stroke-linejoin="round" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z"/>
   </svg>
 `
-const countryIcon = L.divIcon({
-  html: diamondSvg,
-  iconSize: [12, 12],
-  className: "map-icon diamond-icon",
-})
-const houseIcon = L.divIcon({
-  html: houseSvg,
-  iconSize: [18, 18],
-  className: "map-icon house-icon",
-})
+const countryIcon = computed(() =>
+  L.divIcon({
+    html: diamondSvg,
+    iconSize: [12 * scalingRatio.value, 12 * scalingRatio.value],
+    className: "map-icon diamond-icon",
+  }),
+)
+
+const houseIcon = computed(() =>
+  L.divIcon({
+    html: houseSvg,
+    iconSize: [18 * scalingRatio.value, 18 * scalingRatio.value],
+    className: "map-icon house-icon",
+  }),
+)
 // const circleIcon = L.divIcon({
 //   html: circleSvg,
 //   iconSize: [10, 10],
@@ -99,7 +109,8 @@ onMounted(async () => {
   await updateMarkers()
 })
 
-watch(props, async () => await updateMarkers())
+watch(props, async () => updateMarkers())
+watch(isDesktop, async () => updateMarkers())
 
 async function onInit() {
   await nextTick()
@@ -123,6 +134,7 @@ async function onInit() {
   mapObject.invalidateSize()
 
   map = mapObject
+  layerGroup = L.layerGroup().addTo(map)
 }
 
 /**
@@ -130,15 +142,16 @@ async function onInit() {
  */
 async function updateMarkers() {
   loading.value = true
-  if (!map || !props.dataLoaded) {
+  await nextTick()
+  if (!map || !layerGroup || !props.dataLoaded) {
     return
   }
   // Clean the map
-  for (const layer of Object.values(layers.value)) {
-    map.removeLayer(layer)
-  }
+  layerGroup.clearLayers()
+  await nextTick()
 
-  const newLayers: Record<string, L.FeatureGroup> = {}
+  // Draw new layers
+  const newLayers: Record<string, L.GeoJSON> = {}
   const emittersRecap = {
     total: props.supporters.length,
     value: 0,
@@ -147,22 +160,27 @@ async function updateMarkers() {
     ).size,
   }
   // Construct individual emitters layer
-  const emitterFeatures: Feature[] = []
+  // We merge features with the exact same coordinates otherwise
+  // they overlap on the map.
+  const emitterFeatures: { [code: string]: Feature } = {}
   const emitterCountries: { [code: string]: Entity[] } = {}
   for (const item of props.supporters) {
     const coordinates = parsePointCoordinates(item.coordinates)
     if (coordinates) {
-      const feature: Feature = {
-        type: "Feature",
-        properties: {
-          ...item,
-        },
-        geometry: {
-          type: "Point",
-          coordinates: [coordinates.lon, coordinates.lat],
-        },
+      if (item.coordinates! in emitterFeatures) {
+        emitterFeatures[item.coordinates!].properties?.items.push(item.id)
+      } else {
+        emitterFeatures[item.coordinates!] = {
+          type: "Feature",
+          properties: {
+            items: [item.id],
+          },
+          geometry: {
+            type: "Point",
+            coordinates: [coordinates.lon, coordinates.lat],
+          },
+        }
       }
-      emitterFeatures.push(feature)
       emittersRecap.value += 1
     } else if (item.country) {
       if (!(item.country in emitterCountries)) {
@@ -172,23 +190,36 @@ async function updateMarkers() {
     }
   }
   if (emitterFeatures) {
-    newLayers.emitters = L.geoJSON(emitterFeatures, {
+    newLayers.emitters = L.geoJSON(Object.values(emitterFeatures), {
       pointToLayer: (_, latlng) =>
         L.circleMarker(latlng, {
           color: "#216d95",
           weight: 1,
           fillColor: "#216d95",
           fillOpacity: 0.5,
-          radius: 5,
+          radius: 5 * scalingRatio.value,
         }),
       onEachFeature: (feature, layer) =>
         layer.bindPopup(() => {
           const mountElement = document.createElement("div")
-          const popup = createPopup(EntityTitleLogo, mountElement, {
-            entity: getEntitySummary(feature.properties.id),
-          })
-          layer.on("popupclose", () => cleanPopup(popup))
-          return mountElement
+          const items = feature.properties.items
+          if (items.length > 1) {
+            const popup = createPopup(CountryItemList, mountElement, {
+              title: undefined,
+              entities: items
+                .map(getEntitySummary)
+                .filter((e: any) => e != null)
+                .sort((a: Entity, b: Entity) => (a.name < b.name ? -1 : 1)),
+            })
+            layer.on("popupclose", () => cleanPopup(popup))
+            return mountElement
+          } else {
+            const popup = createPopup(EntityTitleLogo, mountElement, {
+              entity: getEntitySummary(items[0]),
+            })
+            layer.on("popupclose", () => cleanPopup(popup))
+            return mountElement
+          }
         }),
     })
   }
@@ -217,7 +248,7 @@ async function updateMarkers() {
       newLayers.countries = L.geoJSON(countryFeatures, {
         pointToLayer: (feature, latlng) =>
           L.marker(latlng, {
-            icon: countryIcon,
+            icon: countryIcon.value,
             opacity: 0.9,
           }),
         onEachFeature: (feature, layer) =>
@@ -264,7 +295,7 @@ async function updateMarkers() {
     newLayers.infra = L.geoJSON(infraFeatures, {
       pointToLayer: (_, latlng) =>
         L.marker(latlng, {
-          icon: houseIcon,
+          icon: houseIcon.value,
           opacity: 0.95,
         }),
       onEachFeature: (feature, layer) => {
@@ -280,7 +311,7 @@ async function updateMarkers() {
     })
   }
   for (const layer of Object.values(newLayers)) {
-    layer.addTo(map)
+    layer.addTo(layerGroup)
   }
   layers.value = newLayers
   plottedSupporters.value = emittersRecap

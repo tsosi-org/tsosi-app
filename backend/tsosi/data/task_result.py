@@ -24,7 +24,7 @@ class TaskResult:
                 countdown = (
                     task_result.countdown
                     if countdown is None
-                    else max(countdown, task_result.countdown)
+                    else max(countdown, task_result.countdown or 0)
                 )
             if task_result.data_modified:
                 data_modified = True

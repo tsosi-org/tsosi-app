@@ -62,7 +62,8 @@ __all__ = [
     "FieldAgentCountry",
     "FieldDateInvoice",
     "FieldDatePaymentRecipient",
-    "FieldDatePaymentEmitter" "FieldDateStart",
+    "FieldDatePaymentEmitter",
+    "FieldDateStart",
     "FieldDateEnd",
     "FieldOriginalId",
     "FieldOriginalAmountField",
@@ -77,7 +78,7 @@ class ConstOrField:
     type: ClassVar[str] = "str"
     required: ClassVar[bool] = False
     check_func: ClassVar[str | None] = None
-    constant: str | None = None
+    constant: str | bool | None = None
     field: str | None = None
 
     default: Any = None
@@ -555,7 +556,7 @@ class RawDataConfig:
 
             # Convert country names to ISO code
             elif f.type == "country":
-                if f.is_iso:
+                if f.is_iso:  # type: ignore
                     df[f.NAME].apply(
                         lambda x: country_check_iso(x, error=error)
                     )
@@ -616,7 +617,7 @@ class RawDataConfig:
         # Parse amount
         df[FieldAmount.NAME] = df[FieldAmount.NAME].apply(
             lambda x: clean_number_value(
-                x, self.get_field(FieldAmount).comma_decimal, error=error
+                x, self.get_field(FieldAmount).comma_decimal, error=error  # type: ignore
             )
         )
 
@@ -690,6 +691,12 @@ class RawDataConfigFromFile(RawDataConfig):
     """
     Raw data config that populates its data from a file.
     """
+
+    input_file_name: str
+
+    def __init__(*args, **kwargs):
+        if kwargs.get("input_file_name") is None:
+            raise ValueError("`input_file_name` is required ")
 
     def get_data(self) -> pd.DataFrame:
         if self.input_type in [".xlsx", ".xls"]:

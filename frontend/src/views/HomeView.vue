@@ -39,13 +39,10 @@ const breakPoint1 = useMediaQuery("(min-width: 850px)", false)
 const breakPoint2 = useMediaQuery("(min-width: 550px)", false)
 const partnerLogoWidth = computed(() => {
   if (breakPoint1.value) {
-    console.log("Breakpoint 1")
     return "175px"
   } else if (breakPoint2.value) {
-    console.log("Breakpoint 2")
     return "150px"
   }
-  console.log("No breakpoint")
   return "100px"
 })
 

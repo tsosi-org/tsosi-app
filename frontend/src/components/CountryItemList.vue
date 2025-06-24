@@ -3,7 +3,7 @@ import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
 import type { Entity } from "@/singletons/ref-data"
 
 export interface CountryEntityListProps {
-  title: string
+  title?: string
   entities: Entity[]
 }
 
@@ -12,7 +12,7 @@ const props = defineProps<CountryEntityListProps>()
 
 <template>
   <div class="country-list">
-    <h3 class="country-list-title">{{ props.title }}</h3>
+    <h3 v-if="props.title" class="country-list-title">{{ props.title }}</h3>
     <div class="entity-list">
       <EntityTitleLogo
         v-for="entity of props.entities"

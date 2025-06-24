@@ -35,7 +35,9 @@ def get_config(
             rdc.FieldAgentWikidataId(field="agent_wikidata_id"),
             rdc.FieldAgentUrl(field="agent_website"),
             rdc.FieldDatePaymentRecipient(
-                field="Year", format="%Y", date_precision=DATE_PRECISION_YEAR
+                field="Year",
+                format="%Y",
+                date_precision=DATE_PRECISION_YEAR,
             ),
         ],
         input_file_name=file_path,
