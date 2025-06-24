@@ -126,7 +126,7 @@ async function onInit() {
   }
   const mapObject = L.map(mapElement.value as HTMLElement, options)
   L.tileLayer(tileBaseUrl, {
-    maxZoom: 12,
+    maxZoom: 18,
     minZoom: 1,
     attribution:
       '&copy; <a target="_blank" rel="noopener noreferrer" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a target="_blank" rel="noopener noreferrer" href="https://carto.com/attribution">CARTO</a>',
@@ -200,27 +200,32 @@ async function updateMarkers() {
           radius: 5 * scalingRatio.value,
         }),
       onEachFeature: (feature, layer) =>
-        layer.bindPopup(() => {
-          const mountElement = document.createElement("div")
-          const items = feature.properties.items
-          if (items.length > 1) {
-            const popup = createPopup(CountryItemList, mountElement, {
-              title: undefined,
-              entities: items
-                .map(getEntitySummary)
-                .filter((e: any) => e != null)
-                .sort((a: Entity, b: Entity) => (a.name < b.name ? -1 : 1)),
-            })
-            layer.on("popupclose", () => cleanPopup(popup))
-            return mountElement
-          } else {
-            const popup = createPopup(EntityTitleLogo, mountElement, {
-              entity: getEntitySummary(items[0]),
-            })
-            layer.on("popupclose", () => cleanPopup(popup))
-            return mountElement
-          }
-        }),
+        layer.bindPopup(
+          () => {
+            const mountElement = document.createElement("div")
+            const items = feature.properties.items
+            if (items.length > 1) {
+              const popup = createPopup(CountryItemList, mountElement, {
+                title: undefined,
+                entities: items
+                  .map(getEntitySummary)
+                  .filter((e: any) => e != null)
+                  .sort((a: Entity, b: Entity) => (a.name < b.name ? -1 : 1)),
+              })
+              layer.on("popupclose", () => cleanPopup(popup))
+              return mountElement
+            } else {
+              const popup = createPopup(EntityTitleLogo, mountElement, {
+                entity: getEntitySummary(items[0]),
+              })
+              layer.on("popupclose", () => cleanPopup(popup))
+              return mountElement
+            }
+          },
+          {
+            maxHeight: 300,
+          },
+        ),
     })
   }
   // Construct emitter countries layer
