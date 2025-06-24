@@ -124,11 +124,11 @@ def clean_url[T: Any](s: T) -> T | str:
     if not isinstance(s, str):
         return s
     res = s
-    if not s.startswith("https://") and not s.startswith("http://"):
-        res = f"https://{s}"
+    if not res.startswith("https://") and not res.startswith("http://"):
+        res = f"https://{res}"
     if res[-1] == "/":
         res = res[:-1]
-    return s
+    return res
 
 
 def clean_cell_value[T: Any](s: T) -> T | str:
