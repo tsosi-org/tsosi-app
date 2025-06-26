@@ -57,6 +57,8 @@ cp backend/backend_site/settings_local.dev.py backend/backend_site/settings_loca
 # Edit the file
 ```
 
+**TODO** Make our Django settings use env. variables for the database connection so that it can be stored in a share .env file for both the app and the database services. 
+
 
 ### Build and launch devcontainer
 
