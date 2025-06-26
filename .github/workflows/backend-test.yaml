@@ -30,10 +30,8 @@ jobs:
   backend-test:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/tsosi-org/backend-test-env:latest
-      credentials:
-        username: guillaume-uga
-        password: ${{ secrets.DOCKER_CONTAINER_REGISTRY_TOKEN }}
+      # The image should be linked to the repo, so no credentials required
+      image: ghcr.io/tsosi-org/tsosi-app-backend-test-env:latest
     defaults:
       run:
         working-directory: ./backend
@@ -44,7 +42,7 @@ jobs:
       - name: Create settings file
         run: cp backend_site/settings_local.test.py backend_site/settings_local.py
       # Disable virtualenvs so that poetry uses everything in the main
-      # pre-congifureg Python 
+      # pre-congifureg Python
       - name: Poetry config
         run: poetry config virtualenvs.create false
       - name: Install missing Python dependecies in case the container is out-of-date

@@ -134,8 +134,8 @@ echo $GITHUB_REGISTRY_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
 cd backend
 docker build -t backend-test-env -f test.Dockerfile .
 docker images # Copy the build image's ID
-docker tag <IMAGE_ID> ghcr.io/tsosi-org/backend-test-env:latest
-docker push ghcr.io/tsosi-org/backend-test-env:latestt
+docker tag <IMAGE_ID> ghcr.io/tsosi-org/tsosi-app-backend-test-env:latest
+docker push ghcr.io/tsosi-org/tsosi-app-backend-test-env:latest
 ```
 
 
