@@ -138,7 +138,7 @@ const citations = [
           <!-- TO BE REMOVED once carousel is validated -->
           <div class="partner-cards">
             <RouterLink
-              :to="getEntityUrl(entity.id)"
+              :to="getEntityUrl(entity)"
               v-for="entity of partners"
               :key="entity.id"
               class="card-link"

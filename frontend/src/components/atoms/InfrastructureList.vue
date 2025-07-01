@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getInfrastructures } from "@/singletons/ref-data"
+import { getInfrastructures, type Entity } from "@/singletons/ref-data"
 import { RouterLink } from "vue-router"
 import { getEntityUrl } from "@/utils/url-utils"
 
@@ -9,7 +9,7 @@ const infras = getInfrastructures()
 <template>
   <ul>
     <li v-for="infra of infras" :key="infra.id">
-      <RouterLink :to="getEntityUrl(infra.id)">
+      <RouterLink :to="getEntityUrl(infra as Entity)">
         {{ infra.name }}
       </RouterLink>
     </li>

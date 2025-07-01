@@ -20,7 +20,7 @@ import {
 } from "vue"
 import EntityHistogram from "@/components/EntityHistogram.vue"
 import Table, { type TableColumnProps } from "@/components/TableComponent.vue"
-import { getEntityBaseUrl, getTransferBaseUrl } from "@/utils/url-utils"
+import { getTransferBaseUrl } from "@/utils/url-utils"
 import { selectedCurrency } from "@/singletons/currencyStore"
 import type { ButtonProps } from "@/components/atoms/ButtonAtom.vue"
 import { fillTransferAmountCurrency } from "@/utils/data-utils"
@@ -172,11 +172,6 @@ const baseSupporterColumns: TableColumnProps[] = [
     field: "emitter",
     type: "entityLink",
     fieldLabel: "emitter.name",
-    fieldLink: {
-      base: getEntityBaseUrl(),
-      suffix: "emitter.id",
-      suffixType: "field",
-    },
     sortable: true,
     filter: {
       enable: true,
@@ -188,11 +183,6 @@ const baseSupporterColumns: TableColumnProps[] = [
     field: "agent",
     type: "entityLink",
     fieldLabel: "agent.name",
-    fieldLink: {
-      base: getEntityBaseUrl(),
-      suffix: "agent.id",
-      suffixType: "field",
-    },
     sortable: true,
     info: "When a transfer is done through another entity like a library consortia, it appears in this column.",
     filter: {
@@ -205,11 +195,6 @@ const baseSupporterColumns: TableColumnProps[] = [
     field: "recipient",
     type: "entityLink",
     fieldLabel: "recipient.name",
-    fieldLink: {
-      base: getEntityBaseUrl(),
-      suffix: "recipient.id",
-      suffixType: "field",
-    },
     sortable: true,
     filter: {
       enable: true,
@@ -255,11 +240,6 @@ const baseInfrastructureColumns: TableColumnProps[] = [
     field: "emitter",
     type: "entityLink",
     fieldLabel: "emitter.name",
-    fieldLink: {
-      base: getEntityBaseUrl(),
-      suffix: "emitter.id",
-      suffixType: "field",
-    },
     sortable: true,
     filter: {
       enable: true,
@@ -281,11 +261,6 @@ const baseInfrastructureColumns: TableColumnProps[] = [
     field: "agent",
     type: "entityLink",
     fieldLabel: "agent.name",
-    fieldLink: {
-      base: getEntityBaseUrl(),
-      suffix: "agent.id",
-      suffixType: "field",
-    },
     sortable: true,
     info: "When a transfer is done through another entity like a library consortia, it appears in this column.",
     filter: {

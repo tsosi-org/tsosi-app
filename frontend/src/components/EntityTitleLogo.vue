@@ -22,7 +22,7 @@ const props = defineProps<EntityMapSummaryProps>()
         :center="true"
       />
       <span>
-        <RouterLink :to="getEntityUrl(props.entity.id)">
+        <RouterLink :to="getEntityUrl(props.entity)">
           {{ props.entity.name }}
         </RouterLink>
       </span>

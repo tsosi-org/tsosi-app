@@ -13,7 +13,7 @@ import {
   useTemplateRef,
   nextTick,
 } from "vue"
-import { getEntities } from "@/singletons/ref-data"
+import { getEntities, type Entity } from "@/singletons/ref-data"
 import { getEntityUrl } from "@/utils/url-utils"
 import { RouterLink } from "vue-router"
 
@@ -85,7 +85,7 @@ async function getEntitiesForSearch() {
     }
     const entityResult = {
       name: entity.name,
-      url: getEntityUrl(id),
+      url: getEntityUrl(entity as Entity),
       matchable: matchable,
     }
     baseData.push(entityResult)

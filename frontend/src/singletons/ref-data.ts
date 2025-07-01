@@ -6,12 +6,14 @@ import {
   shuffleArray,
 } from "@/utils/data-utils"
 
+type IdentifierRegistry = "ror" | "wikidata" | "_custom"
+
 interface ApiData {
   [key: string]: any
 }
 
 interface Identifier extends ApiData {
-  registry: string
+  registry: IdentifierRegistry
   value: string
   registry_url?: string
 }
@@ -109,6 +111,7 @@ export type RefData = {
   countries: DeepReadonly<Record<string, Country>>
   entities: DeepReadonly<Record<string, Entity>>
   currencies: DeepReadonly<Record<string, Currency>>
+  identifiers: Record<IdentifierRegistry, { [id: string]: string }>
   transfers?: Transfer[]
   initialized: boolean
   infrastructures: DeepReadonly<Entity>[]
@@ -130,6 +133,11 @@ export type DeepReadonly<T> = {
 const refData: RefData = {
   countries: {},
   entities: {},
+  identifiers: {
+    ror: {},
+    wikidata: {},
+    _custom: {},
+  },
   currencies: {},
   initialized: false,
   infrastructures: [],
@@ -196,16 +204,56 @@ export async function getEntities(): Promise<DeepReadonly<
     return null
   }
   const mapping: Record<string, Entity> = {}
+  const identifierMapping: Record<
+    IdentifierRegistry,
+    { [id: string]: string }
+  > = {
+    ror: {},
+    wikidata: {},
+    _custom: {},
+  }
   Array.from(result.data as Array<Entity>).forEach((e) => {
     mapping[e.id] = e
+    // Build the identifier -> entityId mapping
+    for (const identifier of e.identifiers) {
+      identifierMapping[identifier.registry][identifier.value] = e.id
+    }
   })
   refData.entities = mapping
+  refData.identifiers = identifierMapping
   console.log(`${Array.from(Object.keys(mapping)).length} entities`)
   return refData.entities
 }
 
-export function getEntitySummary(id: string): DeepReadonly<Entity> {
+export function getEntitySummary(id: string): DeepReadonly<Entity> | null {
   return refData.entities[id]
+}
+
+const rorIdRegex = new RegExp("^[a-zA-Z0-9]{9}$")
+const wikidataIdRegex = new RegExp("^Q[0-9]+$")
+const uuid4Regex = new RegExp(
+  "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+)
+
+/**
+ * Return the entity corresponding to the given ID.
+ * The ID must be one of the allowed registries.
+ * @param id
+ */
+export function entityFromIdentifierId(id: string): string | undefined {
+  if (rorIdRegex.test(id)) {
+    return refData.identifiers.ror[id]
+  } else if (wikidataIdRegex.test(id)) {
+    return refData.identifiers.wikidata[id]
+  }
+  return refData.identifiers._custom[id]
+}
+
+export function resolveEntityRoute(id: string): string | undefined {
+  if (uuid4Regex.test(id)) {
+    return id
+  }
+  return entityFromIdentifierId(id)
 }
 
 export async function getEntityDetails(

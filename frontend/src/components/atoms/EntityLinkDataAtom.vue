@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import {
-  type DataFieldProps,
-  getItemLink,
-  getItemValue,
-} from "@/utils/data-utils"
+import { type DataFieldProps, getItemValue } from "@/utils/data-utils"
 import ImageAtom from "./ImageAtom.vue"
 import { onBeforeMount, ref, type Ref } from "vue"
 import type { Entity } from "@/singletons/ref-data"
+import { getEntityUrl } from "@/utils/url-utils"
 
 const props = defineProps<{
   data: Record<string, any>
@@ -31,7 +28,7 @@ onBeforeMount(() => {
     v-if="entity"
     class="entity-link"
     :class="{ icon: entity?.icon != null }"
-    :to="getItemLink(props.data, props.dataField.fieldLink)"
+    :to="getEntityUrl(entity)"
   >
     <ImageAtom
       class="entity-icon"

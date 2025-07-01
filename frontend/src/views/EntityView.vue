@@ -4,6 +4,7 @@ import {
   getEntitySummary,
   type EntityDetails,
   type DeepReadonly,
+  resolveEntityRoute,
 } from "@/singletons/ref-data"
 import { useRoute, useRouter } from "vue-router"
 import {
@@ -29,12 +30,14 @@ watch(entity, onEntityChange)
 onBeforeMount(async () => {
   const route = useRoute()
   const router = useRouter()
-  const result = await getEntitySummary(route.params.id as string)
+  const entityId = resolveEntityRoute(route.params.id as string)
+
+  const result = entityId ? getEntitySummary(entityId) : undefined
   if (result == null) {
     router.replace({ name: "NotFound", query: { target: route.path } })
     return
   }
-  entity.value = await getEntityDetails(route.params.id as string)
+  entity.value = await getEntityDetails(result.id)
 })
 
 async function onEntityChange() {
