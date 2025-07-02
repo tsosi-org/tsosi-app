@@ -35,6 +35,7 @@ import {
   faLink,
   faEnvelope,
   faAt,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons"
 import { faGithub } from "@fortawesome/free-brands-svg-icons"
 const app = createApp(App)
@@ -128,6 +129,7 @@ const usedIcons = [
   faGithub,
   faEnvelope,
   faAt,
+  faSpinner,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)

@@ -35,7 +35,6 @@ import { createComponent } from "@/utils/dom-utils"
 import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
 import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
 import { isDesktop } from "@/composables/useMediaQuery"
-import { layer } from "@fortawesome/fontawesome-svg-core"
 
 export interface EntityMapProps {
   id: string

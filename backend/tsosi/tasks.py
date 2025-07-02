@@ -170,8 +170,8 @@ def update_wiki_data():
     """
     Pipeline to fetch wikipedia extract and wikimedia files.
     """
-    update_wikipedia_extract.delay()
-    update_logos.delay()
+    update_wikipedia_extract.delay()  # type:ignore
+    update_logos.delay()  # type:ignore
 
 
 @shared_task(base=TsosiLockedTask)
@@ -192,8 +192,8 @@ def post_ingestion_pipeline():
     2 - Trigger fetching of currency rates
     """
     enrichment.update_transfer_date_clc()
-    update_clc_fields.delay()
-    currency_rates_workflow.delay()
+    update_clc_fields.delay()  # type:ignore
+    currency_rates_workflow.delay()  # type:ignore
     return TaskResult(partial=False, data_modified=False)
 
 
@@ -218,20 +218,20 @@ def process_identifier_data():
     Pipeline to update the entity fields based on the identifier data.
     """
     enrichment.update_entity_from_pid_records()
-    update_clc_fields.delay()
-    update_wiki_data.delay()
+    update_clc_fields.delay()  # type:ignore
+    update_wiki_data.delay()  # type:ignore
 
 
 @shared_task(base=TsosiLockedTask)
 def new_wikidata_identifers_from_records():
     enrichment.new_identifiers_from_records(REGISTRY_WIKIDATA)
-    update_clc_fields.delay()
+    update_clc_fields.delay()  # type:ignore
 
 
 @shared_task(base=TsosiLockedTask)
 def new_ror_identifers_from_records():
     enrichment.new_identifiers_from_records(REGISTRY_ROR)
-    update_clc_fields.delay()
+    update_clc_fields.delay()  # type:ignore
 
 
 @shared_task(base=TsosiLockedTask)
@@ -249,8 +249,8 @@ def identifier_update():
     """
     Periodic task to update identifier records.
     """
-    ror_identifiers_update.delay()
-    wikidata_identifiers_update.delay()
+    ror_identifiers_update.delay()  # type:ignore
+    wikidata_identifiers_update.delay()  # type:ignore
 
 
 @shared_task(base=TsosiLockedTask)
@@ -264,7 +264,7 @@ def trigger_post_ingestion_pipeline(sender, **kwargs):
         logger.info("Skipped triggering of post-ingestion pipeline")
         return
     logger.info("Triggering post-ingestion pipeline.")
-    post_ingestion_pipeline.delay_on_commit()
+    post_ingestion_pipeline.delay_on_commit()  # type:ignore
 
 
 def trigger_identifier_data_processing(sender, **kwargs):
@@ -272,12 +272,12 @@ def trigger_identifier_data_processing(sender, **kwargs):
         logger.info("Skipped triggering of identifier data processing")
         return
     logger.info("Triggering identifier data processing.")
-    process_identifier_data.delay_on_commit()
+    process_identifier_data.delay_on_commit()  # type:ignore
     registry_id = kwargs.get("registry_id")
     if registry_id == REGISTRY_WIKIDATA:
-        new_ror_identifers_from_records.delay_on_commit()
+        new_ror_identifers_from_records.delay_on_commit()  # type:ignore
     elif registry_id == REGISTRY_ROR:
-        new_wikidata_identifers_from_records.delay_on_commit()
+        new_wikidata_identifers_from_records.delay_on_commit()  # type:ignore
 
 
 def trigger_new_identifier_fetching(sender, **kwargs):
@@ -291,13 +291,13 @@ def trigger_new_identifier_fetching(sender, **kwargs):
         )
         for registry in registries:
             if registry == REGISTRY_ROR:
-                fetch_empty_ror_records.delay_on_commit()
+                fetch_empty_ror_records.delay_on_commit()  # type:ignore
             elif registry == REGISTRY_WIKIDATA:
-                fetch_empty_wikidata_records.delay_on_commit()
+                fetch_empty_wikidata_records.delay_on_commit()  # type:ignore
 
 
 def trigger_identifier_versions_cleaning(sender, **kwargs):
     if not app_settings.TRIGGER_JOBS:
         logger.info("Skipped triggering of identifier versions cleaning.")
         return
-    identifier_version_cleaning.delay_on_commit()
+    identifier_version_cleaning.delay_on_commit()  # type:ignore
