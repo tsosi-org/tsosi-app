@@ -169,7 +169,7 @@ def deploy(
     :param skip_front_build:    Whether to skip the build of fresh frontend
                                 files. If `True`, it will copy existing files
                                 in frontend/dist.
-    :param celery_no_restart:   Whether to restart Celery systemd services
+    :param celery_no_restart:   Whether to not restart Celery systemd services
                                 on the server. Default to `False`.
     """
     server = get_server(server_name)

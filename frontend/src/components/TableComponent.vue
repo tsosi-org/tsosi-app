@@ -26,6 +26,7 @@ import {
   exportCSV,
   exportJSON,
 } from "@/utils/data-utils"
+import debounce from "@/utils/debounce"
 import CurrencySelector from "./CurrencySelector.vue"
 import CustomButton, {
   type ButtonProps,
@@ -100,7 +101,7 @@ onBeforeMount(() => {
   applyFilters()
 })
 
-watch(appliedFilters, applyFilters)
+watch(appliedFilters, debounce(applyFilters, 250))
 
 const tableComponent = useTemplateRef("data-table")
 const rowButtonMenu = useTemplateRef("row-button-menu")
@@ -268,7 +269,7 @@ function getAppliedFilters(): AppliedFilters {
 /**
  * Filter the input dataset with the applied filters.
  */
-async function applyFilters() {
+function applyFilters() {
   const newData: Record<string, any>[] = []
   const filtersToApply = getAppliedFilters()
   if (Object.keys(filtersToApply).length > 0) {

@@ -16,6 +16,7 @@ import {
 import { getEntities, type Entity } from "@/singletons/ref-data"
 import { getEntityUrl } from "@/utils/url-utils"
 import { RouterLink } from "vue-router"
+import debounce, { type DebounceStatus } from "@/utils/debounce"
 
 interface searchResult {
   name: string
@@ -48,6 +49,7 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
 const computedWidth = computed(() =>
   isOpen.value ? elementWidth.value : "100px",
 )
+const searchingStatus: Ref<DebounceStatus> = ref("idle")
 
 const itemSize = 40
 
@@ -66,6 +68,8 @@ function onSearch(event: Event) {
   )
   showResults(event)
 }
+
+const debouncedOnSearch = debounce(onSearch, 150, searchingStatus)
 
 async function getEntitiesForSearch() {
   const entities = await getEntities()
@@ -205,13 +209,21 @@ function focusOut() {
   <div class="search-bar">
     <IconField class="search-bar-input">
       <InputIcon class="search-bar-icon">
-        <font-awesome-icon icon="magnifying-glass" />
+        <font-awesome-icon
+          v-if="searchingStatus == 'idle'"
+          icon="fa-solid fa-magnifying-glass"
+        />
+        <font-awesome-icon
+          v-else
+          icon="fa-solid fa-spinner"
+          class="loader-icon-animate"
+        />
       </InputIcon>
       <InputText
         ref="input"
         v-model="searchTerm"
         :placeholder="props.placeHolder ?? 'Search'"
-        @input="onSearch"
+        @input="debouncedOnSearch"
         @focus="showResults"
         @focusout="focusOut"
         :onKeydown="onKeyDown"
@@ -228,7 +240,9 @@ function focusOut() {
     >
       <div class="search-bar-overlay">
         <div v-if="filteredResults.length == 0" class="search-howto">
-          <span v-if="searchTerm.trim().length > 0">
+          <span
+            v-if="searchingStatus == 'idle' && searchTerm.trim().length > 0"
+          >
             No results for search "{{ searchTerm.trim() }}"<br />
           </span>
           You can search for infrastructures or supporters:
@@ -330,5 +344,18 @@ function focusOut() {
 .search-result-text {
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+.loader-icon-animate {
+  animation: uniform-spinning 1s linear infinite;
+}
+
+@keyframes uniform-spinning {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
