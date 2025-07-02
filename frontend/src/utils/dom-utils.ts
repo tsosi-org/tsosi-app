@@ -1,7 +1,7 @@
 import { appContext } from "@/main"
 import { createApp, type Component } from "vue"
 
-const updateMetaTags = false
+const updateMetaTags = true
 export function changeMetaDescripion(desc: string) {
   const metaDesc: HTMLMetaElement | null = document.querySelector(
     "meta[name='description']",

@@ -19,7 +19,7 @@ import Carousel from "primevue/carousel"
 
 changeMetaUrl(true)
 changeMetaDescripion(
-  "Web platform visualizing the funding made to Open Science Infrastructures.",
+  "A data-driven platform to broaden funding for open science infrastructure..",
 )
 changeMetaTitle("Transparency to Sustain Open Science Infrastructure")
 
