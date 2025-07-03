@@ -20,7 +20,7 @@ from .common import ApiResult, HTTPStatusError, perform_http_func_batch
 
 logger = logging.getLogger(__name__)
 
-WIKIDATA_ID_REGEX = r"Q[0-9]+"
+WIKIDATA_ID_REGEX = r"^Q[0-9]+$"
 WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 # https://en.wikipedia.org/api/rest_v1/#/Page%20content/get_page_summary__title_
 WIKIPEDIA_SUMMARY_API_ENDPOINT = (

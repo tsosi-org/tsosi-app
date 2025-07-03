@@ -1,4 +1,4 @@
-import { get } from "../services/api"
+import { fetchUrl, get } from "../services/api"
 import {
   initDateWithPrecision,
   initDateProperty,
@@ -10,6 +10,13 @@ type IdentifierRegistry = "ror" | "wikidata" | "_custom"
 
 interface ApiData {
   [key: string]: any
+}
+
+export interface ApiPaginatedData<T extends ApiData> {
+  count: number
+  next: string | null
+  previous: string | null
+  results: T[]
 }
 
 interface Identifier extends ApiData {
@@ -399,4 +406,31 @@ export function getEmitters(): DeepReadonly<Entity>[] {
 
 export function getPartners(): DeepReadonly<Entity>[] {
   return Object.values(refData.entities).filter((e) => e.is_partner)
+}
+
+export async function entitySearch(
+  query: string,
+): Promise<ApiPaginatedData<Entity> | null> {
+  if (!query) {
+    return null
+  }
+  const queryParams = new URLSearchParams({ search: query })
+  const result = await get("entities/", true, queryParams)
+  if (result.error || !result.data) {
+    return null
+  }
+  return result.data as ApiPaginatedData<Entity>
+}
+
+export async function queryPaginatedApiUrl<T extends ApiData>(
+  query: string,
+): Promise<ApiPaginatedData<T> | null> {
+  if (!query) {
+    return null
+  }
+  const result = await fetchUrl(query)
+  if (result.error || !result.data) {
+    return null
+  }
+  return result.data as ApiPaginatedData<T>
 }

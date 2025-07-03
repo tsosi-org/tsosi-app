@@ -29,6 +29,7 @@ from tsosi.data.task_result import TaskResult
 from tsosi.data.utils import clean_null_values
 from tsosi.models import (
     Entity,
+    EntityName,
     Identifier,
     IdentifierEntityMatching,
     IdentifierVersion,
@@ -279,13 +280,6 @@ def active_identifiers() -> pd.DataFrame:
         version_value=F("current_version__value"),
     )
     return pd.DataFrame.from_records(instances)
-
-
-def check_identifier_version_conflict():
-    """
-    Flag whether two versions of an identifier are conflicted.
-    """
-    pass
 
 
 def entities_with_identifier_data() -> pd.DataFrame:
@@ -846,3 +840,43 @@ def clean_identifier_versions() -> TaskResult:
     )
 
     return result
+
+
+def update_entity_names():
+    """
+    Regenerate the entity names table from the identifier records.
+    """
+    logger.info("Updating entity names.")
+
+    entities = entities_with_identifier_data()
+    if entities.empty:
+        return
+
+    cols = ["id", "name", "ror_names"]
+    entities = entities[~entities["ror_names"].isna()][cols].copy()
+
+    data = entities.explode("ror_names").reset_index(drop=True)
+    data = pd.concat(
+        [
+            data.drop(columns=["ror_names"]),
+            pd.json_normalize(data["ror_names"]),
+        ],
+        axis=1,
+    )
+    names = data[data["value"] != data["name"]].drop_duplicates(
+        subset=["id", "value"]
+    )
+
+    # Delete all existing aliases from the given registry
+    EntityName.objects.filter(registry_id=REGISTRY_ROR).delete()
+
+    # Insert names
+    names.rename(columns={"id": "entity_id"}, inplace=True)
+    names["registry_id"] = REGISTRY_ROR
+    names["date_created"] = timezone.now()
+    bulk_create_from_df(
+        EntityName,
+        names,
+        ["entity_id", "type", "value", "lang", "registry_id", "date_created"],
+    )
+    logger.info(f"Generated {len(names)} aliases from {REGISTRY_ROR}.")

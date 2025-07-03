@@ -4,16 +4,13 @@ import InputIcon from "primevue/inputicon"
 import InputText from "primevue/inputtext"
 import Popover from "primevue/popover"
 import VirtualScroller from "primevue/virtualscroller"
+import { ref, type Ref, computed, watch, useTemplateRef, nextTick } from "vue"
 import {
-  onMounted,
-  ref,
-  type Ref,
-  computed,
-  watch,
-  useTemplateRef,
-  nextTick,
-} from "vue"
-import { getEntities, type Entity } from "@/singletons/ref-data"
+  entitySearch,
+  type Entity,
+  type ApiPaginatedData,
+  queryPaginatedApiUrl,
+} from "@/singletons/ref-data"
 import { getEntityUrl } from "@/utils/url-utils"
 import { RouterLink } from "vue-router"
 import debounce, { type DebounceStatus } from "@/utils/debounce"
@@ -21,7 +18,6 @@ import debounce, { type DebounceStatus } from "@/utils/debounce"
 interface searchResult {
   name: string
   url: string
-  matchable: string[]
   highlighted?: boolean
 }
 export interface SearchBarProps {
@@ -32,9 +28,7 @@ export interface SearchBarProps {
 
 const props = defineProps<SearchBarProps>()
 const searchTerm = ref("")
-const searchResults: Ref<Array<searchResult>> = ref([])
 const filteredResults: Ref<Array<searchResult>> = ref([])
-const loading = ref(true)
 const op = useTemplateRef("op")
 const input = useTemplateRef("input")
 const virtualScroll = useTemplateRef("virtual-scroll")
@@ -50,60 +44,80 @@ const computedWidth = computed(() =>
   isOpen.value ? elementWidth.value : "100px",
 )
 const searchingStatus: Ref<DebounceStatus> = ref("idle")
+const nextUrl: Ref<string | null> = ref(null)
+const pageSize = 20
 
 const itemSize = 40
 
-onMounted(async () => getEntitiesForSearch())
 watch(highlightedIndex, updateHighlightedResult)
 
-function onSearch(event: Event) {
+async function remoteOnSearch(event: Event) {
   const query = searchTerm.value.trim().toLowerCase()
-  highlightedIndex.value = undefined
-  if (searchResults.value.length == 0 || !query.length) {
+  if (!query.length) {
     filteredResults.value = []
     return
   }
-  filteredResults.value = searchResults.value.filter((result) =>
-    result.matchable.some((val) => val.includes(query)),
-  )
-  showResults(event)
+  const results = await entitySearch(query)
+  processResults(event, results, true)
 }
 
-const debouncedOnSearch = debounce(onSearch, 150, searchingStatus)
-
-async function getEntitiesForSearch() {
-  const entities = await getEntities()
-  if (entities == null) {
-    return
-  }
-  const baseData: Array<searchResult> = []
-
-  for (const id in entities) {
-    const entity = entities[id]
-    const matchable = [
-      entity.name.toLowerCase(),
-      ...entity.identifiers.map((i) => i.value.toLowerCase()),
-    ]
-    if (entity.short_name) {
-      matchable.push(entity.short_name.toLowerCase())
-    }
-    const entityResult = {
-      name: entity.name,
-      url: getEntityUrl(entity as Entity),
-      matchable: matchable,
-    }
-    baseData.push(entityResult)
-  }
-  searchResults.value = baseData
-  loading.value = false
-}
+const debouncedOnSearch = debounce(remoteOnSearch, 250, searchingStatus)
 
 const virtualScrollerHeight = computed(() => {
   const size = filteredResults.value.length * itemSize
   return `${size > 300 ? 300 : size}px`
 })
 
-function showResults(event: Event) {
+/**
+ * Query the next results page from the initial search query.
+ * @param event
+ */
+async function queryNextResults(event: Event) {
+  if (!nextUrl.value || searchingStatus.value != "idle") {
+    return
+  }
+  searchingStatus.value = "running"
+  const nextResults = (await queryPaginatedApiUrl(
+    nextUrl.value,
+  )) as ApiPaginatedData<Entity>
+  processResults(event, nextResults, false)
+  searchingStatus.value = "idle"
+}
+
+/**
+ * Process the API results
+ * @param event The event that triggered the search
+ * @param results The API results
+ * @param newSearch Whether it's a search with a new query or the fetching
+ *                  of the next results page.
+ */
+function processResults(
+  event: Event,
+  results: ApiPaginatedData<Entity> | null,
+  newSearch = false,
+) {
+  if (!results) {
+    if (newSearch) {
+      filteredResults.value = []
+    }
+    return
+  }
+  const formattedResults = results.results.map((e) => {
+    return {
+      name: e.name,
+      url: getEntityUrl(e as Entity),
+    }
+  })
+  nextUrl.value = results.next
+  if (newSearch) {
+    filteredResults.value = formattedResults
+  } else {
+    filteredResults.value = [...filteredResults.value, ...formattedResults]
+  }
+  showResults(event, newSearch)
+}
+
+function showResults(event: Event, reset = false) {
   if (props.asGrowingButton && !isFocused.value) {
     const wasOpen = isOpen.value
     isFocused.value = true
@@ -113,7 +127,9 @@ function showResults(event: Event) {
       return
     }
   }
-  highlightedIndex.value = undefined
+  if (reset) {
+    highlightedIndex.value = undefined
+  }
   // @ts-expect-error PrimeVue component declaration omits basic
   // VueJS attributes..
   op.value!.show(event, input.value!.$el)
@@ -164,6 +180,22 @@ function onKeyDown(event: KeyboardEvent) {
         50,
       )
     }
+  }
+}
+
+/**
+ * When the virtual scroller is scrolled, we query additional data if required.
+ * @param event
+ */
+function onVirtualScroll(event: Event) {
+  // @ts-expect-error PrimeVue component declaration omits basic
+  // VueJS attributes..
+  const virtEl: HTMLElement = virtualScroll.value.$el
+  if (
+    virtEl.scrollHeight >= pageSize * itemSize &&
+    virtEl.scrollTop > virtEl.scrollHeight - (pageSize * itemSize) / 2
+  ) {
+    queryNextResults(event)
   }
 }
 
@@ -263,6 +295,7 @@ function focusOut() {
           class="search-results"
           orientation="vertical"
           :scroll-height="virtualScrollerHeight"
+          @scroll="onVirtualScroll"
         >
           <template #item="{ item }">
             <RouterLink

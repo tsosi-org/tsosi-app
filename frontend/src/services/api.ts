@@ -43,7 +43,11 @@ export async function get(
 
   console.log(`querying URL: "${url.toString()}"`)
 
-  return fetch(url.toString())
+  return fetchUrl(url.toString())
+}
+
+export async function fetchUrl(url: string): Promise<JsonResult> {
+  return fetch(url)
     .then((response) => response.json())
     .then((data) => {
       return {
