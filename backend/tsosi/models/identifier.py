@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from .api_request import ApiRequest
 from .entity import Entity
+from .registry import Registry
 from .utils import MATCH_SOURCE_CHOICES, TimestampedModel
 
 MATCH_CRITERIA_FROM_INPUT = "from_input"
@@ -16,18 +17,6 @@ IDENTIFIER_ENTITY_MATCH_CRITERIA_CHOICES = {
     MATCH_CRITERIA_FROM_ROR: "The PID was fetched from the entity's ROR record.",
     MATCH_CRITERIA_FROM_WIKIDATA: "The PID was fetched from the entity's Wikidata record.",
 }
-
-
-class Registry(TimestampedModel):
-    """
-    Represents a registry of Permanent Identifier (PIDs).
-    Ex: ROR, Wikidata, ...
-    """
-
-    id = models.CharField(primary_key=True, max_length=32)
-    name = models.CharField(max_length=128)
-    website = models.URLField(max_length=256)
-    link_template = models.CharField(max_length=256)
 
 
 class Identifier(TimestampedModel):

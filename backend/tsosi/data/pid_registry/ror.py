@@ -27,7 +27,7 @@ logger_console = logging.getLogger("console_only")
 
 # doc: https://ror.readme.io/v2/docs/api-affiliation
 ROR_API_ENDPOINT = "https://api.ror.org/v2/organizations"
-ROR_ID_REGEX = r"[0-9a-zA-Z]{9}"
+ROR_ID_REGEX = r"^[0-9a-zA-Z]{9}$"
 ES_RESERVED_CHARS = [
     "+",
     "-",
@@ -401,6 +401,24 @@ def get_ror_name(record: dict) -> str | None:
     return names[0]["value"]
 
 
+def get_ror_names(record: dict) -> list:
+    """
+    Return the list of ror names along with their type.
+    """
+    names: list = record.get("names", [])
+    return [
+        {
+            "value": n["value"],
+            "type": next(
+                (t for t in n["types"] if t in ["label", "alias", "acronym"]),
+                "label",
+            ),
+            "lang": n.get("lang"),
+        }
+        for n in names
+    ]
+
+
 def get_ror_country(record: dict) -> str | None:
     """
     Return the country ISO alpha-2 code from the ROR record.
@@ -480,6 +498,7 @@ def get_ror_inception_date(record: dict) -> datetime | None:
 ROR_EXTRACT_MAPPING = {
     "id": get_ror_id,
     "name": get_ror_name,
+    "names": get_ror_names,
     "country": get_ror_country,
     "website": get_ror_website,
     "wikipedia_url": get_ror_wikipedia_url,

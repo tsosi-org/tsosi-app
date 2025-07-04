@@ -1,9 +1,13 @@
+import re
+from urllib.parse import urlparse
+
 from django.db.models import Q, QuerySet
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from tsosi.api.serializers import (
@@ -16,6 +20,8 @@ from tsosi.api.serializers import (
 )
 from tsosi.app_settings import app_settings
 from tsosi.models import Analytic, Currency, Entity, Transfer
+from tsosi.models.static_data import PID_REGEX_OPTIONS
+from tsosi.models.utils import UUID4_REGEX
 
 
 class ReadOnlyViewSet(viewsets.ModelViewSet):
@@ -36,20 +42,16 @@ class BypassPagination(BasePermission):
         if "*" in app_settings.API_BYPASS_PAGINATION_ALLOWED_ORIGINS:
             return super().has_permission(request, view)
 
-        origin = request.META.get("HTTP_ORIGIN")
+        origin: str | None = request.META.get(
+            "HTTP_ORIGIN"
+        ) or request.META.get("HTTP_REFERER")
         if (
             origin
-            and origin in app_settings.API_BYPASS_PAGINATION_ALLOWED_ORIGINS
+            and urlparse(origin).hostname
+            in app_settings.API_BYPASS_PAGINATION_ALLOWED_ORIGINS
         ):
             return super().has_permission(request, view)
-        referer = request.META.get("HTTP_REFERER")
-        if referer:
-            referer_domain = referer.split("/")[2]
-            if (
-                referer_domain
-                in app_settings.API_BYPASS_PAGINATION_ALLOWED_ORIGINS
-            ):
-                return super().has_permission(request, view)
+
         raise PermissionDenied("You are not allowed to bypass pagination.")
 
 
@@ -71,9 +73,10 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
         "identifiers", "identifiers__registry"
     )
     serializer_class = EntitySerializer
-    filter_backends = [OrderingFilter]
-    ordering = ["name"]
-    ordering_fields = ["name"]
+    filter_backends = [OrderingFilter, SearchFilter]
+    ordering = ["-is_recipient", "name"]
+    ordering_fields = ["name", "is_recipient"]
+    search_fields = ["name", "short_name", "names__value", "identifiers__value"]
 
     @action(
         detail=False, methods=["get"], permission_classes=[BypassPagination]
@@ -95,6 +98,46 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
         if self.action == "retrieve":
             return EntityDetailsSerializer
         return super().get_serializer_class()
+
+    def get_object(self):
+        """
+        We allow multiple way to reference an entity.
+        It can be its database ID (default DRF way) or by using an external
+        unique identifier.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # Perform the lookup filtering.
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        assert lookup_url_kwarg in self.kwargs, (
+            "Expected view %s to be called with a URL keyword argument "
+            'named "%s". Fix your URL conf, or set the `.lookup_field` '
+            "attribute on the view correctly."
+            % (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        # Implement the correct lookup according to the parameter value
+        filter_kwargs = {}
+        id_value: str = self.kwargs[lookup_url_kwarg]
+        if re.match(UUID4_REGEX, id_value):
+            filter_kwargs[self.lookup_field] = id_value
+        else:
+            for r_id, r_pattern in PID_REGEX_OPTIONS:
+                if not re.match(r_pattern, id_value):
+                    continue
+
+                filter_kwargs["identifiers__registry_id"] = r_id
+                filter_kwargs["identifiers__value"] = id_value
+                break
+
+        assert filter_kwargs, "The given ID does not match the expected format."
+
+        obj = get_object_or_404(queryset, **filter_kwargs)
+
+        # May raise a permission denied
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 
 class TransferFilter(filters.FilterSet):

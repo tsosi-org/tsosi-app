@@ -3,27 +3,39 @@ import IconField from "primevue/iconfield"
 import InputIcon from "primevue/inputicon"
 import InputText from "primevue/inputtext"
 import Popover from "primevue/popover"
-import VirtualScroller from "primevue/virtualscroller"
+import { ref, type Ref, computed, watch, useTemplateRef, nextTick } from "vue"
+import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
 import {
-  onMounted,
-  ref,
-  type Ref,
-  computed,
-  watch,
-  useTemplateRef,
-  nextTick,
-} from "vue"
-import { getEntities, type Entity } from "@/singletons/ref-data"
+  entitySearch,
+  type Entity,
+  type ApiPaginatedData,
+  queryPaginatedApiUrl,
+} from "@/singletons/ref-data"
 import { getEntityUrl } from "@/utils/url-utils"
 import { RouterLink } from "vue-router"
 import debounce, { type DebounceStatus } from "@/utils/debounce"
 
-interface searchResult {
+interface SearchResult {
   name: string
   url: string
-  matchable: string[]
+  id: string
   highlighted?: boolean
+
+  [key: string]: any
 }
+interface SearchResults {
+  total: number
+  count: number
+  next: string | null
+  items: {
+    [categoryId: string]: {
+      title: string
+      data: SearchResult[]
+    }
+  }
+  categoryOrder: string[]
+}
+
 export interface SearchBarProps {
   width?: string
   placeHolder?: string
@@ -32,9 +44,7 @@ export interface SearchBarProps {
 
 const props = defineProps<SearchBarProps>()
 const searchTerm = ref("")
-const searchResults: Ref<Array<searchResult>> = ref([])
-const filteredResults: Ref<Array<searchResult>> = ref([])
-const loading = ref(true)
+const filteredResults: Ref<SearchResults> = ref(newEmptyResults())
 const op = useTemplateRef("op")
 const input = useTemplateRef("input")
 const virtualScroll = useTemplateRef("virtual-scroll")
@@ -50,60 +60,83 @@ const computedWidth = computed(() =>
   isOpen.value ? elementWidth.value : "100px",
 )
 const searchingStatus: Ref<DebounceStatus> = ref("idle")
+const nextUrl: Ref<string | null> = ref(null)
+const pageSize = 20
 
 const itemSize = 40
 
-onMounted(async () => getEntitiesForSearch())
 watch(highlightedIndex, updateHighlightedResult)
 
-function onSearch(event: Event) {
+async function remoteOnSearch(event: Event) {
   const query = searchTerm.value.trim().toLowerCase()
-  highlightedIndex.value = undefined
-  if (searchResults.value.length == 0 || !query.length) {
-    filteredResults.value = []
-    return
-  }
-  filteredResults.value = searchResults.value.filter((result) =>
-    result.matchable.some((val) => val.includes(query)),
-  )
-  showResults(event)
+  const results = await entitySearch(query)
+  processResults(event, results, true)
 }
 
-const debouncedOnSearch = debounce(onSearch, 150, searchingStatus)
+const debouncedOnSearch = debounce(remoteOnSearch, 250, searchingStatus)
 
-async function getEntitiesForSearch() {
-  const entities = await getEntities()
-  if (entities == null) {
+/**
+ * Query the next results page from the initial search query.
+ * @param event
+ */
+async function queryNextResults(event: Event) {
+  if (!filteredResults.value.next || searchingStatus.value != "idle") {
     return
   }
-  const baseData: Array<searchResult> = []
-
-  for (const id in entities) {
-    const entity = entities[id]
-    const matchable = [
-      entity.name.toLowerCase(),
-      ...entity.identifiers.map((i) => i.value.toLowerCase()),
-    ]
-    if (entity.short_name) {
-      matchable.push(entity.short_name.toLowerCase())
-    }
-    const entityResult = {
-      name: entity.name,
-      url: getEntityUrl(entity as Entity),
-      matchable: matchable,
-    }
-    baseData.push(entityResult)
-  }
-  searchResults.value = baseData
-  loading.value = false
+  searchingStatus.value = "running"
+  const nextResults = (await queryPaginatedApiUrl(
+    filteredResults.value.next,
+  )) as ApiPaginatedData<Entity>
+  processResults(event, nextResults, false)
+  searchingStatus.value = "idle"
 }
 
-const virtualScrollerHeight = computed(() => {
-  const size = filteredResults.value.length * itemSize
-  return `${size > 300 ? 300 : size}px`
-})
+function getItemCategory(e: Entity): string {
+  return e.is_recipient ? "infra" : "supporter"
+}
+/**
+ * Process the API results
+ * @param event The event that triggered the search
+ * @param results The API results
+ * @param newSearch Whether it's a search with a new query or the fetching
+ *                  of the next results page.
+ */
+function processResults(
+  event: Event,
+  results: ApiPaginatedData<Entity> | null,
+  newSearch = false,
+) {
+  if (newSearch) {
+    filteredResults.value = newEmptyResults()
+    if (virtualScroll.value) {
+      virtualScroll.value.scrollTo(0, 0)
+    }
+  }
+  if (!results) {
+    return
+  }
+  const categorizedResults: SearchResults = {
+    ...filteredResults.value,
+  }
+  categorizedResults.total = results.count
+  categorizedResults.count += results.results.length
+  categorizedResults.next = results.next
 
-function showResults(event: Event) {
+  results.results.forEach((e) => {
+    const result = {
+      name: e.name,
+      url: getEntityUrl(e),
+      id: e.id,
+      entity: e,
+    }
+    categorizedResults.items[getItemCategory(e)].data.push(result)
+  })
+  nextUrl.value = results.next
+  filteredResults.value = categorizedResults
+  showResults(event, newSearch)
+}
+
+function showResults(event: Event, reset = false) {
   if (props.asGrowingButton && !isFocused.value) {
     const wasOpen = isOpen.value
     isFocused.value = true
@@ -113,16 +146,37 @@ function showResults(event: Event) {
       return
     }
   }
-  highlightedIndex.value = undefined
+  if (reset) {
+    highlightedIndex.value = undefined
+  }
   // @ts-expect-error PrimeVue component declaration omits basic
   // VueJS attributes..
   op.value!.show(event, input.value!.$el)
 }
 
+function newEmptyResults(): SearchResults {
+  return {
+    total: 0,
+    count: 0,
+    next: null,
+    items: {
+      infra: {
+        title: "Infrastructures",
+        data: [],
+      },
+      supporter: {
+        title: "Supporters",
+        data: [],
+      },
+    },
+    categoryOrder: ["infra", "supporter"],
+  }
+}
+
 function resetSearchBar() {
   op.value!.hide()
   searchTerm.value = ""
-  filteredResults.value = []
+  filteredResults.value = newEmptyResults()
   highlightedIndex.value = undefined
 }
 
@@ -138,7 +192,7 @@ function onKeyDown(event: KeyboardEvent) {
     getHighlighted()?.click()
     return
   }
-  const resultsLength = filteredResults.value.length
+  const resultsLength = filteredResults.value.count
   if (resultsLength == 0) {
     return
   }
@@ -167,13 +221,44 @@ function onKeyDown(event: KeyboardEvent) {
   }
 }
 
+/**
+ * When the virtual scroller is scrolled, we query additional data if required.
+ * @param event
+ */
+function onVirtualScroll(event: Event) {
+  // @ts-expect-error PrimeVue component declaration omits basic
+  // VueJS attributes..
+  // const virtEl: HTMLElement = virtualScroll.value.$el
+  const virtEl: HTMLElement = virtualScroll.value
+  if (
+    virtEl.scrollHeight >= pageSize * itemSize &&
+    virtEl.scrollTop > virtEl.scrollHeight - (pageSize * itemSize) / 2
+  ) {
+    queryNextResults(event)
+  }
+}
+
 async function updateHighlightedResult() {
-  filteredResults.value.forEach((res) => (res.highlighted = false))
+  for (const category in filteredResults.value.items) {
+    filteredResults.value.items[category].data.forEach(
+      (r) => (r.highlighted = false),
+    )
+  }
   if (highlightedIndex.value === undefined) {
     return
   }
+  let index = 0
+  for (const cId of filteredResults.value.categoryOrder) {
+    const category = filteredResults.value.items[cId]
+    const catCount = category.data.length
+    if (highlightedIndex.value < index + catCount) {
+      category.data[highlightedIndex.value - index].highlighted = true
+      break
+    }
+    index += catCount
+  }
+  // Might be needed to trigger ref update??
   const data = filteredResults.value
-  data[highlightedIndex.value].highlighted = true
   filteredResults.value = data
   if (!virtualScroll.value) {
     return
@@ -184,13 +269,13 @@ async function updateHighlightedResult() {
     return
   }
   const rect = highlighted?.getBoundingClientRect()
-  // @ts-expect-error PrimeVue component declaration omits basic
-  // VueJS attributes..
-  const virtEl: HTMLElement = virtualScroll.value.$el
+  const virtEl: HTMLElement = virtualScroll.value
   const virtRect = virtEl.getBoundingClientRect()
-
-  if (rect.top < virtRect.top) {
-    virtEl.scrollBy(0, rect.top - virtRect.top)
+  // We add some margin for the up scrolling because of the sticky
+  // category titles
+  const virtTop = virtRect.top + 40
+  if (rect.top < virtTop) {
+    virtEl.scrollBy(0, rect.top - virtTop)
   } else if (rect.bottom > virtRect.bottom) {
     virtEl.scrollBy(0, rect.bottom - virtRect.bottom)
   }
@@ -239,7 +324,7 @@ function focusOut() {
       :style="`--width: ${elementWidth};`"
     >
       <div class="search-bar-overlay">
-        <div v-if="filteredResults.length == 0" class="search-howto">
+        <div v-if="filteredResults.count == 0" class="search-howto">
           <span
             v-if="searchingStatus == 'idle' && searchTerm.trim().length > 0"
           >
@@ -255,30 +340,60 @@ function focusOut() {
             <li>Search by Wikidata ID: e.g. "Q97368331" or "Q945876"</li>
           </ul>
         </div>
-        <VirtualScroller
+        <div
           v-else
           ref="virtual-scroll"
-          :items="filteredResults"
-          :itemSize="itemSize"
           class="search-results"
-          orientation="vertical"
-          :scroll-height="virtualScrollerHeight"
+          @scroll="onVirtualScroll"
+          style="max-height: 300px"
         >
-          <template #item="{ item }">
-            <RouterLink
-              :to="item.url"
-              @click="resetSearchBar"
-              class="search-result"
-              :style="{ height: itemSize + 'px' }"
-              :class="{ highlighted: item.highlighted }"
-              :title="item.name"
+          <div
+            v-for="categoryId of filteredResults.categoryOrder"
+            :key="categoryId"
+          >
+            <div
+              v-if="filteredResults.items[categoryId]?.data.length"
+              class="search-category"
             >
-              <span class="search-result-text">
-                {{ item.name }}
-              </span>
-            </RouterLink>
-          </template>
-        </VirtualScroller>
+              <h3 class="search-category-title">
+                {{ filteredResults.items[categoryId].title }}
+              </h3>
+              <div
+                v-for="item of filteredResults.items[categoryId].data"
+                :key="item.id"
+              >
+                <EntityLinkDataAtom
+                  @click="resetSearchBar"
+                  class="search-result"
+                  :style="{ height: itemSize + 'px' }"
+                  :class="{ highlighted: item.highlighted }"
+                  :title="item.name"
+                  :data="item"
+                  :data-field="{
+                    id: 'entity',
+                    title: 'Entity',
+                    field: 'entity',
+                    type: 'entityLink',
+                  }"
+                />
+                <!--
+                <RouterLink
+                  :to="item.url"
+                  @click="resetSearchBar"
+                  class="search-result"
+                  :style="{ height: itemSize + 'px' }"
+                  :class="{ highlighted: item.highlighted }"
+                  :title="item.name"
+                >
+                  <span class="search-result-text">
+                    {{ item.name }}
+                  </span>
+                </RouterLink>
+                -->
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </Popover>
   </div>
@@ -318,6 +433,7 @@ function focusOut() {
 
 .search-results {
   overflow-x: hidden;
+  position: relative;
 }
 
 .search-howto {
@@ -348,6 +464,17 @@ function focusOut() {
 
 .loader-icon-animate {
   animation: uniform-spinning 1s linear infinite;
+}
+
+.search-category {
+  position: relative;
+}
+
+.search-category-title {
+  position: sticky;
+  top: 0;
+  background-color: var(--color-background);
+  padding: 0.35em 0;
 }
 
 @keyframes uniform-spinning {

@@ -142,11 +142,27 @@ class AppSettings:
         return self._setting("API_WHITELIST_IPS", [])
 
     @property
+    def FRONTEND_CUSTOM_HEADER(self) -> str:
+        """
+        Name of the custom HTTP header that should be sent by TSOSI frontend.
+        It's used to bypass rate limiting (easily spoofable).
+        """
+        return self._setting("FRONTEND_CUSTOM_HEADER")
+
+    @property
+    def FRONTEND_CUSTOM_HEADER_VALUES(self) -> list[str]:
+        """
+        Allowed values for the custom HTTP header that will indeed bypass
+        the default rate limiting.
+        """
+        return self._setting("FRONTEND_CUSTOM_HEADER_VALUES", ["tsosi-app"])
+
+    @property
     def API_RATE(self) -> str:
         """
         The rate limit for the API, defaults to 10 per minute.
         """
-        return self._setting("API_RATE", "10/m")
+        return self._setting("API_RATE", "100/m")
 
 
 app_settings = AppSettings()

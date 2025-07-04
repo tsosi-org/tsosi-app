@@ -6,6 +6,7 @@ from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 
 from .api_request import ApiRequest
+from .registry import Registry
 from .utils import TimestampedModel
 
 
@@ -86,7 +87,7 @@ class Entity(TimestampedModel):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                condition=(
+                condition=(  # type: ignore
                     models.Q(merged_with_id__isnull=True)
                     & models.Q(merged_criteria__isnull=True)
                 )
@@ -97,7 +98,7 @@ class Entity(TimestampedModel):
                 name="entity_merged_with_merged_criteria_consistency",
             ),
             models.CheckConstraint(
-                condition=(
+                condition=(  # type: ignore
                     models.Q(merged_with_id__isnull=True)
                     | ~models.Q(merged_with_id=models.F("id"))
                 ),
@@ -128,7 +129,7 @@ class InfrastructureDetails(TimestampedModel):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                condition=(
+                condition=(  # type: ignore
                     models.Q(date_scoss_start__isnull=True)
                     & models.Q(date_scoss_end__isnull=True)
                 )
@@ -139,7 +140,7 @@ class InfrastructureDetails(TimestampedModel):
                 name="infrastructure_details_scoss_dates_coherency_1",
             ),
             models.CheckConstraint(
-                condition=(
+                condition=(  # type: ignore
                     models.Q(date_scoss_start__isnull=True)
                     & models.Q(date_scoss_end__isnull=True)
                 )
@@ -179,9 +180,31 @@ class EntityRequest(ApiRequest):
         constraints = [*ApiRequest.Meta.constraints]
         constraints.append(
             models.CheckConstraint(
-                condition=models.Q(
+                condition=models.Q(  # type: ignore
                     type__in=list(ENTITY_REQUEST_CHOICES.keys())
                 ),
                 name="valid_entity_request_type_choice",
             )
         )
+
+
+NAME_TYPES = {"label": "label", "alias": "alias", "acronym": "acronym"}
+
+
+class EntityName(TimestampedModel):
+    """
+    Stores additional names, aliases, acronyms for entities.
+    """
+
+    entity = models.ForeignKey(
+        Entity, null=False, on_delete=models.CASCADE, related_name="names"
+    )
+    type = models.CharField(choices=NAME_TYPES, max_length=32, null=False)
+    value = models.CharField(null=False, max_length=256)
+    lang = models.CharField(null=True, max_length=2)
+    registry = models.ForeignKey(
+        Registry,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="entity_names",
+    )

@@ -14,7 +14,7 @@ export type DebounceStatus = "idle" | "waiting" | "running"
  * @returns The debounced version of the function.
  */
 export default function debounce<T extends unknown[]>(
-  callback: (...args: T) => void,
+  callback: (...args: T) => void | Promise<void>,
   interval: number,
   status?: Ref<DebounceStatus>,
 ) {
@@ -29,15 +29,24 @@ export default function debounce<T extends unknown[]>(
       status.value = "waiting"
     }
 
-    timeoutTimer = setTimeout(() => {
-      timeoutTimer = null
+    timeoutTimer = setTimeout(async () => {
       if (status) {
         status.value = "running"
       }
-      callback(...args)
+      const res = callback(...args)
 
-      if (status) {
-        status.value = "idle"
+      if (res === undefined) {
+        timeoutTimer = null
+        if (status) {
+          status.value = "idle"
+        }
+      } else {
+        res.then(() => {
+          timeoutTimer = null
+          if (status) {
+            status.value = "idle"
+          }
+        })
       }
     }, interval)
   }

@@ -9,6 +9,8 @@ MATCH_SOURCE_CHOICES = {
     MATCH_SOURCE_AUTOMATIC: "automatic",
 }
 
+UUID4_REGEX = r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+
 
 class TimestampedModel(models.Model):
     date_created = models.DateTimeField(default=timezone.now)

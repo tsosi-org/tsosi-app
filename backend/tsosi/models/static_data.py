@@ -2,6 +2,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
 from tsosi.app_settings import app_settings
+from tsosi.data.pid_registry.ror import ROR_ID_REGEX
+from tsosi.data.pid_registry.wikidata import WIKIDATA_ID_REGEX
 from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
 from .entity import Entity, InfrastructureDetails
@@ -9,8 +11,8 @@ from .identifier import (
     MATCH_CRITERIA_FROM_INPUT,
     Identifier,
     IdentifierEntityMatching,
-    Registry,
 )
+from .registry import Registry
 from .source import DataSource
 from .utils import MATCH_SOURCE_MANUAL, replace_model_file
 
@@ -18,6 +20,7 @@ REGISTRY_ROR = "ror"
 REGISTRY_WIKIDATA = "wikidata"
 REGISTRY_CUSTOM = "_custom"
 DOAB_OAPEN_ID = "doab_oapen"
+CUSTOM_ID_REGEX = r"^.+$"
 
 PID_REGISTRIES = [
     Registry(
@@ -25,19 +28,28 @@ PID_REGISTRIES = [
         name="Research Organization Registry",
         website="https://ror.org",
         link_template="https://ror.org/{id}",
+        record_regex=ROR_ID_REGEX,
     ),
     Registry(
         id=REGISTRY_WIKIDATA,
         name="Wikidata",
         website="https://www.wikidata.org",
         link_template="https://www.wikidata.org/wiki/{id}",
+        record_regex=WIKIDATA_ID_REGEX,
     ),
     Registry(
         id=REGISTRY_CUSTOM,
         name="Custom entity registry",
         website="",
         link_template="",
+        record_regex=CUSTOM_ID_REGEX,
     ),
+]
+
+PID_REGEX_OPTIONS = [
+    (REGISTRY_ROR, ROR_ID_REGEX),
+    (REGISTRY_WIKIDATA, WIKIDATA_ID_REGEX),
+    (REGISTRY_CUSTOM, CUSTOM_ID_REGEX),
 ]
 
 
@@ -46,9 +58,11 @@ def create_pid_registries():
     Create the PID registries.
     """
     existing_registries = Registry.objects.all()
-    ids = [r.id for r in existing_registries]
+    ids = {r.id: r for r in existing_registries}
     for r in PID_REGISTRIES:
-        if r.id in ids:
+        registry = ids.get(r.id)
+        if registry:
+            r.save(force_update=True)
             continue
         r.save()
 

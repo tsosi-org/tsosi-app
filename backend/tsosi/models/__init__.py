@@ -1,6 +1,12 @@
 from .analytics import Analytic
 from .currency import Currency, CurrencyRate
-from .entity import Entity, EntityRequest, EntityType, InfrastructureDetails
+from .entity import (
+    Entity,
+    EntityName,
+    EntityRequest,
+    EntityType,
+    InfrastructureDetails,
+)
 from .identifier import (
     Identifier,
     IdentifierEntityMatching,

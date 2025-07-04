@@ -101,12 +101,12 @@ class BaseTransferSerializer(serializers.ModelSerializer):
         return None if obj.hide_amount else obj.amounts_clc
 
     def get_currency(self, obj: Transfer):
-        return None if obj.hide_amount else obj.currency_id
+        return None if obj.hide_amount else obj.currency_id  # type:ignore
 
     def get_raw_data(self, obj: Transfer):
         if not obj.hide_amount:
             return obj.raw_data
-        data = obj.raw_data
+        data: dict = obj.raw_data
         data.pop(obj.original_amount_field, None)
         return data
 

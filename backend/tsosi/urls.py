@@ -14,6 +14,7 @@ router = OptionalSlashRouter()
 # entities/                     entity-list
 # entities/all/                 entity-all
 # entities/(?P<pk>[^/.]+)/      entity-detail
+# entities/emitters/            entity-emitters
 router.register(r"entities", EntityViewSet, basename="entity")
 ### Produced routes:
 # transfers/                   transfer-list

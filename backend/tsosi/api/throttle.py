@@ -27,6 +27,14 @@ def is_IP_allowed(ip_address: str | None) -> bool:
     return False
 
 
+def is_frontend(headers: dict[str, str]) -> bool:
+    """
+    Whether our custom HTTP header is set in the request
+    """
+    val = headers.get(app_settings.FRONTEND_CUSTOM_HEADER)
+    return val is not None and val in app_settings.FRONTEND_CUSTOM_HEADER_VALUES
+
+
 class TsosiThrottle(AnonRateThrottle):
     """
     Custom API throttler for all API requests.
@@ -39,6 +47,9 @@ class TsosiThrottle(AnonRateThrottle):
     rate = app_settings.API_RATE
 
     def get_cache_key(self, request: Request, view):
+        if is_frontend(request.headers):
+            return None
+
         origin = request.META.get("HTTP_ORIGIN") or request.META.get(
             "HTTP_REFERER"
         )
