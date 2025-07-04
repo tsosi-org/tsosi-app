@@ -545,22 +545,19 @@ def new_identifiers_from_records(registry_id: str) -> TaskResult:
     return result
 
 
-def update_transfer_date_clc(
-    instances: QuerySet[Transfer] | None = None,
-):
+def update_transfer_date_clc():
     """
     Update the `date_clc` field for transfers based on the various
     date fields.
     """
     logger.info("Updating transfer CLC date.")
-    if instances is None:
-        instances = Transfer.objects.all().values(
-            "id",
-            "date_invoice",
-            "date_payment_recipient",
-            "date_payment_emitter",
-            "date_start",
-        )
+    instances = Transfer.objects.all().values(
+        "id",
+        "date_invoice",
+        "date_payment_recipient",
+        "date_payment_emitter",
+        "date_start",
+    )
     if len(instances) == 0:
         logger.info("No transfer to update CLC date for.")
         return
