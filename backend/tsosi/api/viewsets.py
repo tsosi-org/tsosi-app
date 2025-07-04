@@ -74,8 +74,8 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
     )
     serializer_class = EntitySerializer
     filter_backends = [OrderingFilter, SearchFilter]
-    ordering = ["name"]
-    ordering_fields = ["name"]
+    ordering = ["-is_recipient", "name"]
+    ordering_fields = ["name", "is_recipient"]
     search_fields = ["name", "short_name", "names__value", "identifiers__value"]
 
     @action(

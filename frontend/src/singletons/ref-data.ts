@@ -414,7 +414,10 @@ export async function entitySearch(
   if (!query) {
     return null
   }
-  const queryParams = new URLSearchParams({ search: query })
+  const queryParams = new URLSearchParams({
+    search: query,
+    ordering: "-is_recipient,name",
+  })
   const result = await get("entities/", true, queryParams)
   if (result.error || !result.data) {
     return null

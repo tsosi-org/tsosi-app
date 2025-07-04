@@ -147,7 +147,7 @@ class AppSettings:
         Name of the custom HTTP header that should be sent by TSOSI frontend.
         It's used to bypass rate limiting (easily spoofable).
         """
-        return self._setting("FRONTEND_CUSTOM_HEADER", "X-Frontend-Origin")
+        return self._setting("FRONTEND_CUSTOM_HEADER")
 
     @property
     def FRONTEND_CUSTOM_HEADER_VALUES(self) -> list[str]:
