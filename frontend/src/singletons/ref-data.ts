@@ -428,7 +428,7 @@ export async function queryPaginatedApiUrl<T extends ApiData>(
   if (!query) {
     return null
   }
-  const result = await fetchUrl(query)
+  const result = await fetchUrl(query, true)
   if (result.error || !result.data) {
     return null
   }

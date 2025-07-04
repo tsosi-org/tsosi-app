@@ -8,6 +8,8 @@ interface ViteTypeOptions {
 
 interface ImportMetaEnv {
   readonly VITE_API_ROOT: string
+  readonly VITE_CUSTOM_HTTP_HEADER?: string
+  readonly VITE_CUSTOM_HTTP_HEADER_VALUE?: string
   readonly VITE_MATOMO_HOST?: string
   readonly VITE_MATOMO_SITE_ID?: string
   readonly VITE_WELCOME_POPUP?: "true"

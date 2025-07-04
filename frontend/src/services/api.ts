@@ -26,7 +26,7 @@ export async function get(
   }
   if (api) {
     if (!import.meta.env.VITE_API_ROOT) {
-      console.error("MISSING env variable `VITE_API_ROOT`")
+      throw Error("MISSING env variable `VITE_API_ROOT`")
     }
     baseUrl = import.meta.env.VITE_API_ROOT
     queryParams.set("format", "json")
@@ -43,11 +43,28 @@ export async function get(
 
   console.log(`querying URL: "${url.toString()}"`)
 
-  return fetchUrl(url.toString())
+  return fetchUrl(url.toString(), api)
 }
 
-export async function fetchUrl(url: string): Promise<JsonResult> {
-  return fetch(url)
+export async function fetchUrl(
+  url: string,
+  api: boolean = false,
+): Promise<JsonResult> {
+  const headers = new Headers()
+  if (api) {
+    const customHeader = import.meta.env.VITE_CUSTOM_HTTP_HEADER
+    const customHeaderValue = import.meta.env.VITE_CUSTOM_HTTP_HEADER_VALUE
+    if (!customHeader || !customHeaderValue) {
+      console.log(
+        "MISSING env variable `VITE_CUSTOM_HTTP_HEADER` or `VITE_CUSTOM_HTTP_HEADER_VALUE`",
+      )
+    } else {
+      headers.append(customHeader, customHeaderValue)
+    }
+  }
+  return fetch(url, {
+    headers: headers,
+  })
     .then((response) => response.json())
     .then((data) => {
       return {

@@ -52,6 +52,7 @@ CACHES = {
     }
 }
 DRF_NUM_PROXIES = 0
+TSOSI_FRONTEND_CUSTOM_HEADER = "X-Frontend-Origin"
 
 if "test" in sys.argv or "pytest" in sys.modules:
     DATABASES["default"] = {"ENGINE": "django.db.backends.sqlite3"}

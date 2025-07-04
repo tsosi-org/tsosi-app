@@ -14,6 +14,7 @@ import importlib
 from pathlib import Path
 
 from celery.schedules import crontab
+from corsheaders.defaults import default_headers
 
 from .settings_local import (
     ALLOWED_HOSTS,
@@ -29,6 +30,7 @@ from .settings_local import (
     TSOSI_CELERY_BROKER_URL,
     TSOSI_DATA_LOG_FILE,
     TSOSI_DJANGO_LOG_FILE,
+    TSOSI_FRONTEND_CUSTOM_HEADER,
     TSOSI_LOG_LEVEL,
     TSOSI_MAIN_LOG_FILE,
 )
@@ -70,6 +72,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_URLS_REGEX = r"^/api/.*$"
+
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    TSOSI_FRONTEND_CUSTOM_HEADER,
+)
 
 
 # Application definition
