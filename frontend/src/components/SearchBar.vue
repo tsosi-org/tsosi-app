@@ -4,6 +4,7 @@ import InputIcon from "primevue/inputicon"
 import InputText from "primevue/inputtext"
 import Popover from "primevue/popover"
 import { ref, type Ref, computed, watch, useTemplateRef, nextTick } from "vue"
+import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
 import {
   entitySearch,
   type Entity,
@@ -19,7 +20,8 @@ interface SearchResult {
   url: string
   id: string
   highlighted?: boolean
-  categoryId?: string
+
+  [key: string]: any
 }
 interface SearchResults {
   total: number
@@ -106,6 +108,9 @@ function processResults(
 ) {
   if (newSearch) {
     filteredResults.value = newEmptyResults()
+    if (virtualScroll.value) {
+      virtualScroll.value.scrollTo(0, 0)
+    }
   }
   if (!results) {
     return
@@ -122,6 +127,7 @@ function processResults(
       name: e.name,
       url: getEntityUrl(e),
       id: e.id,
+      entity: e,
     }
     categorizedResults.items[getItemCategory(e)].data.push(result)
   })
@@ -356,6 +362,21 @@ function focusOut() {
                 v-for="item of filteredResults.items[categoryId].data"
                 :key="item.id"
               >
+                <EntityLinkDataAtom
+                  @click="resetSearchBar"
+                  class="search-result"
+                  :style="{ height: itemSize + 'px' }"
+                  :class="{ highlighted: item.highlighted }"
+                  :title="item.name"
+                  :data="item"
+                  :data-field="{
+                    id: 'entity',
+                    title: 'Entity',
+                    field: 'entity',
+                    type: 'entityLink',
+                  }"
+                />
+                <!--
                 <RouterLink
                   :to="item.url"
                   @click="resetSearchBar"
@@ -368,6 +389,7 @@ function focusOut() {
                     {{ item.name }}
                   </span>
                 </RouterLink>
+                -->
               </div>
             </div>
           </div>
