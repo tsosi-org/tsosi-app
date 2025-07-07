@@ -11,18 +11,14 @@ import {
   type ApiPaginatedData,
   queryPaginatedApiUrl,
 } from "@/singletons/ref-data"
-import { getEntityUrl } from "@/utils/url-utils"
-import { RouterLink } from "vue-router"
 import debounce, { type DebounceStatus } from "@/utils/debounce"
 
 interface SearchResult {
-  name: string
-  url: string
   id: string
+  entity: Entity
   highlighted?: boolean
-
-  [key: string]: any
 }
+
 interface SearchResults {
   total: number
   count: number
@@ -37,18 +33,29 @@ interface SearchResults {
 }
 
 export interface SearchBarProps {
+  fixed: boolean
   width?: string
   placeHolder?: string
-  asGrowingButton?: boolean
+  asGrowingButton?: boolean // Make the search bar smaller and growing on focus.
 }
 
 const props = defineProps<SearchBarProps>()
-const searchTerm = ref("")
-const filteredResults: Ref<SearchResults> = ref(newEmptyResults())
+
 const op = useTemplateRef("op")
+const component = useTemplateRef("search-bar")
 const input = useTemplateRef("input")
-const virtualScroll = useTemplateRef("virtual-scroll")
+const searchResultsEl = useTemplateRef("search-results")
+
+// Search/query term
+const searchTerm = ref("")
+// The concatenated search results
+const filteredResults: Ref<SearchResults> = ref(newEmptyResults())
+// The currently selected item index
 const highlightedIndex: Ref<number | undefined> = ref(undefined)
+// The search status
+const searchStatus: Ref<DebounceStatus> = ref("idle")
+
+// Layout related refs
 const isFocused = ref(false)
 const isOpen = computed(() => {
   return (
@@ -59,10 +66,7 @@ const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
 const computedWidth = computed(() =>
   isOpen.value ? elementWidth.value : "100px",
 )
-const searchingStatus: Ref<DebounceStatus> = ref("idle")
-const nextUrl: Ref<string | null> = ref(null)
 const pageSize = 20
-
 const itemSize = 40
 
 watch(highlightedIndex, updateHighlightedResult)
@@ -73,27 +77,28 @@ async function remoteOnSearch(event: Event) {
   processResults(event, results, true)
 }
 
-const debouncedOnSearch = debounce(remoteOnSearch, 250, searchingStatus)
+const debouncedOnSearch = debounce(remoteOnSearch, 250, searchStatus)
 
 /**
  * Query the next results page from the initial search query.
  * @param event
  */
 async function queryNextResults(event: Event) {
-  if (!filteredResults.value.next || searchingStatus.value != "idle") {
+  if (!filteredResults.value.next || searchStatus.value != "idle") {
     return
   }
-  searchingStatus.value = "running"
+  searchStatus.value = "running"
   const nextResults = (await queryPaginatedApiUrl(
     filteredResults.value.next,
   )) as ApiPaginatedData<Entity>
   processResults(event, nextResults, false)
-  searchingStatus.value = "idle"
+  searchStatus.value = "idle"
 }
 
 function getItemCategory(e: Entity): string {
   return e.is_recipient ? "infra" : "supporter"
 }
+
 /**
  * Process the API results
  * @param event The event that triggered the search
@@ -108,8 +113,8 @@ function processResults(
 ) {
   if (newSearch) {
     filteredResults.value = newEmptyResults()
-    if (virtualScroll.value) {
-      virtualScroll.value.scrollTo(0, 0)
+    if (searchResultsEl.value) {
+      searchResultsEl.value.scrollTo(0, 0)
     }
   }
   if (!results) {
@@ -124,25 +129,30 @@ function processResults(
 
   results.results.forEach((e) => {
     const result = {
-      name: e.name,
-      url: getEntityUrl(e),
       id: e.id,
       entity: e,
     }
     categorizedResults.items[getItemCategory(e)].data.push(result)
   })
-  nextUrl.value = results.next
   filteredResults.value = categorizedResults
   showResults(event, newSearch)
 }
 
+/**
+ * Show the popup containing the results.
+ * The display is delayed if the search bar is styled as a growing button
+ * to wait for the animation to end.
+ *
+ * @param event
+ * @param reset
+ */
 function showResults(event: Event, reset = false) {
   if (props.asGrowingButton && !isFocused.value) {
     const wasOpen = isOpen.value
     isFocused.value = true
     if (!wasOpen) {
       // Trigger the results popup after the searchbar animation is finished
-      setTimeout(() => showResults(event), 800)
+      setTimeout(() => showResults(event, reset), 800)
       return
     }
   }
@@ -173,6 +183,9 @@ function newEmptyResults(): SearchResults {
   }
 }
 
+/**
+ * Reset all refs and close the overlay.
+ */
 function resetSearchBar() {
   op.value!.hide()
   searchTerm.value = ""
@@ -226,18 +239,20 @@ function onKeyDown(event: KeyboardEvent) {
  * @param event
  */
 function onVirtualScroll(event: Event) {
-  // @ts-expect-error PrimeVue component declaration omits basic
-  // VueJS attributes..
-  // const virtEl: HTMLElement = virtualScroll.value.$el
-  const virtEl: HTMLElement = virtualScroll.value
-  if (
-    virtEl.scrollHeight >= pageSize * itemSize &&
-    virtEl.scrollTop > virtEl.scrollHeight - (pageSize * itemSize) / 2
-  ) {
+  // Whether the search bar need to fetch addidional data
+  if (filteredResults.value.count >= filteredResults.value.total) {
+    return
+  }
+  // When to query additional data
+  const virtEl: HTMLElement = searchResultsEl.value!
+  if (virtEl.scrollTop > virtEl.scrollHeight - (pageSize * itemSize) / 2) {
     queryNextResults(event)
   }
 }
 
+/**
+ * Update the highlighted search result and scroll the results if required.
+ */
 async function updateHighlightedResult() {
   for (const category in filteredResults.value.items) {
     filteredResults.value.items[category].data.forEach(
@@ -260,7 +275,7 @@ async function updateHighlightedResult() {
   // Might be needed to trigger ref update??
   const data = filteredResults.value
   filteredResults.value = data
-  if (!virtualScroll.value) {
+  if (!searchResultsEl.value) {
     return
   }
   await nextTick()
@@ -269,7 +284,7 @@ async function updateHighlightedResult() {
     return
   }
   const rect = highlighted?.getBoundingClientRect()
-  const virtEl: HTMLElement = virtualScroll.value
+  const virtEl: HTMLElement = searchResultsEl.value
   const virtRect = virtEl.getBoundingClientRect()
   // We add some margin for the up scrolling because of the sticky
   // category titles
@@ -288,14 +303,31 @@ function focusOut() {
     op.value!.hide()
   }
 }
+
+/**
+ * Unset top & bottom properties calculated by PrimeVue to make the popover
+ * sticks to its parent.
+ */
+function onPopoverShow() {
+  if (!props.fixed) {
+    return
+  }
+  // @ts-expect-error Little hack to align the popover to the search bar.
+  const popoverEl = op.value?.container || op.value?.$el.nextElementSibling
+  if (!popoverEl) {
+    return
+  }
+  popoverEl.style.top = "unset"
+  popoverEl.style.bottom = "unset"
+}
 </script>
 
 <template>
-  <div class="search-bar">
+  <div class="search-bar" ref="search-bar">
     <IconField class="search-bar-input">
       <InputIcon class="search-bar-icon">
         <font-awesome-icon
-          v-if="searchingStatus == 'idle'"
+          v-if="searchStatus == 'idle'"
           icon="fa-solid fa-magnifying-glass"
         />
         <font-awesome-icon
@@ -316,18 +348,19 @@ function focusOut() {
         :dt="{ paddingX: '0' }"
       />
     </IconField>
+
     <Popover
       ref="op"
       class="popover-no-arrow"
+      :append-to="component || undefined"
       :baseZIndex="9999"
       :dt="{ gutter: 0 }"
       :style="`--width: ${elementWidth};`"
+      @show="onPopoverShow()"
     >
       <div class="search-bar-overlay">
         <div v-if="filteredResults.count == 0" class="search-howto">
-          <span
-            v-if="searchingStatus == 'idle' && searchTerm.trim().length > 0"
-          >
+          <span v-if="searchStatus == 'idle' && searchTerm.trim().length > 0">
             No results for search "{{ searchTerm.trim() }}"<br />
           </span>
           You can search for infrastructures or supporters:
@@ -340,9 +373,10 @@ function focusOut() {
             <li>Search by Wikidata ID: e.g. "Q97368331" or "Q945876"</li>
           </ul>
         </div>
+
         <div
           v-else
-          ref="virtual-scroll"
+          ref="search-results"
           class="search-results"
           @scroll="onVirtualScroll"
           style="max-height: 300px"
@@ -367,7 +401,6 @@ function focusOut() {
                   class="search-result"
                   :style="{ height: itemSize + 'px' }"
                   :class="{ highlighted: item.highlighted }"
-                  :title="item.name"
                   :data="item"
                   :data-field="{
                     id: 'entity',
@@ -376,20 +409,6 @@ function focusOut() {
                     type: 'entityLink',
                   }"
                 />
-                <!--
-                <RouterLink
-                  :to="item.url"
-                  @click="resetSearchBar"
-                  class="search-result"
-                  :style="{ height: itemSize + 'px' }"
-                  :class="{ highlighted: item.highlighted }"
-                  :title="item.name"
-                >
-                  <span class="search-result-text">
-                    {{ item.name }}
-                  </span>
-                </RouterLink>
-                -->
               </div>
             </div>
           </div>
@@ -406,8 +425,6 @@ function focusOut() {
   &.large {
     .search-bar-input :deep(input) {
       font-size: 1.8rem;
-      /* padding-inline: 0.75em;
-      padding-block: 0.5em; */
       padding-inline-start: 2em;
     }
 
@@ -423,12 +440,14 @@ function focusOut() {
   width: v-bind(computedWidth);
   transition: width 0.1s ease-in;
 }
+
 .search-bar-overlay {
   --content-width: calc(var(--width) - 20px);
   position: relative;
   max-width: var(--content-width);
   width: var(--content-width);
   overflow: hidden;
+  text-align: left;
 }
 
 .search-results {
@@ -455,11 +474,11 @@ function focusOut() {
     background-color: var(--p-surface-200);
     text-decoration: underline;
   }
-}
 
-.search-result-text {
-  text-overflow: ellipsis;
-  overflow: hidden;
+  & :deep(.entity-label) {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
 }
 
 .loader-icon-animate {

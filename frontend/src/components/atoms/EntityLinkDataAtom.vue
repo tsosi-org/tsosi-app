@@ -29,6 +29,7 @@ onBeforeMount(() => {
     class="entity-link"
     :class="{ icon: entity?.icon != null }"
     :to="getEntityUrl(entity)"
+    :title="entity.name"
   >
     <ImageAtom
       class="entity-icon"

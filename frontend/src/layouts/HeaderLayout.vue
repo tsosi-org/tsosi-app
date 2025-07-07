@@ -78,6 +78,7 @@ function onDrawerToggle(show: boolean) {
         "
       >
         <SearchBar
+          :fixed="true"
           :place-holder="'Search for infrastructure or institution'"
           width="330px"
           :as-growing-button="false"
@@ -173,7 +174,7 @@ function onDrawerToggle(show: boolean) {
           @hide="onDrawerToggle(false)"
         >
           <template #container>
-            <SearchBar width="500px"></SearchBar>
+            <SearchBar :fixed="true" width="500px"></SearchBar>
           </template>
         </Drawer>
       </div>
@@ -190,7 +191,7 @@ header {
   background-color: var(--p-primary-800);
   z-index: 10000;
   height: var(--header-height);
-  overflow: hidden;
+  /* overflow: hidden; */
   transform: translate(0, -100%);
   transition: all 0.2s ease-in-out;
 
