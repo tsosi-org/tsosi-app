@@ -8,7 +8,7 @@ import { useTemplateRef } from "vue"
  */
 export interface MenuItem {
   label?: string | ((...args: any) => string) | undefined
-  icon?: string | undefined
+  icon?: string[] | undefined
   command?: (event: {
     originalEvent: Event
     item: MenuItem
@@ -48,6 +48,7 @@ function toggleMenu(event: Event) {
     aria-haspopup="true"
     :aria-controls="props.id"
   />
+  <!-- @vue-expect-error The icon property is not used but manually handled -->
   <Menu ref="menu" :id="props.id" :model="props.items" :popup="true">
     <template #itemicon="{ item }">
       <font-awesome-icon v-if="item.icon" :icon="item.icon" />

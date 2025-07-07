@@ -4,7 +4,7 @@ import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
 
 export interface ChipConfig {
   label: string
-  icon?: string
+  icon?: string[]
   iconText?: string
   link?: string
   info?: string

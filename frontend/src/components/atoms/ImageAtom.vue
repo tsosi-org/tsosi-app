@@ -31,7 +31,7 @@ onMounted(() => {
 
 <template>
   <figure class="img-container" :class="{ center: props.center, svg: isSvg }">
-    <font-awesome-icon v-show="loading" class="icon" icon="image" />
+    <font-awesome-icon v-show="loading" class="icon" :icon="['fas', 'image']" />
     <img
       v-if="props.src"
       v-show="!loading"

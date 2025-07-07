@@ -5,7 +5,7 @@ import { addClickEventListener } from "@/utils/dom-utils"
 import { isTouchScreen } from "@/composables/useMediaQuery"
 
 export interface InfoButtonProps {
-  icon?: string
+  icon?: string[]
   label?: string
   content?: string
   showCallback?: () => any
@@ -77,7 +77,7 @@ function popupLeave() {
       </span>
       <font-awesome-icon
         v-else
-        icon="circle-question"
+        :icon="['fas', 'circle-question']"
         class="info-icon"
       ></font-awesome-icon>
     </slot>

@@ -312,7 +312,7 @@ function getTableColumns(
 const buttons: Array<ButtonProps> = [
   {
     id: "transferDetails",
-    icon: "magnifying-glass",
+    icon: ["fas", "magnifying-glass"],
     type: "pageLink",
     linkConfig: {
       base: getTransferBaseUrl(),
@@ -407,13 +407,13 @@ async function updateMapData() {
       <TabList class="tab-list">
         <Tab value="0" as="button">
           <span class="tab-header">
-            <font-awesome-icon class="icon" icon="list-ul" />
+            <font-awesome-icon class="icon" :icon="['fas', 'list-ul']" />
             <span>Table</span>
           </span>
         </Tab>
         <Tab value="1" as="button">
           <span class="tab-header">
-            <font-awesome-icon class="icon" icon="chart-column" />
+            <font-awesome-icon class="icon" :icon="['fas', 'chart-column']" />
             <span>Charts</span>
           </span>
         </Tab>

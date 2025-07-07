@@ -35,17 +35,17 @@ onBeforeMount(async () => {
     {
       label: "Home",
       route: "/",
-      icon: "house",
+      icon: ["fas", "house"],
     },
     {
       label: transfer.value.recipient!.name,
       route: getEntityUrl(transfer.value.recipient! as Entity),
-      icon: "building-columns",
+      icon: ["fas", "building-columns"],
     },
     {
       label: transfer.value.id,
       route: route.path,
-      icon: "magnifying-glass-chart",
+      icon: ["fas", "magnifying-glass-chart"],
     },
   ]
 

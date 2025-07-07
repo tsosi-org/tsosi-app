@@ -100,7 +100,7 @@ function onDrawerToggle(show: boolean) {
         <Button
           v-if="!navMenuVisible"
           id="navMenu"
-          icon="bars"
+          :icon="['fas', 'bars']"
           type="action"
           @click="toggleDrawer('navMenu')"
           custom-class="header-button"
@@ -108,7 +108,7 @@ function onDrawerToggle(show: boolean) {
         <Button
           v-else
           id="navMenuClose"
-          icon="xmark"
+          :icon="['fas', 'xmark']"
           type="action"
           @click="toggleDrawer('navMenu')"
           custom-class="header-button"
@@ -150,7 +150,7 @@ function onDrawerToggle(show: boolean) {
         <Button
           v-if="!searchMenuVisible"
           id="searchMenu"
-          icon="magnifying-glass"
+          :icon="['fas', 'magnifying-glass']"
           type="action"
           custom-class="header-button"
           @click="toggleDrawer('searchMenu')"
@@ -158,7 +158,7 @@ function onDrawerToggle(show: boolean) {
         <Button
           v-else
           id="searchMenuClose"
-          icon="xmark"
+          :icon="['fas', 'xmark']"
           type="action"
           @click="toggleDrawer('searchMenu')"
           custom-class="header-button"

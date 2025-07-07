@@ -230,17 +230,17 @@ function nextColor() {
 const exportItems = [
   {
     label: "Export CSV",
-    icon: "download",
+    icon: ["fas", "download"],
     command: () => downloadData("csv"),
   },
   {
     label: "Export JSON",
-    icon: "download",
+    icon: ["fas", "download"],
     command: () => downloadData("json"),
   },
   {
     label: "Export PNG",
-    icon: "download",
+    icon: ["fas", "download"],
     command: () => downloadPNG(),
   },
 ]
@@ -336,7 +336,7 @@ async function downloadData(format: "json" | "csv") {
             id: `histogram-export-button-${props.entity.id}`,
             label: 'Export',
             type: 'action',
-            icon: 'download',
+            icon: ['fas', 'download'],
           }"
           :items="exportItems"
         />

@@ -49,7 +49,7 @@ import { isDesktop } from "@/composables/useMediaQuery"
           <li>
             <ExternalLinkAtom href="https://github.com/tsosi-org">
               <font-awesome-icon
-                icon="fa-brands fa-github"
+                :icon="['fab', 'github']"
                 class="link-icon"
               />Github
             </ExternalLinkAtom>
@@ -59,7 +59,7 @@ import { isDesktop } from "@/composables/useMediaQuery"
               href="https://cloud.univ-grenoble-alpes.fr/apps/forms/embed/sanHSpzrJHqPbCknYcCBDcWy"
             >
               <font-awesome-icon
-                icon="fa-solid fa-envelope"
+                :icon="['fas', 'envelope']"
                 class="link-icon"
               />Newsletter
             </ExternalLinkAtom>
@@ -67,7 +67,7 @@ import { isDesktop } from "@/composables/useMediaQuery"
           <li>
             <RouterLink to="/pages/faq#contact-us">
               <font-awesome-icon
-                icon="fa-solid fa-at"
+                :icon="['fas', 'at']"
                 class="link-icon"
               />Contact
             </RouterLink>

@@ -47,7 +47,7 @@ function loadChips() {
   if (props.entity.country) {
     const countryName = getCountryLabel(props.entity.country)
     const countryChip: ChipConfig = {
-      icon: "location-dot",
+      icon: ["fas", "location-dot"],
       label: countryName,
     }
     const legalEntityDesc =
@@ -60,7 +60,7 @@ function loadChips() {
 
   if (props.entity.date_inception) {
     headerChips.value.push({
-      icon: "calendar",
+      icon: ["fas", "calendar"],
       label: `Since ${props.entity.date_inception.getFullYear()}`,
     })
   }
@@ -197,7 +197,7 @@ function isDoab(): boolean {
               <span style="white-space: nowrap">
                 financially
                 <font-awesome-icon
-                  icon="fa-solid fa-arrow-up-right-from-square"
+                  :icon="['fas', 'arrow-up-right-from-square']"
                   style="margin-left: 0.25rem"
                 />
               </span>
@@ -215,7 +215,7 @@ function isDoab(): boolean {
             class="entity-icon-link"
           >
             <template #default>
-              <font-awesome-icon class="fa-icon" icon="globe" />
+              <font-awesome-icon class="fa-icon" :icon="['fas', 'globe']" />
               Website
             </template>
           </ExternalLinkAtom>

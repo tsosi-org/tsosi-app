@@ -344,12 +344,12 @@ function cleanPopup(element: App) {
 const exportItems = [
   {
     label: "Export CSV",
-    icon: "download",
+    icon: ["fas", "download"],
     command: () => downloadData("csv"),
   },
   {
     label: "Export JSON",
-    icon: "download",
+    icon: ["fas", "download"],
     command: () => downloadData("json"),
   },
 ]
@@ -488,7 +488,7 @@ const legendDt = {
                   id: `${props.id}-export-button`,
                   label: 'Export',
                   type: 'action',
-                  icon: 'download',
+                  icon: ['fas', 'download'],
                 }"
                 :items="exportItems"
               />

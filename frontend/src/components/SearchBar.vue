@@ -328,11 +328,11 @@ function onPopoverShow() {
       <InputIcon class="search-bar-icon">
         <font-awesome-icon
           v-if="searchStatus == 'idle'"
-          icon="fa-solid fa-magnifying-glass"
+          :icon="['fas', 'magnifying-glass']"
         />
         <font-awesome-icon
           v-else
-          icon="fa-solid fa-spinner"
+          :icon="['fas', 'spinner']"
           class="loader-icon-animate"
         />
       </InputIcon>

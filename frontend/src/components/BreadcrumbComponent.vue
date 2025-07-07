@@ -3,7 +3,7 @@ import { RouterLink } from "vue-router"
 
 export interface BreadcrumbItem {
   label: string
-  icon?: string
+  icon?: string[]
   route: string
 }
 
@@ -25,7 +25,7 @@ const props = defineProps<{ items: Array<BreadcrumbItem> }>()
           </RouterLink>
         </li>
         <li v-if="index != props.items.length - 1" class="breadcrumb-separator">
-          <font-awesome-icon icon="angle-right" />
+          <font-awesome-icon :icon="['fas', 'angle-right']" />
         </li>
       </template>
     </ol>

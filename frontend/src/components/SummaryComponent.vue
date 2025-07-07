@@ -74,9 +74,9 @@ const props = defineProps<SummaryProps>()
           <div v-else-if="field.type == 'boolean'">
             <font-awesome-icon
               v-if="getItemLabel(props.data, field)"
-              icon="square-check"
+              :icon="['fas', 'square-check']"
             />
-            <font-awesome-icon v-else icon="square-xmark" />
+            <font-awesome-icon v-else :icon="['fas', 'square-xmark']" />
           </div>
 
           <div v-else>

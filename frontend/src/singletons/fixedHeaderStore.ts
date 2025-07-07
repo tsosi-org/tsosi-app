@@ -1,3 +1,8 @@
+/**
+ * Handles the big header style for the home page.
+ * It performs style related operations and expose the `bigHeader`
+ * boolean ref.
+ */
 import { ref, watch } from "vue"
 
 export async function togglePageNoHeader(value: boolean) {
@@ -9,6 +14,9 @@ export async function togglePageNoHeader(value: boolean) {
   }
 }
 
+/**
+ * Whether the header is in big header mode.
+ */
 export const bigHeader = ref(false)
 
 export function setBigHeader(value: boolean) {

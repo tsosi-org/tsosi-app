@@ -6,7 +6,7 @@ export type ButtonType = "pageLink" | "externalLink" | "action"
 export interface ButtonProps {
   id: string
   label?: string
-  icon?: string
+  icon?: string[]
   type: ButtonType
   linkConfig?: LinkConfig
   data?: Record<string, any>

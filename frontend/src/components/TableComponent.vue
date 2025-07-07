@@ -160,12 +160,12 @@ async function download(format: "json" | "csv") {
 const exportItems = [
   {
     label: "Export CSV",
-    icon: "download",
+    icon: ["fas", "download"],
     command: () => download("csv"),
   },
   {
     label: "Export JSON",
-    icon: "download",
+    icon: ["fas", "download"],
     command: () => download("json"),
   },
 ]
@@ -347,7 +347,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
                 id: `table-export-button-${props.id}`,
                 label: 'Export',
                 type: 'action',
-                icon: 'download',
+                icon: ['fas', 'download'],
               }"
               :items="exportItems"
             />
@@ -467,7 +467,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
           aria-haspopup="true"
           severity="secondary"
         >
-          <font-awesome-icon icon="ellipsis-vertical" />
+          <font-awesome-icon :icon="['fas', 'ellipsis-vertical']" />
         </Button>
       </template>
       <!-- Single button -->
@@ -503,7 +503,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
           id: `table-export-button-${props.id}`,
           label: 'Export',
           type: 'action',
-          icon: 'download',
+          icon: ['fas', 'download'],
         }"
         :items="exportItems"
       />

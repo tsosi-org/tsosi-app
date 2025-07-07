@@ -34,11 +34,14 @@ function copyFragmentLink() {
           @click="copyFragmentLink"
           class="section-link"
         >
-          <font-awesome-icon icon="link" />
+          <font-awesome-icon :icon="['fas', 'link']" />
         </a>
         <span v-if="copied" class="copy-indicator" style="margin-left: 2px">
           Copied
-          <font-awesome-icon icon="check" style="margin-left: 5px" />
+          <font-awesome-icon
+            :icon="['fas', 'check']"
+            style="margin-left: 5px"
+          />
         </span>
       </h2>
       <h1 v-else class="section-title">
@@ -48,11 +51,14 @@ function copyFragmentLink() {
           :href="`#${props.id}`"
           @click="copyFragmentLink"
         >
-          <font-awesome-icon icon="link" />
+          <font-awesome-icon :icon="['fas', 'link']" />
         </a>
         <span v-if="copied" class="copy-indicator">
           Copied
-          <font-awesome-icon icon="check" style="margin-left: 5px" />
+          <font-awesome-icon
+            :icon="['fas', 'check']"
+            style="margin-left: 5px"
+          />
         </span>
       </h1>
     </div>

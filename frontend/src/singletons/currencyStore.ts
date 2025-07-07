@@ -1,3 +1,7 @@
+/**
+ * Expose functions to change the selected currency along with the
+ * `selectedCurrency` ref.
+ */
 import { ref } from "vue"
 import {
   type Currency,

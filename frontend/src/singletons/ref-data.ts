@@ -1,4 +1,8 @@
-import { fetchUrl, get } from "../services/api"
+/**
+ * This defines base types for the external TSOSI API along with
+ * methods to interact with it.
+ */
+import { fetchUrl, get } from "@/services/api"
 import {
   initDateWithPrecision,
   initDateProperty,

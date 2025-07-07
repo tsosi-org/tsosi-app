@@ -5,7 +5,8 @@ interface JsonResult {
 }
 
 /**
- * Fetches the JSON resource at the given route.
+ * Fetches the TSOSI JSON resource at the given route.
+ *
  * @param route         The URL route
  * @param api           Whether this is a request to TSOSI API
  * @param queryParams   Additional query parameters
@@ -46,6 +47,15 @@ export async function get(
   return fetchUrl(url.toString(), api)
 }
 
+/**
+ * Fetch the JSON resource at the given URL.
+ * It expects a full URL.
+ *
+ * @param url The full well-formed URL to fetch.
+ * @param api Whether it's a TSOSI API call. If `true`, it adds a custom HTTP
+ *            header. Default `false`.
+ * @returns
+ */
 export async function fetchUrl(
   url: string,
   api: boolean = false,
