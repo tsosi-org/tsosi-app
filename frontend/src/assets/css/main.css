@@ -176,6 +176,19 @@ a.wikidata-inline-link::before {
   display: none;
 }
 
+.loader-icon-animate {
+  animation: uniform-spinning 1s linear infinite;
+}
+
+
+@keyframes uniform-spinning {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 /*
  Component specific CSS
  TODO: move it to primevue styling framework.

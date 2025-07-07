@@ -481,10 +481,6 @@ function onPopoverShow() {
   }
 }
 
-.loader-icon-animate {
-  animation: uniform-spinning 1s linear infinite;
-}
-
 .search-category {
   position: relative;
 }
@@ -494,14 +490,5 @@ function onPopoverShow() {
   top: 0;
   background-color: var(--color-background);
   padding: 0.35em 0;
-}
-
-@keyframes uniform-spinning {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 </style>

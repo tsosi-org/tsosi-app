@@ -11,6 +11,8 @@ import {
 import { RouterLink } from "vue-router"
 import DataTable from "primevue/datatable"
 import { FilterMatchMode } from "@primevue/core/api"
+import IconField from "primevue/iconfield"
+import InputIcon from "primevue/inputicon"
 import InputText from "primevue/inputtext"
 import Column from "primevue/column"
 import Skeleton from "primevue/skeleton"
@@ -26,17 +28,16 @@ import {
   exportCSV,
   exportJSON,
 } from "@/utils/data-utils"
-import debounce from "@/utils/debounce"
-import CurrencySelector from "./CurrencySelector.vue"
+import debounce, { type DebounceStatus } from "@/utils/debounce"
+import CurrencySelector from "@/components/CurrencySelector.vue"
 import CustomButton, {
   type ButtonProps,
 } from "@/components/atoms/ButtonAtom.vue"
 import Country from "@/components/atoms/CountryAtom.vue"
-import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
-import MenuButtonAtom from "./atoms/MenuButtonAtom.vue"
-import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
-import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
-
+import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
+import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
+import EntityLinkDataAtom from "@/components/atoms/EntityLinkDataAtom.vue"
 interface AppliedFilters {
   [columnId: string]: string
 }
@@ -81,11 +82,12 @@ export interface TableProps {
 
 const props = defineProps<TableProps>()
 // Holds the declared filters for the DataTable component
-// TODO: Handle the filter layout manually as the filtering
-// processing is done manually.
+// We handle filtering manually. The important thing is to use our custom
+// ref `filterModels` to avoid the component built-in filtering.
 const filters: Ref<
   { [id: string]: { value: any; matchMode: "" } } | undefined
 > = ref({})
+const filterModels: { [id: string]: Ref<string | null | undefined> } = {}
 const minDataForFilters = 10
 // Holds the applied filters in the form { columnId: filterValue }
 const appliedFilters: Ref<AppliedFilters> = ref({})
@@ -94,6 +96,7 @@ const minWidthWithFilter = "100px"
 const useFilters = computed(
   () => !props.skeleton && props.data.length >= minDataForFilters,
 )
+const filterStatus: Ref<DebounceStatus> = ref("idle")
 
 onBeforeMount(() => {
   // Prepare filters
@@ -101,7 +104,7 @@ onBeforeMount(() => {
   applyFilters()
 })
 
-watch(appliedFilters, debounce(applyFilters, 250))
+watch(appliedFilters, debounce(applyFilters, 250, filterStatus))
 
 const tableComponent = useTemplateRef("data-table")
 const rowButtonMenu = useTemplateRef("row-button-menu")
@@ -229,6 +232,7 @@ function populateFilters() {
         value: null,
         matchMode: FilterMatchMode.CONTAINS,
       }
+      filterModels[c.field] = ref("")
     })
   filters.value = newFilters
 }
@@ -238,7 +242,12 @@ function populateFilters() {
  * @param column
  * @param value
  */
-async function filter(column: TableColumnProps, value: string) {
+async function filter(
+  event: Event,
+  column: TableColumnProps,
+  value: string | null | undefined,
+) {
+  event.stopImmediatePropagation()
   if (!useFilters.value) {
     return
   }
@@ -246,7 +255,7 @@ async function filter(column: TableColumnProps, value: string) {
   const currentFilters: { [id: string]: any } = {
     ...appliedFilters.value,
   }
-  currentFilters[column.id] = value.toLowerCase()
+  currentFilters[column.id] = value?.toLowerCase()
   appliedFilters.value = currentFilters
 }
 
@@ -405,21 +414,33 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         <CurrencySelector v-if="column.currencySelector" />
       </template>
 
-      <template
-        v-if="useFilters && column.filter?.enable"
-        #filter="{ filterModel }"
-      >
-        <InputText
-          v-model="filterModel.value"
-          type="text"
-          class="table-filter"
-          @input="filter(column, filterModel.value)"
-          :placeholder="column.filter.placeHolder || `Search ${column.title}`"
-          :class="{
-            active: isColumnFiltered(column),
-          }"
-          :style="`width: max(calc(${minWidthWithFilter} - 10px), 100%)`"
-        />
+      <template v-if="useFilters && column.filter?.enable" #filter>
+        <IconField class="search-bar-input">
+          <InputIcon class="filter-icon">
+            <font-awesome-icon
+              v-if="filterStatus == 'idle' || !isColumnFiltered(column)"
+              :icon="['fas', 'magnifying-glass']"
+            />
+            <font-awesome-icon
+              v-else
+              :icon="['fas', 'spinner']"
+              class="loader-icon-animate"
+            />
+          </InputIcon>
+          <InputText
+            v-model="filterModels[column.field].value"
+            type="text"
+            class="table-filter"
+            @input="
+              (event) => filter(event, column, filterModels[column.field].value)
+            "
+            :placeholder="column.filter.placeHolder || `Search ${column.title}`"
+            :class="{
+              active: isColumnFiltered(column),
+            }"
+            :style="`width: max(calc(${minWidthWithFilter} - 10px), 100%)`"
+          />
+        </IconField>
       </template>
 
       <!-- Row template -->
