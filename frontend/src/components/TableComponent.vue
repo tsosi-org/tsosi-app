@@ -259,6 +259,8 @@ async function filter(
   appliedFilters.value = currentFilters
 }
 
+const debouncedFilter = debounce(filter, 200)
+
 /**
  * Return the non-null applied filters.
  */
@@ -432,7 +434,8 @@ function isColumnFiltered(column: TableColumnProps): boolean {
             type="text"
             class="table-filter"
             @input="
-              (event) => filter(event, column, filterModels[column.field].value)
+              (event) =>
+                debouncedFilter(event, column, filterModels[column.field].value)
             "
             :placeholder="column.filter.placeHolder || `Search ${column.title}`"
             :class="{
