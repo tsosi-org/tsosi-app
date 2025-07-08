@@ -98,7 +98,7 @@ SUPPORTED_INFRASTRUCTURES = [
     },
     {
         "id": "doab_oapen",
-        "pid": {"registry_id": REGISTRY_CUSTOM, "value": DOAB_OAPEN_ID},
+        "pid": {"registry_id": REGISTRY_ROR, "value": "01q0bmy69"},
         "entity": {
             "raw_name": "OAPEN & DOAB",
             "raw_website": "https://www.doabooks.org",
@@ -212,6 +212,9 @@ SUPPORTED_INFRASTRUCTURES = [
 def update_partners():
     """
     Create or update partners Entity data.
+    WARNING: You need to manually change the pid associated to an
+    infrastructure. Running this method will just create another entity
+    with the new identifier.
     """
     now = timezone.now()
     for infra in SUPPORTED_INFRASTRUCTURES:
