@@ -1,9 +1,9 @@
-# tsosi-app/backend
 
 Welcome to the TSOSI back-end application, written in Python Django.
 
-Follow the below procedure if you want to setup the application locally.
+Follow the below procedure if you want to setup the application locally without using the Dev container.
 
+# Manual setup
 ## Install python & deps
 
 * Install python 3.12. The app has not been tested for other Python versions.
@@ -54,7 +54,24 @@ Follow the below procedure if you want to setup the application locally.
     
 * Replace Redis connection parameters in your `settings_local.py` file. The default values should work (connecting with redis://127.0.0.1:6379/0) if you just installed Redis. 
 
+
+# Run the app
+
+## Django
+
+You can run the Django dev server by running:
+
+```bash
+poetry run python manage.py runserver
+```
+
+You should then be able to navigate to the API at [http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
+
+The app can be run with the built-in debugger using the configurated VSCode "run and debug" task (shortcut `F5`).
+
 ## Celery
+
+We use [celery](https://docs.celeryq.dev/en/stable/) to run automated background tasks.
 
 You may want to run a celery worker if you want to execute the data-related background tasks (data fetching & data processing).
 You can do so by running a unique worker with unique concurrency by executing the following command.
@@ -73,13 +90,6 @@ You can load example data located in [tsosi/data/fixtures/prepared_files](./tsos
 poetry run python manage.py ingest_test
 ```
 
-Then the Django dev server can be run with the command:
-
-```bash
-poetry run python manage.py runserver
-```
-
-You should then be able to navigate to the API at [http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
 
 ## Tests
 
@@ -110,13 +120,15 @@ SELECT datname as db_name, pg_size_pretty(pg_database_size(datname)) as db_usage
 
 ## TSOSI App
 
-All the code is placed in the TSOSI application, cf [README.md](tsosi/README.md).
+All the code is placed in the TSOSI application, cf [README.md](./tsosi/README.md).
 
 
 ## Test docker image
 
 A basic docker image is used to run the tests on GitHub actions.
 Perform the following steps to update image on the Github container registry (used by the workflow).
+
+Ideally, the image should be updated whenever a python dependency is added or modified.
 
 
 - You need a github token to be able to update the packages (including images) cf [GitHub docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry)

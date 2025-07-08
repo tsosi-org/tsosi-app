@@ -388,7 +388,7 @@ def create_transfer_entity_matching(
     )
 
 
-def get_data_load_source(source: dc.DataLoadSource):
+def get_data_load_source(source: dc.DataLoadSource) -> DataLoadSource:
     """
     Check the given data load validity.
     Return a fresh DataLoadSource instance.
@@ -401,14 +401,14 @@ def get_data_load_source(source: dc.DataLoadSource):
         if source.year:
             query_args["year"] = source.year
 
-        source = DataLoadSource.objects.get(**query_args)
+        result = DataLoadSource.objects.get(**query_args)
         raise DataException(
             f"A full data load with provided source ID {source.data_source_id} "
             f"and year {source.year} was already performed."
         )
     except ObjectDoesNotExist:
-        source = DataLoadSource(**source.serialize())
-    return source
+        result = DataLoadSource(**source.serialize())
+    return result
 
 
 @transaction.atomic
@@ -508,7 +508,9 @@ def ingest_data_file(file_path: str | Path, send_signals: bool = True) -> bool:
     """
     Ingest data from the given data file.
     The data file should have been generated with
-    `RawDataConfig.generate_data_file`
+    `RawDataConfig.generate_data_file`.
+
+    :returns:   Whether the file has been ingested.
     """
     logger.info(f"Ingesting data file {file_path}")
     with open(file_path, "r") as f:

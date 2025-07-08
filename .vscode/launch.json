@@ -3,15 +3,23 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
+    "inputs": [
+        {
+            "id": "devServerPort",
+            "description": "Port for dev server (default 8000)",
+            "type": "promptString",
+            "default": "8000"
+        }
+    ],
     "configurations": [
         {
-            "name": "Python Debugger: Django",
+            "name": "TSOSI - Django dev server",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/backend/manage.py",
             "python": "${workspaceFolder}/backend/.venv/bin/python",
-            "args": ["runserver", "8000"],
-            "django": true
+            "args": ["runserver", "${input:devServerPort}"],
+            "django": true,
         }
     ]
 }

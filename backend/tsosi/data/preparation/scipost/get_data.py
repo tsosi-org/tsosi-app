@@ -361,7 +361,7 @@ def prepare_data(
     mask_status = (data["subsidy_status"] == "received") | (
         data["status"] == "paid"
     )
-    # Subsidies with 0-amount and no transfers must be kept. They usually
+    # Subsidies with non-null amount and no transfers must be kept. They usually
     # correspond to a subsidy paid by another entity.
     # Subsidies with 0-amount and non-null transfers must be discarded. They
     # correspond to an entity paying for others' subsidies;
