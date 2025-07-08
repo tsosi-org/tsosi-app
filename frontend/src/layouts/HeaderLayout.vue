@@ -79,7 +79,7 @@ function onDrawerToggle(show: boolean) {
       >
         <SearchBar
           :fixed="true"
-          :place-holder="'Search for infrastructure or institution'"
+          :place-holder="'Search for supporters or infrastructures'"
           width="330px"
           :as-growing-button="false"
         />
@@ -174,7 +174,11 @@ function onDrawerToggle(show: boolean) {
           @hide="onDrawerToggle(false)"
         >
           <template #container>
-            <SearchBar :fixed="true" width="500px"></SearchBar>
+            <SearchBar
+              :fixed="true"
+              width="500px"
+              :place-holder="'Search for supporters or infrastructures'"
+            ></SearchBar>
           </template>
         </Drawer>
       </div>

@@ -363,15 +363,10 @@ function onPopoverShow() {
           <span v-if="searchStatus == 'idle' && searchTerm.trim().length > 0">
             No results for search "{{ searchTerm.trim() }}"<br />
           </span>
-          You can search for infrastructures or supporters:
-          <ul>
-            <li>
-              Search by name: e.g. "Peer Community In" or "Université Grenoble
-              Alpes"
-            </li>
-            <li>Search by ROR ID: e.g. "0315saa81" or "02rx3b187"</li>
-            <li>Search by Wikidata ID: e.g. "Q97368331" or "Q945876"</li>
-          </ul>
+          <span>
+            Search for supporters or infrastructures using their short name or
+            full name (e.g., DOAJ, CNRS, Cornell, Couperin).
+          </span>
         </div>
 
         <div
