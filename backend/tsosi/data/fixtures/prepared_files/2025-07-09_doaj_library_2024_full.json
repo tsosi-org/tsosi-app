@@ -1,0 +1,139 @@
+{
+  "date_generated": "2025-07-09T14:22:12+00:00",
+  "source": {
+    "data_source_id": "doaj_library",
+    "data_load_name": "DOAJ_Library_2024.xlsx",
+    "date_data_obtained": "2025-07-09",
+    "year": 2024,
+    "full_data": true
+  },
+  "count": 4,
+  "data": [
+    {
+      "agent_name": "Consortium Y",
+      "agent_ror_id": null,
+      "agent_wikidata_id": null,
+      "amount": 1000,
+      "currency": "EUR",
+      "date_invoice": {
+        "value": "2023-05-10",
+        "precision": "year"
+      },
+      "date_payment_recipient": null,
+      "emitter_country": "AU",
+      "emitter_name": "University X",
+      "emitter_ror_id": null,
+      "emitter_url": null,
+      "emitter_wikidata_id": null,
+      "hide_amount": true,
+      "original_amount_field": "Support amount",
+      "original_id": "DOAJ_Library_2024.xlsx_Transfers_0",
+      "raw_data": {
+        "Company": "University X",
+        "Country": "Australia",
+        "Support amount": 1000,
+        "Currency": "Euro (\u20ac)",
+        "Invoice date": "2023-05-10",
+        "Support end date": "2023-12-31",
+        "Agent": "Consortium Y",
+        "Paid up until": "2023-12-31"
+      },
+      "recipient_name": "Directory of Open Access Journals",
+      "recipient_ror_id": "05amyt365"
+    },
+    {
+      "agent_name": "Consortium Y",
+      "agent_ror_id": null,
+      "agent_wikidata_id": null,
+      "amount": 1000,
+      "currency": "EUR",
+      "date_invoice": {
+        "value": "2024-05-10",
+        "precision": "year"
+      },
+      "date_payment_recipient": null,
+      "emitter_country": "AU",
+      "emitter_name": "University X",
+      "emitter_ror_id": null,
+      "emitter_url": null,
+      "emitter_wikidata_id": null,
+      "hide_amount": true,
+      "original_amount_field": "Support amount",
+      "original_id": "DOAJ_Library_2024.xlsx_Transfers_1",
+      "raw_data": {
+        "Company": "University X",
+        "Country": "Australia",
+        "Support amount": 1000,
+        "Currency": "Euro (\u20ac)",
+        "Invoice date": "2024-05-10",
+        "Support end date": "2024-12-31",
+        "Agent": "Consortium Y",
+        "Paid up until": "2024-12-31"
+      },
+      "recipient_name": "Directory of Open Access Journals",
+      "recipient_ror_id": "05amyt365"
+    },
+    {
+      "agent_name": null,
+      "agent_ror_id": null,
+      "agent_wikidata_id": null,
+      "amount": 1000,
+      "currency": "CAD",
+      "date_invoice": {
+        "value": "2023-08-10",
+        "precision": "year"
+      },
+      "date_payment_recipient": null,
+      "emitter_country": "CA",
+      "emitter_name": "Library X",
+      "emitter_ror_id": null,
+      "emitter_url": null,
+      "emitter_wikidata_id": null,
+      "hide_amount": true,
+      "original_amount_field": "Support amount",
+      "original_id": "DOAJ_Library_2024.xlsx_Transfers_2",
+      "raw_data": {
+        "Company": "Library X",
+        "Country": "Canada",
+        "Support amount": 1000,
+        "Currency": "CAD",
+        "Invoice date": "2023-08-10",
+        "Support end date": "2023-12-31",
+        "Paid up until": "2023-12-31"
+      },
+      "recipient_name": "Directory of Open Access Journals",
+      "recipient_ror_id": "05amyt365"
+    },
+    {
+      "agent_name": null,
+      "agent_ror_id": null,
+      "agent_wikidata_id": null,
+      "amount": 2500,
+      "currency": "USD",
+      "date_invoice": {
+        "value": "2023-03-01",
+        "precision": "year"
+      },
+      "date_payment_recipient": null,
+      "emitter_country": "US",
+      "emitter_name": "University Y",
+      "emitter_ror_id": null,
+      "emitter_url": null,
+      "emitter_wikidata_id": null,
+      "hide_amount": true,
+      "original_amount_field": "Support amount",
+      "original_id": "DOAJ_Library_2024.xlsx_Transfers_3",
+      "raw_data": {
+        "Company": "University Y",
+        "Country": "USA",
+        "Support amount": 2500,
+        "Currency": "USDs ($)",
+        "Invoice date": "2023-03-01",
+        "Support end date": "2023-12-31",
+        "Paid up until": "2023-12-31"
+      },
+      "recipient_name": "Directory of Open Access Journals",
+      "recipient_ror_id": "05amyt365"
+    }
+  ]
+}

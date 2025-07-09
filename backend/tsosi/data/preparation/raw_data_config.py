@@ -694,9 +694,10 @@ class RawDataConfigFromFile(RawDataConfig):
 
     input_file_name: str
 
-    def __init__(*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         if kwargs.get("input_file_name") is None:
             raise ValueError("`input_file_name` is required ")
+        super().__init__(*args, **kwargs)
 
     def get_data(self) -> pd.DataFrame:
         if self.input_type in [".xlsx", ".xls"]:
