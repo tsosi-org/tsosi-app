@@ -1,0 +1,86 @@
+{
+  "date_generated": "2025-07-09T14:28:39+00:00",
+  "source": {
+    "data_source_id": "doab_oapen_library",
+    "data_load_name": "DOAB_Library_fixture.xlsx",
+    "date_data_obtained": "2025-07-09",
+    "year": null,
+    "full_data": false
+  },
+  "count": 2,
+  "data": [
+    {
+      "agent_name": "Consortium Y",
+      "agent_ror_id": null,
+      "agent_wikidata_id": null,
+      "amount": 1250,
+      "currency": "EUR",
+      "date_end": {
+        "value": "2024-12-31",
+        "precision": "day"
+      },
+      "date_start": {
+        "value": "2024-01-01",
+        "precision": "day"
+      },
+      "emitter_country": "AU",
+      "emitter_name": "University X",
+      "emitter_ror_id": null,
+      "emitter_url": null,
+      "emitter_wikidata_id": null,
+      "hide_amount": true,
+      "original_amount_field": "amount",
+      "original_id": "DOAB_Library_fixture.xlsx_Transfers_0",
+      "raw_data": {
+        "Company": "University X",
+        "Country": "Australia",
+        "date_start": "2024-01-01",
+        "date_end": "2024-12-31",
+        "Commitment period (years)": 1,
+        "Invoice preference": "One Year Commitment",
+        "Supporter type": "Combined Supporter",
+        "Agent": "Consortium Y",
+        "amount": 1250,
+        "currency": "EUR"
+      },
+      "recipient_custom_id": "doab_oapen",
+      "recipient_name": "Directory of Open Access Books & OAPEN"
+    },
+    {
+      "agent_name": null,
+      "agent_ror_id": null,
+      "agent_wikidata_id": null,
+      "amount": 5000,
+      "currency": "USD",
+      "date_end": {
+        "value": "2025-12-31",
+        "precision": "day"
+      },
+      "date_start": {
+        "value": "2023-01-01",
+        "precision": "day"
+      },
+      "emitter_country": "US",
+      "emitter_name": "University XY",
+      "emitter_ror_id": null,
+      "emitter_url": null,
+      "emitter_wikidata_id": null,
+      "hide_amount": true,
+      "original_amount_field": "amount",
+      "original_id": "DOAB_Library_fixture.xlsx_Transfers_1",
+      "raw_data": {
+        "Company": "University XY",
+        "Country": "USA",
+        "date_start": "2023-01-01",
+        "date_end": "2025-12-31",
+        "Commitment period (years)": 2,
+        "Invoice preference": "Upfront",
+        "Supporter type": "DOAB Supporter",
+        "amount": 5000,
+        "currency": "USD"
+      },
+      "recipient_custom_id": "doab_oapen",
+      "recipient_name": "Directory of Open Access Books & OAPEN"
+    }
+  ]
+}

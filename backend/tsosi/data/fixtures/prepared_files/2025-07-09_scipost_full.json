@@ -1,0 +1,107 @@
+{
+  "date_generated": "2025-07-09T14:45:05+00:00",
+  "source": {
+    "data_source_id": "scipost",
+    "data_load_name": "scipost_fixture.json",
+    "date_data_obtained": "2025-07-09",
+    "year": null,
+    "full_data": true
+  },
+  "count": 2,
+  "data": [
+    {
+      "agent_country": null,
+      "agent_name": null,
+      "agent_ror_id": null,
+      "agent_url": null,
+      "agent_wikidata_id": null,
+      "amount": 1200,
+      "currency": "EUR",
+      "date_end": {
+        "value": "2017-12-31",
+        "precision": "day"
+      },
+      "date_invoice": null,
+      "date_payment_recipient": {
+        "value": "2016-12-19",
+        "precision": "day"
+      },
+      "date_start": {
+        "value": "2016-04-20",
+        "precision": "day"
+      },
+      "emitter_country": "NG",
+      "emitter_name": "National Funding Agency B",
+      "emitter_ror_id": null,
+      "emitter_type": "NationalFundingAgency",
+      "emitter_url": null,
+      "emitter_wikidata_id": null,
+      "hide_amount": false,
+      "original_amount_field": "amount",
+      "original_id": "scipost_fixture.json_0",
+      "raw_data": {
+        "amount": 1200,
+        "payment_date": "2016-12-19",
+        "emitter": "National Funding Agency B",
+        "emitter_type": "NationalFundingAgency",
+        "emitter_country": "NG",
+        "subsidy_amount_publicly_shown": true,
+        "subsidy_date_from": "2016-04-20",
+        "subsidy_date_until": "2017-12-31",
+        "hide_amount": false
+      },
+      "recipient_name": "SciPost",
+      "recipient_wikidata_id": "Q52663237"
+    },
+    {
+      "agent_country": "AU",
+      "agent_name": "Consortium Y",
+      "agent_ror_id": null,
+      "agent_url": null,
+      "agent_wikidata_id": null,
+      "amount": 2500,
+      "currency": "EUR",
+      "date_end": {
+        "value": "2021-12-31",
+        "precision": "day"
+      },
+      "date_invoice": {
+        "value": "2020-02-01",
+        "precision": "day"
+      },
+      "date_payment_recipient": {
+        "value": "2020-03-27",
+        "precision": "day"
+      },
+      "date_start": {
+        "value": "2020-01-01",
+        "precision": "day"
+      },
+      "emitter_country": "AU",
+      "emitter_name": "University X",
+      "emitter_ror_id": null,
+      "emitter_type": "University",
+      "emitter_url": null,
+      "emitter_wikidata_id": null,
+      "hide_amount": false,
+      "original_amount_field": "amount",
+      "original_id": "scipost_fixture.json_1",
+      "raw_data": {
+        "amount": 2500,
+        "invoice_date": "2020-02-01",
+        "payment_date": "2020-03-27",
+        "emitter": "University X",
+        "emitter_type": "University",
+        "emitter_country": "AU",
+        "subsidy_amount_publicly_shown": true,
+        "subsidy_date_from": "2020-01-01",
+        "subsidy_date_until": "2021-12-31",
+        "hide_amount": false,
+        "agent": "Consortium Y",
+        "agent_country": "AU"
+      },
+      "recipient_name": "SciPost",
+      "recipient_wikidata_id": "Q52663237"
+    }
+  ]
+}

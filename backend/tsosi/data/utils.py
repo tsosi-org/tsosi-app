@@ -56,7 +56,7 @@ def drop_duplicates_keep_index(
     df = data.copy(deep=True)
 
     duplicates = df.groupby(by=group_by, dropna=dropna).apply(
-        lambda group: list(group.index)
+        lambda group: list(group.index), include_groups=False
     )
     if duplicates.empty:
         return pd.DataFrame()

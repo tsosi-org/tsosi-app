@@ -1,0 +1,75 @@
+{
+  "date_generated": "2025-07-09T14:37:23+00:00",
+  "source": {
+    "data_source_id": "pci",
+    "data_load_name": "PCI_fixture.xlsx",
+    "date_data_obtained": "2025-07-09",
+    "year": null,
+    "full_data": true
+  },
+  "count": 2,
+  "data": [
+    {
+      "agent_name": null,
+      "agent_ror_id": null,
+      "agent_url": null,
+      "agent_wikidata_id": null,
+      "amount": 1300.0,
+      "currency": "EUR",
+      "date_payment_recipient": {
+        "value": "2019-01-01",
+        "precision": "year"
+      },
+      "emitter_country": "US",
+      "emitter_name": "University XY",
+      "emitter_ror_id": null,
+      "emitter_type": "RESEARCH INSTITUTIONS/UNIVERSITIES",
+      "emitter_url": "http://university.example",
+      "emitter_wikidata_id": null,
+      "hide_amount": false,
+      "original_amount_field": "Amount",
+      "original_id": "PCI_fixture.xlsx_Transfers_0",
+      "raw_data": {
+        "From organization": "University XY",
+        "Category": "RESEARCH INSTITUTIONS/UNIVERSITIES",
+        "Website": "http://university.example",
+        "Year": 2019,
+        "Amount": 1300,
+        "emitter_country": "USA"
+      },
+      "recipient_name": "Peer Community In",
+      "recipient_ror_id": "0315saa81"
+    },
+    {
+      "agent_name": "Library Consortia A",
+      "agent_ror_id": null,
+      "agent_url": null,
+      "agent_wikidata_id": null,
+      "amount": 2000.0,
+      "currency": "CAD",
+      "date_payment_recipient": {
+        "value": "2020-01-01",
+        "precision": "year"
+      },
+      "emitter_country": "CA",
+      "emitter_name": "Library Z",
+      "emitter_ror_id": null,
+      "emitter_type": "LIBRARIES",
+      "emitter_url": null,
+      "emitter_wikidata_id": null,
+      "hide_amount": false,
+      "original_amount_field": "Amount",
+      "original_id": "PCI_fixture.xlsx_Transfers_1",
+      "raw_data": {
+        "From organization": "Library Z",
+        "Category": "LIBRARIES",
+        "Year": 2020,
+        "Amount": "CAD 2000",
+        "Via?": "Library Consortia A",
+        "emitter_country": "Canada"
+      },
+      "recipient_name": "Peer Community In",
+      "recipient_ror_id": "0315saa81"
+    }
+  ]
+}
