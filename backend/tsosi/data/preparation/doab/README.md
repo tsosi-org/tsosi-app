@@ -21,7 +21,7 @@ The data is provided as a breakdown of participation for a given year, which doe
 
 The processing consists in:
 
-- Filtering out the rows that are not transfers (no amount or in the future)
+- Filtering out the rows that are not transfers (no amount )
 
 - Grouping all the rows corresponding to the same transfer. Those are the ones flagged as "Upfront" in the main data file, *2025-02-11-DOAB_Library_Report.xlsx*.
 
@@ -37,13 +37,11 @@ The processing consists in:
 
 ## Merge back the results
 
-All this data correspond to the same source `doab_library` so we need to group them back together for ingestion.
+The 2 files *2025-02-11-DOAB_Library_Report.xlsx* and *2025-02-11_DOAB_Library_support_no_amount_reviewed.xlsx* correspond to the same source `doab_library` so we need to group them back together for ingestion due to the data load constraint (only one data load per year per source). 
 
 
 ## PID enrichment
 
 Default PID enrichment of data without PIDs.
 
-The exception is that once the enrichment was done, we re-used it because the "raw" data kept being updated from the DOAB.
-
-
+The exception is that once the enrichment was done, we re-used it because the "raw" data kept being updated from the DOAB (removal or addition of some rows).

@@ -2,7 +2,7 @@
 
 ## Raw data
 
-We get 2 input files from PCI to describe all their supports:
+We have 2 input files from PCI to describe all their supports:
 
 - *2025-03-03_PCI_Funding_Report.xlsx* - List of all the received supports where 1 row equals 1 transfer 
 

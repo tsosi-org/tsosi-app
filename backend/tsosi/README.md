@@ -8,7 +8,7 @@ TSOSI back-end serves the following purposes:
 
 * `api` - It contains the definition of the API endpoints. The API is generated using [Django Rest Framework](https://www.django-rest-framework.org/).
 
-* `management` - It contains commands that can be runned from a terminal with django base CLI tool `manage.py`.
+* `management` - It contains commands that can be ran from a terminal with django base CLI tool `manage.py`.
 
 * `migrations` - It contains all the migration files used to synchronize the database. They are usually automatically generated.
 
@@ -115,6 +115,7 @@ This is the core feature of our data preparation.
 
 For each dataset to prepare, we define a custom configuration object, [`RawDataConfig`](./data/preparation/raw_data_config.py), that maps the input fields to our database models, along with information on how to process the fields (default value, value format, ...).
 The same config can be re-used when the datasets are the same.
+The fields to be mapped are the ones resulting from the above processing steps.
 
 This also requires extra arguments:
 
@@ -146,6 +147,44 @@ It is responsible for parsing and performing various checks on the data. Errors 
 The output file of this preparation is ready to be ingested in our database.
 
 
+## Notes and ideas on the data preparation
+
+**Raw data quality**
+
+The partnership with DOAJ and DOAB has been quite tedious due to the errors in the provided data.
+This has lead to numerous correction of the input (raw) data which, in turn, led to re-performing entity matching which is time consuming.
+
+Additionally, due to the constraint on the data to ingest (one dataset per year per data source, e.g., only 1 data file for DOAJ libraries in 2023), we had to manually merge the partial extract of corrected transfers with base data into a single file multiple times, which was also tedious.
+
+I propose the following as improvements.
+
+**Provided data improvement**
+
+- TSOSI needs to require an exhaustive and curated dataset of transfers from the data providers. This should not be our work to derive them from whatever data source we are provided with.
+
+    I believe the idea was to try and work with whatever material the infrastructures could provide (mainly accounting/budget reports) to lessen the amount of work from them.
+    
+    We should not be the one to question the provided data.
+
+- The data preparation process should be a part of TSOSI's platform. The workflow could be something like:
+
+    1. Upload a dataset
+    2. Configure the field mapping, basically the underlying `RawDataConfig` object
+    3. Check the input data with config is valid - Required to go further.
+    3. OPTIONNAL - Request data enrichment via a button or smthg
+    4. OPTIONNAL - Perform manual review
+    5. Request ingestion of the prepared and verified dataset
+
+
+**Single file per year per source constraint**
+
+We need to remove this constraint with the following upgrades:
+
+- We need a solid process of transfer de-duplication. When that is available, we should not be worried anymore about ingesting twice the same dataset as it will be flagged as duplicated and thus discarded or at least ignored.
+
+- Additionally The platform should offer a way to explore and correct the data for the trusted users.
+
+
 
 # [Data ingestion](./data/ingestion/)
 
@@ -170,7 +209,7 @@ flowchart LR
 
 - Parse the file to the expected data format.
 
-- Validate that the source can be ingested. The source won't be validated when it has an associated year and there already exists another source with full data for that given year.   
+- Validate that the dataset can be ingested. The dataset won't be validated when it has an associated year and there already exists another `DataLoadSource` with full data for that given source and year.   
 
 
 ## Pre-match entities with existing ones
@@ -210,7 +249,8 @@ flowchart LR
     B("Identifiers created")
     C("Identifiers fetched")
 
-    OTHER("Scheduled tasks")
+    TRIGGER_1("Scheduled tasks (Automatic)")
+    TRIGGER_2("Ingestion pipeline (Manual)")
 
     Ta("post_ingestion_pipeline")
     Tb("update_clc_fields")
@@ -231,11 +271,14 @@ flowchart LR
 
 
     Tz("identifier_update")
+    
 
-
+    TRIGGER_2 -- send --> A
+    TRIGGER_2 -- send --> B
+    
     A a1@==> Ta
-    Ta --> Tb
-    Ta --> Tc
+    Ta a18@--> Tb
+    Ta a19@--> Tc
 
     B a2@==> Td
     B a3@==> Te
@@ -243,33 +286,37 @@ flowchart LR
     Td -- send --> C
     Te -- send --> C
 
-    Tg --> Tb
-    Tg --> Th
+    Tg a12@--> Tb
+    Tg a13@--> Th
 
-    Th --> Ti
-    Th --> Tj
+    Th a14@--> Ti
+    Th a15@--> Tj
 
-    Tk --> Tb
-    Tl --> Tb
+    Tk a16@--> Tb
+    Tl a17@--> Tb
+
+    Tk -- send --> B
+    Tl -- send --> B
 
     Tz -- send --> C
+
     C a4@==> Tg
     C a5@==> Tk
     C a6@==> Tl
     C a7@==> Tf
 
 
-    OTHER a8@==> Tb
-    OTHER a9@==> Tc
-    OTHER a10@==> Th
-    OTHER a11@==> Tz
+    TRIGGER_1 a8@==> Tb
+    TRIGGER_1 a9@==> Tc
+    TRIGGER_1 a10@==> Th
+    TRIGGER_1 a11@==> Tz
 
 
     classDef signals stroke:green;
     class A,B,C signals
 
     classDef scheduled stroke:orange:
-    class OTHER scheduled
+    class TRIGGER_1,TRIGGER_2 scheduled
 
     classDef task font\-style:italic;
     class Ta,Tb,Tc,Td,Te,Tf,Tg,Th,Ti,Tj,Tk,Tl,Tm,Tn,To,Tp,Tq,Tr,Ts,Tt,Tu,Tv,Tw,Tx,Ty,Tz task;
@@ -283,7 +330,7 @@ flowchart LR
     
 
     classDef animate stroke-dasharray: 9\,5,stroke-dashoffset: 900,animation: dash 25s linear infinite;
-    class a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12 animate;
+    class a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19 animate;
 ```
 
 The enrichment consists in:
@@ -294,11 +341,11 @@ The enrichment consists in:
 
 The code is split in 2 files:
 
-- [database_related.py](./data/enrichment/database_related.py) - Methods that do not request external resources.
+- [database_related.py](./data/enrichment/database_related.py) - Methods that do not request external resources. They're in blue in the above chart.
 
-- [api_related.py](./data/enrichment/api_related.py) - Methods relying on external data fetching.
+- [api_related.py](./data/enrichment/api_related.py) - Methods relying on external data fetching. They're in red in the above chart.
 
-Ideally, one should split each method/task create a template "method" class, given that everything does quite the same: select data to work with, perform method-specific stuff, log things, ...
+Ideally, one should split each task realated code into one file and create a template "task core" class (the core of the task, separately of Celery tasks), given that everything does quite the same: select data to work with, perform method-specific stuff, log things, ...
 
 
 ## PID records fetching

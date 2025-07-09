@@ -37,6 +37,9 @@ def get_config(
             rdc.FieldAgentRorId(field="agent_ror_id"),
             # Be careful to set the default date to the lowest priority
             # date, so that it is the information used.
+            # If we put the default date to the DatePaymentRecipient,
+            # this will always be used for the clc date even if there's an input
+            # DateInvoice.
             rdc.FieldDatePaymentRecipient(
                 field="date_payment_recipient",
                 format="%Y-%m-%d",
