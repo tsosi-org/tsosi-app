@@ -30,6 +30,7 @@ pillow = "~11.0.0"
 redis = "^5.2.1"
 celery = {extras = ["redis"], version = "^5.4.0"}
 django-celery-beat = "^2.7.0"
+django-extensions = "^4.1"
 
 [tool.poetry.group.dev.dependencies]
 # Dev linting & formatting
@@ -47,6 +48,7 @@ paramiko = "^3.5.0"
 # Random stuff
 termcolor = "^2.5.0"
 xlsxwriter = "^3.2.2"
+pydot = "^4.0.1" # Used to generate database graph with django_extensions command `graph_models`. It requires graphviz package
 
 [build-system]
 requires = ["poetry-core"]

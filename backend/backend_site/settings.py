@@ -94,6 +94,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "rest_framework",
     "django_filters",
+    "django_extensions",
     ## Custom code
     "tsosi",
 ]

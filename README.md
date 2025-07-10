@@ -1,6 +1,8 @@
 # tsosi-app
 
-This is the repository of the TSOSI web platform including both front-end and back-end of the application.
+This is the repository of the TSOSI web platform including both front-end and back-end of the web application (see [https://tsosi.org](https://tsosi.org)).
+
+TSOSI aims to gather, store, expose and disseminate the financial transfers made to Open Science Infrastructures. For more information, see our [About page](https://tsosi.org/pages/about)
 
 
 ## Local dev with manual installation (NOT RECOMMENDED)

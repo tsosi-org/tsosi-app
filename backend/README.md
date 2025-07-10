@@ -100,23 +100,6 @@ Alternatively, they can be run using the pytest command:
 poetry run pytest
 ```
 
-## postgreSQL commands
-
-Basic commands to use in the psql shell:
-
-* list all databases `\list`
-
-* use "databaseName" database `\c databaseName`
-
-* list all tables `\dt`
-
-* list unique table information `\d+ tableName`
-
-* list the size of each database
-```sql
-SELECT datname as db_name, pg_size_pretty(pg_database_size(datname)) as db_usage FROM pg_database;
-```
-
 
 ## TSOSI App
 
@@ -150,4 +133,21 @@ docker tag <IMAGE_ID> ghcr.io/tsosi-org/tsosi-app-backend-test-env:latest
 docker push ghcr.io/tsosi-org/tsosi-app-backend-test-env:latest
 ```
 
+
+## postgreSQL commands
+
+Basic commands to use in the psql shell:
+
+* list all databases `\list`
+
+* use "databaseName" database `\c databaseName`
+
+* list all tables `\dt`
+
+* list unique table information `\d+ tableName`
+
+* list the size of each database
+```sql
+SELECT datname as db_name, pg_size_pretty(pg_database_size(datname)) as db_usage FROM pg_database;
+```
 
