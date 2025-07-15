@@ -743,16 +743,15 @@ def identifier_versions_for_cleaning() -> pd.DataFrame:
     return data
 
 
-def clean_identifier_versions() -> TaskResult:
+def clean_identifier_versions():
     """
     Analyze and clean multiple versions of the same identifier.
     Versions without significant change w/ the previous one should be discarded.
     """
-    result = TaskResult(partial=False)
     data = identifier_versions_for_cleaning()
     if data.empty:
         logger.info("No identifier versions to process.")
-        return result
+        return
 
     # Extract useful data from ROR records.
     # Wikidata records are already processed when queried.
@@ -830,7 +829,7 @@ def clean_identifier_versions() -> TaskResult:
     # Update identifier's new current version
     id_to_update = v_to_update[v_to_update["date_end"].isna()].copy()
     if id_to_update.empty:
-        return result
+        return
 
     id_to_update = id_to_update[
         ["id", "identifier_id", "date_last_updated"]
@@ -840,8 +839,6 @@ def clean_identifier_versions() -> TaskResult:
         id_to_update,
         ["id", "current_version_id", "date_last_updated"],
     )
-
-    return result
 
 
 def update_entity_names():
@@ -910,7 +907,15 @@ def ingest_extra_logo_urls(file_path: str | None = None):
             / "wikidata_extra_logo_urls.csv"
         )
     logger.info(f"Ingesting extra logo URLs from file {file_path}")
-    data = pd.read_csv(file_path)
+    try:
+        data = pd.read_csv(file_path)
+    except Exception as e:
+        logger.error(
+            f"Failed to load logo_url file with path `{file_path}` - "
+            f"Original exception: {e}"
+        )
+        return
+
     data = (
         data[~data["logo"].isna()]
         .drop_duplicates("wiki_id")
