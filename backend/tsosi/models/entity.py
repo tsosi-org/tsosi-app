@@ -26,6 +26,10 @@ class Entity(TimestampedModel):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+
+    # The following attributes prefixed with `raw_` corresponds to default
+    # values to be used for the CLC values without the prefixes.
+    # We might consider renaming them with the prefix `default_` ..
     raw_name = models.CharField(max_length=512)
     raw_country = models.CharField(
         max_length=2,
@@ -33,21 +37,16 @@ class Entity(TimestampedModel):
         validators=[MinLengthValidator(2), MaxLengthValidator(2)],
     )
     raw_website = models.URLField(max_length=256, null=True)
+    raw_logo_url = models.CharField(max_length=256, null=True)
+
     # Description text taking is prioritized over the Wikipedia extract.
     # It corresponds to a manual input, only for the infrastructures for now.
     description = models.TextField(null=True)
-    # This overrides the default behavior of fetching the logo from wikimedia.
-    # To be verified.
+    # If Ture, this prevents modifications of the `logo_url` field
     manual_logo = models.BooleanField(default=False)
+
     # Short name for an entity.
     short_name = models.CharField(max_length=128, null=True)
-
-    is_active = models.BooleanField(default=True)
-    is_matchable = models.BooleanField(default=True)
-    merged_with = models.ForeignKey(
-        "self", on_delete=models.RESTRICT, null=True
-    )
-    merged_criteria = models.CharField(max_length=512, null=True)
     icon = models.ImageField(
         upload_to=entity_icon_path, max_length=256, null=True
     )
@@ -83,6 +82,14 @@ class Entity(TimestampedModel):
     is_emitter = models.BooleanField(default=False)
     is_recipient = models.BooleanField(default=False)
     is_agent = models.BooleanField(default=False)
+
+    ## Clc fields about whether the entity is active and its merging status
+    is_active = models.BooleanField(default=True)
+    is_matchable = models.BooleanField(default=True)
+    merged_with = models.ForeignKey(
+        "self", on_delete=models.RESTRICT, null=True
+    )
+    merged_criteria = models.CharField(max_length=512, null=True)
 
     class Meta:
         constraints = [

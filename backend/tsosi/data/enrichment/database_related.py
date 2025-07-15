@@ -9,6 +9,7 @@ import pandas as pd
 from django.db import transaction
 from django.db.models import Count, F, Max, QuerySet
 from django.utils import timezone
+from tsosi.app_settings import app_settings
 from tsosi.data.db_utils import (
     IDENTIFIER_CREATE_FIELDS,
     IDENTIFIER_MATCHING_CREATE_FIELDS,
@@ -299,6 +300,7 @@ def entities_with_identifier_data() -> pd.DataFrame:
             "raw_name",
             "raw_country",
             "raw_website",
+            "raw_logo_url",
             # Values to be clc
             "name",
             "country",
@@ -376,6 +378,7 @@ def entities_with_identifier_data() -> pd.DataFrame:
 
     url_cols = [
         "raw_website",
+        "raw_logo_url",
         "website",
         "ror_website",
         "ror_wikipedia_url",
@@ -423,11 +426,13 @@ def update_entity_from_pid_records() -> TaskResult:
     if entities.empty:
         return result
     clean_null_values(entities)
+    # This holds for each CLC field the data to use in which order,
+    # moving to the next if null.
     clc_field_priority = {
         "name": ["ror_name", "wikidata_name", "raw_name"],
         "country": ["ror_country", "wikidata_country", "raw_country"],
         "website": ["ror_website", "wikidata_website", "raw_website"],
-        "logo_url": ["wikidata_logo_url"],
+        "logo_url": ["wikidata_logo_url", "raw_logo_url"],
         "wikipedia_url": ["wikidata_wikipedia_url", "ror_wikipedia_url"],
         "coordinates": ["wikidata_coordinates", "ror_coordinates"],
         "date_inception": ["ror_date_inception", "wikidata_date_inception"],
@@ -738,16 +743,15 @@ def identifier_versions_for_cleaning() -> pd.DataFrame:
     return data
 
 
-def clean_identifier_versions() -> TaskResult:
+def clean_identifier_versions():
     """
     Analyze and clean multiple versions of the same identifier.
     Versions without significant change w/ the previous one should be discarded.
     """
-    result = TaskResult(partial=False)
     data = identifier_versions_for_cleaning()
     if data.empty:
         logger.info("No identifier versions to process.")
-        return result
+        return
 
     # Extract useful data from ROR records.
     # Wikidata records are already processed when queried.
@@ -825,7 +829,7 @@ def clean_identifier_versions() -> TaskResult:
     # Update identifier's new current version
     id_to_update = v_to_update[v_to_update["date_end"].isna()].copy()
     if id_to_update.empty:
-        return result
+        return
 
     id_to_update = id_to_update[
         ["id", "identifier_id", "date_last_updated"]
@@ -835,8 +839,6 @@ def clean_identifier_versions() -> TaskResult:
         id_to_update,
         ["id", "current_version_id", "date_last_updated"],
     )
-
-    return result
 
 
 def update_entity_names():
@@ -877,3 +879,63 @@ def update_entity_names():
         ["entity_id", "type", "value", "lang", "registry_id", "date_created"],
     )
     logger.info(f"Generated {len(names)} aliases from {REGISTRY_ROR}.")
+
+
+def update_entity_raw_logo_url(
+    data: pd.DataFrame, date_update: datetime | None = None
+):
+    """
+    Update the `raw_logo_url` of the given Entities.
+    It requires the columns id, raw_logo_url
+    """
+    if date_update is None:
+        date_update = datetime.now(UTC)
+    data["date_last_updated"] = date_update
+    bulk_update_from_df(
+        Entity, data, ["id", "raw_logo_url", "date_last_updated"]
+    )
+
+
+def ingest_extra_logo_urls(file_path: str | None = None):
+    """
+    Ingest static known raw_logo_url from a formatted CSV input file.
+    """
+    if file_path is None:
+        file_path = str(
+            app_settings.TSOSI_APP_DATA_DIR
+            / "assets"
+            / "wikidata_extra_logo_urls.csv"
+        )
+    logger.info(f"Ingesting extra logo URLs from file {file_path}")
+    try:
+        data = pd.read_csv(file_path)
+    except Exception as e:
+        logger.error(
+            f"Failed to load logo_url file with path `{file_path}` - "
+            f"Original exception: {e}"
+        )
+        return
+
+    data = (
+        data[~data["logo"].isna()]
+        .drop_duplicates("wiki_id")
+        .rename(columns={"logo": "raw_logo_url"})
+    )
+    data["wiki_id"] = data["wiki_id"].str.strip()
+
+    # Get the identifier_id <-> entity_id mapping
+    identifiers = Identifier.objects.filter(
+        value__in=data["wiki_id"].to_list(), entity__isnull=False
+    ).values_list("value", "entity_id")
+    if len(identifiers) == 0:
+        return
+    mapping = pd.DataFrame(list(identifiers), columns=["identifier_id", "id"])
+
+    results = data.merge(
+        mapping, how="inner", left_on="wiki_id", right_on="identifier_id"
+    )[["id", "raw_logo_url"]].drop_duplicates("id")
+    if results.empty:
+        return
+
+    update_entity_raw_logo_url(results)
+    logger.info(f"Updated {len(results)} entity `raw_logo_url`.")
