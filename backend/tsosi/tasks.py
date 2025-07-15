@@ -217,6 +217,7 @@ def process_identifier_data():
     """
     Pipeline to update the entity fields based on the identifier data.
     """
+    enrichment.ingest_extra_logo_urls()
     enrichment.update_entity_from_pid_records()
     enrichment.update_entity_names()
     update_clc_fields.delay()  # type:ignore

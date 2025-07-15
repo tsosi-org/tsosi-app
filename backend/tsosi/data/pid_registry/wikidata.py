@@ -313,6 +313,11 @@ async def fetch_wikimedia_files(urls: Sequence[str]) -> pd.DataFrame:
     """
     Perform HTTP requests for every given URLs.
     The URLs are expected to be referencing a file in wikimedia.
+
+    TODO: Rename and move this code and related methods/objects
+    in a generic file fetching method.
+    There's no special handling of the fact that it fecthes wikimedia files.
+    It just performs HTTP GET on the provided URLs.
     """
     results = await perform_http_func_batch(urls, fetch_wikimedia_file)
     return pd.DataFrame.from_records([asdict(r) for r in results])

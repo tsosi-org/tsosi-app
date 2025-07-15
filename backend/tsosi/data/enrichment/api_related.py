@@ -663,6 +663,8 @@ def update_logos(
     date_update = date_update if date_update is not None else timezone.now()
     updates = 0
     for chunk in chunk_df(df, 20):
+        # The discard of duplicates should occur before chunking...
+        # There is usually no duplicates in this task.
         logo_results = asyncio.run(
             fetch_wikimedia_files(chunk["logo_url"].drop_duplicates())
         )

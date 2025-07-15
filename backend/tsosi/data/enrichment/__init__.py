@@ -7,6 +7,7 @@ from .api_related import (
 )
 from .database_related import (
     clean_identifier_versions,
+    ingest_extra_logo_urls,
     new_identifiers_from_records,
     update_entity_from_pid_records,
     update_entity_names,
