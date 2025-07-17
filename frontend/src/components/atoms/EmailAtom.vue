@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeMount, ref } from "vue"
 
+
 export interface EmailAtomProps {
   user: string
   domain: string

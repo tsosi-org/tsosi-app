@@ -17,7 +17,10 @@ import {
   type App,
   type Component,
 } from "vue"
+import { type Feature } from "geojson"
+
 import Loader from "./atoms/LoaderAtom.vue"
+
 import { getEntitySummary } from "@/singletons/ref-data"
 import {
   parsePointCoordinates,
@@ -28,13 +31,13 @@ import {
   type DataFieldProps,
 } from "@/utils/data-utils"
 import { type Entity } from "@/singletons/ref-data"
-import { type Feature } from "geojson"
 import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
 import CountryItemList from "@/components/CountryItemList.vue"
 import { createComponent } from "@/utils/dom-utils"
 import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
 import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
 import { isDesktop } from "@/composables/useMediaQuery"
+
 
 export interface EntityMapProps {
   id: string

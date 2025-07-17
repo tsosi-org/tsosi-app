@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
 import type { Entity } from "@/singletons/ref-data"
+import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
+
 
 export interface CountryEntityListProps {
   title?: string

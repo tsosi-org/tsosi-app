@@ -2,6 +2,7 @@
 import { onBeforeMount, ref, type Ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import Divider from "primevue/divider"
+
 import {
   getTransferDetails,
   type Entity,
@@ -15,6 +16,7 @@ import Breadcrumb, {
   type BreadcrumbItem,
 } from "@/components/BreadcrumbComponent.vue"
 import { isDesktop } from "@/composables/useMediaQuery"
+
 
 const route = useRoute()
 const router = useRouter()

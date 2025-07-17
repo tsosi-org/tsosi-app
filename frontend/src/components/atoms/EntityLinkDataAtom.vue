@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { type DataFieldProps, getItemValue } from "@/utils/data-utils"
-import ImageAtom from "./ImageAtom.vue"
 import { onBeforeMount, ref, type Ref } from "vue"
+
+import ImageAtom from "./ImageAtom.vue"
+
 import type { Entity } from "@/singletons/ref-data"
+import { type DataFieldProps, getItemValue } from "@/utils/data-utils"
 import { getEntityUrl } from "@/utils/url-utils"
+
 
 const props = defineProps<{
   data: Record<string, any>

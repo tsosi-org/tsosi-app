@@ -1,16 +1,19 @@
 <script setup lang="ts">
+import { RouterLink } from "vue-router"
+
+import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
+import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
+import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
+
+import Country from "@/components/atoms/CountryAtom.vue"
 import {
   type DataFieldProps,
+  formatValue,
   getItemLabel,
   getItemLink,
-  formatValue,
+  nullValues,
 } from "@/utils/data-utils"
-import { RouterLink } from "vue-router"
-import Country from "@/components/atoms/CountryAtom.vue"
-import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
-import { nullValues } from "@/utils/data-utils"
-import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
-import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
+
 
 export interface SummaryProps {
   data: Record<string, any>

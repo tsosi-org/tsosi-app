@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { onBeforeMount, onMounted, onUnmounted, computed } from "vue"
+import Carousel from "primevue/carousel"
+
 import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg"
 import cosoLogoUrl from "@/assets/img/coso-black-logo.svg"
 import { getEmitters, getPartners, type Entity } from "@/singletons/ref-data"
@@ -13,9 +16,8 @@ import { shuffleArray } from "@/utils/data-utils"
 import ImageAtom from "@/components/atoms/ImageAtom.vue"
 import { getEntityUrl } from "@/utils/url-utils"
 import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery"
-import { onBeforeMount, onMounted, onUnmounted, computed } from "vue"
 import { togglePageNoHeader, setBigHeader } from "@/singletons/fixedHeaderStore"
-import Carousel from "primevue/carousel"
+
 
 changeMetaUrl(true)
 changeMetaDescripion(

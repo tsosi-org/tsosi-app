@@ -5,7 +5,9 @@
     "editor.tabSize": 4,
     "editor.rulers": [80],
     "editor.codeActionsOnSave": {
-        "source.fixAll": "explicit"
+        "source.fixAll": "explicit",
+        "source.fixAll.eslint": "explicit",
+        "source.organizeImports": "always"
     },
     
     // #### Python settings ####
@@ -48,23 +50,30 @@
     
     
     // #### Front settings ####
+    // "eslint.useFlatConfig": null,
+    "eslint.options": {
+        "overrideConfigFile": "eslint.config.js"
+    },
+    "eslint.validate": ["javascript", "typescript", "vue"],
     "[vue]": {
         "editor.tabSize": 2,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        // "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
     },
     "[typescript]": {
         "editor.tabSize": 2,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
     },
     "[html]": {
-        "editor.tabSize": 2
+        "editor.tabSize": 2,
+        "editor.formatOnSave": true
     },
     "[json]": {
         "editor.tabSize": 2,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
     },
     "[yaml]": {
         "editor.tabSize": 2

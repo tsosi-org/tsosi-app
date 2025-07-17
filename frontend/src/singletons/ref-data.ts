@@ -10,6 +10,7 @@ import {
   shuffleArray,
 } from "@/utils/data-utils"
 
+
 type IdentifierRegistry = "ror" | "wikidata" | "_custom"
 
 interface ApiData {

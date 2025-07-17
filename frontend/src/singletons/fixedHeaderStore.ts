@@ -5,6 +5,7 @@
  */
 import { ref, watch } from "vue"
 
+
 export async function togglePageNoHeader(value: boolean) {
   const app = document.getElementById("app")
   if (value) {

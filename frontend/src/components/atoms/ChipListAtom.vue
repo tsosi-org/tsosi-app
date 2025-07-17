@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Chip from "primevue/chip"
+
 import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
+
 
 export interface ChipConfig {
   label: string

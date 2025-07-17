@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { getInfrastructures, type Entity } from "@/singletons/ref-data"
 import { RouterLink } from "vue-router"
+
+import { getInfrastructures, type Entity } from "@/singletons/ref-data"
 import { getEntityUrl } from "@/utils/url-utils"
+
 
 const infras = getInfrastructures()
 </script>

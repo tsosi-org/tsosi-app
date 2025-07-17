@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
 import { RouterLink } from "vue-router"
-import InfrastructurePopup from "@/components/InfrastructurePopup.vue"
 import Panel from "primevue/panel"
+
+import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
+import InfrastructurePopup from "@/components/InfrastructurePopup.vue"
+
 </script>
 
 <template>

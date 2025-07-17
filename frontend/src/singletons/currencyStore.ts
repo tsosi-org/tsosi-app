@@ -3,10 +3,12 @@
  * `selectedCurrency` ref.
  */
 import { ref } from "vue"
+
 import {
   type Currency,
   getCurrencies as getRefCurrencies,
 } from "@/singletons/ref-data"
+
 
 export const defaultCurrency: Currency = {
   id: "EUR",

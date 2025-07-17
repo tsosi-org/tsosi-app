@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import Menu from "primevue/menu"
-import ButtonAtom, { type ButtonProps } from "./ButtonAtom.vue"
 import { useTemplateRef } from "vue"
+
+import ButtonAtom, { type ButtonProps } from "./ButtonAtom.vue"
 
 /**
  * Copy-pasted from primevue/menuitem bc the type is not exported..

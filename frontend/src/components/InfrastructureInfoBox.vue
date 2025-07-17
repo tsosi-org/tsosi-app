@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { type EntityDetails } from "@/singletons/ref-data"
-import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 import { RouterLink } from "vue-router"
-import { formatDateWithPrecision } from "@/utils/data-utils"
 import Panel from "primevue/panel"
+
+import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
+
+import { type EntityDetails } from "@/singletons/ref-data"
+import { formatDateWithPrecision } from "@/utils/data-utils"
+
 
 const props = defineProps<{
   data: EntityDetails

@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { RouterLink } from "vue-router"
+
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
-import { RouterLink } from "vue-router"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
 </script>
 

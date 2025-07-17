@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router"
+
 import InfrastructureList from "@/components/atoms/InfrastructureList.vue"
 </script>
 

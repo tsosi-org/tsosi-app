@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router"
+import { $dt } from "@primevue/themes"
+
 import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
-import { $dt } from "@primevue/themes"
 import { isDesktop } from "@/composables/useMediaQuery"
 </script>
 

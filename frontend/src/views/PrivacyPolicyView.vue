@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { ref, inject, computed, watch, onMounted } from "vue"
+
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
-import { ref, inject, computed, watch, onMounted } from "vue"
+
 
 const matomoCheckboxValue = ref(false)
 const optOutStatus = ref(false)

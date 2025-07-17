@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { computed, watch, ref, type Ref, onMounted } from "vue"
-import { type EntityDetails } from "@/singletons/ref-data"
-import Image from "./atoms/ImageAtom.vue"
-import { getRorUrl, getWikidataUrl } from "@/utils/url-utils"
-import { isDesktop } from "@/composables/useMediaQuery"
-import { formatDateWithPrecision, getCountryLabel } from "@/utils/data-utils"
-import ChipList, { type ChipConfig } from "@/components/atoms/ChipListAtom.vue"
-import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 import Panel from "primevue/panel"
+import { computed, onMounted, ref, watch, type Ref } from "vue"
+
+import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
+import Image from "./atoms/ImageAtom.vue"
+
+import ChipList, { type ChipConfig } from "@/components/atoms/ChipListAtom.vue"
+import { isDesktop } from "@/composables/useMediaQuery"
+import { type EntityDetails } from "@/singletons/ref-data"
+import { formatDateWithPrecision, getCountryLabel } from "@/utils/data-utils"
+import { getRorUrl, getWikidataUrl } from "@/utils/url-utils"
+
 
 const props = defineProps<{
   entity: EntityDetails

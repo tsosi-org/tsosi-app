@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { changeMetaTitle } from "@/utils/dom-utils"
 
+
 export interface StaticContentComponentProps {
   title: string
 }

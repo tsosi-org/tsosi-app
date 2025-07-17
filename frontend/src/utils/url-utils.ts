@@ -1,5 +1,6 @@
 import type { Entity } from "@/singletons/ref-data"
 
+
 export function getEntityBaseUrl(): string {
   return `/entities/`
 }

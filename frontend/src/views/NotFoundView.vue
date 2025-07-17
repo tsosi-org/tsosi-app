@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router"
+
 import { changeMetaTitle } from "@/utils/dom-utils"
 import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
+
 
 changeMetaTitle("404 Not found")
 

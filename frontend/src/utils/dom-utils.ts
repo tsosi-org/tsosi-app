@@ -1,5 +1,7 @@
-import { appContext } from "@/main"
 import { createApp, type Component } from "vue"
+
+import { appContext } from "@/main"
+
 
 const updateMetaTags = true
 export function changeMetaDescripion(desc: string) {

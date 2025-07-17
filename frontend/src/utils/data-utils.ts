@@ -1,6 +1,8 @@
+import type { DeepReadonly } from "vue"
+
 import { getCountry, type Transfer } from "@/singletons/ref-data"
 import { getStaticDataUrl } from "@/utils/url-utils"
-import type { DeepReadonly } from "vue"
+
 
 export const nullValues = [null, undefined]
 

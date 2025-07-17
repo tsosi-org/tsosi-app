@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Button from "primevue/button"
+
 import { type LinkConfig, getItemLink } from "@/utils/data-utils"
+
 
 export type ButtonType = "pageLink" | "externalLink" | "action"
 export interface ButtonProps {

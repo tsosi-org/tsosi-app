@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { getCountryIcon, getCountryLabel } from "@/utils/data-utils"
 
+
 interface CountryProps {
   code?: string
 }

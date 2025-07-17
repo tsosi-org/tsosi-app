@@ -1,35 +1,37 @@
 <script setup lang="ts">
+import Tab from "primevue/tab"
+import TabList from "primevue/tablist"
+import TabPanel from "primevue/tabpanel"
+import TabPanels from "primevue/tabpanels"
+import Tabs from "primevue/tabs"
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowRef,
+  useTemplateRef,
+  watch,
+  type Ref,
+  type ShallowRef,
+} from "vue"
+
+import type { ButtonProps } from "@/components/atoms/ButtonAtom.vue"
+import EntityHistogram from "@/components/EntityHistogram.vue"
+import EntityMap from "@/components/EntityMap.vue"
+import Table, { type TableColumnProps } from "@/components/TableComponent.vue"
+import { selectedCurrency } from "@/singletons/currencyStore"
 import {
   getEmittersForEntity,
   getTransfers,
-  type EntityDetails,
   type Entity,
+  type EntityDetails,
   type Transfer,
   type TransferEntityType,
 } from "@/singletons/ref-data"
-import {
-  ref,
-  shallowRef,
-  type ShallowRef,
-  type Ref,
-  onMounted,
-  watch,
-  computed,
-  useTemplateRef,
-  onBeforeUnmount,
-} from "vue"
-import EntityHistogram from "@/components/EntityHistogram.vue"
-import Table, { type TableColumnProps } from "@/components/TableComponent.vue"
-import { getTransferBaseUrl } from "@/utils/url-utils"
-import { selectedCurrency } from "@/singletons/currencyStore"
-import type { ButtonProps } from "@/components/atoms/ButtonAtom.vue"
 import { fillTransferAmountCurrency } from "@/utils/data-utils"
-import Tabs from "primevue/tabs"
-import TabList from "primevue/tablist"
-import Tab from "primevue/tab"
-import TabPanels from "primevue/tabpanels"
-import TabPanel from "primevue/tabpanel"
-import EntityMap from "@/components/EntityMap.vue"
+import { getTransferBaseUrl } from "@/utils/url-utils"
+
 
 const props = defineProps<{
   entity: EntityDetails

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import Popover from "primevue/popover"
 import { onMounted, useTemplateRef } from "vue"
+
 import { addClickEventListener } from "@/utils/dom-utils"
 import { isTouchScreen } from "@/composables/useMediaQuery"
+
 
 export interface InfoButtonProps {
   icon?: string[]

@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import Chart from "primevue/chart"
-import Loader from "@/components/atoms/LoaderAtom.vue"
 import { ref, watch, onMounted, computed, useTemplateRef, type Ref } from "vue"
+import Select from "primevue/select"
+import Checkbox from "primevue/checkbox"
+import { type TooltipItem } from "chart.js"
+
+import CurrencySelector from "./CurrencySelector.vue"
+
+import Loader from "@/components/atoms/LoaderAtom.vue"
 import {
   getAnalytics,
   type Analytic,
@@ -15,12 +21,9 @@ import {
   setSelectedCurrency,
 } from "@/singletons/currencyStore"
 import { getCountryRegion, exportPNG } from "@/utils/data-utils"
-import Select from "primevue/select"
-import Checkbox from "primevue/checkbox"
-import CurrencySelector from "./CurrencySelector.vue"
 import { type DataFieldProps, exportCSV, exportJSON } from "@/utils/data-utils"
-import { type TooltipItem } from "chart.js"
 import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
+
 
 export interface EntityHistogramProps {
   entity: DeepReadonly<Entity>

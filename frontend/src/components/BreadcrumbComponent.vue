@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router"
 
+
 export interface BreadcrumbItem {
   label: string
   icon?: string[]

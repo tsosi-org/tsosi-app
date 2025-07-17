@@ -1,8 +1,6 @@
 import "@/assets/css/main.css"
 
 import { createApp } from "vue"
-import App from "@/App.vue"
-import router from "@/router"
 import PrimeVue from "primevue/config"
 import Aura from "@primevue/themes/aura"
 import { definePreset } from "@primevue/themes"
@@ -38,6 +36,11 @@ import {
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons"
 import { faGithub } from "@fortawesome/free-brands-svg-icons"
+
+import router from "@/router"
+import App from "@/App.vue"
+
+
 const app = createApp(App)
 
 // Register PrimeVue library

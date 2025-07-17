@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router"
+
 import HomeView from "@/views/HomeView.vue"
 import EntityView from "@/views/EntityView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
@@ -8,6 +9,7 @@ import AboutView from "@/views/AboutView.vue"
 import LegalNotices from "@/views/LegalNotices.vue"
 import PrivacyPolicyView from "@/views/PrivacyPolicyView.vue"
 import { targetElement } from "@/utils/dom-utils"
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

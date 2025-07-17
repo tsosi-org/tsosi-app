@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import type { Entity } from "@/singletons/ref-data"
-import Image from "./atoms/ImageAtom.vue"
 import { RouterLink } from "vue-router"
+
+import Image from "./atoms/ImageAtom.vue"
+
+import type { Entity } from "@/singletons/ref-data"
 import { getEntityUrl } from "@/utils/url-utils"
+
+
 export interface EntityMapSummaryProps {
   entity: Entity
   forceImage?: boolean

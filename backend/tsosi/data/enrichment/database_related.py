@@ -1,5 +1,5 @@
 """
-Tasks only involving TSOSI own database. 
+Tasks only involving TSOSI own database.
 """
 
 import logging

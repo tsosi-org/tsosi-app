@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, type Ref, onMounted, watch } from "vue"
+import Select from "primevue/select"
+
 import {
   selectedCurrency,
   setSelectedCurrency,
   getCurrencies,
 } from "@/singletons/currencyStore"
 import { type Currency, type DeepReadonly } from "@/singletons/ref-data"
-import Select from "primevue/select"
+
 
 const currency = ref(selectedCurrency.value)
 const availableCurrencies: Ref<Array<DeepReadonly<Currency>>> = ref([])

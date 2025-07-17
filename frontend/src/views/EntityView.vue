@@ -1,11 +1,4 @@
 <script setup lang="ts">
-import {
-  getEntityDetails,
-  getEntitySummary,
-  type EntityDetails,
-  type DeepReadonly,
-  resolveEntityRoute,
-} from "@/singletons/ref-data"
 import { useRoute, useRouter } from "vue-router"
 import {
   shallowRef,
@@ -14,6 +7,14 @@ import {
   watch,
   onBeforeUnmount,
 } from "vue"
+
+import {
+  getEntityDetails,
+  getEntitySummary,
+  type EntityDetails,
+  type DeepReadonly,
+  resolveEntityRoute,
+} from "@/singletons/ref-data"
 import {
   changeMetaTitle,
   changeMetaDescripion,
@@ -22,6 +23,7 @@ import {
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import EntityMeta from "@/components/EntityMeta.vue"
 import EntityData from "@/components/EntityData.vue"
+
 
 const entity: ShallowRef<DeepReadonly<EntityDetails> | null> = shallowRef(null)
 
