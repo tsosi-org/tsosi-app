@@ -205,6 +205,7 @@ def update_clc_fields():
     tasks modifiying the related data.
     """
     tasks: list[Callable] = [
+        enrichment.update_entity_active_status,
         enrichment.update_entity_roles_clc,
         enrichment.update_infrastructure_metrics,
         enrichment.compute_analytics,
