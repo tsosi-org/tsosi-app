@@ -451,13 +451,15 @@ class RawDataConfig:
     def no_date_field(self) -> bool:
         return all(f.active is False for f in self.date_fields)
 
-    def get_data(self) -> pd.DataFrame:
+    def get_data(self) -> Any:
         """
         Method to populate the raw data.
+
+        :returns:   The "raw" transfer data.
         """
         raise NotImplementedError()
 
-    def pre_process(self, df: pd.DataFrame, error: bool = True) -> pd.DataFrame:
+    def pre_process(self, data: Any, error: bool = True) -> pd.DataFrame:
         """
         Hook to perform source-dependent pre-processing before undergoing
         the common processing pipeline.
@@ -466,7 +468,7 @@ class RawDataConfig:
         :param error:   Whether to raise error while cleaning/preparing the
                         data.
         """
-        return df
+        return data
 
     def prepare_data(self, error: bool = True) -> pd.DataFrame:
         """
@@ -493,6 +495,7 @@ class RawDataConfig:
         :param error:   Whether to raise error while cleaning the data.
                         This should be True when the data is prepared
                         for ingestion.
+        :returns:       The processed data.
         """
         logger.info(f"Preparing data with config `{self.id}`.")
 
@@ -667,6 +670,8 @@ class RawDataConfig:
         """
         Generate the data ingestion config, ready to be processed by the
         ingestion pipeline.
+
+        :returns:   The formatted DataIngestionConfig object.
         """
         data = self.prepare_data()
         return DataIngestionConfig(
@@ -729,12 +734,6 @@ class RawDataConfigFromFile(RawDataConfig):
                 f"Supported input types are {INPUT_FILE_TYPES}"
             )
         return df
-
-
-class RawDataConfigFromApi(RawDataConfig):
-    """ """
-
-    pass
 
 
 def create_missing_fields(df: pd.DataFrame):

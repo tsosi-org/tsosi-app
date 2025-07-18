@@ -30,3 +30,13 @@ class DataLoadSource(TimestampedModel):
                 nulls_distinct=True,
             )
         ]
+
+    def serialize(self) -> str:
+        d = {
+            "data_source": self.data_source_id,  # type: ignore
+            "data_load_name": self.data_load_name,
+            "year": self.year,
+            "full_data": self.full_data,
+            "date_data_obtained": self.date_data_obtained,
+        }
+        return "{ " + ", ".join([f"{k}: {v}" for k, v in d.items()]) + " }"

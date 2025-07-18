@@ -604,6 +604,11 @@ def ingest(
 
     # Delete old data loads
     if oldies:
+        logger.info(
+            "Removing the following old data loads: "
+            f"{'\t'.join([d.serialize() for d in oldies])}"
+        )
+
         Transfer.objects.filter(data_load_source__in=oldies).delete()
         DataLoadSource.objects.filter(pk__in=[o.pk for o in oldies]).delete()
 
