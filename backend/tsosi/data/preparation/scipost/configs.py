@@ -70,6 +70,7 @@ class ScipostRawDataConfigFromApi(rdc.RawDataConfig):
     """
 
     def get_data(self) -> dict[str, pd.DataFrame]:
+        self.origin = "scipost_api"
         return get_scipost_raw_data()
 
     def pre_process(
