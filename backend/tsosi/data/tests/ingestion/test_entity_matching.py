@@ -137,7 +137,7 @@ base_entities = pd.DataFrame.from_records(
 def test_match_entities():
     print("Testing match_entities")
     test = to_match.copy(deep=True)
-    match_entities(test, base_entities, merged_with_id=True)
+    match_entities(test, base_entities, use_merged_id=True)
 
     equals = test["entity_id"].eq(test["expected_entity_id"])
     assert equals.all()

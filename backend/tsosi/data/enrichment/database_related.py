@@ -596,6 +596,27 @@ def update_transfer_date_clc():
     bulk_update_from_df(Transfer, data, columns)
 
 
+def update_entity_active_status():
+    """
+    Update the active status entities.
+    An entity is active if it's a partner or if it's referenced in 1+ transfer.
+    """
+    logger.info("Updating active entities.")
+    instances = Entity.objects.annotate(
+        emitter_nb=Count("transfer_as_emitter"),
+        recipient_nb=Count("transfer_as_recipient"),
+        agent_nb=Count("transfer_as_agent"),
+    ).values("id", "is_partner", "emitter_nb", "recipient_nb", "agent_nb")
+    data = pd.DataFrame.from_records(instances)
+    data["is_active"] = (
+        data["is_partner"]
+        | (data["emitter_nb"] > 0)
+        | (data["recipient_nb"] > 0)
+        | (data["agent_nb"] > 0)
+    )
+    bulk_update_from_df(Entity, data, ["id", "is_active"])
+
+
 def update_entity_roles_clc():
     """
     Update the `is_emitter`, `is_recipient`, `is_agent` booleans according

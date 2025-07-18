@@ -97,12 +97,28 @@ The fields to be mapped are the ones resulting from the above processing steps.
 
 This also requires extra arguments:
 
-- A valid `source` name.
-- An optional year (when the data is for a given year).
+- A valid source name and an an optional year (when the data is for a given year), to attach a data load source, generally the following:
+
 - The path to the "raw" (or prepared) dataset. 
 
 
 The class exposes methods to clean and import the data. 
+
+
+### The [DataLoadSource](/backend/tsosi/models/source.py) model
+
+This is our stepping stone to identifiy the various datasets and where the transfer data comes from.
+
+This works well in our current scenario where the data is single-sourced and where we don't need to de-duplicate similar transfers from different sources (we only get data from the infrastructures).
+
+A prepared dataset must be identified with the following fields:
+
+- `source` - It must be one of the static defined sources in [static_data.py](/backend/tsosi/models/static_data.py).
+
+- `year` - Optionnal, when the data is split by year.
+
+- `full_data` - Whether the dataset is full for the corresponding source and year.
+
 
 ## Generate TSOSI data file
 
@@ -187,7 +203,15 @@ flowchart LR
 
 - Parse the file to the expected data format.
 
-- Validate that the dataset can be ingested. The dataset won't be validated when it has an associated year and there already exists another `DataLoadSource` with full data for that given source and year.   
+- Use the given and existing `DataLoadSource` objects to prevent data duplication:
+
+    - If there already exists a full dataset for the given source and year, the ingestion is prevented unless this is the same or "wider" full dataset (year-based: a full dataset with no year information is considered to be all the data ever so it's wider than a single year dataset). 
+
+        In the last scenario, we erase the corresponding existing dataset(s) and insert this new one. 
+
+    - If the dataset is full, all corresponding "smaller" datasets are erased and this one is ingested.
+
+    - If the dataset is not full and there's no full one for the given source and year, we proceed with normal procedure.
 
 
 ## Pre-match entities with existing ones

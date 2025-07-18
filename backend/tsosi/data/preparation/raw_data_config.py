@@ -451,13 +451,15 @@ class RawDataConfig:
     def no_date_field(self) -> bool:
         return all(f.active is False for f in self.date_fields)
 
-    def get_data(self) -> pd.DataFrame:
+    def get_data(self) -> Any:
         """
         Method to populate the raw data.
+
+        :returns:   The "raw" transfer data.
         """
         raise NotImplementedError()
 
-    def pre_process(self, df: pd.DataFrame, error: bool = True) -> pd.DataFrame:
+    def pre_process(self, data: Any, error: bool = True) -> pd.DataFrame:
         """
         Hook to perform source-dependent pre-processing before undergoing
         the common processing pipeline.
@@ -466,7 +468,7 @@ class RawDataConfig:
         :param error:   Whether to raise error while cleaning/preparing the
                         data.
         """
-        return df
+        return data
 
     def prepare_data(self, error: bool = True) -> pd.DataFrame:
         """
@@ -493,6 +495,7 @@ class RawDataConfig:
         :param error:   Whether to raise error while cleaning the data.
                         This should be True when the data is prepared
                         for ingestion.
+        :returns:       The processed data.
         """
         logger.info(f"Preparing data with config `{self.id}`.")
 
@@ -653,7 +656,9 @@ class RawDataConfig:
         # Compute the `original_id` field for custom tracking.
         # The ulterior generated transfer ID is a random UUID..
         origin = re.sub(r"\s+", "_", self.origin.strip())
-        df.loc[:, FieldOriginalId.NAME] = f"{origin}_" + df.index.astype(str)
+        df.loc[:, FieldOriginalId.NAME] = (  # type:ignore
+            f"{origin}_" + df.index.astype(str)
+        )
 
         self.processed_data = df
 
@@ -661,11 +666,26 @@ class RawDataConfig:
         clean_null_values(df)
         return df
 
+    def generate_data_ingestion_config(self) -> DataIngestionConfig:
+        """
+        Generate the data ingestion config, ready to be processed by the
+        ingestion pipeline.
+
+        :returns:   The formatted DataIngestionConfig object.
+        """
+        data = self.prepare_data()
+        return DataIngestionConfig(
+            date_generated=datetime.now(UTC).isoformat(timespec="seconds"),
+            source=self.source,
+            count=len(data),
+            data=data.sort_index(axis=1).to_dict(orient="records"),
+        )
+
     def generate_data_file(self, output_folder=None):
         """
         Generate a data file in the TSOSI format, ready for ingestion.
         """
-        data = self.prepare_data()
+        ingestion_config = self.generate_data_ingestion_config()
         file_name = f"{date.today()}_{self.source.data_source_id}"
         if self.source.year:
             file_name += f"_{self.source.year}"
@@ -675,12 +695,6 @@ class RawDataConfig:
         if output_folder is None:
             output_folder = app_settings.DATA_EXPORT_FOLDER
         file_path = output_folder / file_name
-        ingestion_config = DataIngestionConfig(
-            date_generated=datetime.now(UTC).isoformat(timespec="seconds"),
-            source=self.source,
-            count=len(data),
-            data=data.sort_index(axis=1).to_dict(orient="records"),
-        )
         with open(file_path, "w") as f:
             json.dump(ingestion_config.serialize(), f, indent=2)
 

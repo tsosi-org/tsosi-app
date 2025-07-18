@@ -10,6 +10,7 @@ class DataSource(TimestampedModel):
 class DataLoadSource(TimestampedModel):
     """
     Model storing the performed data load.
+    It's used to prevent data duplication when ingesting new datasets.
     """
 
     data_source = models.ForeignKey(
@@ -29,3 +30,13 @@ class DataLoadSource(TimestampedModel):
                 nulls_distinct=True,
             )
         ]
+
+    def serialize(self) -> str:
+        d = {
+            "data_source": self.data_source_id,  # type: ignore
+            "data_load_name": self.data_load_name,
+            "year": self.year,
+            "full_data": self.full_data,
+            "date_data_obtained": self.date_data_obtained,
+        }
+        return "{ " + ", ".join([f"{k}: {v}" for k, v in d.items()]) + " }"

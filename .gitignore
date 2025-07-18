@@ -8,6 +8,8 @@ __pycache__/
 backend/static/
 backend/tsosi/data/to_ingest/
 backend/_no_git/
+backend/.coverage
+backend/coverage.*
 
 # Vue app
 frontend/node_modules

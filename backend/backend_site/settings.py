@@ -276,7 +276,7 @@ TSOSI_CELERY_BEAT_SCHEDULE = {
     # Daily
     "periodic-identifier-update": {
         "task": "tsosi.tasks.identifier_update",
-        "schedule": crontab(minute="0", hour="21"),
+        "schedule": crontab(minute="0", hour="22"),
     },
     "periodic-wiki-data-update": {
         "task": "tsosi.tasks.update_wiki_data",
@@ -285,6 +285,10 @@ TSOSI_CELERY_BEAT_SCHEDULE = {
     # Weekly
     "periodic-currency-update": {
         "task": "tsosi.tasks.currency_rates_workflow",
-        "schedule": crontab(minute="0", hour="22", day_of_week="sun"),
+        "schedule": crontab(minute="0", hour="4", day_of_week="sun"),
+    },
+    "periodic-scipost-data-refresh": {
+        "task": "tsosi.tasks.refresh_scipost_data",
+        "schedule": crontab(minute="0", hour="5", day_of_week="sun"),
     },
 }

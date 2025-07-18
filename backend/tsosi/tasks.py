@@ -9,7 +9,7 @@ from celery.utils.log import get_task_logger
 from redis.lock import Lock
 
 from .app_settings import app_settings
-from .data import enrichment, ingestion
+from .data import data_updates, enrichment, ingestion
 from .data.currencies import currency_rates
 from .data.task_result import TaskResult
 from .models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
@@ -205,6 +205,7 @@ def update_clc_fields():
     tasks modifiying the related data.
     """
     tasks: list[Callable] = [
+        enrichment.update_entity_active_status,
         enrichment.update_entity_roles_clc,
         enrichment.update_infrastructure_metrics,
         enrichment.compute_analytics,
@@ -258,6 +259,11 @@ def identifier_update():
 @shared_task(base=TsosiLockedTask)
 def identifier_version_cleaning():
     enrichment.clean_identifier_versions()
+
+
+@shared_task(base=TsosiLockedTask)
+def refresh_scipost_data():
+    data_updates.refresh_scipost_data()
 
 
 ## Signal handlers to trigger related tasks

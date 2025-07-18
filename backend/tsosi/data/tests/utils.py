@@ -6,7 +6,7 @@ import pytest
 
 @dataclass
 class BaseTestData:
-    args: Iterable[Any] = field(default=list)
+    args: Iterable[Any] = field(default=list)  # type:ignore
     kwargs: dict[str, Any] = field(default_factory=dict)
     result: Any | None = None
     # Callable that must evaluate to True if the result is the expected one

@@ -48,5 +48,5 @@ jobs:
       - name: Install missing Python dependecies in case the container is out-of-date
         run: poetry install --no-root
       - name: Run the Python tests
-        run: poetry run pytest
+        run: poetry run pytest --cov=tsosi/data --cov-report term
         
