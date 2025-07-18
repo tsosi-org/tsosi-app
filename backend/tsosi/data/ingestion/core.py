@@ -2,6 +2,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Iterable, Sequence
 
 import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
@@ -61,9 +62,13 @@ def entity_is_matchable(row: pd.Series) -> bool:
 def match_entities_with_db(entities: pd.DataFrame):
     """
     Match the given entities to the existing ones in the database.
+
     This adds the column `entity_id` with the matched Entity record.
+
     The automatic matching can only be made with entities having
     `is_matchable=True` (both the new ones and the ones in DB).
+
+    :param entities:    The entity data to match.
     """
     match_columns = ["entity_id", "match_criteria", "comments"]
     for col in match_columns:
@@ -97,7 +102,7 @@ def match_entities_with_db(entities: pd.DataFrame):
         # match_entities(to_match_others, base_others, True)
         # for col in match_columns:
         #     entities.loc[to_match_others.index, col] = to_match_others[col]
-        match_entities(to_match, base_entities, True)
+        match_entities(to_match, base_entities, use_merged_id=True)
         for col in match_columns:
             entities.loc[to_match.index, col] = to_match[col]
 
@@ -110,7 +115,7 @@ def entities_to_create(entities: pd.DataFrame) -> pd.DataFrame:
 
     :param entities:    The entity data, as a dataframe. It must contain
                         the columns `name`, `country`, `website`, `ror_id`,
-                        `wikidata_id`, `is_matchable`
+                        `wikidata_id`, `custom_id`, `is_matchable`
     :returns:           The grouped entities, as a dataframe.
     """
     df_to_concat = []
@@ -176,7 +181,11 @@ def entities_to_create(entities: pd.DataFrame) -> pd.DataFrame:
 def extract_entities(transfers: pd.DataFrame) -> pd.DataFrame:
     """
     Extract the entity data into a brand new dataframe with references
-    to the original indexes.
+    to the input transfer's original ID.
+
+    :param transfers:   The transfer dataframe.
+    :returns entities:  The dataframe of all entity entries in the input
+                        dataframe, with 1 row for each entity of each transfer.
     """
     emitters_cols_mapping = {
         dc.FieldEmitterName.NAME: "name",
@@ -187,7 +196,7 @@ def extract_entities(transfers: pd.DataFrame) -> pd.DataFrame:
         dc.FieldEmitterCustomId.NAME: "custom_id",
         dc.FieldOriginalId.NAME: "original_id",
     }
-    mask = ~transfers[dc.FieldEmitterName.NAME].isnull()
+    mask = ~transfers[dc.FieldEmitterName.NAME].isna()
     emitters = transfers[mask][emitters_cols_mapping.keys()].rename(
         columns=emitters_cols_mapping
     )
@@ -202,7 +211,7 @@ def extract_entities(transfers: pd.DataFrame) -> pd.DataFrame:
         dc.FieldRecipientCustomId.NAME: "custom_id",
         dc.FieldOriginalId.NAME: "original_id",
     }
-    mask = ~transfers[dc.FieldRecipientName.NAME].isnull()
+    mask = ~transfers[dc.FieldRecipientName.NAME].isna()
     recipients = transfers[mask][recipient_cols_mapping.keys()].rename(
         columns=recipient_cols_mapping
     )
@@ -217,7 +226,7 @@ def extract_entities(transfers: pd.DataFrame) -> pd.DataFrame:
         dc.FieldAgentCustomId.NAME: "custom_id",
         dc.FieldOriginalId.NAME: "original_id",
     }
-    mask = transfers[dc.FieldAgentName.NAME].isnull()
+    mask = transfers[dc.FieldAgentName.NAME].isna()
     agents = transfers[~mask][agent_cols_mapping.keys()].rename(
         columns=agent_cols_mapping
     )
@@ -227,21 +236,24 @@ def extract_entities(transfers: pd.DataFrame) -> pd.DataFrame:
     return entities
 
 
-def create_identifiers(identifiers: pd.DataFrame, datetime: datetime):
+def create_identifiers(identifiers: pd.DataFrame, date_stamp: datetime):
     """
     Insert new Identifier and IdentifierEntityMatching records.
+
+    :param identifiers: The identifiers to create.
+    :param date_stamp:  The datetime to use as the records' creation date.
     """
     if len(identifiers) == 0:
         return
 
-    identifiers["date_created"] = datetime
-    identifiers["date_last_updated"] = datetime
+    identifiers["date_created"] = date_stamp
+    identifiers["date_last_updated"] = date_stamp
 
     bulk_create_from_df(
         Identifier, identifiers, IDENTIFIER_CREATE_FIELDS, "identifier_id"
     )
 
-    identifiers["date_start"] = datetime
+    identifiers["date_start"] = date_stamp
     bulk_create_from_df(
         IdentifierEntityMatching, identifiers, IDENTIFIER_MATCHING_CREATE_FIELDS
     )
@@ -250,20 +262,23 @@ def create_identifiers(identifiers: pd.DataFrame, datetime: datetime):
     )
 
 
-def create_entities(entities: pd.DataFrame, datetime: datetime):
+def create_entities(entities: pd.DataFrame, date_stamp: datetime):
     """
     Insert new Entity records in the database.
     The IDs resulting from the insertion are appended to the input data.
+    
+    Also insert attached Identifier records in the database.
 
     1 - Create an Entity record with given data. \\
     2 - If the entity has a referenced PID: \\
         2.a - Create an Identifier record \\
         2.b - Create an IdentifierEntityMatching record.
 
-    :param entities:    The entities to be created.
+    :param entities:    The entities to create.
+    :param date_stamp:  The datetime to use as the records' creation date.
     """
-    entities["date_created"] = datetime
-    entities["date_last_updated"] = datetime
+    entities["date_created"] = date_stamp
+    entities["date_last_updated"] = date_stamp
     entities["raw_name"] = entities["name"]
     entities["raw_country"] = entities["country"]
     entities["raw_website"] = entities["website"]
@@ -319,29 +334,35 @@ def create_entities(entities: pd.DataFrame, datetime: datetime):
     identifiers["match_source"] = MATCH_SOURCE_MANUAL
     identifiers["match_criteria"] = MATCH_CRITERIA_FROM_INPUT
 
-    create_identifiers(identifiers, datetime)
+    create_identifiers(identifiers, date_stamp)
 
 
-def create_currencies(currencies: list[str], datetime: datetime):
+def create_currencies(currencies: Iterable[str], date_stamp: datetime):
+    """
+    Utility to insert new Currency records in the database.
+
+    :param currencies:  The currency ISO codes to create.
+    :param date_stamp:  The datetime to use as the records' creation date.
+    """
     existing_currencies = [c.id for c in Currency.objects.all()]
     c_to_create = [c for c in currencies if c not in existing_currencies]
     for c in c_to_create:
         currency = Currency(
-            id=c, name=c, date_created=datetime, date_last_updated=datetime
+            id=c, name=c, date_created=date_stamp, date_last_updated=date_stamp
         )
         currency.save()
 
 
-def create_transfers(transfers: pd.DataFrame, datetime: datetime):
+def create_transfers(transfers: pd.DataFrame, date_stamp: datetime):
     """
-    Insert new Transfer records in the database.
+    Utility to insert new Transfer records in the database.
+    It's basically a list of the model fields to find in the dataframe.
 
-    1 - Create a Transfer record with the given data.
-    2 - Create a TransferEntityMatching entry for every entity
-        attached to the transfer.
+    :param transfers:   The transfers to create.
+    :param date_stamp:  The datetime to use as the records' creation date.
     """
-    transfers["date_created"] = datetime
-    transfers["date_last_updated"] = datetime
+    transfers["date_created"] = date_stamp
+    transfers["date_last_updated"] = date_stamp
 
     fields = [
         "raw_data",
@@ -367,10 +388,17 @@ def create_transfers(transfers: pd.DataFrame, datetime: datetime):
 
 
 def create_transfer_entity_matching(
-    transfer_entities: pd.DataFrame, datetime: datetime
+    transfer_entities: pd.DataFrame, date_stamp: datetime
 ):
-    transfer_entities["date_created"] = datetime
-    transfer_entities["date_last_updated"] = datetime
+    """
+    Utility to insert new TransfertEntityMatching records in the database.
+    It's basically a list of the model fields to find in the dataframe.
+
+    :param transfers_entities:  The transfer <-> entity matching data to create.
+    :param date_stamp:          The datetime to use as the records' creation date.
+    """
+    transfer_entities["date_created"] = date_stamp
+    transfer_entities["date_last_updated"] = date_stamp
 
     fields = [
         "transfer_id",
@@ -390,8 +418,10 @@ def create_transfer_entity_matching(
 
 def get_data_load_source(source: dc.DataLoadSource) -> DataLoadSource:
     """
-    Check the given data load validity.
-    Return a fresh DataLoadSource instance.
+    Check the given data load source validity.
+
+    :param source:  The data load source config to check.
+    :returns:       A fresh DataLoadSource model instance.
     """
     try:
         query_args = {
@@ -411,6 +441,52 @@ def get_data_load_source(source: dc.DataLoadSource) -> DataLoadSource:
     return result
 
 
+def validate_data_load_source(
+    source: dc.DataLoadSource,
+) -> tuple[bool, Sequence[DataLoadSource]]:
+    """
+    Return whether the given data load can be ingested, and the existing data
+    loads it erases.
+
+    :param source:      The data load to ingest.
+    :returns valid:     Wheter it can be ingested.
+    :retrurns oldies:   The existing data loads it should replace, ie. they
+                        should be erased before ingesting the new one.
+    """
+    existing_loads = DataLoadSource.objects.filter(
+        data_source_id=source.data_source_id
+    )
+    valid = True
+    replaced = []
+
+    # Full dataset to re-ingest
+    if source.full_data and source.year is None:
+        replaced = [r for r in existing_loads]
+    # Full dataset for a given year
+    elif source.full_data:
+        for load in existing_loads:
+            if load.full_data and load.year is None:
+                valid = False
+                replaced = []
+                break
+            elif load.year == source.year:
+                replaced.append(load)
+    # Partial dataset for a given year
+    elif source.year is not None:
+        for load in existing_loads:
+            if load.full_data and load.year in [None, source.year]:
+                valid = False
+                break
+    # Partial dataset without year
+    else:
+        for load in existing_loads:
+            if load.full_data and load.year is None:
+                valid = False
+                break
+
+    return valid, replaced
+
+
 @transaction.atomic
 def ingest_new_records(
     transfers: pd.DataFrame,
@@ -427,10 +503,11 @@ def ingest_new_records(
     3 - Create transfers with FK to the above entities. \\
     4 - Create appropriate entries in TransferEntityMatching.
 
-    :param data:        Data formatted to TSOSI format, ie. using
-                        `RawDataConfig.process` method.
-    :param source:      The data load source to be appended to each transfer.
-    :param hide_amount: Whether the transfer amounts should be hidden.
+    :param transfers:       Tranfer data in TSOSI format, ie. prepared using
+                            `RawDataConfig.prepare_data` method.
+    :param source:          The data load source to be attached to each transfer.
+    :param send_signals:    Whether to send `transfers_created` and
+                            `identifiers_created` signals.
     """
     logger.info(f"Ingesting {len(transfers)} transfer records.")
     now = timezone.now()
@@ -449,12 +526,11 @@ def ingest_new_records(
         entity_is_matchable, axis=1
     )
 
-    # TODO: Implement and use
-    # When implemented, adjust accordingly the handling of existing entities
-    # when mapping entities to transfers
+    # Match the input entities to the existing ones
     match_entities_with_db(transfer_entities)
     entity_null_mask = transfer_entities["entity_id"].isnull()
 
+    # Create non-existing entities
     entities_new = transfer_entities[entity_null_mask].copy()
     e_to_create = entities_to_create(entities_new)
     create_entities(e_to_create, now)
@@ -504,29 +580,61 @@ def ingest_new_records(
     logger.info(f"Successfully ingested {len(transfers)} records.")
 
 
+@transaction.atomic
+def ingest(
+    ingestion_config: dc.DataIngestionConfig, send_signals: bool = True
+) -> bool:
+    """
+    Ingest data according to the given config.
+
+    :param ingestion_config:    The ingestion config.
+    :param send_signals:        Whether to send `transfers_created` and
+                                `identifiers_created` signals.
+
+    :returns:                   Whether the ingestion was performed.
+    """
+    logger.info(f"Ingesting data load: {ingestion_config.source.serialize()}")
+    valid, oldies = validate_data_load_source(ingestion_config.source)
+    if not valid:
+        logger.info(
+            "Skipping ingestion for data load "
+            f"{ingestion_config.source.serialize()}"
+        )
+        return False
+
+    # Delete old data loads
+    if oldies:
+        Transfer.objects.filter(data_load_source__in=oldies).delete()
+        DataLoadSource.objects.filter(pk__in=[o.pk for o in oldies]).delete()
+
+    # flag_duplicate_transfers(df, source)
+    df = pd.DataFrame.from_records(ingestion_config.data)
+    dc.create_missing_fields(df)
+    source = DataLoadSource(**ingestion_config.source.serialize())
+
+    ingest_new_records(df, source, send_signals)
+
+    return True
+
+
 def ingest_data_file(file_path: str | Path, send_signals: bool = True) -> bool:
     """
     Ingest data from the given data file.
     The data file should have been generated with
     `RawDataConfig.generate_data_file`.
 
-    :returns:   Whether the file has been ingested.
+    :param file_path:       The Path object or string of the data file.
+    :param send_signals:    Whether to send `transfers_created` and
+                            `identifiers_created` signals.
+    :returns:               Whether the file has been ingested.
     """
     logger.info(f"Ingesting data file {file_path}")
     with open(file_path, "r") as f:
         file_content = json.load(f)
     file_content["source"] = dc.DataLoadSource(**file_content["source"])
     ingestion_config = dc.DataIngestionConfig(**file_content)
-    df = pd.DataFrame.from_records(ingestion_config.data)
-    try:
-        source = get_data_load_source(ingestion_config.source)
-    except DataException as e:
-        logger.info(f"Skipping ingestion of file {file_path}:\n{e}")
-        return False
-    # flag_duplicate_transfers(df, source)
-    dc.create_missing_fields(df)
-    ingest_new_records(df, source, send_signals)
-    return True
+    result = ingest(ingestion_config, send_signals)
+    return result
 
 
 def send_post_ingestion_signals():

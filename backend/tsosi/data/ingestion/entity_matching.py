@@ -16,55 +16,83 @@ from tsosi.models.transfer import (
 from ..utils import clean_null_values
 
 
-def resolve_merging_chain(
+def resolve_df_linked_list(
     df: pd.DataFrame,
     id_col: str,
-    merged_with_col: str,
+    link_id_col: str,
     result_col: str,
     max_iterations: int = 10,
 ):
-    """"""
-    df_last_entity = df[[id_col, merged_with_col]]
+    """
+    Resolve the final linked ID of every row in the result col, inplace.
+    Example input with computed `result`:
 
-    merged_next_col = "__merged_next"
-    df_for_merge = df[[id_col, merged_with_col]].rename(
+    ```
+    --------------------------
+    id  |   link_id |   result
+    --------------------------
+    1   |   null    |   1
+    --------------------------
+    2   |   3       |   1
+    --------------------------
+    3   |   1       |   1
+    --------------------------
+    4   |   2       |   1
+    --------------------------
+    5   |   null    |   5
+    --------------------------
+    6   |   5       |   5
+    ```
+
+    The idea is to iteratively update the result column with the written
+    value's link_id until all values in the results have no link_id.
+
+    :param df:              The input dataframe with the linked list structure.
+    :param id_col:          The name of the primary ID column.
+    :param link_id_col:     The name of the link ID column, ie. the column
+                            containing references to the `id_col` values.
+    :param result_col:      The name of the column where to write the result ID.
+    :param max_iterations:  The maximum number of iterations, default to 10.
+    """
+    df_last_entity = df[[id_col, link_id_col]]
+
+    link_next_col = "__link_next"
+    base_mapping = df[[id_col, link_id_col]].rename(
         columns={
-            id_col: merged_with_col,
-            merged_with_col: merged_next_col,
+            id_col: link_id_col,
+            link_id_col: link_next_col,
         }
     )
 
     count = 1
-    # Keep updating the last entity until all merged_next are None
+    # Keep updating the last entity until all link_next are None
     while count <= max_iterations:
         count += 1
         # Obtain the next item in the chain
         df_last_entity = df_last_entity.merge(
-            df_for_merge,
-            on=merged_with_col,
+            base_mapping,
+            on=link_id_col,
             how="left",
         )
 
-        # If no more updates (i.e., merged_with_col is None), break out of the loop
-        if (df_last_entity[merged_next_col].isna()).all():
+        # If no more updates (i.e., link_id_col is None), break out of the loop
+        if (df_last_entity[link_next_col].isna()).all():
             break
 
-        # Update the merged_with_col to propagate the last item of the chain
-        update = df_last_entity.dropna(subset=merged_next_col)
-        df_last_entity.loc[update.index, merged_with_col] = update[
-            merged_next_col
-        ]
-        df_last_entity = df_last_entity.drop(columns=[merged_next_col])
+        # Update the link_id_col to propagate the last item of the chain
+        update = df_last_entity.dropna(subset=link_next_col)
+        df_last_entity.loc[update.index, link_id_col] = update[link_next_col]
+        df_last_entity = df_last_entity.drop(columns=[link_next_col])
 
     if count == max_iterations:
         raise Exception("Max nb of iterations for resolving the merged chain.")
 
-    df[result_col] = df_last_entity[merged_with_col]
+    df[result_col] = df_last_entity[link_id_col]
 
 
 def matchable_entities() -> pd.DataFrame:
     """
-    Return all the matchable entities from database.
+    Return all the matchable entities from the database.
     The returned DataFrame contains 1 entry per entity per identifier.
     """
     instances = Entity.objects.all().values(
@@ -82,7 +110,7 @@ def matchable_entities() -> pd.DataFrame:
     if data.empty:
         return data
 
-    resolve_merging_chain(data, "id", "merged_with_id", "merged_with_id")
+    resolve_df_linked_list(data, "id", "merged_with_id", "merged_with_id")
     data = data[data["is_matchable"] == True].drop(columns=["is_matchable"])
 
     # Rename identifier columns to ror_id & wikidata_id
@@ -126,14 +154,23 @@ def create_merge_comments(original_value: str, final_value: str) -> str | None:
 def match_entities(
     to_match: pd.DataFrame,
     base_entities: pd.DataFrame,
-    merged_with_id: bool = False,
+    use_merged_id: bool = False,
 ):
     """
     Match the given entity dataframe with the base data.
+    It modifies the input dataframe inplace.
+
     The matching is made using the columns: `name`, `country`, `website`,
     `ror_id`, `wikidata_id` of both input dataframes.
+
     The final matched entity ID is either the entity `id` column or the
     `merged_with_id` when the matched entity was merged with another one.
+
+    :param to_match:        The entity data to match.
+    :param_base_entities:   The existing entity data to match against.
+    :param use_merged_id:   If True, the matched ID will be the entity ID that
+                            the matched entity was merged to, if any.
+                            Default False.
     """
     # Assert expected columns are present
     columns = [
@@ -146,7 +183,7 @@ def match_entities(
     ]
     df = to_match[columns].copy()
     columns.append("id")
-    if merged_with_id:
+    if use_merged_id:
         columns.append("merged_with_id")
     base = base_entities[columns].copy()
 
@@ -265,7 +302,7 @@ def match_entities(
     # Add results to original dataframe
     to_match.loc[df.index, "matched_id"] = df["matched_id"]
     to_match.loc[df.index, "match_criteria"] = df["match_criteria"]
-    if merged_with_id:
+    if use_merged_id:
         to_match.loc[:, "merged_with_id"] = to_match["matched_id"].map(
             base_entities.drop_duplicates(subset="id").set_index("id")[
                 "merged_with_id"

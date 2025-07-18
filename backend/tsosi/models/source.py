@@ -10,6 +10,7 @@ class DataSource(TimestampedModel):
 class DataLoadSource(TimestampedModel):
     """
     Model storing the performed data load.
+    It's used to prevent data duplication when ingesting new datasets.
     """
 
     data_source = models.ForeignKey(
