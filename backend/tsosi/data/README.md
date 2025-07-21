@@ -251,8 +251,8 @@ flowchart LR
     B("Identifiers created")
     C("Identifiers fetched")
 
-    TRIGGER_1("Scheduled tasks (Automatic)")
-    TRIGGER_2("Ingestion pipeline (Manual)")
+    TRIGGER_1("Ingestion pipeline (Manual)")
+    TRIGGER_2("Scheduled tasks (Automatic)")
 
     Ta("post_ingestion_pipeline")
     Tb("update_clc_fields")
@@ -271,12 +271,14 @@ flowchart LR
     Tk("new_ror_identifers_from_records")
     Tl("new_wikidata_identifers_from_records")
 
+    Tu1("refresh_scipost_data")
+
 
     Tz("identifier_update")
     
 
-    TRIGGER_2 -- send --> A
-    TRIGGER_2 -- send --> B
+    TRIGGER_1 -- send --> A
+    TRIGGER_1 -- send --> B
     
     A a1@==> Ta
     Ta a18@--> Tb
@@ -308,10 +310,14 @@ flowchart LR
     C a7@==> Tf
 
 
-    TRIGGER_1 a8@==> Tb
-    TRIGGER_1 a9@==> Tc
-    TRIGGER_1 a10@==> Th
-    TRIGGER_1 a11@==> Tz
+    TRIGGER_2 a8@==> Tb
+    TRIGGER_2 a9@==> Tc
+    TRIGGER_2 a10@==> Th
+    TRIGGER_2 a11@==> Tz
+    TRIGGER_2 a20@==> Tu1
+
+    Tu1 -- send --> A
+    Tu1 -- send --> B
 
 
     classDef signals stroke:green;
@@ -321,18 +327,18 @@ flowchart LR
     class TRIGGER_1,TRIGGER_2 scheduled
 
     classDef task font\-style:italic;
-    class Ta,Tb,Tc,Td,Te,Tf,Tg,Th,Ti,Tj,Tk,Tl,Tm,Tn,To,Tp,Tq,Tr,Ts,Tt,Tu,Tv,Tw,Tx,Ty,Tz task;
+    class Ta,Tb,Tc,Td,Te,Tf,Tg,Th,Ti,Tj,Tk,Tl,Tm,Tn,To,Tp,Tq,Tr,Ts,Tt,Tu,Tv,Tw,Tx,Ty,Tz,Tu1 task;
 
     classDef databaseTask color:#6d859d;
     class Ta,Tb,Tf,Tk,Tl databaseTask;
 
 
     classDef apiTask color:#954949;
-    class Tc,Td,Te,Th,Ti,Tj,Tz apiTask;
+    class Tc,Td,Te,Th,Ti,Tj,Tz,Tu1 apiTask;
     
 
     classDef animate stroke-dasharray: 9\,5,stroke-dashoffset: 900,animation: dash 25s linear infinite;
-    class a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19 animate;
+    class a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20 animate;
 ```
 
 The enrichment consists in:
