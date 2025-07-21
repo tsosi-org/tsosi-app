@@ -192,8 +192,8 @@ def post_ingestion_pipeline():
     2 - Trigger fetching of currency rates
     """
     enrichment.update_transfer_date_clc()
-    update_clc_fields.delay()  # type:ignore
     currency_rates_workflow.delay()  # type:ignore
+    update_clc_fields.delay()  # type:ignore
     return TaskResult(partial=False, data_modified=False)
 
 

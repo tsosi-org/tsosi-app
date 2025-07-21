@@ -250,6 +250,10 @@ def update_currency_rate(
     :param target_interval:     The target interval to match.
     :param currency_interval:   The current interval of already fetched data.
     """
+    if target_interval.min is None or target_interval.max is None:
+        logger.error("Null `target_interval` passed, aborting update.")
+        return
+
     # Get the intervals for which the rate data is missing (ie.
     # "target_interval \ currency_interval" in set theory).
     # We assume the rate-time intervals present in DB are continuous.
@@ -272,8 +276,24 @@ def update_currency_rate(
 
     # Fetch data for each interval
     for interval in intervals:
+        # Prevent fetching if the interval is less than 8 days
+        # The remote data doesn't update everyday and the API returns 404 when
+        # there's no data for the queried interval.
+        if ((interval.max - interval.min).days < 8) and interval.max > (
+            date.today() - timedelta(days=3)
+        ):
+            logger.info(
+                f"Aborting subsequent currency fetching for `{currency}` "
+                f"with too small interval {interval.min} - {interval.max}"
+            )
+            # Return instead of continuing here, if the condition is true
+            # it should be the last interval so it's the same.
+            # If not, there's an issue and we should abort.
+            break
+
         logger.info(
-            f"Updating currency rates for `{currency}` from {interval.min} to {interval.max}"
+            f"Updating currency rates for `{currency}` from "
+            f"{interval.min} to {interval.max}"
         )
         current_start = interval.min
         while current_start < interval.max:
@@ -523,7 +543,12 @@ def compute_transfer_amounts():
 
 
 def currency_rates_workflow():
-    """Execute the whole currency rate workflow."""
+    """
+    Execute the whole currency rate workflow:
+        -   Update tha currency rates for all registered currencies.
+        -   Compute the average rage for every date precision (day, month, year)
+        -   Compute the converted amounts for every transfer.
+    """
     logger.info("Starting currency rate workflow.")
     update_currency_rates()
     compute_average_rates()
