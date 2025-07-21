@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from pathlib import Path
 from urllib.parse import urlencode
@@ -8,6 +9,8 @@ from django.core.exceptions import ImproperlyConfigured
 from tsosi.app_settings import app_settings
 
 from .entity_mapping import ENTITY_MAPPING
+
+logger = logging.getLogger(__name__)
 
 SCIPOST_TOKEN_URL = "https://scipost.org/o/token/"
 # Do not write query params in below URLs
@@ -77,8 +80,11 @@ def exhaust_paginated_endpoint(
 
         resp = requests.get(query_url, headers=headers)
         if resp.status_code >= 300:
-            print(resp.status_code)
-            print(resp.content)
+            raise Exception(
+                f"SciPost endpoint HTTP resp `{resp.status_code}`\t"
+                f"{str(resp.content)}"
+            )
+
         data = resp.json()
         query_number += 1
         query_url = data["next"]
@@ -109,7 +115,7 @@ def get_scipost_token() -> str:
     """
     Retrieve an authentication token from SciPost to access the protected API.
     """
-    print("Collecting OAuth2 token")
+    logger.info("Collecting OAuth2 token")
     auth_data = app_settings.SCIPOST_AUTH
 
     if auth_data is None:
@@ -135,18 +141,22 @@ def get_scipost_token() -> str:
             "Error while getting SciPost access token. "
             f"Token endpoint response:\n{token_data}"
         )
-    print("Token obtained.")
+    logger.info("Token obtained.")
     return token
 
 
 def get_scipost_raw_data(
     dest_folder: Path | None = None,
-) -> list[pd.DataFrame]:
+) -> dict[str, pd.DataFrame]:
     """
     Retrieve all SciPost subsidy data from their API and dump it
     in the specified files.
+
+    :param dest_folder: The path of the folder where the data should be written.
+                        If `None`, the data is not exported.
+                        Defaults to `None`.
     """
-    print("Collecting Scipost funding data...")
+    logger.info("Collecting Scipost funding data...")
 
     token = get_scipost_token()
 
@@ -154,28 +164,36 @@ def get_scipost_raw_data(
     api_params = urlencode(API_PARAMS)
     today_str = str(date.today())
 
-    endpoints = [
-        {"url": SCIPOST_SUBSIDY_API_URL, "file_base": "scipost_subsidies"},
-        {"url": SCIPOST_PAYMENTS_API_URL, "file_base": "scipost_payments"},
-        {
+    endpoints = {
+        "subsidies": {
+            "url": SCIPOST_SUBSIDY_API_URL,
+            "file_base": "scipost_subsidies",
+        },
+        "payments": {
+            "url": SCIPOST_PAYMENTS_API_URL,
+            "file_base": "scipost_payments",
+        },
+        "collectives": {
             "url": SCIPOST_COLLECTIVES_API_URL,
             "file_base": "scipost_collectives",
         },
-    ]
+    }
 
-    results = []
-    for endpoint in endpoints:
+    results = {}
+    for code, endpoint in endpoints.items():
         url = f"{endpoint["url"]}?{api_params}"
         data = exhaust_paginated_endpoint(url, headers)
         df = pd.DataFrame.from_records(data)
 
-        print(f"Collected all {endpoint["file_base"]} - {len(data)} entries")
+        logger.info(
+            f"Collected all {endpoint["file_base"]} - {len(data)} entries"
+        )
 
         if dest_folder:
             dest_file = (
                 dest_folder / f"{today_str}_{endpoint["file_base"]}.json"
             )
-            print(f"Dumping data to file: {dest_file}")
+            logger.info(f"Dumping data to file: {dest_file}")
 
             with open(dest_file, "w") as f:
                 df.to_json(
@@ -184,8 +202,7 @@ def get_scipost_raw_data(
                     indent=2,
                 )
 
-            print("Dump done!")
-        results.append(df)
+        results[code] = df
 
     return results
 
@@ -334,6 +351,13 @@ def prepare_collectives(df: pd.DataFrame) -> pd.DataFrame:
 def prepare_data(
     payments: pd.DataFrame, subsidies: pd.DataFrame, collectives: pd.DataFrame
 ) -> pd.DataFrame:
+    """
+    Prepare SciPost consolidated transfer dataset from raw data.
+
+    :param payments:    SciPost payments data.
+    :param subsidies:   SciPost subsidies data.
+    :param collectives: SciPost collectives data.
+    """
     # Prepare payments dataframe
     payments_prepared = prepare_payments(payments)
 
@@ -418,22 +442,26 @@ def prepare_data(
     )
     no_info = filtered[mask]
     if not no_info.empty:
-        print(
-            "The following organizations have no PID nor a manual matching entry"
+        msg = (
+            "The following organizations have no PID nor "
+            "a manual matching entry\t"
         )
         data = (
             no_info[["organization_id", "emitter"]]
             .drop_duplicates()
             .to_dict(orient="records")
         )
-        print(
-            "\n".join(
-                [
+        msg += ", ".join(
+            [
+                (
+                    "{ "
                     f"organization_id: {d["organization_id"]} - {d["emitter"]}"
-                    for d in data
-                ]
-            )
+                    " }"
+                )
+                for d in data
+            ]
         )
+        logger.warning(msg)
 
     # Add collective data
     collectives_prepared = prepare_collectives(collectives)

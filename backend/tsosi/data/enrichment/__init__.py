@@ -9,6 +9,7 @@ from .database_related import (
     clean_identifier_versions,
     ingest_extra_logo_urls,
     new_identifiers_from_records,
+    update_entity_active_status,
     update_entity_from_pid_records,
     update_entity_names,
     update_entity_roles_clc,

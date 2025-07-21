@@ -20,7 +20,7 @@ erDiagram
     SUBSIDY ||--o{ PAYMENT: has 
 ```
 
-The data fetching follows a proper JWT token request to SciPost OAuth2 API.
+The data fetching uses OAuth2 authentication against SciPost identity provider with our SciPost user.
 
 
 ## Entity matching
