@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Callable
 
 import redis
@@ -125,12 +126,14 @@ def ingest_data_file(file_path: str):
 
 
 @shared_task(base=TsosiLockedTask)
-def ingest_all():
+def ingest_all(dir_path: str | None = None):
     """
-    Ingest all data files present in INGEST_DIR and delay the
+    Ingest all data files present in the given folder and delay the
     post-ingestion pipeline after all files are ingested.
+
+    :param dir_path:    The folder of data files. Default to TO_INGEST_DIR.
     """
-    folder = app_settings.TO_INGEST_DIR
+    folder = Path(dir_path) if dir_path else app_settings.TO_INGEST_DIR
     files = folder.glob("*.json")
     for f in files:
         _ = ingestion.ingest_data_file(folder / f, send_signals=False)

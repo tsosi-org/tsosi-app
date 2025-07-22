@@ -1,9 +1,16 @@
 
 Welcome to the TSOSI back-end application, written in Python Django.
 
-Follow the below procedure if you want to setup the application locally without using the Dev container.
+This describes how to setup and run the various backend services: Django web server, Celery worker, Redis, PostgreSQL, run tests.
+
+See [here](./tsosi/README.md) to jump to TSOSI Django app, containing all our code. 
+
+See [here](./deployment/README.md) to know more on our deployment process.
 
 # Manual setup
+
+**ONLY WHEN NOT USING THE DEVCONTAIENR**
+
 ## Install python & deps
 
 * Install python 3.12. The app has not been tested for other Python versions.
@@ -103,7 +110,7 @@ poetry run pytest
 
 ## TSOSI App
 
-All the code is placed in the TSOSI application, cf [README.md](./tsosi/README.md).
+All the code is placed in the TSOSI application, cf [README.md](./tsosi/README.md) for a thorough description of our data workflow.
 
 
 ## Test docker image
@@ -127,7 +134,7 @@ echo $GITHUB_REGISTRY_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
 
 ```bash
 cd backend
-docker build -t backend-test-env -f test.Dockerfile .
+docker build -t tsosi-app-backend-test-env -f test.Dockerfile .
 docker images # Copy the build image's ID
 docker tag <IMAGE_ID> ghcr.io/tsosi-org/tsosi-app-backend-test-env:latest
 docker push ghcr.io/tsosi-org/tsosi-app-backend-test-env:latest
@@ -147,7 +154,8 @@ Basic commands to use in the psql shell:
 * list unique table information `\d+ tableName`
 
 * list the size of each database
-```sql
-SELECT datname as db_name, pg_size_pretty(pg_database_size(datname)) as db_usage FROM pg_database;
-```
+
+    ```sql
+    SELECT datname as db_name, pg_size_pretty(pg_database_size(datname)) as db_usage FROM pg_database;
+    ```
 

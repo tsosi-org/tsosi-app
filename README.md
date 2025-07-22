@@ -4,16 +4,14 @@ This is the repository of the TSOSI web platform including both front-end and ba
 
 TSOSI aims to gather, store, expose and disseminate the financial transfers made to Open Science Infrastructures. For more information, see our [About page](https://tsosi.org/pages/about)
 
+## Backend
 
-## Local dev with manual installation (NOT RECOMMENDED)
+See related [README.md](/backend/README.md) to run the Django app locally and our data workflow.
 
-### Backend
+## Frontend
 
-See related [README.md](/backend/README.md) to install and run the Django app locally.
+See related [README.md](/frontend/README.md) to run the Vue.js app locally.
 
-### Frontend
-
-See related [README.md](/frontend/README.md) to install and run the Vue.js app locally.
 
 ## Local dev using containerized env
 
@@ -89,3 +87,7 @@ And also run the celery worker for more advance usage:
 ```bash
 poetry run celery -A backend_site worker --concurrency=1 --loglevel=INFO
 ```
+
+## Local dev with manual installation (NOT RECOMMENDED)
+
+Follow the instructions in the dedicated [frontend]((./frontend/README.md)) and [backend](./backend/README.md) **README.md** files. 

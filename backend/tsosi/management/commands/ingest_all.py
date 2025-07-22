@@ -5,5 +5,14 @@ from tsosi.tasks import ingest_all
 class Command(BaseCommand):
     help = "Ingest all data files in the INGEST directory."
 
+    def add_arguments(self, parser: CommandParser) -> None:
+        parser.add_argument(
+            "--dir-path",
+            nargs="?",
+            type=str,
+            help="Data dir full path",
+        )
+
     def handle(self, *args, **options):
-        ingest_all()
+        ingest_all(options["dir_path"])
+        return

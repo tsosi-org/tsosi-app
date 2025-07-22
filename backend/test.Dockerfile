@@ -1,6 +1,5 @@
 FROM python:3.12-slim
 
-# ENV TODAY="$(date +'%Y-%m-%d')"
 LABEL org.opencontainers.image.created="$(date +'%Y-%m-%d')"
 LABEL org.opencontainers.image.source="https://github.com/tsosi-org/tsosi-app" 
 LABEL org.opencontainers.image.authors="guillaume.alzieu@univ-grenoble-alpes.fr"
