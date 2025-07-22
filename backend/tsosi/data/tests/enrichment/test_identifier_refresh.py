@@ -5,7 +5,7 @@ from tsosi.data.enrichment.api_related import (
     identifiers_for_refresh,
     refresh_identifier_records,
 )
-from tsosi.models import Identifier, IdentifierRequest, IdentifierVersion
+from tsosi.models import IdentifierRequest, IdentifierVersion
 from tsosi.models.static_data import REGISTRY_ROR
 
 from ..factories import (
@@ -75,8 +75,8 @@ def test_refresh_identifier_records(registries):
     result = refresh_identifier_records(REGISTRY_ROR, use_tokens=False)
     assert not result.partial
 
-    id_v_1 = IdentifierVersion.objects.get(id=id_v_1.id)
-    id_1 = Identifier.objects.get(id=id_1.id)
+    id_v_1.refresh_from_db()
+    id_1.refresh_from_db()
     versions = IdentifierVersion.objects.all().order_by("date_start")
     assert len(versions) == 2
     assert versions[0] == id_v_1
@@ -95,8 +95,8 @@ def test_refresh_identifier_records(registries):
     result = refresh_identifier_records(REGISTRY_ROR, use_tokens=False)
     assert not result.partial
 
-    id_1 = Identifier.objects.get(id=id_1.id)
-    id_v_2 = IdentifierVersion.objects.get(id=id_v_2.id)
+    id_1.refresh_from_db()
+    id_v_2.refresh_from_db()
     versions = IdentifierVersion.objects.all().order_by("date_start")
     assert len(versions) == 2
     assert versions[1] == id_v_2

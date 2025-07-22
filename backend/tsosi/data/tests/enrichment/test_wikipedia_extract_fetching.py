@@ -8,7 +8,6 @@ from tsosi.data.enrichment.api_related import (
 from tsosi.models.entity import (
     ENTITY_REQUEST_WIKIMEDIA_LOGO,
     ENTITY_REQUEST_WIKIPEDIA_EXTRACT,
-    Entity,
     EntityRequest,
 )
 
@@ -87,7 +86,7 @@ def test_update_wikipedia_extract():
     assert len(e_requests) == 0
 
     res = update_wikipedia_extract(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert not res.partial
     assert entity.wikipedia_extract is not None
@@ -112,7 +111,7 @@ def test_update_corrupted_wikipedia_extract(wiki_fetch_setting):
 
     # First attempt
     res = update_wikipedia_extract(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert res.partial
     assert entity.wikipedia_extract is None

@@ -5,7 +5,7 @@ import pytest
 from tsosi.data.enrichment.database_related import (
     ingest_entity_identifier_relations,
 )
-from tsosi.models import Entity, Identifier, IdentifierEntityMatching
+from tsosi.models import Identifier, IdentifierEntityMatching
 from tsosi.models.identifier import MATCH_CRITERIA_FROM_WIKIDATA
 from tsosi.models.static_data import REGISTRY_ROR
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
@@ -89,17 +89,17 @@ def test_rels_ingestion(registries):
     date_update = datetime.now(UTC)
     ingest_entity_identifier_relations(rel_data, REGISTRY_ROR, date_update)
 
-    e_0 = Entity.objects.get(id=e_0.id)
-    e_1 = Entity.objects.get(id=e_1.id)
-    e_2 = Entity.objects.get(id=e_2.id)
-    e_3 = Entity.objects.get(id=e_3.id)
-    e_4 = Entity.objects.get(id=e_4.id)
-    e_5 = Entity.objects.get(id=e_5.id)
+    e_0.refresh_from_db()
+    e_1.refresh_from_db()
+    e_2.refresh_from_db()
+    e_3.refresh_from_db()
+    e_4.refresh_from_db()
+    e_5.refresh_from_db()
 
-    i_0 = Identifier.objects.get(id=i_0.id)
-    i_1 = Identifier.objects.get(id=i_1.id)
-    i_2 = Identifier.objects.get(id=i_2.id)
-    i_3 = Identifier.objects.get(id=i_3.id)
+    i_0.refresh_from_db()
+    i_1.refresh_from_db()
+    i_2.refresh_from_db()
+    i_3.refresh_from_db()
     i_4 = Identifier.objects.get(value="i4")
 
     assert i_0.entity == e_0
@@ -112,10 +112,10 @@ def test_rels_ingestion(registries):
     assert e_5.merged_with == e_4
 
     # Check IdentifierEntityMatching creation
-    i_m_0 = IdentifierEntityMatching.objects.get(id=i_m_0.id)
-    i_m_1 = IdentifierEntityMatching.objects.get(id=i_m_1.id)
-    i_m_2 = IdentifierEntityMatching.objects.get(id=i_m_2.id)
-    i_m_3 = IdentifierEntityMatching.objects.get(id=i_m_3.id)
+    i_m_0.refresh_from_db()
+    i_m_1.refresh_from_db()
+    i_m_2.refresh_from_db()
+    i_m_3.refresh_from_db()
 
     i_m_0s = IdentifierEntityMatching.objects.filter(identifier=i_0)
     assert len(i_m_0s) == 1

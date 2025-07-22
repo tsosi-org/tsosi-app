@@ -8,7 +8,6 @@ from tsosi.data.enrichment.api_related import (
 from tsosi.models.entity import (
     ENTITY_REQUEST_WIKIMEDIA_LOGO,
     ENTITY_REQUEST_WIKIPEDIA_EXTRACT,
-    Entity,
     EntityRequest,
 )
 
@@ -87,7 +86,7 @@ def test_update_logo(storage):
     assert len(e_requests) == 0
 
     res = update_logos(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert not res.partial
     assert entity.logo
@@ -117,7 +116,7 @@ def test_update_corrupted_logo(storage, wiki_logo_retry):
 
     # First attempt
     res = update_logos(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert res.partial
     assert not entity.logo
@@ -127,7 +126,7 @@ def test_update_corrupted_logo(storage, wiki_logo_retry):
 
     # Second attempt
     res = update_logos(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert res.partial
     assert len(e_requests) == 2
@@ -135,7 +134,7 @@ def test_update_corrupted_logo(storage, wiki_logo_retry):
 
     # Third attempt - Exceeding max retry so no request is made
     res = update_logos(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert not res.partial
     assert not entity.logo
