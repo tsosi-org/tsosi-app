@@ -13,7 +13,7 @@ The repository is structured with the following sub-directories:
 
 * `api` - It contains the definition of the API endpoints. The API is generated using [Django Rest Framework](https://www.django-rest-framework.org/).
 
-* `management` - It contains commands that can be ran from a terminal with django base CLI tool `manage.py`.
+* `management` - It contains commands that can be run from a terminal with django base CLI tool `manage.py`.
 
 * `migrations` - It contains all the migration files used to synchronize the database.
 

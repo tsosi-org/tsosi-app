@@ -8,11 +8,11 @@ from tsosi.data.enrichment.api_related import (
 from tsosi.models.entity import (
     ENTITY_REQUEST_WIKIMEDIA_LOGO,
     ENTITY_REQUEST_WIKIPEDIA_EXTRACT,
-    Entity,
     EntityRequest,
 )
 
 from ..factories import EntityFactory, EntityRequestFactory
+from ..utils import MockAiohttpResponse
 
 
 @pytest.mark.django_db
@@ -75,19 +75,22 @@ def wiki_fetch_setting(settings):
 
 
 @pytest.mark.django_db
-def test_update_logo(storage):
-    """TODO: Mock the call to Wikimedia API."""
+def test_update_logo(storage, mocker, uga_logo):
     print("Testing selection of entities for logo update.")
-    entity = EntityFactory.create(
-        logo_url="http://commons.wikimedia.org/wiki/Special:FilePath/Logo%20Universit%C3%A9%20Grenoble-Alpes%20%282020%29.jpg"
-    )
+    logo_url = "http://commons.wikimedia.org/wiki/Special:FilePath/Logo%20Universit%C3%A9%20Grenoble-Alpes%20%282020%29.jpg"
+    entity = EntityFactory.create(logo_url=logo_url)
     e_requests = EntityRequest.objects.all()
     assert not entity.logo
     assert entity.date_logo_fetched is None
     assert len(e_requests) == 0
 
+    # Patch the API call
+    resp = MockAiohttpResponse(content=uga_logo, url=logo_url)
+    mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+
     res = update_logos(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert not res.partial
     assert entity.logo
@@ -102,8 +105,7 @@ def wiki_logo_retry(settings):
 
 
 @pytest.mark.django_db
-def test_update_corrupted_logo(storage, wiki_logo_retry):
-    """TODO: Mock the call to Wikimedia API."""
+def test_update_corrupted_logo(storage, wiki_logo_retry, mocker):
     print("Testing the update of a logo with a corrupted url.")
     entity = EntityFactory.create(
         logo_url="http://commons.wikimedia.org/wiki/Special:FilePath/What_is_this_extension.jpff"
@@ -115,9 +117,13 @@ def test_update_corrupted_logo(storage, wiki_logo_retry):
     assert entity.date_logo_fetched is None
     assert len(e_requests) == 0
 
+    # Patch the API call
+    resp = MockAiohttpResponse(status=404)
+    mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+
     # First attempt
     res = update_logos(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert res.partial
     assert not entity.logo
@@ -127,7 +133,7 @@ def test_update_corrupted_logo(storage, wiki_logo_retry):
 
     # Second attempt
     res = update_logos(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert res.partial
     assert len(e_requests) == 2
@@ -135,7 +141,7 @@ def test_update_corrupted_logo(storage, wiki_logo_retry):
 
     # Third attempt - Exceeding max retry so no request is made
     res = update_logos(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert not res.partial
     assert not entity.logo

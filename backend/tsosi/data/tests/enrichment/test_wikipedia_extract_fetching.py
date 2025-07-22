@@ -8,11 +8,11 @@ from tsosi.data.enrichment.api_related import (
 from tsosi.models.entity import (
     ENTITY_REQUEST_WIKIMEDIA_LOGO,
     ENTITY_REQUEST_WIKIPEDIA_EXTRACT,
-    Entity,
     EntityRequest,
 )
 
 from ..factories import EntityFactory, EntityRequestFactory
+from ..utils import MockAiohttpResponse
 
 
 @pytest.mark.django_db
@@ -75,8 +75,7 @@ def wiki_fetch_setting(settings):
 
 
 @pytest.mark.django_db
-def test_update_wikipedia_extract():
-    """TODO: Mock the call to Wikipedia API."""
+def test_update_wikipedia_extract(mocker, uga_wikipedia_summary):
     print("Testing the update of wikipedia extract.")
     entity = EntityFactory.create(
         wikipedia_url="https://en.wikipedia.org/wiki/Grenoble_Alpes_University"
@@ -86,8 +85,13 @@ def test_update_wikipedia_extract():
     assert entity.date_wikipedia_fetched is None
     assert len(e_requests) == 0
 
+    # Patch the HTTP call
+    resp = MockAiohttpResponse(json=uga_wikipedia_summary)
+    mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+
     res = update_wikipedia_extract(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert not res.partial
     assert entity.wikipedia_extract is not None
@@ -97,8 +101,7 @@ def test_update_wikipedia_extract():
 
 
 @pytest.mark.django_db
-def test_update_corrupted_wikipedia_extract(wiki_fetch_setting):
-    """TODO: Mock the call to Wikipedia API."""
+def test_update_corrupted_wikipedia_extract(wiki_fetch_setting, mocker):
     print("Testing the update of a wikipedia extract with a corrupted link.")
     entity = EntityFactory.create(
         wikipedia_url="https://en.wikipedia.org/wiki/Something_Here_is_Wrong_test"
@@ -110,9 +113,15 @@ def test_update_corrupted_wikipedia_extract(wiki_fetch_setting):
     assert entity.date_wikipedia_fetched is None
     assert len(e_requests) == 0
 
+    # Patch the HTTP call
+    resp = MockAiohttpResponse(
+        status=404, json={"status": 404, "type": "Internal error"}
+    )
+    mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+
     # First attempt
     res = update_wikipedia_extract(use_tokens=False)
-    entity = Entity.objects.get(pk=entity.pk)
+    entity.refresh_from_db()
     e_requests = EntityRequest.objects.all()
     assert res.partial
     assert entity.wikipedia_extract is None

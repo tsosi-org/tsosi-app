@@ -2,6 +2,9 @@
 File declaring global fixtures for all tests.
 """
 
+import json
+from pathlib import Path
+
 import pytest
 from tsosi.models.static_data import create_pid_registries, create_sources
 
@@ -28,3 +31,35 @@ def storage(settings):
             # # },
         }
     }
+
+
+@pytest.fixture
+def uga_ror_record() -> dict:
+    fixture_path = (
+        Path(__file__).resolve().parent / "fixtures/ror_02rx3b187.json"
+    )
+    with open(fixture_path, "r") as f:
+        file_content = json.load(f)
+    return file_content
+
+
+@pytest.fixture
+def uga_wikipedia_summary() -> dict:
+    fixture_path = (
+        Path(__file__).resolve().parent
+        / "fixtures/wikipedia_summary_grenoble_alpes_university.json"
+    )
+    with open(fixture_path, "r") as f:
+        file_content = json.load(f)
+    return file_content
+
+
+@pytest.fixture
+def uga_logo() -> bytes:
+    fixture_path = (
+        Path(__file__).resolve().parent
+        / "fixtures/Logo_Université_Grenoble-Alpes_(2020).jpg"
+    )
+    with open(fixture_path, "rb") as f:
+        file_content = f.read()
+    return file_content

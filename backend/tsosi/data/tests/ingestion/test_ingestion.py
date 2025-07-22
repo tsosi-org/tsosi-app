@@ -4,7 +4,7 @@ import pytest
 import tsosi.data.preparation.raw_data_config as dc
 from django.core.exceptions import ObjectDoesNotExist
 from tsosi.data.ingestion.core import ingest
-from tsosi.models import DataLoadSource, Entity, Transfer
+from tsosi.models import DataLoadSource, Transfer
 from tsosi.tasks import ingest_test
 
 from ..factories import DataLoadSourceFactory, TransferFactory
@@ -76,18 +76,18 @@ def test_old_data_load_deletion(datasources):
     # Check deletion of old transfers
     for t in [t_1, t_2, t_3, t_4, t_5]:
         with pytest.raises(ObjectDoesNotExist):
-            Transfer.objects.get(pk=t.pk)
+            t.refresh_from_db()
 
         # Ensure entities are not deleted
-        emitter = Entity.objects.get(pk=t.emitter.pk)
-        recipient = Entity.objects.get(pk=t.recipient.pk)
+        t.emitter.refresh_from_db()
+        t.recipient
         if t.agent:
-            agent = Entity.objects.get(pk=t.agent.pk)
+            t.agent.refresh_from_db()
 
     # Check deletion of old data loads
     for dls in [dls_1, dls_2]:
         with pytest.raises(ObjectDoesNotExist):
-            DataLoadSource.objects.get(pk=dls.pk)
+            dls.refresh_from_db()
 
     # Check "correct" ingestion
     load_sources = DataLoadSource.objects.all()

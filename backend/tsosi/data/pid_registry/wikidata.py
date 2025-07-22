@@ -130,15 +130,6 @@ WHERE {{
 }}
 """
 
-
-def format_wikidata_record_query(identifiers: Sequence[str]) -> str:
-    """"""
-    ids_part = "\n\t\t".join(
-        [f"wd:{id}" for id in identifiers if re.match(WIKIDATA_ID_REGEX, id)]
-    )
-    return WIKIDATA_RECORD_QUERY_TEMPLATE.format(ids_part=ids_part)
-
-
 WIKIDATA_EXTRACT_MAPPING = {
     "item": "id",
     "itemLabel": "name",
@@ -169,7 +160,7 @@ def process_wikidata_results(result: WikidataSparqlApiResult) -> pd.DataFrame:
 
     df = pd.DataFrame.from_records(result.records)
     df.rename(columns=WIKIDATA_EXTRACT_MAPPING, inplace=True)
-    # Flatten the wikdiata results
+    # Flatten the wikidata results
     for col in df.columns:
         df[col] = df[col].map(lambda x: x if pd.isnull(x) else x["value"])
     # Add missing columns
@@ -225,7 +216,7 @@ async def fetch_wikidata_records_data(
         print("No identifiers to fetch wikidata records for.")
         return pd.DataFrame()
 
-    identifier_chunks: list[str] = [c for c in chunk_sequence(identifiers, 40)]
+    identifier_chunks = [c for c in chunk_sequence(identifiers, 40)]
 
     results = await perform_http_func_batch(
         identifier_chunks, fetch_wikidata_sparql_query, max_conns=5
@@ -233,16 +224,6 @@ async def fetch_wikidata_records_data(
 
     processed = pd.concat([process_wikidata_results(r) for r in results])
     return processed
-
-
-def format_wikipedia_page_title(title: str) -> str:
-    """
-    Format the given title to wikipedia title format:
-        -   Replace spaces with underscores "_"
-        -   %-encode the string
-    """
-    formatted_title = re.sub(r"\s+", "_", title)
-    return quote(formatted_title, safe="")
 
 
 async def fetch_wikipedia_page_extract(

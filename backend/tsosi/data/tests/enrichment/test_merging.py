@@ -4,13 +4,7 @@ import pandas as pd
 import pytest
 from tsosi.data.enrichment.merging import merge_entities
 from tsosi.data.exceptions import DataException
-from tsosi.models import (
-    Entity,
-    Identifier,
-    IdentifierEntityMatching,
-    Transfer,
-    TransferEntityMatching,
-)
+from tsosi.models import TransferEntityMatching
 from tsosi.models.transfer import MATCH_CRITERIA_MERGED
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 
@@ -57,8 +51,8 @@ def test_merging(datasources):
     )
 
     merge_entities(merge_data, datetime.now(UTC))
-    e_1 = Entity.objects.get(id=e_1.id)
-    e_merged_1 = Entity.objects.get(id=e_merged_1.id)
+    e_1.refresh_from_db()
+    e_merged_1.refresh_from_db()
     # Check static data filling when null
     assert e_1.raw_name != e_merged_1.raw_name
     assert e_1.raw_country == e_merged_1.raw_country
@@ -72,10 +66,10 @@ def test_merging(datasources):
     assert not e_merged_1.is_active
 
     # Check transfer entity update
-    t_e_1 = Transfer.objects.get(id=t_e_1.id)
-    t_e_2 = Transfer.objects.get(id=t_e_2.id)
-    t_r = Transfer.objects.get(id=t_r.id)
-    t_a = Transfer.objects.get(id=t_a.id)
+    t_e_1.refresh_from_db()
+    t_e_2.refresh_from_db()
+    t_r.refresh_from_db()
+    t_a.refresh_from_db()
 
     assert t_e_1.emitter == e_1
     assert t_e_2.emitter == e_1
@@ -166,9 +160,9 @@ def test_detach_ids_true(registries):
     date_update = datetime.now(UTC)
     merge_entities(merge_data, date_update)
 
-    e_1 = Entity.objects.get(id=e_1.id)
-    i_1 = Identifier.objects.get(id=i_1.id)
-    i_e_1 = IdentifierEntityMatching.objects.get(id=i_e_1.id)
+    e_1.refresh_from_db()
+    i_1.refresh_from_db()
+    i_e_1.refresh_from_db()
 
     assert e_1.merged_with == e_2
     assert not e_1.is_active
@@ -201,9 +195,9 @@ def test_detach_ids_false(registries):
     date_update = datetime.now(UTC)
     merge_entities(merge_data, date_update, detach_ids=False)
 
-    e_1 = Entity.objects.get(id=e_1.id)
-    i_1 = Identifier.objects.get(id=i_1.id)
-    i_e_1 = IdentifierEntityMatching.objects.get(id=i_e_1.id)
+    e_1.refresh_from_db()
+    i_1.refresh_from_db()
+    i_e_1.refresh_from_db()
 
     assert e_1.merged_with == e_2
     assert not e_1.is_active

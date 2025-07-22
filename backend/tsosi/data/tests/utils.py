@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Type
+from urllib.parse import unquote_plus
 
 import pytest
 
@@ -31,3 +32,34 @@ def base_test_function(func: Callable, test_data: Iterable[BaseTestData]):
             assert result == test.result or (
                 result is None and test.result is None
             ), f"Expected {test.result}, got {result}"
+
+
+class MockAiohttpResponse:
+    def __init__(
+        self,
+        status=200,
+        text: str | None = None,
+        json: dict | list | None = None,
+        content: bytes | None = None,
+        url: str | None = None,
+    ):
+        self.status = status
+        self._text = text
+        self._json = json
+        self._content = content
+        self.url = unquote_plus(url) if url else "http://localhost/api/test/"
+
+    async def text(self):
+        return self._text
+
+    async def json(self):
+        return self._json
+
+    async def read(self):
+        return self._content
+
+    async def __aexit__(self, exc_type, exc, tb):
+        pass
+
+    async def __aenter__(self):
+        return self

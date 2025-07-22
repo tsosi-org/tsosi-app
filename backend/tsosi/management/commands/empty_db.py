@@ -3,14 +3,14 @@ from tsosi.models import empty_db
 
 
 class Command(BaseCommand):
-    help = "Empty TSOSI database."
+    help = "Empty TSOSI database. Default only empty the transfer table."
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            "--incl_currency",
+            "--full",
             action="store_true",
-            help="If passed, also empty currency related tables.",
+            help="If passed, empty all TSOSI tables.",
         )
 
     def handle(self, *args, **options):
-        empty_db(incl_currency=options["incl_currency"])
+        empty_db(full=options["full"])

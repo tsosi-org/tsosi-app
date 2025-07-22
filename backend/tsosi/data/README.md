@@ -32,7 +32,7 @@ flowchart LR
 
 All our partners provide data in the form of .xlsx spreadsheets except for SciPost where we use a dedicated API with private credentials, see `get_scipost_raw_data` in [get_data.py](./preparation/scipost/get_data.py).
 
-All the data files at different stage are stored on the UGA cloud, with private access.
+All the data files at different stages are stored on the UGA cloud, with private access.
 
 
 ## Infra-dependent processing
@@ -49,7 +49,7 @@ This processing includes:
 
 Note that this step and the enrichment step are sometimes inverted, or an additional infra-dependent processing might take place after the enrichment. 
 
-Each infrastructure has a dedicated repository with a README.md file describing the custom processing.
+Each infrastructure has a dedicated repository with a README.md file describing the custom processing, example [here](./preparation/pci/README.md) for PCI.
 
 ## Enrich entities with PIDs
 
@@ -97,7 +97,7 @@ The fields to be mapped are the ones resulting from the above processing steps.
 
 This also requires extra arguments:
 
-- A valid source name and an an optional year (when the data is for a given year), to attach a data load source, generally the following:
+- A valid source name and an an optional year (when the data is for a given year), to attach a data load source (see next section).
 
 - The path to the "raw" (or prepared) dataset. 
 
@@ -126,7 +126,7 @@ The final step is to generate a `.json` file in a specific format that can be in
 
 This is simply done by calling the `generate_data_file` method of the `RawDataConfig` object.
 
-It is responsible for parsing and performing various checks on the data. Errors will be raised if the provided data does not suit our standard. For example, the following cases should raise an error/warning:
+It is responsible for parsing and performing various checks on the data. Errors will be raised if the provided data does not suit our standard and the configurated Fields. For example, the following cases should raise an error/warning:
 
 * No date value (at least one date is mandatory).
 
@@ -156,15 +156,15 @@ I propose the following as improvements.
 
 - TSOSI needs to require an exhaustive and curated dataset of transfers from the data providers. This should not be our work to derive them from whatever data source we are provided with.
 
-    I believe the idea was to try and work with whatever material the infrastructures could provide (mainly accounting/budget reports) to lessen the amount of work from them.
+    I believe the idea was to try and work with whatever material the infrastructures could provide (mainly accounting/budget reports) to lessen their amount of work.
     
     We should not be the one to question the provided data.
 
-- The data preparation process should be a part of TSOSI's platform. The workflow could be something like:
+- The data preparation process should be part of TSOSI's platform. The workflow could be something like:
 
     1. Upload a dataset
     2. Configure the field mapping, basically the underlying `RawDataConfig` object
-    3. Check the input data with config is valid - Required to go further.
+    3. Check the input data against the input config is valid - Required to go further.
     3. OPTIONNAL - Request data enrichment via a button or smthg
     4. OPTIONNAL - Perform manual review
     5. Request ingestion of the prepared and verified dataset
@@ -175,6 +175,8 @@ I propose the following as improvements.
 We need to remove this constraint with the following upgrades:
 
 - We need a solid process of transfer de-duplication. When that is available, we should not be worried anymore about ingesting twice the same dataset as it will be flagged as duplicated and thus discarded or at least ignored.
+
+    EDIT: This can be delayed until we get data from multiple sources (not only recipients, infras, but also emitters and/or intermediaries).
 
 - Additionally The platform should offer a way to explore and correct the data for the trusted users.
 
@@ -198,6 +200,16 @@ flowchart LR
     classDef animate stroke-dasharray: 9\,5,stroke-dashoffset: 900,animation: dash 25s linear infinite;
     class e1,e2,e3,e4 animate;
 ```
+
+## Commands
+
+To ingest one or multiple prepared data file(s), you may run the following commands (locally and on the prod server):
+
+```bash
+poetry run python manage.py ingest_file <FILE_PATH>
+poetry run python manage.py ingest_all --dir-path <FILE_DIR>
+```
+
 
 ## Data format & source validation
 
@@ -226,7 +238,7 @@ Reversely , an entity without identifier can only match or be matched  to an ent
 - Create Entities and related identifiers without match
 - Create Transfers and matching data. 
 
-**Note:** There's no check on the potential duplications of transfers. That's why we currently empty and refill the database when some data changes or has been corrected.
+**Note:** There's no check on the potential duplications of transfers. That's why we currently remove old data loads then ingest the new one when we want to make updates.
 
 ## Send "transfers created" event
 

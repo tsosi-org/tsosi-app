@@ -5,7 +5,7 @@ from tsosi.data.enrichment.api_related import (
     identifiers_for_refresh,
     refresh_identifier_records,
 )
-from tsosi.models import Identifier, IdentifierRequest, IdentifierVersion
+from tsosi.models import IdentifierRequest, IdentifierVersion
 from tsosi.models.static_data import REGISTRY_ROR
 
 from ..factories import (
@@ -13,6 +13,7 @@ from ..factories import (
     IdentifierRequestFactory,
     IdentifierVersionFactory,
 )
+from ..utils import MockAiohttpResponse
 
 
 @pytest.mark.django_db
@@ -53,8 +54,7 @@ def test_identifiers_for_refresh(registries):
 
 
 @pytest.mark.django_db
-def test_refresh_identifier_records(registries):
-    """TODO: Mock the actual call to ROR API"""
+def test_refresh_identifier_records(registries, mocker, uga_ror_record):
     print("Testing correct refresh of identifier records.")
     # ROR UGA - https://ror.org/02rx3b187
     id_1 = IdentifierFactory.create(registry_id=REGISTRY_ROR, value="02rx3b187")
@@ -71,12 +71,16 @@ def test_refresh_identifier_records(registries):
     id_1.current_version = id_v_1
     id_1.save()
 
+    # Patch the HTTP call
+    resp = MockAiohttpResponse(json=uga_ror_record)
+    mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+
     # Actual test
     result = refresh_identifier_records(REGISTRY_ROR, use_tokens=False)
     assert not result.partial
 
-    id_v_1 = IdentifierVersion.objects.get(id=id_v_1.id)
-    id_1 = Identifier.objects.get(id=id_1.id)
+    id_v_1.refresh_from_db()
+    id_1.refresh_from_db()
     versions = IdentifierVersion.objects.all().order_by("date_start")
     assert len(versions) == 2
     assert versions[0] == id_v_1
@@ -95,8 +99,8 @@ def test_refresh_identifier_records(registries):
     result = refresh_identifier_records(REGISTRY_ROR, use_tokens=False)
     assert not result.partial
 
-    id_1 = Identifier.objects.get(id=id_1.id)
-    id_v_2 = IdentifierVersion.objects.get(id=id_v_2.id)
+    id_1.refresh_from_db()
+    id_v_2.refresh_from_db()
     versions = IdentifierVersion.objects.all().order_by("date_start")
     assert len(versions) == 2
     assert versions[1] == id_v_2
@@ -114,8 +118,9 @@ def identifier_fetch_setting(settings):
 
 
 @pytest.mark.django_db
-def test_refresh_corrupted_ror_record(registries, identifier_fetch_setting):
-    """TODO: Mock the actual call to ROR API."""
+def test_refresh_corrupted_ror_record(
+    registries, identifier_fetch_setting, mocker, uga_ror_record
+):
     print("Testing fetching error of corrupted ROR identifier.")
     # Non-existent ROR - https://ror.org/a00000000
     id_1 = IdentifierFactory.create(registry_id=REGISTRY_ROR, value="a00000000")
@@ -130,6 +135,10 @@ def test_refresh_corrupted_ror_record(registries, identifier_fetch_setting):
 
     id_1.current_version = id_v_1
     id_1.save()
+
+    # Patch the HTTP call
+    resp = MockAiohttpResponse(status=404, json={"errors": ["unvalid"]})
+    mocker.patch("aiohttp.ClientSession.get", return_value=resp)
 
     # First try
     result = refresh_identifier_records(REGISTRY_ROR, use_tokens=False)
