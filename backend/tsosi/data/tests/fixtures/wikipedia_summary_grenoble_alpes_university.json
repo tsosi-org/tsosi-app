@@ -1,0 +1,47 @@
+{
+  "type": "standard",
+  "title": "Grenoble Alpes University",
+  "displaytitle": "<span class=\"mw-page-title-main\">Grenoble Alpes University</span>",
+  "namespace": { "id": 0, "text": "" },
+  "wikibase_item": "Q945876",
+  "titles": {
+    "canonical": "Grenoble_Alpes_University",
+    "normalized": "Grenoble Alpes University",
+    "display": "<span class=\"mw-page-title-main\">Grenoble Alpes University</span>"
+  },
+  "pageid": 4865950,
+  "thumbnail": {
+    "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Logo_Universit%C3%A9_Grenoble_Alpes_2020.svg/330px-Logo_Universit%C3%A9_Grenoble_Alpes_2020.svg.png",
+    "width": 320,
+    "height": 196
+  },
+  "originalimage": {
+    "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Logo_Universit%C3%A9_Grenoble_Alpes_2020.svg/512px-Logo_Universit%C3%A9_Grenoble_Alpes_2020.svg.png",
+    "width": 512,
+    "height": 314
+  },
+  "lang": "en",
+  "dir": "ltr",
+  "revision": "1301422337",
+  "tid": "50354cda-64d4-11f0-8452-d83e4cbf3340",
+  "timestamp": "2025-07-19T19:12:29Z",
+  "description": "Research university in France",
+  "description_source": "local",
+  "coordinates": { "lat": 45.18944444, "lon": 5.77 },
+  "content_urls": {
+    "desktop": {
+      "page": "https://en.wikipedia.org/wiki/Grenoble_Alpes_University",
+      "revisions": "https://en.wikipedia.org/wiki/Grenoble_Alpes_University?action=history",
+      "edit": "https://en.wikipedia.org/wiki/Grenoble_Alpes_University?action=edit",
+      "talk": "https://en.wikipedia.org/wiki/Talk:Grenoble_Alpes_University"
+    },
+    "mobile": {
+      "page": "https://en.m.wikipedia.org/wiki/Grenoble_Alpes_University",
+      "revisions": "https://en.m.wikipedia.org/wiki/Special:History/Grenoble_Alpes_University",
+      "edit": "https://en.m.wikipedia.org/wiki/Grenoble_Alpes_University?action=edit",
+      "talk": "https://en.m.wikipedia.org/wiki/Talk:Grenoble_Alpes_University"
+    }
+  },
+  "extract": "The Université Grenoble Alpes is a grand établissement in Grenoble, France. Founded in 1339, it is the third largest university in France with about 60,000 students and over 3,000 researchers.",
+  "extract_html": "<p>The <b><span><span style=\"font-style:normal\">Université Grenoble Alpes</span></span></b> is a <span><i>grand établissement</i></span> in Grenoble, France. Founded in 1339, it is the third largest university in France with about 60,000 students and over 3,000 researchers.</p>"
+}

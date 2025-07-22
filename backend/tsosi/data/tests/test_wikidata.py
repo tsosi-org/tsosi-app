@@ -4,7 +4,7 @@ from tsosi.data.pid_registry.wikidata import fetch_wikidata_records_data
 
 
 def test_fetch_wikidata_records():
-    """TODO: Mock the call to Wikidata API."""
+    """TODO: Mock the call to Wikidata API ?"""
     print("Testing fetching of wikidata records")
     # First value does not exist but has correct syntax
     # Second one is UGA

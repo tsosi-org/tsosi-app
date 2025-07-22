@@ -15,6 +15,7 @@ from ..factories import (
     IdentifierRequestFactory,
     IdentifierVersionFactory,
 )
+from ..utils import MockAiohttpResponse
 
 
 @pytest.mark.django_db
@@ -100,10 +101,10 @@ def test_log_identifier_requests(registries):
 
 
 @pytest.mark.django_db
-def test_fetch_empty_identifier_records(registries):
-    """TODO: Mock the actual call to ROR API"""
+def test_fetch_empty_identifier_records(registries, mocker, uga_ror_record):
     print("Testing correct fetching of empty ROR identifier")
     # ROR UGA - https://ror.org/02rx3b187
+
     id_1 = IdentifierFactory.create(registry_id=REGISTRY_ROR, value="02rx3b187")
 
     # Test table is empty on init
@@ -113,8 +114,12 @@ def test_fetch_empty_identifier_records(registries):
     requests = IdentifierRequest.objects.all()
     assert len(requests) == 0
 
+    # Patch the HTTP call
+    resp = MockAiohttpResponse(json=uga_ror_record)
+    mocker.patch("aiohttp.ClientSession.get", return_value=resp)
+
     # Actual test
-    result = fetch_empty_identifier_records(REGISTRY_ROR, use_tokens=False)
+    _ = fetch_empty_identifier_records(REGISTRY_ROR, use_tokens=False)
 
     versions = IdentifierVersion.objects.all()
     assert len(versions) == 1
@@ -133,9 +138,8 @@ def identifier_fetch_setting(settings):
 
 @pytest.mark.django_db
 def test_fetch_corrupted_empty_ror_records(
-    registries, identifier_fetch_setting
+    registries, identifier_fetch_setting, mocker
 ):
-    """TODO: Mock the actual call to ROR API"""
     print("Testing fetching error of corrupted empty ROR identifier")
     # Non-existent ROR - https://ror.org/a00000000
     id_1 = IdentifierFactory.create(registry_id=REGISTRY_ROR, value="a00000000")
@@ -146,6 +150,10 @@ def test_fetch_corrupted_empty_ror_records(
 
     requests = IdentifierRequest.objects.all()
     assert len(requests) == 0
+
+    # Patch the HTTP call
+    resp = MockAiohttpResponse(status=404, json={"errors": ["unvalid"]})
+    mocker.patch("aiohttp.ClientSession.get", return_value=resp)
 
     # First try
     result = fetch_empty_identifier_records(REGISTRY_ROR, use_tokens=False)
@@ -188,7 +196,6 @@ def test_fetch_corrupted_empty_ror_records(
 def test_fetch_corrupted_empty_wikidata_records(
     registries, identifier_fetch_setting
 ):
-    """TODO: Mock the actual call to Wikidata API"""
     print("Testing fetching error of corrupted empty Wikidata identifier")
     # Invalid Wikidata
     id_1 = IdentifierFactory.create(
