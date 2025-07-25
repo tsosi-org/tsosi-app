@@ -5,11 +5,12 @@ from tsosi.models.date import DATE_PRECISION_DAY
 
 
 def get_config(
-    file_path: str, sheet_name: str, date_data: date
+    file_path: str, sheet_name: str, year: int, full_data: bool, date_data: date
 ) -> rdc.RawDataConfigFromFile:
     source = rdc.DataLoadSource(
         data_source_id="doab_oapen_library",
-        full_data=False,
+        year=year,
+        full_data=full_data,
         data_load_name=file_path.split("/")[-1],
         date_data_obtained=date_data,
     )
