@@ -57,3 +57,15 @@ Then we filter the dataset to get only accurate transfers:
     ```
 
 Finally, we join the collective data to account for the intermediary, if any.
+
+**!!!!! ISSUE !!!!!**
+
+There's an issue when:
+
+- subsidies part of a collective
+- there's only 1 payment from the intermediary with a 0-amount subsidy
+- the payment is annual and the subsidies last for more than 1 year   
+
+In that case, the subsidies without payment (the actual subsidies) have the status `uptodate` so they are discarded by our processing.
+
+There's not really any easy fix to this problem. We could try to derive that subsidies span several years and that the intermediary is paying from them but it's not really robust. The payment should be linked to the collective instead of being within a individual 0-amount subsidy.

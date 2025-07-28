@@ -23,6 +23,8 @@ SCIPOST_COLLECTIVES_API_URL = (
 # might de-activate this option
 API_PARAMS = {"limit": 500, "format": "json"}
 
+SCOSS_REGEX = r"\bscoss\b"
+
 
 def get_entity_mapping() -> pd.DataFrame:
     """
@@ -227,6 +229,7 @@ COLS_OF_INTEREST = [
     "subsidy_date_until",
     "has_payment",
     "organization_url",
+    "scoss",
 ]
 
 
@@ -247,6 +250,9 @@ def prepare_payments(df: pd.DataFrame):
         inplace=True,
     )
     data["has_payment"] = True
+    data["scoss"] = data["subsidy_description"].str.contains(
+        SCOSS_REGEX, case=False
+    )
 
     cols_of_interest = [c for c in COLS_OF_INTEREST if c in data.columns]
     return data[cols_of_interest].copy()
@@ -274,6 +280,9 @@ def prepare_subsidies(df: pd.DataFrame):
         inplace=True,
     )
     data["has_payment"] = False
+    data["scoss"] = data["subsidy_description"].str.contains(
+        SCOSS_REGEX, case=False
+    )
 
     cols_of_interest = [c for c in COLS_OF_INTEREST if c in data.columns]
     return data[cols_of_interest].copy()
@@ -303,6 +312,9 @@ def prepare_collectives(df: pd.DataFrame) -> pd.DataFrame:
     ).astype(int)
     data["agent_wikidata_id"] = None
     data["agent_website_url"] = None
+    data["collective_scoss"] = data["description"].str.contains(
+        SCOSS_REGEX, case=False
+    )
 
     # Merge custom mapping
     mapping = get_entity_mapping()
@@ -344,6 +356,7 @@ def prepare_collectives(df: pd.DataFrame) -> pd.DataFrame:
         "agent_wikidata_id",
         "agent_website_url",
         "organization_id",
+        "collective_scoss",
     ]
     return exploded[cols_of_interest].copy()
 
@@ -475,9 +488,13 @@ def prepare_data(
                 "agent_ror_id",
                 "agent_wikidata_id",
                 "agent_website_url",
+                "collective_scoss",
             ]
         ],
         how="left",
         on="subsidy_id",
     )
+    # Update the scoss boolean, it can come from the collective
+    results["scoss"] = results["scoss"] | results["collective_scoss"]
+    results.drop(columns=["collective_scoss"], inplace=True)
     return results

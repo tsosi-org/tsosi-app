@@ -86,6 +86,7 @@ class Transfer(TimestampedModel):
     amounts_clc = models.JSONField(null=True)
     hide_amount = models.BooleanField(default=False)
     original_amount_field = models.CharField(max_length=128)
+    scoss = models.BooleanField(default=False)
 
     class Meta:
         constraints = [

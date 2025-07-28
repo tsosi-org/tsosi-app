@@ -35,7 +35,7 @@ def create_ssh_client(server: ServerConfig):
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     ssh_client.load_system_host_keys()
-    ssh_client.load_host_keys(os.path.expanduser("~/.ssh/known_hosts"))
+    ssh_client.load_host_keys(Path.home() / ".ssh/known_hosts")
 
     ssh_client.connect(server.address, username=server.user, look_for_keys=True)
     return ssh_client
