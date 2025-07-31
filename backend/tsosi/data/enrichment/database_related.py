@@ -126,11 +126,12 @@ def ingest_entity_identifier_relations(
 
     # 1 -   Retrieve the existing (PID -> Entity) relations. Drop the input
     #       relations that already exist.
+    columns = ["id", "value", "entity_id"]
     ex_identifiers = Identifier.objects.filter(registry__id=registry_id).values(
-        "id", "value", "entity_id"
+        *columns
     )
     existing_relations = (
-        pd.DataFrame.from_records(ex_identifiers)
+        pd.DataFrame.from_records(ex_identifiers, columns=columns)
         .rename(columns={"value": "identifier_value", "id": "identifier_id"})
         .set_index("identifier_id")
     )
@@ -309,6 +310,9 @@ def entities_with_identifier_data() -> pd.DataFrame:
             "logo_url",
             "coordinates",
             "date_inception",
+            # Other values that may be updated
+            "date_logo_fetched",
+            "date_wikipedia_fetched",
         )
     )
     entities = pd.DataFrame.from_records(entities)
@@ -418,6 +422,8 @@ def update_entity_from_pid_records() -> TaskResult:
     accordingly.
     Update all the simple clc fields: name, country, website, logo_url,
     wikipedia_url.
+    Also update fields based on above updates: date_logo_fetched,
+    date_wikipedia_fetched.
     """
     logger.info("Updating entity from PID records.")
     result = TaskResult(partial=False)
@@ -436,26 +442,40 @@ def update_entity_from_pid_records() -> TaskResult:
         "wikipedia_url": ["wikidata_wikipedia_url", "ror_wikipedia_url"],
         "coordinates": ["wikidata_coordinates", "ror_coordinates"],
         "date_inception": ["ror_date_inception", "wikidata_date_inception"],
+        # The following fields are to be updated according to other fields
+        "date_logo_fetched": ["date_logo_fetched"],
+        "date_wikipedia_fetched": ["date_wikipedia_fetched"],
     }
     # Compute the value for each field and check if there's a diff with existing
     # data
+    cols = ["id"]
     for field, f_list in clc_field_priority.items():
         f_clc = f"{field}_clc"
         entities[f_clc] = entities[f_list].bfill(axis=1).iloc[:, 0]
         f_diff = f"{field}_diff"
         entities[f_diff] = ~entities[field].eq(entities[f_clc])
+        cols.append(f_clc)
+        cols.append(f_diff)
 
     # Select entities with new data to be updated
     entities["diff"] = entities[
         [f"{f}_diff" for f in clc_field_priority.keys()]
     ].any(axis=1)
-    cols = ["id", *[f"{f}_clc" for f in clc_field_priority.keys()]]
     entities_to_update = entities[entities["diff"]][cols].copy()
     entities_to_update.rename(
         columns={f"{f}_clc": f for f in clc_field_priority.keys()}, inplace=True
     )
+    # Side effects
+    # date_logo_fetched must be set to null when the logo_url changes
+    # date_wikipedia_fetched must be set to null when the wikipedia_url changes
+    mask = entities_to_update["logo_url_diff"]
+    entities_to_update.loc[mask, "date_logo_fetched"] = None
+
+    mask = entities_to_update["wikipedia_url_diff"]
+    entities_to_update.loc[mask, "date_wikipedia_fetched"] = None
+
     entities_to_update["date_last_updated"] = timezone.now()
-    cols = entities_to_update.columns.to_list()
+    cols = ["id", *clc_field_priority.keys(), "date_last_updated"]
 
     bulk_update_from_df(Entity, entities_to_update, cols)
 
@@ -506,10 +526,11 @@ def new_identifiers_from_records(registry_id: str) -> TaskResult:
         ]
     ].copy()
 
-    check = entities.copy(deep=True)
-    check["_doublon"] = ~(check[base_col].isna() | check[new_col].isna())
-    check["_diff"] = ~(check[base_col].eq(check[new_col]))
-    mismatch = check[check["_doublon"] & check["_diff"]]
+    entities["_doublon"] = ~(
+        entities[base_col].isna() | entities[new_col].isna()
+    )
+    entities["_diff"] = ~(entities[base_col].eq(entities[new_col]))
+    mismatch = entities[entities["_doublon"] & entities["_diff"]]
     if not mismatch.empty:
         msgs = []
         msgs.append(
@@ -528,7 +549,11 @@ def new_identifiers_from_records(registry_id: str) -> TaskResult:
             entities.drop(mismatch.index, inplace=True)
         logger.warning("\n".join(msgs))
 
-    entities["_new_pid"] = entities[base_col].isna() & ~entities[new_col].isna()
+    # We update all relations having a different new value, if not null
+    # The dropping of problematic relations should be done before
+    # entities["_new_pid"] = entities[base_col].isna() & ~entities[new_col].isna()
+    entities["_new_pid"] = entities["_diff"] & ~entities[new_col].isna()
+    entities.drop(columns=["_diff", "_doublon"])
     new_rels = entities[entities["_new_pid"]][["id", new_col]].reset_index(
         drop=True
     )
