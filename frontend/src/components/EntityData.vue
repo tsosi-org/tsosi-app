@@ -196,7 +196,7 @@ const baseSupporterColumns: TableColumnProps[] = [
     title: "Beneficiary",
     field: "recipient",
     type: "entityLink",
-    fieldLabel: "recipient.name",
+    fieldLabel: "recipient.short_name", // This is only used for filtering - All recipients have shortnames so it works fine for now
     sortable: true,
     filter: {
       enable: true,
