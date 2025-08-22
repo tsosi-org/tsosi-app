@@ -272,7 +272,7 @@ function getAppliedFilters(): AppliedFilters {
     (newObj: { [id: string]: string }, key) => {
       let value = appliedFilters.value[key]
       if (value !== null && value !== undefined) {
-        value = value.replaceAll(/\s+/g, " ").trim().toLowerCase()
+        value = value.replace(/\s+/g, " ").trim().toLowerCase() as string
         if (value !== "") {
           newObj[key] = value
         }

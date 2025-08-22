@@ -1,6 +1,7 @@
 {
   "files": [],
   "compilerOptions": {
+    "target": "es2022",
     "lib": ["es2022"]
   },
   "references": [
