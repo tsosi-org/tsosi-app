@@ -1,15 +1,24 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router"
 
-import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
-import StaticContentComponent from "@/views/StaticContentView.vue"
 import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
+import StaticContentComponent from "@/views/StaticContentView.vue"
 </script>
 
 <template>
   <StaticContentComponent title="Frequently Asked Questions">
     <template #default>
+      <StaticSectionAtom
+       id="tsosi-meaning"
+       title="What does TSOSI mean?"
+      >
+      <p>
+        TSOSI stands for
+        <b>Transparency to sustain open science infrastructure</b>.
+      </p>
+      </StaticSectionAtom>
       <StaticSectionAtom
         id="beta-version"
         title="What are the implications of the beta version?"
@@ -35,16 +44,32 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
           </li>
           
           <li>
-            TSOSI's URL: the weblink to the entities contains identifiers,
+            TSOSI's URL: the weblinks of the entities contain identifiers.
+            <br />
+            By default, the URL is formed with the entity's ROR identifier to
+            provide a persistent URL,
+            <i>e.g.</i>
+            
+            <CodeBlockAtom
+              :content="'https://tsosi.org/entities/02rx3b187'"
+              :inline="true"
+              :background="true"
+            /> for <RouterLink :to="{ name: 'entity', params: { id: '02rx3b187' }}" >Université Grenoble Alpes</RouterLink>.
+
+            <br />
+            If no ROR identifier is known, a random unique identifier is
+            generated, 
             <i>e.g.</i>
 
             <CodeBlockAtom
               :content="'https://tsosi.org/entities/e5f5f1d5-cd16-48c5-94d9-f73ce7968195'"
               :inline="true"
               :background="true"
-            />, which are not persistent. Each time TSOSI ingests new data, this
-            URL changes. Therefore, if you would like to share the webpage of a
-            TSOSI's organization, it's best to also share its full name.
+            />, which will not be persistent. Each time TSOSI ingests new data,
+            this URL may change. Therefore, if you would like to share
+            the webpage of a TSOSI's organization without known ROR identifier,
+            it's best to also share its
+            full name.
           </li>
         </ul>
       </StaticSectionAtom>
@@ -218,14 +243,13 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
           It depends on the infrastructure. The lowest frequency at which the
           data are updated is once a year; the maximum frequency could be once a
           day.
-          <!--
-          For example, the SciPost financial data are updated once a day thanks
+          
+          For example, the SciPost financial data are updated once a week thanks
           to its software, which includes an API, see the
           <ExternalLinkAtom
-            :label="'organization \'s page on scipost.org'"
-            :href="'https://scipost.org/organizations/'"
+            :label="'subsidies page on scipost.org'"
+            :href="'https://scipost.org/finances/subsidies/'"
           />.
-          -->
         </p>
       </StaticSectionAtom>
 
@@ -316,6 +340,25 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
           of the financial support. TSOSI is new, its data are new, and
           therefore some infrastructure has made the choice to hide the amount.
         </p>
+      </StaticSectionAtom>
+      
+      <StaticSectionAtom
+        id="organization-names"
+        title="How are multilingual organization names handled?"
+      >
+        <p>
+          The name of the organization comes, in order of priority:
+        </p>
+        <ul>
+          <li>
+            from the attached ROR record: we use the preferred label as
+            it appears on the record page.
+          </li>
+          <li>
+            from the attached Wikidata item: we use the English label from
+            the item and fall back to the default label.
+          </li>
+        </ul>
       </StaticSectionAtom>
 
       <StaticSectionAtom

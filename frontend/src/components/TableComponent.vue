@@ -93,7 +93,7 @@ const filters: Ref<
 const filterModels: { [id: string]: Ref<string | null | undefined> } = {}
 const minDataForFilters = 10
 // Holds the applied filters in the form { columnId: filterValue }
-const appliedFilters: Ref<AppliedFilters> = ref({})
+const appliedFilters: Ref<{[columnId: string]: string | null | undefined}> = ref({})
 const filteredData: Ref<Array<Record<string, any>>> = ref([])
 const minWidthWithFilter = "100px"
 const useFilters = computed(
@@ -270,9 +270,12 @@ const debouncedFilter = debounce(filter, 200)
 function getAppliedFilters(): AppliedFilters {
   return Object.keys(appliedFilters.value).reduce(
     (newObj: { [id: string]: string }, key) => {
-      const value = appliedFilters.value[key]
-      if (!["", null, undefined].includes(value)) {
-        newObj[key] = value
+      let value = appliedFilters.value[key]
+      if (value !== null && value !== undefined) {
+        value = value.replaceAll(/\s+/g, " ").trim().toLowerCase()
+        if (value !== "") {
+          newObj[key] = value
+        }
       }
       return newObj
     },
@@ -305,7 +308,6 @@ function applyFilters() {
   } else {
     filteredData.value = props.data
   }
-  console.log("Dataset Filtered!")
 }
 
 /**
