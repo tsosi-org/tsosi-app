@@ -10,15 +10,7 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
 <template>
   <StaticContentComponent title="Frequently Asked Questions">
     <template #default>
-      <StaticSectionAtom
-       id="tsosi-meaning"
-       title="What does TSOSI mean?"
-      >
-      <p>
-        TSOSI stands for
-        <b>Transparency to sustain open science infrastructure</b>.
-      </p>
-      </StaticSectionAtom>
+
       <StaticSectionAtom
         id="beta-version"
         title="What are the implications of the beta version?"
@@ -43,41 +35,10 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
             if you think you have found one.
           </li>
           
-          <li>
-            TSOSI's URL: the weblinks of the entities contain identifiers.
-            <br />
-            By default, the URL is formed with the entity's ROR identifier to
-            provide a persistent URL,
-            <i>e.g.</i>
-            
-            <CodeBlockAtom
-              :content="'https://tsosi.org/entities/02rx3b187'"
-              :inline="true"
-              :background="true"
-            /> for <RouterLink :to="{ name: 'entity', params: { id: '02rx3b187' }}" >Université Grenoble Alpes</RouterLink>.
-
-            <br />
-            If no ROR identifier is known, a random unique identifier is
-            generated, 
-            <i>e.g.</i>
-
-            <CodeBlockAtom
-              :content="'https://tsosi.org/entities/e5f5f1d5-cd16-48c5-94d9-f73ce7968195'"
-              :inline="true"
-              :background="true"
-            />, which will not be persistent. Each time TSOSI ingests new data,
-            this URL may change. Therefore, if you would like to share
-            the webpage of a TSOSI's organization without known ROR identifier,
-            it's best to also share its
-            full name.
-          </li>
         </ul>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="project-history"
-        title="What is the project's history?"
-      >
+      <StaticSectionAtom id="project-history" title="What is the project's history?" >
         <p>
           TSOSI officially started in September 2024, funded by the
           <ExternalLinkAtom
@@ -104,20 +65,21 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="pronounce-tsosi"
-        title="How do you pronounce TSOSI?"
-      >
+      <StaticSectionAtom id="tsosi-meaning" title="What does TSOSI mean?">
+      <p>
+        TSOSI stands for <b>Transparency to sustain open science infrastructure</b>.
+      </p>
+      </StaticSectionAtom>
+
+
+      <StaticSectionAtom id="pronounce-tsosi" title="How do you pronounce TSOSI?">
         <p>
           It's like the beginning of the word “society” with a “t” at the
           beginning: “t-sosci”.
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="data-provider-infra"
-        title="What are the infrastructures that provide the data?"
-      >
+      <StaticSectionAtom id="data-provider-infra" title="What are the infrastructures that provide the data?" >
         <p>
           The financial data comes from TSOSI partners' infrastructures: DOAJ,
           DOAB, SciPost, PeerCommunityIn, and OPERAS.
@@ -153,6 +115,51 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
       </StaticSectionAtom>
 
       <StaticSectionAtom
+        id="why-dont-i-see-the-supports-made-by-my-organization"
+        title="Why don't I see the supports made by my organization?"
+      >
+        <p>
+          TSOSI is in beta version: for its launch, it includes only the
+          financial support made by
+          <RouterLink :to="'#data-provider-infra'"
+            >partner infrastructures</RouterLink
+          >. Moreover, note that the data from DOAB and DOAJ begin in 2021, so
+          users will not find the financial data made before this year.
+        </p>
+      </StaticSectionAtom>
+
+      <StaticSectionAtom
+        id="doaj-or-doab-page-missing-institution"
+        title="From the DOAJ or DOAB page, why can I not see my institution?"
+      >
+        <p>
+          First, note that TSOSI has DOAJ and DOAB financial data starting in
+          2021. It's indicated in TSOSI's platform in the middle of their
+          webpage. Secondly, and only for the DOAJ, note that for 2021, TSOSI
+          did not have the breakdown data, but only the intermediary one, like a
+          library consortium. These two factors can explain why you don't see
+          your institution's contribution.
+        </p>
+      </StaticSectionAtom>
+
+
+
+      <StaticSectionAtom id="contact-us" title="How to contact TSOSI?">
+        <p>
+          Any support and feedback are strongly welcome, reach us at
+          <CodeBlockAtom
+            :content="'contact (the at symbol) tsosi.org'"
+            :inline="true"
+            :background="true"
+          />.
+        </p>
+      </StaticSectionAtom>
+
+
+
+      <!-- SCOPE AND DEFINITION -->
+
+      <StaticSectionAtom
         id="open-science-infrastructure-meaning"
         title="What do you mean by open science infrastructure?"
       >
@@ -177,17 +184,6 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom id="contact-us" title="How to contact TSOSI?">
-        <p>
-          Any support and feedback are strongly welcome, reach us at
-          <CodeBlockAtom
-            :content="'contact (the at symbol) tsosi.org'"
-            :inline="true"
-            :background="true"
-          />.
-        </p>
-      </StaticSectionAtom>
-
       <StaticSectionAtom
         id="contracts-or-transfers"
         title="Is TSOSI more related to contracts or transfers between stakeholders?"
@@ -205,10 +201,10 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="data-sources"
-        title="What are the data sources of TSOSI?"
-      >
+
+      <!-- ALL ABOUT THE DATA -->
+
+      <StaticSectionAtom id="data-sources" title="What are the data sources of TSOSI?" >
         <p>
           Financial data comes from
           <RouterLink :to="'#data-provider-infra'"
@@ -235,9 +231,27 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="data-update-frequency"
-        title="With which frequency is the data updated?"
+
+      <StaticSectionAtom id="how-does-tsosi-manage-its-url" title="How does TSOSI manage its URLs?">
+        <p>
+          All entities of TSOSI have a unique URL. If an entity has a ROR identifier, it is included in its URL, <i>e.g.</i>
+          
+          <CodeBlockAtom
+            :content="'https://tsosi.org/entities/02rx3b187'"
+            :inline="true"
+            :background="true"
+          />. If not, an internal identifier is generated instead, <i>e.g.</i>    
+          <CodeBlockAtom
+            :content="'https://tsosi.org/entities/e5f5f1d5-cd16-48c5-94d9-f73ce7968195'"
+            :inline="true"
+            :background="true"
+          />.<br /> 
+          
+          Note that <b>only the URLs with the ROR identifier are persistent</b>. The others may change each time TSOSI ingests new data. If you find a missing ROR for an institution, please <RouterLink :to="'#contact-us'">Contact us</RouterLink>. 
+        </p>
+      </StaticSectionAtom>
+
+      <StaticSectionAtom id="data-update-frequency" title="With which frequency is the data updated?"
       >
         <p>
           It depends on the infrastructure. The lowest frequency at which the
@@ -271,10 +285,7 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="data-license"
-        title="What license is applied to the data?"
-      >
+      <StaticSectionAtom id="data-license" title="What license is applied to the data?" >
         <p>
           Re-use of TSOSI's data is highly encouraged! Data is shared under a
           CC-BY-SA license. Just cite tsosi.org and apply the same license — see
@@ -288,38 +299,7 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="why-dont-i-see-the-supports-made-by-my-organization"
-        title="Why don't I see the supports made by my organization?"
-      >
-        <p>
-          TSOSI is in beta version: for its launch, it includes only the
-          financial support made by
-          <RouterLink :to="'#data-provider-infra'"
-            >partner infrastructures</RouterLink
-          >. Moreover, note that the data from DOAB and DOAJ begin in 2021, so
-          users will not find the financial data made before this year.
-        </p>
-      </StaticSectionAtom>
-
-      <StaticSectionAtom
-        id="doaj-or-doab-page-missing-institution"
-        title="From the DOAJ or DOAB page, why can I not see my institution?"
-      >
-        <p>
-          First, note that TSOSI has DOAJ and DOAB financial data starting in
-          2021. It's indicated in TSOSI's platform in the middle of their
-          webpage. Secondly, and only for the DOAJ, note that for 2021, TSOSI
-          did not have the breakdown data, but only the intermediary one, like a
-          library consortium. These two factors can explain why you don't see
-          your institution's contribution.
-        </p>
-      </StaticSectionAtom>
-
-      <StaticSectionAtom
-        id="what-does-the-date-column-refer-to"
-        title="What does the date column refer to?"
-      >
+      <StaticSectionAtom id="what-does-the-date-column-refer-to" title="What does the date column refer to?" >
         <p>
           The date field is relative: it can show either when the transfer was
           made or when it was received. Therefore, when a support is made by a
@@ -331,10 +311,7 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="amounts-hidden"
-        title="Why are the support amounts hidden sometimes?"
-      >
+      <StaticSectionAtom id="amounts-hidden" title="Why are the support amounts hidden sometimes?" >
         <p>
           Partner infrastructures have the choice to display or not the amount
           of the financial support. TSOSI is new, its data are new, and
@@ -342,29 +319,8 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </p>
       </StaticSectionAtom>
       
-      <StaticSectionAtom
-        id="organization-names"
-        title="How are multilingual organization names handled?"
-      >
-        <p>
-          The name of the organization comes, in order of priority:
-        </p>
-        <ul>
-          <li>
-            from the attached ROR record: we use the preferred label as
-            it appears on the record page.
-          </li>
-          <li>
-            from the attached Wikidata item: we use the English label from
-            the item and fall back to the default label.
-          </li>
-        </ul>
-      </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="currency-change"
-        title="How is the currency change managed?"
-      >
+      <StaticSectionAtom id="currency-change" title="How is the currency change managed?" >
         <p>
           We provide converted amounts for the currencies involved in one of our
           registered transfers. The amounts are calculated using
@@ -385,25 +341,21 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </ul>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="add-data-from-my-institution"
-        title="How can I add the support made by my institution?"
-      >
+      <StaticSectionAtom id="organization-names" title="How are multilingual organization names handled?" >
         <p>
-          For its next cycle, 2025-26, TSOSI is keen to include other data
-          sources! For research institution, the idea is to work with 
-          <ExternalLinkAtom
-            :label="'openCost'"
-            :href="'https://www.opencost.de/en/'"
-          />, which allows institutions to notably practise open data for funding made 
-          in favor of open infrastructures: <RouterLink :to="'#contact-us'">Drop us a line</RouterLink> to be part of this!
+          The name of the organization comes, in order of priority:
         </p>
+        <ul>
+          <li>
+            From the attached ROR record: we use the preferred label as it appears on the record page.
+          </li>
+          <li>
+            From the attached Wikidata item: we use the English label from the item and fall back to the default label.
+          </li>
+        </ul>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="entities-hierarchies"
-        title="Does TSOSI include relationships and hierarchies?"
-      >
+      <StaticSectionAtom id="entities-hierarchies" title="Does TSOSI include relationships and hierarchies within an institution?" >
         <p>
           In this beta version, the supporters are not linked between them, and
           no relationship between them is implemented. It is something that can
@@ -419,10 +371,11 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </p>
       </StaticSectionAtom>
 
+
+      <!-- ENRICHMENT BY THE USER -->
       <StaticSectionAtom
         id="add-logo"
-        title="How can I add the logo of my organization?"
-      >
+        title="How can I add the logo of my organization?" >
         <p>
           Very good idea! You will need a Wikidata record of your organization
           and your logo file. Here is the process:
