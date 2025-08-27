@@ -64,6 +64,11 @@ See [here](./deployment/README.md) to know more on our deployment process.
 
 # Run the app
 
+## Poetry
+
+Poetry is used to manage the python dependencies of the project and related commands.
+See [poetry doc](https://python-poetry.org/).
+
 ## Django
 
 You can run the Django dev server by running:

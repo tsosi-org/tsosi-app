@@ -7,7 +7,7 @@ cd $SCRIPT_DIR
 
 # Install javascript dependencies
 echo -e "\nInstalling Javascript dependencies"
-npm install
+npm ci
 
 # Create dev .env file
 if ! [ -f ".env.development" ]; then

@@ -1,4 +1,6 @@
 #!/bin/bash
+# This was used when all services were directly installed on the host machine.
+# This should be rewritten with the containers setup.
 set -e
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
