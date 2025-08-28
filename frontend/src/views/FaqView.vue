@@ -318,7 +318,6 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
           therefore some infrastructure has made the choice to hide the amount.
         </p>
       </StaticSectionAtom>
-      
 
       <StaticSectionAtom id="currency-change" title="How is the currency change managed?" >
         <p>
@@ -341,16 +340,21 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         </ul>
       </StaticSectionAtom>
 
-      <StaticSectionAtom id="organization-names" title="How are multilingual organization names handled?" >
+      <StaticSectionAtom
+        id="organization-names"
+        title="How are multilingual organization names handled?"
+      >
         <p>
           The name of the organization comes, in order of priority:
         </p>
         <ul>
           <li>
-            From the attached ROR record: we use the preferred label as it appears on the record page.
+            from the attached ROR record: we use the preferred label as
+            it appears on the record page.
           </li>
           <li>
-            From the attached Wikidata item: we use the English label from the item and fall back to the default label.
+            from the attached Wikidata item: we use the English label if
+            there's one, otherwise we use the default label.
           </li>
         </ul>
       </StaticSectionAtom>
