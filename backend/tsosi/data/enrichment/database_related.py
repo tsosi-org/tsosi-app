@@ -631,9 +631,16 @@ def update_entity_active_status():
         emitter_nb=Count("transfer_as_emitter"),
         recipient_nb=Count("transfer_as_recipient"),
         agent_nb=Count("transfer_as_agent"),
-    ).values("id", "is_partner", "emitter_nb", "recipient_nb", "agent_nb")
+    ).values(
+        "id",
+        "is_partner",
+        "emitter_nb",
+        "recipient_nb",
+        "agent_nb",
+        "merged_with",
+    )
     data = pd.DataFrame.from_records(instances)
-    data["is_active"] = (
+    data["is_active"] = data["merged_with"].isna() & (
         data["is_partner"]
         | (data["emitter_nb"] > 0)
         | (data["recipient_nb"] > 0)
