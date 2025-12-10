@@ -1,0 +1,108 @@
+[
+  {
+    "pid": { "registry_id": "ror", "value": "05amyt365" },
+    "entity": {
+      "raw_name": "Directory of Open Access Journals",
+      "raw_website": "https://doaj.org",
+      "name": "Directory of Open Access Journals",
+      "website": "https://doaj.org",
+      "is_partner": true,
+      "short_name": "DOAJ",
+      "description": "DOAJ is a unique and extensive index of diverse open access journals from around the world, driven by a growing community, and is committed to insuring quality content is freely available online for everyone."
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/doaj-directory-of-open-access-journals",
+      "posi_url": "https://blog.doaj.org/fr/2025/10/20/doaj-recommits-to-the-principles-of-open-scholarly-infrastructure/",
+      "date_scoss_start": "2017-01-01",
+      "date_scoss_end": "2020-01-01",
+      "hide_amount": true,
+      "support_url": "https://doaj.org/support/",
+      "legal_entity_description": "The legal entity is located in Denmark, see <a href=\"https://www.wikidata.org/wiki/Q1227538\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    DOAJ on wikidata</a>."
+    },
+    "static_icon": "doaj_icon.png"
+  },
+  {
+    "pid": { "registry_id": "ror", "value": "01q0bmy69" },
+    "entity": {
+      "raw_name": "OAPEN & DOAB",
+      "raw_website": "https://www.doabooks.org",
+      "raw_country": "NL",
+      "name": "OAPEN & DOAB",
+      "short_name": "OAPEN & DOAB",
+      "website": "https://www.doabooks.org",
+      "country": "NL",
+      "description": "OAPEN is an open infrastructure dedicated to promoting and supporting the transition to open access for books. The Directory of Open Access Books (DOAB) is an open, global, and trusted community-driven discovery service that indexes and provides free access to scholarly, peer-reviewed open access books.",
+      "manual_logo": true,
+      "date_inception": "2010-01-01",
+      "is_partner": true
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/directory-of-open-access-books",
+      "posi_url": "https://www.oapen.org/oapen/posi-self-audit",
+      "date_scoss_start": "2019-12-01",
+      "date_scoss_end": "2022-12-01",
+      "hide_amount": true,
+      "support_url": "https://www.doabooks.org/en/librarians/how-to-become-a-doab-supporter",
+      "legal_entity_description": "DOAB & OAPEN have the same legal entity, located in the Netherlands.See <a href=\"https://www.wikidata.org/wiki/Q21750281\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    DOAB on wikidata</a>,<a href=\"https://www.wikidata.org/wiki/Q109123141\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    OAPEN on wikidata</a>."
+    },
+    "static_logo": "LOGO_oapen_doab.png",
+    "static_icon": "doab_icon.ico"
+  },
+  {
+    "pid": { "registry_id": "ror", "value": "00rfexj26" },
+    "entity": {
+      "raw_name": "OPERAS",
+      "raw_website": "https://operas-eu.org",
+      "name": "OPERAS",
+      "short_name": "OPERAS",
+      "website": "https://operas-eu.org",
+      "description": "OPERAS is the Research Infrastructure supporting open scholarly communication in the social sciences and humanities (SSH) in the European Research Area. Its mission is to coordinate and federate resources in Europe to efficiently address the scholarly communication needs of European researchers in the field of SSH.",
+      "is_partner": true
+    },
+    "infrastructure": {
+      "posi_url": "https://operas-eu.org/principles-of-open-scholarly-infrastructure-posi",
+      "support_url": "https://operas-eu.org/about/want-to-know-more/want-to-join-operas/",
+      "legal_entity_description": "The legal entity is located in Belgium, see <a href=\"https://www.wikidata.org/wiki/Q54879577\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    OPERAS on wikidata</a>."
+    },
+    "static_icon": "operas_icon.png"
+  },
+  {
+    "pid": { "registry_id": "ror", "value": "0315saa81" },
+    "entity": {
+      "raw_name": "Peer Community In",
+      "raw_website": "https://peercommunityin.org",
+      "short_name": "PCI",
+      "name": "Peer Community In",
+      "website": "https://peercommunityin.org",
+      "is_partner": true,
+      "description": "PCI is a non-profit organisation of researchers offering peer review, recommendation and publication of scientific articles in open access for free."
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/peer-community-in",
+      "posi_url": "https://peercommunityin.org/2024/04/11/posi/",
+      "support_url": "https://peercommunityin.org/endorse-and-financially-support-pci/",
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q97368331\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    PCI on wikidata</a>."
+    },
+    "static_icon": "pci_icon.jpg"
+  },
+  {
+    "pid": { "registry_id": "ror", "value": "05br64h13" },
+    "entity": {
+      "raw_name": "SciPost",
+      "raw_website": "https://scipost.org",
+      "name": "SciPost",
+      "short_name": "SciPost",
+      "website": "https://scipost.org",
+      "is_partner": true,
+      "description": "SciPost is a complete diamond open access publishing infrastructure serving professional scientists worldwide."
+    },
+    "infrastructure": {
+      "posi_url": "https://scipost.org/posi",
+      "date_scoss_start": "2024-12-01",
+      "date_scoss_end": "2027-12-01",
+      "support_url": "https://scipost.org/sponsors/",
+      "legal_entity_description": "The legal entity is located in the Netherlands, see <a href=\"https://www.wikidata.org/wiki/Q52663237\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    SciPost on wikidata</a>."
+    },
+    "static_icon": "scipost_icon.png"
+  }
+]
