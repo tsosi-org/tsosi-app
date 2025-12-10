@@ -73,7 +73,7 @@ You can run dev servers as following:
 - Django (backend) dev server:
     ```bash
     cd backend
-    poetry python manage.py runserver
+    poetry run python manage.py runserver
     ```
 
 - Vite (frontend) dev server:
@@ -85,6 +85,7 @@ Navigate to [http://localhost:5173](http://localhost:5173).
 
 And also run the celery worker for more advance usage:
 ```bash
+cd backend
 poetry run celery -A backend_site worker --concurrency=1 --loglevel=INFO
 ```
 

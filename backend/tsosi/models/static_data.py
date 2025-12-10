@@ -19,7 +19,6 @@ from .utils import MATCH_SOURCE_MANUAL, replace_model_file
 REGISTRY_ROR = "ror"
 REGISTRY_WIKIDATA = "wikidata"
 REGISTRY_CUSTOM = "_custom"
-DOAB_OAPEN_ID = "doab_oapen"
 CUSTOM_ID_REGEX = r"^.+$"
 
 PID_REGISTRIES = [

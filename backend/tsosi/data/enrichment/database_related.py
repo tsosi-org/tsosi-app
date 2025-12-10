@@ -743,7 +743,7 @@ def update_infrastructure_metrics():
             details_to_create,
             [
                 "entity_id",
-                "data_data_start",
+                "date_data_start",
                 "date_data_end",
                 "date_data_update",
             ],
