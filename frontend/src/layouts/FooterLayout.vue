@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { RouterLink } from "vue-router"
 import { $dt } from "@primevue/themes"
+import { RouterLink } from "vue-router"
 
-import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
+import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
 import { isDesktop } from "@/composables/useMediaQuery"
 </script>
 
@@ -56,14 +56,12 @@ import { isDesktop } from "@/composables/useMediaQuery"
             </ExternalLinkAtom>
           </li>
           <li>
-            <ExternalLinkAtom
-              href="https://cloud.univ-grenoble-alpes.fr/apps/forms/embed/sanHSpzrJHqPbCknYcCBDcWy"
-            >
+            <RouterLink to="/pages/newsletter">
               <font-awesome-icon
                 :icon="['fas', 'envelope']"
                 class="link-icon"
               />Newsletter
-            </ExternalLinkAtom>
+            </RouterLink>
           </li>
           <li>
             <RouterLink to="/pages/faq#contact-us">

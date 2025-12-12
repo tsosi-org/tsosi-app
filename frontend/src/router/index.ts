@@ -1,14 +1,15 @@
 import { createRouter, createWebHistory } from "vue-router"
 
-import HomeView from "@/views/HomeView.vue"
-import EntityView from "@/views/EntityView.vue"
-import NotFoundView from "@/views/NotFoundView.vue"
-import TransferView from "@/views/TransferView.vue"
-import FaqView from "@/views/FaqView.vue"
-import AboutView from "@/views/AboutView.vue"
-import LegalNotices from "@/views/LegalNotices.vue"
-import PrivacyPolicyView from "@/views/PrivacyPolicyView.vue"
 import { targetElement } from "@/utils/dom-utils"
+import AboutView from "@/views/AboutView.vue"
+import EntityView from "@/views/EntityView.vue"
+import FaqView from "@/views/FaqView.vue"
+import HomeView from "@/views/HomeView.vue"
+import LegalNotices from "@/views/LegalNotices.vue"
+import NewsView from "@/views/NewsView.vue"
+import NotFoundView from "@/views/NotFoundView.vue"
+import PrivacyPolicyView from "@/views/PrivacyPolicyView.vue"
+import TransferView from "@/views/TransferView.vue"
 
 
 const router = createRouter({
@@ -43,6 +44,16 @@ const router = createRouter({
       path: "/pages/legal-notice",
       name: "legal-notice",
       component: LegalNotices,
+    },
+    {
+      path: "/pages/newsletter",
+      name: "newsletter-list",
+      component: NewsView,
+    },
+    {
+      path: "/pages/newsletter/:id",
+      name: "newsletter",
+      component: NewsView,
     },
     {
       path: "/pages/privacy-policy",

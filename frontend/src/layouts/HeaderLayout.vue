@@ -10,7 +10,6 @@ import Button from "@/components/atoms/ButtonAtom.vue"
 import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
 import { bigHeader } from "@/singletons/fixedHeaderStore"
 
-
 const router = useRouter()
 const navMenuVisible = ref(false)
 const searchMenuVisible = ref(false)

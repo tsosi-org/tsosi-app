@@ -14,6 +14,8 @@ interface ImportMetaEnv {
   readonly VITE_MATOMO_SITE_ID?: string
   readonly VITE_WELCOME_POPUP?: "true"
   readonly VITE_INFRA_HISTOGRAM_OPT_OUT?: string
+  readonly VITE_NEWSLETTERS_URL?: string
+  readonly VITE_NEWSLETTERS_SUBSCRIPTION_URL?: string
 }
 
 interface ImportMeta {
