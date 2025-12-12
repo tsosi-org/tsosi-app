@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { RouterLink } from "vue-router"
+import { RouterLink } from "vue-router";
 
-import ExternalLinkAtom from "./ExternalLinkAtom.vue"
+import ExternalLinkAtom from "./ExternalLinkAtom.vue";
 
 
 const props = defineProps<{

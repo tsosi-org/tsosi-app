@@ -1,45 +1,45 @@
 import "@/assets/css/main.css"
 
-import { createApp } from "vue"
-import PrimeVue from "primevue/config"
-import Aura from "@primevue/themes/aura"
-import { definePreset } from "@primevue/themes"
-import DialogService from "primevue/dialogservice"
-// @ts-expect-error No available types for vue-matomo
-import VueMatomo from "vue-matomo"
 import { library } from "@fortawesome/fontawesome-svg-core"
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { faGithub } from "@fortawesome/free-brands-svg-icons"
 import {
-  faLocationDot,
+  faAngleRight,
   faArrowUpRightFromSquare,
-  faImage,
-  faMagnifyingGlass,
-  faSquareCheck,
-  faSquareXmark,
+  faAt,
+  faBars,
+  faBuildingColumns,
+  faCalendar,
+  faChartColumn,
+  faCheck,
+  faChevronLeft,
+  faCircleQuestion,
   faDownload,
   faEllipsisVertical,
-  faHouse,
-  faBuildingColumns,
-  faMagnifyingGlassChart,
-  faAngleRight,
-  faListUl,
-  faChartColumn,
-  faCircleQuestion,
-  faBars,
-  faXmark,
-  faCheck,
-  faCalendar,
-  faGlobe,
-  faLink,
   faEnvelope,
-  faAt,
+  faGlobe,
+  faHouse,
+  faImage,
+  faLink,
+  faListUl,
+  faLocationDot,
+  faMagnifyingGlass,
+  faMagnifyingGlassChart,
   faSpinner,
+  faSquareCheck,
+  faSquareXmark,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons"
-import { faGithub } from "@fortawesome/free-brands-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { definePreset } from "@primevue/themes"
+import Aura from "@primevue/themes/aura"
+import PrimeVue from "primevue/config"
+import DialogService from "primevue/dialogservice"
+import { createApp } from "vue"
+// @ts-expect-error No available types for vue-matomo
+import VueMatomo from "vue-matomo"
 
-import router from "@/router"
 import App from "@/App.vue"
-
+import router from "@/router"
 
 const app = createApp(App)
 
@@ -108,31 +108,32 @@ app.use(DialogService)
 
 // Registering used Font Awesome icons
 const usedIcons = [
-  faLocationDot,
+  faAngleRight,
   faArrowUpRightFromSquare,
-  faImage,
-  faMagnifyingGlass,
-  faSquareCheck,
-  faSquareXmark,
+  faAt,
+  faBars,
+  faBuildingColumns,
+  faCalendar,
+  faChartColumn,
+  faCheck,
+  faChevronLeft,
+  faCircleQuestion,
   faDownload,
   faEllipsisVertical,
-  faHouse,
-  faBuildingColumns,
-  faMagnifyingGlassChart,
-  faAngleRight,
-  faListUl,
-  faChartColumn,
-  faCircleQuestion,
-  faBars,
-  faXmark,
-  faCheck,
-  faCalendar,
-  faGlobe,
-  faLink,
-  faGithub,
   faEnvelope,
-  faAt,
+  faGithub,
+  faGlobe,
+  faHouse,
+  faImage,
+  faLink,
+  faListUl,
+  faLocationDot,
+  faMagnifyingGlass,
+  faMagnifyingGlassChart,
   faSpinner,
+  faSquareCheck,
+  faSquareXmark,
+  faXmark,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)

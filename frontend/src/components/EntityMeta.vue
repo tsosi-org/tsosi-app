@@ -11,7 +11,6 @@ import { type EntityDetails } from "@/singletons/ref-data"
 import { formatDateWithPrecision, getCountryLabel } from "@/utils/data-utils"
 import { getRorUrl, getWikidataUrl } from "@/utils/url-utils"
 
-
 const props = defineProps<{
   entity: EntityDetails
 }>()
@@ -37,7 +36,7 @@ const wikidataIdentifier = computed(() => {
 const hasLinks = computed(
   () =>
     (props.entity.website || rorIdentifier.value || wikidataIdentifier.value) !=
-    null,
+    null
 )
 
 const headerChips: Ref<Array<ChipConfig>> = ref([])
@@ -102,7 +101,7 @@ function loadChips() {
 
 function isDoaj(): boolean {
   return props.entity.identifiers.some(
-    (val) => val.registry == "ror" && val.value == "05amyt365",
+    (val) => val.registry == "ror" && val.value == "05amyt365"
   )
 }
 
@@ -330,7 +329,7 @@ function isDoab(): boolean {
               {{
                 formatDateWithPrecision(
                   props.entity.infrastructure.date_data_update,
-                  "day",
+                  "day"
                 )
               }}.
             </li>
@@ -482,8 +481,7 @@ function isDoab(): boolean {
   margin: auto;
   padding: 1rem 0;
   border-radius: 15px;
-  box-shadow:
-    rgba(0, 0, 0, 0.1) 0px 1px 3px 0px,
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px,
     rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
 }
 
