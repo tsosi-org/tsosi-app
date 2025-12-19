@@ -43,7 +43,7 @@ from tsosi.models.transfer import (
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC, MATCH_SOURCE_MANUAL
 
 from .entity_matching import match_entities, matchable_entities
-from .transfer_matching import flag_duplicate_transfers
+from .transfer_matching import deduplicate_transfers
 
 logger = logging.getLogger(__name__)
 
@@ -353,7 +353,11 @@ def create_currencies(currencies: Iterable[str], date_stamp: datetime):
         currency.save()
 
 
-def create_transfers(transfers: pd.DataFrame, date_stamp: datetime):
+def create_transfers(
+    transfers: pd.DataFrame,
+    data_load_source: DataLoadSource,
+    date_stamp: datetime,
+):
     """
     Utility to insert new Transfer records in the database.
     It's basically a list of the model fields to find in the dataframe.
@@ -379,11 +383,12 @@ def create_transfers(transfers: pd.DataFrame, date_stamp: datetime):
         "date_created",
         "date_last_updated",
         "original_id",
-        "data_load_source_id",
         "hide_amount",
         "original_amount_field",
     ]
     bulk_create_from_df(Transfer, transfers, fields, "transfer_id")
+    data_load_source.transfer_set.add(*transfers["transfer_id"].to_list())
+    data_load_source.save()
     logger.info(f"Created {len(transfers)} Transfer records")
 
 
@@ -518,7 +523,6 @@ def ingest_new_records(
     source.date_created = now
     source.date_last_updated = now
     source.save()
-    transfers["data_load_source_id"] = source.pk
 
     # Extract entities
     transfer_entities = extract_entities(transfers)
@@ -565,8 +569,8 @@ def ingest_new_records(
         columns={dc.FieldCurrency.NAME: "currency_id"}, inplace=True
     )
 
-    # Insert transfers
-    create_transfers(transfers, now)
+    # Create transfers
+    create_transfers(transfers, source, now)
 
     # Insert TransferEntityMatching
     transfer_entities["transfer_id"] = transfer_entities["original_id"].map(
@@ -578,6 +582,11 @@ def ingest_new_records(
     if send_signals:
         send_post_ingestion_signals()
     logger.info(f"Successfully ingested {len(transfers)} records.")
+
+    nb_merged = deduplicate_transfers(source)
+    logger.info(
+        f"Merged {nb_merged} transfers from data load source {source.data_load_name}"
+    )
 
 
 @transaction.atomic
@@ -608,11 +617,22 @@ def ingest(
             "Removing the following old data loads: "
             f"{'\t'.join([d.serialize() for d in oldies])}"
         )
-
-        Transfer.objects.filter(data_load_source__in=oldies).delete()
+        transfers = Transfer.objects.filter(data_load_sources__in=oldies)
+        connected_sources = (
+            Transfer.objects.filter(merged_into__in=transfers)
+            .values_list("data_load_sources", flat=True)
+            .distinct()
+        )
+        transfers.delete()
         DataLoadSource.objects.filter(pk__in=[o.pk for o in oldies]).delete()
+        nb_merged = 0
+        for source in connected_sources:
+            nb_merged += deduplicate_transfers(source)
+        if nb_merged > 0:
+            logger.info(
+                f"Merged {nb_merged} transfers from connected data load sources."
+            )
 
-    # flag_duplicate_transfers(df, source)
     df = pd.DataFrame.from_records(ingestion_config.data)
     dc.create_missing_fields(df)
     source = DataLoadSource(**ingestion_config.source.serialize())

@@ -164,5 +164,12 @@ class AppSettings:
         """
         return self._setting("API_RATE", "100/m")
 
+    @property
+    def ERROR_OUTPUT_FOLDER(self) -> str:
+        """
+        A directory outside of git management for temporary files.
+        """
+        return self._setting("ERROR_OUTPUT_FOLDER", "/tmp/tsosi/errors")
+
 
 app_settings = AppSettings()
