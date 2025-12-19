@@ -26,6 +26,7 @@ ALLOWED_HOSTS = ["127.0.0.1", "172.17.0.1", "localhost"]
 TSOSI_MAIN_LOG_FILE = f"{NO_GIT_DIR}/logs/tsosi_app.log"
 TSOSI_DATA_LOG_FILE = f"{NO_GIT_DIR}/logs/tsosi_data.log"
 TSOSI_DJANGO_LOG_FILE = f"{NO_GIT_DIR}/logs/django.log"
+TSOSI_ERROR_OUTPUT_FOLDER = f"{NO_GIT_DIR}/errors"
 DJANGO_LOG_LEVEL = "INFO"
 TSOSI_LOG_LEVEL = "INFO"
 ERROR_LOG_FILE = f"{NO_GIT_DIR}/logs/error.log"

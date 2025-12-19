@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
 
+import numpy as np
 import pandas as pd
 from django.db import models
 
@@ -67,3 +68,15 @@ def format_date(value: datetime, date_precision: str) -> dict[str, str] | None:
     if pd.isnull(value):
         return None
     return Date(value=value, precision=date_precision).serialize()
+
+
+def parse_date_precision(dates: pd.Series) -> pd.Series:
+    """
+    Infer the date precision from a pandas Series of datetime values.
+    """
+    result = np.empty_like(dates, dtype=object)
+    mask = ~dates.isna()
+    result[mask & (dates[mask].str.len() >= 10)] = DATE_PRECISION_DAY
+    result[mask & (dates[mask].str.len() == 7)] = DATE_PRECISION_MONTH
+    result[mask & (dates[mask].str.len() == 4)] = DATE_PRECISION_YEAR
+    return pd.Series(result)

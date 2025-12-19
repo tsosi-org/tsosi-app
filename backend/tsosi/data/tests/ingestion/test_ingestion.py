@@ -21,23 +21,22 @@ def test_old_data_load_deletion(datasources):
     print("Testing the deletion of old data loads.")
     kwargs_base = {
         "data_source_id": "pci",
-        "data_load_name": "test_load",
         "date_data_obtained": datetime.date.today(),
         "full_data": True,
     }
 
     kwargs_1 = {**kwargs_base, "year": 2020}
     dls_1 = DataLoadSourceFactory.create(**kwargs_1)
-    t_1 = TransferFactory.create(data_load_source=dls_1)
-    t_2 = TransferFactory.create(data_load_source=dls_1)
-    t_3 = TransferFactory.create(data_load_source=dls_1)
+    t_1 = TransferFactory.create(data_load_sources=(dls_1,))
+    t_2 = TransferFactory.create(data_load_sources=(dls_1,))
+    t_3 = TransferFactory.create(data_load_sources=(dls_1,))
 
     kwargs_2 = {**kwargs_base, "year": 2021}
     dls_2 = DataLoadSourceFactory.create(**kwargs_2)
-    t_4 = TransferFactory.create(data_load_source=dls_2)
-    t_5 = TransferFactory.create(data_load_source=dls_2)
+    t_4 = TransferFactory.create(data_load_sources=(dls_2,))
+    t_5 = TransferFactory.create(data_load_sources=(dls_2,))
 
-    test = dc.DataLoadSource(**kwargs_base)
+    test = dc.DataLoadSource(**kwargs_base, data_load_name="test_source")
     test_data = [
         {
             "emitter_name": "E_1",

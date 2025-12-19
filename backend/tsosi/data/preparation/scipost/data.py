@@ -120,9 +120,13 @@ def get_scipost_token() -> str:
     logger.info("Collecting OAuth2 token")
     auth_data = app_settings.SCIPOST_AUTH
 
-    if auth_data is None:
+    if (
+        auth_data is None
+        or not auth_data.get("password")
+        or not auth_data.get("username")
+    ):
         raise ImproperlyConfigured(
-            "You need to set the `TSOSI_SCIPOST_AUTH` "
+            "You need to set values for `TSOSI_SCIPOST_AUTH`  "
             "setting to use SciPost API."
         )
 
