@@ -581,7 +581,7 @@ def update_transfer_date_clc():
     date fields.
     """
     logger.info("Updating transfer CLC date.")
-    instances = Transfer.objects.all().values(
+    instances = Transfer.objects.filter(merged_into__isnull=True).values(
         "id",
         "date_invoice",
         "date_payment_recipient",
@@ -658,7 +658,9 @@ def update_entity_roles_clc():
 
     transfer_cols = [f"{t}_id" for t in TRANSFER_ENTITY_TYPES]
     transfers = pd.DataFrame.from_records(
-        Transfer.objects.all().values("id", *transfer_cols)
+        Transfer.objects.filter(merged_into__isnull=True).values(
+            "id", *transfer_cols
+        )
     )
     entities_cols = [f"is_{t}" for t in TRANSFER_ENTITY_TYPES]
     entities = pd.DataFrame.from_records(
@@ -704,7 +706,9 @@ def update_infrastructure_metrics():
     logger.info("Updating infrastructure metrics.")
     # Min & max transfer dates per recipient
     dates = date_extremas_from_queryset(
-        Transfer.objects.all(), ["date_clc"], groupby=["recipient_id"]
+        Transfer.objects.filter(merged_into__isnull=True),
+        ["date_clc"],
+        groupby=["recipient_id"],
     )
     dates: dict[str, DateExtremas] = {
         d["recipient_id"]: d["_extremas"] for d in dates
@@ -712,11 +716,13 @@ def update_infrastructure_metrics():
 
     total_transfers = Count("transfer_as_recipient")
     date_source_max = Max(
-        "transfer_as_recipient__data_load_source__date_data_obtained"
+        "transfer_as_recipient__data_load_sources__date_data_obtained"
     )
 
     entities = (
-        Entity.objects.filter(is_recipient=True)
+        Entity.objects.filter(
+            is_recipient=True, transfer_as_recipient__merged_into__isnull=True
+        )
         .annotate(total_transfers=total_transfers)
         .annotate(date_last_update=date_source_max)
         .values(
