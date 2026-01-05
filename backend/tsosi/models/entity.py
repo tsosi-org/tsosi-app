@@ -60,6 +60,7 @@ class Entity(TimestampedModel):
     )
     website = models.URLField(max_length=256, null=True)
     date_inception = models.DateField(null=True)
+    types = models.JSONField(null=True)
 
     logo_url = models.CharField(max_length=256, null=True)
     logo = models.ImageField(
@@ -90,6 +91,11 @@ class Entity(TimestampedModel):
         "self", on_delete=models.RESTRICT, null=True
     )
     merged_criteria = models.CharField(max_length=512, null=True)
+
+    ## Relations
+    parents = models.ManyToManyField(
+        "self", related_name="children", symmetrical=False
+    )
 
     class Meta:
         constraints = [

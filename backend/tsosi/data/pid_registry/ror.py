@@ -492,6 +492,17 @@ def get_ror_inception_date(record: dict) -> datetime | None:
     return datetime(year=year, month=1, day=1, tzinfo=UTC)
 
 
+def get_ror_parents(record: dict) -> list[str]:
+    relationships = record.get("relationships", [])
+    parents = filter(lambda y: y["type"] == "parent", relationships)
+    parent_ids = [p["id"].split("/")[-1] for p in parents]
+    return parent_ids
+
+
+def get_ror_types(record: dict) -> list[str]:
+    return record.get("types", [])
+
+
 ROR_EXTRACT_MAPPING = {
     "id": get_ror_id,
     "name": get_ror_name,
@@ -502,6 +513,8 @@ ROR_EXTRACT_MAPPING = {
     "wikidata_id": get_ror_wikidata_id,
     "coordinates": get_ror_coordinates,
     "date_inception": get_ror_inception_date,
+    "types": get_ror_types,
+    "parents": get_ror_parents,
 }
 
 

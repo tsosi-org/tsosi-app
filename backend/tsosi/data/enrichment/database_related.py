@@ -313,6 +313,8 @@ def entities_with_identifier_data() -> pd.DataFrame:
             # Other values that may be updated
             "date_logo_fetched",
             "date_wikipedia_fetched",
+            "parents",
+            "types",
         )
     )
     entities = pd.DataFrame.from_records(entities)
@@ -424,6 +426,7 @@ def update_entity_from_pid_records() -> TaskResult:
     wikipedia_url.
     Also update fields based on above updates: date_logo_fetched,
     date_wikipedia_fetched.
+    Also update parent/child relations
     """
     logger.info("Updating entity from PID records.")
     result = TaskResult(partial=False)
@@ -442,6 +445,8 @@ def update_entity_from_pid_records() -> TaskResult:
         "wikipedia_url": ["wikidata_wikipedia_url", "ror_wikipedia_url"],
         "coordinates": ["wikidata_coordinates", "ror_coordinates"],
         "date_inception": ["ror_date_inception", "wikidata_date_inception"],
+        "parents": ["ror_parents"],
+        "types": ["ror_types"],
         # The following fields are to be updated according to other fields
         "date_logo_fetched": ["date_logo_fetched"],
         "date_wikipedia_fetched": ["date_wikipedia_fetched"],
@@ -474,6 +479,12 @@ def update_entity_from_pid_records() -> TaskResult:
     mask = entities_to_update["wikipedia_url_diff"]
     entities_to_update.loc[mask, "date_wikipedia_fetched"] = None
 
+    ### Update parents relations
+    update_entities_relationships(
+        dict(zip(entities_to_update.id, entities_to_update.pop("parents")))
+    )
+    clc_field_priority.pop("parents")
+
     entities_to_update["date_last_updated"] = timezone.now()
     cols = ["id", *clc_field_priority.keys(), "date_last_updated"]
 
@@ -484,6 +495,45 @@ def update_entity_from_pid_records() -> TaskResult:
     )
     result.data_modified = True
     return result
+
+
+def update_entities_relationships(
+    entity_id_to_parents_ror_ids: dict[str, list[str]]
+):
+    """
+    Update the parent relationships of entities based on ROR parents IDs.
+    Add or remove parents to match the given ROR parents IDs.
+    If parent ror id is not in our db, skip it.
+    """
+    ror_ids = [
+        ror_id
+        for row in entity_id_to_parents_ror_ids.values()
+        if row
+        for ror_id in row
+    ]
+    identifiers = Identifier.objects.filter(
+        registry_id=REGISTRY_ROR, value__in=ror_ids
+    )
+    ror_id_to_entity = {
+        identifier.value: identifier.entity for identifier in identifiers
+    }
+    entities = Entity.objects.filter(id__in=entity_id_to_parents_ror_ids.keys())
+    id_to_entity = {entity.id: entity for entity in entities}
+    for entity_id, parents_ror_id in entity_id_to_parents_ror_ids.items():
+        if parents_ror_id is None:
+            parents_ror_id = []
+        entity = id_to_entity[entity_id]
+        entity_new_parents_ids = {
+            ror_id_to_entity[ror_id].id
+            for ror_id in parents_ror_id
+            if ror_id in ror_id_to_entity
+        }
+        entity_old_parents_ids = set(p.id for p in entity.parents.all())
+        for entity_id in entity_new_parents_ids - entity_old_parents_ids:
+            entity.parents.add(entity_id)
+        for entity_id in entity_old_parents_ids - entity_new_parents_ids:
+            entity.parents.remove(entity_id)
+        entity.save()
 
 
 def new_identifiers_from_records(registry_id: str) -> TaskResult:
