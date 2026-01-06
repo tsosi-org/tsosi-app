@@ -473,9 +473,6 @@ def get_ror_wikipedia_url(record: dict) -> str | None:
 def get_ror_wikidata_id(record: dict) -> str | None:
     """
     Return the Wikidata ID from the ROR record.
-    TODO: The ROR record sometimes holds a single wikidata ID with a null
-    "preferred" ? It's displayed normally on the ROR website.
-    Ex: https://ror.org/00f7hpc57
     """
     ids = record.get("external_ids", [])
     if len(ids) == 0:
@@ -483,7 +480,7 @@ def get_ror_wikidata_id(record: dict) -> str | None:
     wikidata_ids = next((i for i in ids if i["type"] == "wikidata"), None)
     if wikidata_ids is None:
         return None
-    if len(wikidata_ids["all"]) == 1:
+    if len(wikidata_ids["all"]) == 1 or wikidata_ids["preferred"] is None:
         return wikidata_ids["all"][0]
     return wikidata_ids["preferred"]
 
