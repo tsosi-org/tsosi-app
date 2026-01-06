@@ -169,7 +169,6 @@ DATA_SOURCES = [
     "doab_oapen_library",
     "doab_oapen_sponsor",
     "operas",
-    "default",
 ]
 
 

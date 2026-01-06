@@ -33,7 +33,6 @@ ALLOWED_HOSTS = [
 TSOSI_MAIN_LOG_FILE = "/var/log/tsosi_app.log"
 TSOSI_DATA_LOG_FILE = "/var/log/tsosi_data.log"
 TSOSI_DJANGO_LOG_FILE = "/var/log/django.log"
-TSOSI_ERROR_OUTPUT_FOLDER = f"/var/log/errors"
 DJANGO_LOG_LEVEL = "INFO"
 TSOSI_LOG_LEVEL = "INFO"
 ERROR_LOG_FILE = "/var/log/error.log"

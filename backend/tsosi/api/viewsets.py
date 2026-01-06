@@ -88,9 +88,9 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
             raise ValidationError(f"`entity_id` query parameter if missing.")
 
         self.pagination_class = None
-        ids = Transfer.objects.filter(
-            merged_into__isnull=True, recipient_id=entity_id
-        ).values_list("emitter_id", flat=True)
+        ids = Transfer.objects.filter(recipient_id=entity_id).values_list(
+            "emitter_id", flat=True
+        )
         self.queryset = Entity.objects.filter(id__in=ids).distinct()
         return self.list(request, *args, **kwargs)
 
@@ -166,7 +166,7 @@ class TransferFilter(filters.FilterSet):
 
 
 class TransferViewSet(AllActionViewSet, ReadOnlyViewSet):
-    queryset = Transfer.objects.filter(merged_into__isnull=True).select_related(
+    queryset = Transfer.objects.all().select_related(
         "emitter", "recipient", "agent"
     )
     serializer_class = TransferSerializer

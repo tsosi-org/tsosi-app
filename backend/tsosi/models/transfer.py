@@ -51,7 +51,9 @@ class Transfer(TimestampedModel):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     raw_data = models.JSONField()
-    data_load_sources = models.ManyToManyField(DataLoadSource)
+    data_load_source = models.ForeignKey(
+        DataLoadSource, null=False, on_delete=models.RESTRICT
+    )
     emitter = models.ForeignKey(
         Entity,
         on_delete=models.RESTRICT,
@@ -85,12 +87,6 @@ class Transfer(TimestampedModel):
     hide_amount = models.BooleanField(default=False)
     original_amount_field = models.CharField(max_length=128)
     scoss = models.BooleanField(default=False)
-    merged_into = models.ForeignKey(
-        "self",
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="merged_transfers",
-    )
 
     class Meta:
         constraints = [
