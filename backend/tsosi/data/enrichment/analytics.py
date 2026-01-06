@@ -17,11 +17,7 @@ def compute_analytics():
     logger.info("Computing analytics.")
     transfers = (
         Transfer.objects.prefetch_related("emitter", "recipient", "agent")
-        .filter(
-            merged_into__isnull=True,
-            amounts_clc__isnull=False,
-            date_clc__isnull=False,
-        )
+        .filter(amounts_clc__isnull=False, date_clc__isnull=False)
         .values(
             "amounts_clc",
             "date_clc",

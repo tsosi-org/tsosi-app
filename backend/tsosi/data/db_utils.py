@@ -120,7 +120,7 @@ def bulk_create_from_df(
     data: pd.DataFrame,
     fields: Iterable[str],
     track_id_col: str = "",
-) -> None:
+):
     """
     Perform bulk insertion of the given model from the given data and fields
     to populate the model.
@@ -150,7 +150,7 @@ def bulk_update_from_df(
     model_class: Type[models.Model],
     data: pd.DataFrame,
     fields: Iterable[str],
-) -> None:
+):
     """
     Perform bulk udates of the given model from the given data and fields
     to populate the model.
