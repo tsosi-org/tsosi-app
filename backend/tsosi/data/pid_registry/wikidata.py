@@ -271,8 +271,11 @@ async def fetch_wikimedia_file(
     """
     result = WikimediaFileApiResult(url=url)
     result.info = url
+    headers = {"Referer": url}
     try:
-        async with session.get(url, allow_redirects=True) as response:
+        async with session.get(
+            url, allow_redirects=True, headers=headers
+        ) as response:
             result.http_status = response.status
             if response.status < 200 or response.status >= 300:
                 raise HTTPStatusError(
@@ -300,5 +303,5 @@ async def fetch_wikimedia_files(urls: Sequence[str]) -> pd.DataFrame:
     There's no special handling of the fact that it fecthes wikimedia files.
     It just performs HTTP GET on the provided URLs.
     """
-    results = await perform_http_func_batch(urls, fetch_wikimedia_file)
+    results = await perform_http_func_batch(urls, fetch_wikimedia_file, 1)
     return pd.DataFrame.from_records([asdict(r) for r in results])

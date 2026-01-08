@@ -196,11 +196,10 @@ ROR_TOKEN_BUCKET = TokenBucket(REDIS_CLIENT, "ror", 2000, 5 * 60)
 WIKIDATA_TOKEN_BUCKET = TokenBucket(REDIS_CLIENT, "wikidata", 2000, 60)
 # https://en.wikipedia.org/api/rest_v1/#/ The rate limit is 200 requests/s
 WIKIPEDIA_TOKEN_BUCKET = TokenBucket(REDIS_CLIENT, "wikipedia", 200, 5)
-# It's not clear whether there's a rate limit for downloading files from wikimedia
-# We use a "safe" option of 100 files per minute.
-# Previous limit of 500/min ended reaching a HTTP 429 status code when
-# trying to fetch 447 files at "once". The limit is probably 400/something
-WIKIMEDIA_TOKEN_BUCKET = TokenBucket(REDIS_CLIENT, "wikimedia", 200, 60)
+# Since begginning of 2026, Wikimedia Commons API set undocumented new rate limits.
+# So we set a very conservative limit here, and don't allow parralel requests.
+# phabricator.wikimedia.org/T413570
+WIKIMEDIA_TOKEN_BUCKET = TokenBucket(REDIS_CLIENT, "wikimedia", 50, 120)
 
 TOKEN_BUCKETS = [
     ROR_TOKEN_BUCKET,
