@@ -22,7 +22,10 @@
     "static_icon": "doaj_icon.png"
   },
   {
-    "pid": { "registry_id": "ror", "value": "01q0bmy69" },
+    "pid": {
+      "registry_id": "_custom",
+      "value": "doab_oapen"
+    },
     "entity": {
       "raw_name": "OAPEN & DOAB",
       "raw_website": "https://www.doabooks.org",

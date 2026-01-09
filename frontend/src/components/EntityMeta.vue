@@ -107,7 +107,7 @@ function isDoaj(): boolean {
 
 function isDoab(): boolean {
   return props.entity.identifiers.some(
-    (val) => val.registry == "ror" && val.value == "01q0bmy69",
+    (val) => val.registry == "_custom" && val.value == "doab_oapen",
   )
 }
 </script>
