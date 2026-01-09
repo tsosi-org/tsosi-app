@@ -22,7 +22,7 @@ def get_config(
             rdc.FieldRecipientName(
                 constant="Directory of Open Access Books & OAPEN"
             ),
-            rdc.FieldRecipientRorId(constant="01q0bmy69"),
+            rdc.FieldRecipientCustomId(constant="doab_oapen"),
             rdc.FieldEmitterName(field="Company"),
             rdc.FieldEmitterUrl(field="emitter_website"),
             rdc.FieldEmitterWikidataId(field="emitter_wikidata_id"),

@@ -43,7 +43,7 @@
         "amount": 1250,
         "currency": "EUR"
       },
-      "recipient_ror_id": "01q0bmy69",
+      "recipient_custom_id": "doab_oapen",
       "recipient_name": "Directory of Open Access Books & OAPEN"
     },
     {
@@ -79,7 +79,7 @@
         "amount": 5000,
         "currency": "USD"
       },
-      "recipient_ror_id": "01q0bmy69",
+      "recipient_custom_id": "doab_oapen",
       "recipient_name": "Directory of Open Access Books & OAPEN"
     }
   ]
