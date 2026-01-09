@@ -133,7 +133,7 @@ async function updateTransfers() {
     if (transfer.amount) {
       transferWithAmount = true
     }
-    if (transfer.emitter_id == props.entity.id) {
+    if (transfer.emitter_id == props.entity.id || props.entity.children.some((c) => c == transfer.emitter_id)) {
       sortedTransfers["emitter"].push(transfer)
     } else if (transfer.recipient_id == props.entity.id) {
       sortedTransfers["recipient"].push(transfer)
@@ -332,10 +332,8 @@ const supporterTableProps = computed(() => {
   }
   const toRemoveCols = []
   const supporterData = [...transfers.value.emitter, ...transfers.value.agent]
-  // If there are no transfers as an agent, remove the emitterCountry column to
-  // lighten the layout
-  if (!transfers.value.agent?.length) {
-    toRemoveCols.push("emitterCountry")
+
+  if (!(transfers.value.agent?.length || transfers.value.emitter.some((t) => t.emitter_id != props.entity.id))) {
     toRemoveCols.push("emitter")
   }
   return {

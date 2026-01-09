@@ -3,15 +3,15 @@ import IconField from "primevue/iconfield"
 import InputIcon from "primevue/inputicon"
 import InputText from "primevue/inputtext"
 import Popover from "primevue/popover"
-import { ref, type Ref, computed, watch, useTemplateRef, nextTick } from "vue"
+import { computed, nextTick, ref, useTemplateRef, watch, type Ref } from "vue"
 
 import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
 
 import {
   entitySearch,
-  type Entity,
-  type ApiPaginatedData,
   queryPaginatedApiUrl,
+  type ApiPaginatedData,
+  type Entity,
 } from "@/singletons/ref-data"
 import debounce, { type DebounceStatus } from "@/utils/debounce"
 

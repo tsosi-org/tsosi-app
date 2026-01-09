@@ -87,8 +87,8 @@ async def fetch_wikidata_sparql_query(
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         # Log the error
         msg = (
-            f"Failed to query the wikipedia sparql endpoint with query:\n"
-            f"{query}"
+            f"Failed to query the wikipedia sparql endpoint ({e}) with query:\n"
+            f"{query}\n"
         )
         logger.warning(msg)
         result.error = True
@@ -247,7 +247,7 @@ async def fetch_wikipedia_page_extract(
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         result.error = True
         result.error_msg = f"Error while querying Wikipedia with url {url}"
-        result.error_msg += f"\nOriginal exception:\n{e}"
+        result.error_msg += f" Original exception: {e}"
         logger.warning(result.error_msg)
 
     result.timestamp = datetime.now(UTC)

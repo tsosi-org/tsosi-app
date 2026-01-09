@@ -154,13 +154,21 @@ class TransferFilter(filters.FilterSet):
         TODO: Check the perf of doing OR condition with Django ORM.
         It might be way more efficient to perform separate requests on each
         condition and then UNION them
+        TODO: Recursive query should be made in postgres
         """
         if value is None or not value:
             raise ValidationError(
                 detail=f"Query parameter value for `entity_id` is not accepted: {value}"
             )
+        values = {value} | set(
+            Entity.objects.get(id=value)
+            .get_all_children()
+            .values_list("id", flat=True)
+        )
         condition = (
-            Q(emitter_id=value) | Q(recipient_id=value) | Q(agent_id=value)
+            Q(emitter_id__in=values)
+            | Q(recipient_id__in=values)
+            | Q(agent_id__in=values)
         )
         return queryset.filter(condition)
 

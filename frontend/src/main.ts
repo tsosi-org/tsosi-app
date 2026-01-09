@@ -12,6 +12,7 @@ import {
   faChartColumn,
   faCheck,
   faChevronLeft,
+  faCircleInfo,
   faCircleQuestion,
   faDownload,
   faEllipsisVertical,
@@ -27,7 +28,7 @@ import {
   faSpinner,
   faSquareCheck,
   faSquareXmark,
-  faXmark,
+  faXmark
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 import { definePreset } from "@primevue/themes"
@@ -118,6 +119,7 @@ const usedIcons = [
   faCheck,
   faChevronLeft,
   faCircleQuestion,
+  faCircleInfo,
   faDownload,
   faEllipsisVertical,
   faEnvelope,

@@ -82,7 +82,6 @@ export interface TableProps {
   exportTitle?: string
   hideCount?: boolean
 }
-
 const props = defineProps<TableProps>()
 // Holds the declared filters for the DataTable component
 // We handle filtering manually. The important thing is to use our custom
@@ -456,7 +455,19 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         <Skeleton></Skeleton>
       </template>
       <template v-else-if="column.type == 'entityLink'" #body="{ data }">
+        <div class="inline-container"> 
+          <div class="info-button-inline">
+            <InfoButtonAtom :icon="['fas', 'circle-info']" v-if="column.field == 'emitter' && data.emitter_id != props.id.slice(0, 36)">
+              <template #popup>
+                <span>
+                  This support comes from a child entity, based on ror.org hierarchy. See
+                <ExternalLinkAtom href="https://ror.org/about/faqs/#does-ror-support-relationships-and-hierarchies">FAQ</ExternalLinkAtom>.
+              </span>
+            </template>
+          </InfoButtonAtom>
+        </div>
         <EntityLinkDataAtom :data="data" :dataField="column" />
+        </div>
       </template>
       <template v-else-if="column.type == 'pageLink'" #body="{ data }">
         <RouterLink
@@ -581,4 +592,17 @@ function isColumnFiltered(column: TableColumnProps): boolean {
 .table-footer {
   text-align: center;
 }
+
+.inline-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--p-datatable-header-cell-gap);
+}
+
+.info-button-inline {
+  color: var(--p-neutral-500);
+}
+
 </style>
