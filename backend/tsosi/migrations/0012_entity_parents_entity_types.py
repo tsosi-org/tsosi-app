@@ -6,14 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("tsosi", "0011_transfer_merged_criteria_transfer_merged_into_and_more"),
+        (
+            "tsosi",
+            "0011_transfer_merged_criteria_transfer_merged_into_and_more",
+        ),
     ]
 
     operations = [
         migrations.AddField(
             model_name="entity",
             name="parents",
-            field=models.ManyToManyField(related_name="children", to="tsosi.entity"),
+            field=models.ManyToManyField(
+                related_name="children", to="tsosi.entity"
+            ),
         ),
         migrations.AddField(
             model_name="entity",

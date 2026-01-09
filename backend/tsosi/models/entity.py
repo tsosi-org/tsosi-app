@@ -119,6 +119,24 @@ class Entity(TimestampedModel):
             ),
         ]
 
+    def get_all_children(self) -> list[Entity]:
+        """
+        Get all child entity IDs for a given entity ID, recursively.
+        """
+        all_children = set()
+        children_to_process = {self.id}
+        while children_to_process:
+            current_id = children_to_process.pop()
+            direct_children = Entity.objects.filter(
+                parents__id=current_id
+            ).values_list("id", flat=True)
+            for child_id in direct_children:
+                if child_id not in all_children:
+                    all_children.add(child_id)
+                    print(child_id)
+                    children_to_process.add(child_id)
+        return Entity.objects.filter(id__in=all_children)
+
 
 class InfrastructureDetails(TimestampedModel):
     entity = models.OneToOneField(

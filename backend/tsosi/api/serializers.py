@@ -58,6 +58,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
     infrastructure = InfrastructureDetailsSerializer(
         source="infrastructure_details", required=False
     )
+    children = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Entity
@@ -74,6 +75,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "wikipedia_url",
             "wikipedia_extract",
             "identifiers",
+            "children",
             "coordinates",
             "is_emitter",
             "is_recipient",
@@ -81,6 +83,9 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "infrastructure",
             "is_partner",
         ]
+
+    def get_children(self, obj) -> list[str]:
+        return [e.id for e in Entity.objects.get(id=obj.id).get_all_children()]
 
 
 class BaseTransferSerializer(serializers.ModelSerializer):
