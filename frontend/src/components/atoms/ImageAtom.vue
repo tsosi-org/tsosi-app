@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, useTemplateRef, computed } from "vue"
 
-
 const props = defineProps<{
   src?: string
   width?: string
@@ -61,6 +60,7 @@ onMounted(() => {
   &.svg .content {
     width: 100%;
     height: 100%;
+    max-height: 135px;
   }
 }
 

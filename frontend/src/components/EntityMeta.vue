@@ -119,30 +119,14 @@ function isDoab(): boolean {
         <h1 class="entity-title">
           {{ props.entity.name }}
         </h1>
-        <ChipList
-          :chips="headerChips"
-          :center="!isDesktop"
-          :style="{ justifyContent: 'center', marginTop: '1rem' }"
-        />
+        <ChipList :chips="headerChips" :center="!isDesktop" :style="{ justifyContent: 'center', marginTop: '1rem' }" />
       </div>
 
-      <div
-        class="entity-header__grid"
-        :class="{ 'three-columns': hasLinks && !isInfrastructure }"
-      >
+      <div class="entity-header__grid" :class="{ 'three-columns': hasLinks && !isInfrastructure }">
         <div class="entity-header__logo">
-          <Image
-            style="display: inline-block"
-            :src="props.entity?.logo"
-            :width="logoWidth"
-            :height="logoHeight"
-            :center="true"
-            :container-padding="'5px'"
-          />
-          <div
-            v-if="!props.entity.logo"
-            :style="`margin-top: ${isDesktop ? '-10px' : '-30px'};`"
-          >
+          <Image style="display: inline-block" :src="props.entity?.logo" :width="logoWidth" :height="logoHeight"
+            :center="true" :container-padding="'5px'" />
+          <div v-if="!props.entity.logo" :style="`margin-top: ${isDesktop ? '-10px' : '-30px'};`">
             <span :style="`display: inline-block; max-width: 125px;`">
               Logo not found, see
               <RouterLink :to="'/pages/faq#add-logo'">how to add it</RouterLink>
@@ -167,15 +151,10 @@ function isDoab(): boolean {
             <p>
               <span class="wiki-disclaimer">
                 From
-                <ExternalLinkAtom
-                  :label="'Wikipedia'"
-                  :href="props.entity.wikipedia_url!"
-                />
+                <ExternalLinkAtom :label="'Wikipedia'" :href="props.entity.wikipedia_url!" />
                 licensed
-                <ExternalLinkAtom
-                  :label="'CC-BY-SA'"
-                  :href="'https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License'"
-                />
+                <ExternalLinkAtom :label="'CC-BY-SA'"
+                  :href="'https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License'" />
               </span>
             </p>
           </div>
@@ -183,59 +162,37 @@ function isDoab(): boolean {
             TSOSI relies on Wikidata and Wikipedia to obtain logos and
             descriptions of entities. Unfortunately, no Wikipedia description
             has been found for this entity so far. Please see
-            <RouterLink :to="'/pages/faq#add-wiki-description'"
-              >how to improve this </RouterLink
-            >.
+            <RouterLink :to="'/pages/faq#add-wiki-description'">how to improve this </RouterLink>.
           </div>
 
-          <ExternalLinkAtom
-            v-if="props.entity.infrastructure?.support_url"
-            :href="props.entity.infrastructure.support_url"
-            class="entity-header__desc__support"
-          >
+          <ExternalLinkAtom v-if="props.entity.infrastructure?.support_url"
+            :href="props.entity.infrastructure.support_url" class="entity-header__desc__support">
             <template #default>
               Find out how to support
               {{ props.entity.short_name || props.entity.name }}
               <span style="white-space: nowrap">
                 financially
-                <font-awesome-icon
-                  :icon="['fas', 'arrow-up-right-from-square']"
-                  style="margin-left: 0.25rem"
-                />
+                <font-awesome-icon :icon="['fas', 'arrow-up-right-from-square']" style="margin-left: 0.25rem" />
               </span>
             </template>
           </ExternalLinkAtom>
         </div>
 
-        <div
-          v-if="props.entity.infrastructure == null && hasLinks"
-          class="entity-header__links"
-        >
-          <ExternalLinkAtom
-            v-if="props.entity.website"
-            :href="props.entity.website"
-            class="entity-icon-link"
-          >
+        <div v-if="props.entity.infrastructure == null && hasLinks" class="entity-header__links">
+          <ExternalLinkAtom v-if="props.entity.website" :href="props.entity.website" class="entity-icon-link">
             <template #default>
               <font-awesome-icon class="fa-icon" :icon="['fas', 'globe']" />
               Website
             </template>
           </ExternalLinkAtom>
-          <ExternalLinkAtom
-            v-if="rorIdentifier"
-            :href="getRorUrl(rorIdentifier)"
-            class="entity-icon-link"
-          >
+          <ExternalLinkAtom v-if="rorIdentifier" :href="getRorUrl(rorIdentifier)" class="entity-icon-link">
             <template #default>
               <img alt="ROR logo" src="@/assets/img/ror_icon_rgb.svg" />
               ROR
             </template>
           </ExternalLinkAtom>
-          <ExternalLinkAtom
-            v-if="wikidataIdentifier"
-            :href="getWikidataUrl(wikidataIdentifier)"
-            class="entity-icon-link"
-          >
+          <ExternalLinkAtom v-if="wikidataIdentifier" :href="getWikidataUrl(wikidataIdentifier)"
+            class="entity-icon-link">
             <template #default>
               <img alt="Wikidata logo" src="@/assets/img/wikidata_logo.png" />
               Wikidata
@@ -245,39 +202,23 @@ function isDoab(): boolean {
       </div>
       <div v-if="bottomButtons.length > 0" class="entity-header__buttons">
         <div v-for="(button, index) of bottomButtons" :key="index">
-          <ExternalLinkAtom
-            v-if="button.link"
-            class="special-button"
-            :class="{ inverse: button.inverse }"
-            :href="button.link"
-          >
+          <ExternalLinkAtom v-if="button.link" class="special-button" :class="{ inverse: button.inverse }"
+            :href="button.link">
             <template #default>
               {{ button.label }}
-              <font-awesome-icon
-                v-if="button.icon"
-                :icon="button.icon"
-                class="fa-icon"
-              />
+              <font-awesome-icon v-if="button.icon" :icon="button.icon" class="fa-icon" />
             </template>
           </ExternalLinkAtom>
           <div v-else class="special-button">
             {{ button.label }}
-            <font-awesome-icon
-              v-if="button.icon"
-              :icon="button.icon"
-              class="fa-icon"
-            />
+            <font-awesome-icon v-if="button.icon" :icon="button.icon" class="fa-icon" />
           </div>
         </div>
       </div>
     </section>
 
     <section class="data-info">
-      <Panel
-        toggleable
-        class="info-box"
-        :dt="{ border: 'inherit', borderRadius: 'inherit' }"
-      >
+      <Panel toggleable class="info-box" :dt="{ border: 'inherit', borderRadius: 'inherit' }">
         <template #header>
           <h2 class="info-box-header">To consider before reading the data</h2>
         </template>
@@ -285,44 +226,33 @@ function isDoab(): boolean {
           <ul>
             <li>
               Each line of the table below shows a financial support,
-              <RouterLink to="/pages/faq#contracts-or-transfers"
-                >see the FAQ</RouterLink
-              >.
+              <RouterLink to="/pages/faq#contracts-or-transfers">see the FAQ</RouterLink>.
             </li>
             <li v-if="props.entity.infrastructure?.hide_amount">
               The amount of financial support is hidden,
-              <RouterLink to="/pages/faq#amounts-hidden">see the FAQ</RouterLink
-              >.
+              <RouterLink to="/pages/faq#amounts-hidden">see the FAQ</RouterLink>.
             </li>
             <li v-if="isDoaj() || isDoab()">
               Financial support is available from 2021,
-              <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution"
-                >see the FAQ</RouterLink
-              >.
+              <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution">see the FAQ</RouterLink>.
             </li>
             <li v-if="!isInfrastructure && !props.entity.is_partner">
-              For its launch TSOSI includes data from DOAJ, DOAB,
-              PeerCommunityIn, SciPost, and OPERAS.
+              TSOSI includes data from <RouterLink to="/pages/faq#data-provider">its providers</RouterLink>.
             </li>
             <li v-if="!isInfrastructure && !props.entity.is_partner">
               The individual transfer amounts may be hidden depending on the
               supported infrastructure,
-              <RouterLink to="/pages/faq#amounts-hidden">see the FAQ</RouterLink
-              >.
+              <RouterLink to="/pages/faq#amounts-hidden">see the FAQ</RouterLink>.
             </li>
             <li v-if="!isInfrastructure && !props.entity.is_partner">
               For the DOAB and DOAJ, only supports made since 2021 are included,
-              <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution"
-                >see the FAQ</RouterLink
-              >.
+              <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution">see the FAQ</RouterLink>.
             </li>
             <li v-if="(!isInfrastructure && !props.entity.is_partner) || isDoaj()">
               Support to DOAJ for 2021 and 2022, provided through a consortium,
               includes only the consortium name; a breakdown by individual
               supporters is not available.
-              <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution"
-                >See the FAQ</RouterLink
-              >.
+              <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution">See the FAQ</RouterLink>.
             </li>
             <li v-if="props.entity.infrastructure?.date_data_update">
               Last data update:
@@ -350,7 +280,7 @@ function isDoab(): boolean {
 </template>
 
 <style scoped>
-.entity-meta > * {
+.entity-meta>* {
   margin-bottom: min(2em, 4vh);
 }
 
@@ -363,7 +293,7 @@ function isDoab(): boolean {
     justify-items: initial;
     gap: 2em;
 
-    & > div:first-child {
+    &>div:first-child {
       margin: auto;
     }
   }
@@ -395,9 +325,7 @@ function isDoab(): boolean {
   }
 
   & .entity-header__grid.three-columns {
-    grid-template-columns: calc(var(--first-col) + 50px) 1fr var(
-        --links-max-width
-      );
+    grid-template-columns: calc(var(--first-col) + 50px) 1fr var(--links-max-width);
   }
 }
 
@@ -445,13 +373,13 @@ function isDoab(): boolean {
     bottom: 0;
     height: 100%;
     width: 100%;
-    background-color: rgba(
-      255,
-      255,
-      255,
-      0.8
-    ); /* Black with 50% transparency */
-    z-index: -1; /* Ensure overlay is on top of the image */
+    background-color: rgba(255,
+        255,
+        255,
+        0.8);
+    /* Black with 50% transparency */
+    z-index: -1;
+    /* Ensure overlay is on top of the image */
   }
 }
 
@@ -495,6 +423,7 @@ function isDoab(): boolean {
   font-size: 0.9rem;
 
   padding: 0.2rem 0.25rem;
+
   &:hover {
     background-color: var(--p-surface-100);
     text-decoration: underline;
@@ -534,7 +463,7 @@ function isDoab(): boolean {
   text-decoration: unset;
   transition: all 0.2s ease-out;
 
-  & > .fa-icon {
+  &>.fa-icon {
     margin-left: 0.75rem;
   }
 
