@@ -1,23 +1,22 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, onUnmounted, computed } from "vue"
 import Carousel from "primevue/carousel"
+import { computed, onBeforeMount, onMounted, onUnmounted } from "vue"
 
-import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg"
 import cosoLogoUrl from "@/assets/img/coso-black-logo.svg"
+import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg"
+import ImageAtom from "@/components/atoms/ImageAtom.vue"
+import CardComponent from "@/components/CardComponent.vue"
+import EntityMap from "@/components/EntityMap.vue"
+import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery"
+import { setBigHeader, togglePageNoHeader } from "@/singletons/fixedHeaderStore"
 import { getEmitters, getPartners, type Entity } from "@/singletons/ref-data"
+import { shuffleArray } from "@/utils/data-utils"
 import {
-  changeMetaTitle,
   changeMetaDescripion,
+  changeMetaTitle,
   changeMetaUrl,
 } from "@/utils/dom-utils"
-import EntityMap from "@/components/EntityMap.vue"
-import CardComponent from "@/components/CardComponent.vue"
-import { shuffleArray } from "@/utils/data-utils"
-import ImageAtom from "@/components/atoms/ImageAtom.vue"
 import { getEntityUrl } from "@/utils/url-utils"
-import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery"
-import { togglePageNoHeader, setBigHeader } from "@/singletons/fixedHeaderStore"
-
 
 changeMetaUrl(true)
 changeMetaDescripion(
@@ -79,13 +78,7 @@ const citations = [
     <section class="banner">
       <div class="container">
         <div class="content-section">
-          <Carousel
-            :value="citations"
-            :num-visible="1"
-            :num-scroll="1"
-            circular
-            :autoplay-interval="5000"
-          >
+          <Carousel :value="citations" :num-visible="1" :num-scroll="1" circular :autoplay-interval="5000">
             <template #item="slotProps">
               <div class="citation">
                 <h2>
@@ -112,19 +105,11 @@ const citations = [
             <span class="number-emphasis">
               {{ countries.length.toString() }}
             </span>
-            countries that have financially contributed to
-            <RouterLink to="#partner-banner">
-              partner's infrastructure
-            </RouterLink>
+            countries that have supported open science infrastructure.
           </h2>
 
-          <EntityMap
-            class="home-map"
-            :id="'home-supporters-map'"
-            :supporters="emitters"
-            :data-loaded="true"
-            :export-title-base="'overall supporters'"
-          />
+          <EntityMap class="home-map" :id="'home-supporters-map'" :supporters="emitters" :data-loaded="true"
+            :export-title-base="'overall supporters'" />
         </div>
       </div>
     </section>
@@ -133,25 +118,14 @@ const citations = [
       <div class="container">
         <div class="regular-content content-section">
           <h2 class="banner-title" style="text-align: center">
-            For its launching, TSOSI includes data from the partners
-            infrastructure:
+            TSOSI data comes from the following organizations:
           </h2>
-
-          <!-- TO BE REMOVED once carousel is validated -->
           <div class="partner-cards">
-            <RouterLink
-              :to="getEntityUrl(entity)"
-              v-for="entity of partners"
-              :key="entity.id"
-              class="card-link"
-            >
+            <RouterLink :to="getEntityUrl(entity)" v-for="entity of partners"
+              :key="entity.id" class="card-link">
               <CardComponent :no-body="true">
                 <template #header>
-                  <ImageAtom
-                    :src="entity.logo"
-                    :width="partnerLogoWidth"
-                    :center="true"
-                  />
+                  <ImageAtom :src="entity.logo" :width="partnerLogoWidth" :center="true" />
                 </template>
               </CardComponent>
             </RouterLink>
@@ -170,7 +144,8 @@ const citations = [
             <div class="explain-box" style="--l-pos: 80px">
               <h3>1. We collect financial data from TSOSI partners</h3>
               <p>
-                For its launching, the data comes from partners infrastructure
+                We collect financial data from various organization. We started with infrastructures and we have added
+                institutions.
               </p>
             </div>
             <div class="explain-box" style="--l-pos: calc(100% - 80px)">
@@ -207,8 +182,7 @@ const citations = [
                   welcome. If you represent an institution, a consortium or an
                   infrastructure, feel free to
                   <RouterLink :to="'/pages/faq#contact-us'">
-                    drop us a line</RouterLink
-                  >.
+                    drop us a line</RouterLink>.
                 </p>
               </div>
             </div>
@@ -216,26 +190,16 @@ const citations = [
               <h2 class="banner-title" style="text-align: center">
                 Who is behind TSOSI?
               </h2>
-              <div
-                style="
+              <div style="
                   max-width: 700px;
                   margin: 0 auto;
                   display: flex;
                   flex-wrap: wrap;
                   justify-content: space-around;
                   align-items: center;
-                "
-              >
-                <ImageAtom
-                  :src="ugaLogoUrl"
-                  :width="isDesktop ? '150px' : '125px'"
-                  :center="true"
-                />
-                <ImageAtom
-                  :src="cosoLogoUrl"
-                  :width="isDesktop ? '200px' : '150px'"
-                  :center="true"
-                />
+                ">
+                <ImageAtom :src="ugaLogoUrl" :width="isDesktop ? '150px' : '125px'" :center="true" />
+                <ImageAtom :src="cosoLogoUrl" :width="isDesktop ? '200px' : '150px'" :center="true" />
               </div>
               <div style="text-align: center">
                 <RouterLink :to="'/pages/about'">
@@ -251,11 +215,12 @@ const citations = [
 </template>
 
 <style scoped>
-#home > *:first-child {
+#home>*:first-child {
   padding-top: 15vh;
 }
 
 #home.mobile {
+
   .citation,
   .citation h2 {
     font-size: 2.8rem;
@@ -412,6 +377,7 @@ const citations = [
     &::after {
       all: unset;
     }
+
     &::before {
       all: unset;
     }
@@ -423,10 +389,12 @@ const citations = [
     opacity: 0.2;
     transform: translateY(-5rem) rotate(45deg);
   }
+
   50% {
     opacity: 1;
     transform: translateY(-2.5rem) rotate(45deg);
   }
+
   100% {
     opacity: 0.2;
     transform: rotate(45deg);

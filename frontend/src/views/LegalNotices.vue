@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import StaticContentComponent from "@/views/StaticContentView.vue"
-import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
-import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue";
+import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue";
+import StaticContentComponent from "@/views/StaticContentView.vue";
 </script>
 
 <template>
@@ -58,10 +58,7 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom
-        id="personal-data-protection"
-        title="Protection of personal data"
-      >
+      <StaticSectionAtom id="personal-data-protection" title="Protection of personal data">
         <p>
           Information on personal data protection for this site is available on
           the
