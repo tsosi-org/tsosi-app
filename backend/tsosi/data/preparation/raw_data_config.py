@@ -48,6 +48,7 @@ __all__ = [
     "FieldEmitterCustomId",
     "FieldEmitterUrl",
     "FieldEmitterCountry",
+    "FieldEmitterSub",
     "FieldEmitterType",
     "FieldRecipientName",
     "FieldRecipientRorId",
@@ -150,6 +151,11 @@ class FieldEmitterCountry(ConstOrField):
 @dataclass(kw_only=True)
 class FieldEmitterType(ConstOrField):
     NAME = "emitter_type"
+
+
+@dataclass(kw_only=True)
+class FieldEmitterSub(ConstOrField):
+    NAME = "emitter_sub"
 
 
 @dataclass(kw_only=True)
@@ -284,6 +290,7 @@ ALL_FIELDS: list[Type[ConstOrField]] = [
     FieldEmitterCustomId,
     FieldEmitterUrl,
     FieldEmitterCountry,
+    FieldEmitterSub,
     FieldEmitterType,
     FieldRecipientName,
     FieldRecipientRorId,

@@ -194,6 +194,7 @@ def extract_entities(transfers: pd.DataFrame) -> pd.DataFrame:
         dc.FieldEmitterRorId.NAME: "ror_id",
         dc.FieldEmitterWikidataId.NAME: "wikidata_id",
         dc.FieldEmitterCustomId.NAME: "custom_id",
+        dc.FieldEmitterSub.NAME: "sub_entity",
         dc.FieldOriginalId.NAME: "original_id",
     }
     mask = ~transfers[dc.FieldEmitterName.NAME].isna()
@@ -409,6 +410,7 @@ def create_transfer_entity_matching(
         "transfer_id",
         "transfer_entity_type",
         "entity_id",
+        "sub_entity",
         "match_criteria",
         "match_source",
         "comments",
