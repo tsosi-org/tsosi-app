@@ -97,6 +97,7 @@ export interface Transfer extends ApiData {
 }
 
 export interface TransferDetails extends Transfer {
+  emitter_sub: string | null
   date_agreement: DateWithPrecision | null
   date_invoice: DateWithPrecision | null
   date_payment_recipient: DateWithPrecision | null

@@ -142,6 +142,7 @@ class TransferEntityMatching(TimestampedModel):
     )
     match_source = models.CharField(choices=MATCH_SOURCE_CHOICES, max_length=32)
     comments = models.TextField(null=True)
+    sub_entity = models.CharField(max_length=512, null=True)
 
     class Meta:
         constraints = [
