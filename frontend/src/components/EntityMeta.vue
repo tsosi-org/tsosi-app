@@ -153,7 +153,7 @@ function isDoab(): boolean {
         <div class="entiy-header__desc">
           <!--
             Description (manual) takes precedence on automatically
-            fetched Wikipedia sumamry
+            fetched Wikipedia summary
           -->
           <div v-if="props.entity.description">
             <p>
@@ -300,23 +300,23 @@ function isDoab(): boolean {
                 >see the FAQ</RouterLink
               >.
             </li>
-            <li v-if="!isInfrastructure">
+            <li v-if="!isInfrastructure && !props.entity.is_partner">
               For its launch TSOSI includes data from DOAJ, DOAB,
               PeerCommunityIn, SciPost, and OPERAS.
             </li>
-            <li v-if="!isInfrastructure">
+            <li v-if="!isInfrastructure && !props.entity.is_partner">
               The individual transfer amounts may be hidden depending on the
               supported infrastructure,
               <RouterLink to="/pages/faq#amounts-hidden">see the FAQ</RouterLink
               >.
             </li>
-            <li v-if="!isInfrastructure">
+            <li v-if="!isInfrastructure && !props.entity.is_partner">
               For the DOAB and DOAJ, only supports made since 2021 are included,
               <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution"
                 >see the FAQ</RouterLink
               >.
             </li>
-            <li v-if="!isInfrastructure || isDoaj()">
+            <li v-if="(!isInfrastructure && !props.entity.is_partner) || isDoaj()">
               Support to DOAJ for 2021 and 2022, provided through a consortium,
               includes only the consortium name; a breakdown by individual
               supporters is not available.

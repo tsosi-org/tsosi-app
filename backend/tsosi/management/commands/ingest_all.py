@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            "--dir-path",
+            "dir_path",
             nargs="?",
             type=str,
             help="Data dir full path",

@@ -27,7 +27,7 @@ logger_console = logging.getLogger("console_only")
 
 # doc: https://ror.readme.io/v2/docs/api-affiliation
 ROR_API_ENDPOINT = "https://api.ror.org/v2/organizations"
-ROR_ID_REGEX = r"^[0-9a-zA-Z]{9}$"
+ROR_ID_REGEX = r"^0[a-z|0-9]{6}[0-9]{2}$"
 ES_RESERVED_CHARS = [
     "+",
     "-",

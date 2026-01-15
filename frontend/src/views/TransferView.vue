@@ -1,21 +1,21 @@
 <script setup lang="ts">
+import Divider from "primevue/divider"
 import { onBeforeMount, ref, type Ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import Divider from "primevue/divider"
 
+import Loader from "@/components/atoms/LoaderAtom.vue"
+import Breadcrumb, {
+  type BreadcrumbItem,
+} from "@/components/BreadcrumbComponent.vue"
+import Summary from "@/components/SummaryComponent.vue"
+import { isDesktop } from "@/composables/useMediaQuery"
 import {
   getTransferDetails,
   type Entity,
   type TransferDetails,
 } from "@/singletons/ref-data"
-import { getEntityBaseUrl, getEntityUrl } from "@/utils/url-utils"
 import { type DataFieldProps } from "@/utils/data-utils"
-import Summary from "@/components/SummaryComponent.vue"
-import Loader from "@/components/atoms/LoaderAtom.vue"
-import Breadcrumb, {
-  type BreadcrumbItem,
-} from "@/components/BreadcrumbComponent.vue"
-import { isDesktop } from "@/composables/useMediaQuery"
+import { getEntityBaseUrl, getEntityUrl } from "@/utils/url-utils"
 
 
 const route = useRoute()
@@ -66,7 +66,6 @@ const dataConfig: Array<DataFieldProps> = [
     title: "Emitter",
     field: "emitter",
     type: "entityLink",
-    fieldLabel: "emitter.name",
     fieldLink: {
       base: getEntityBaseUrl(),
       suffix: "emitter.id",

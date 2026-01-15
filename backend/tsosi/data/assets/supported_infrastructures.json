@@ -1,6 +1,9 @@
 [
   {
-    "pid": { "registry_id": "ror", "value": "05amyt365" },
+    "pid": {
+      "registry_id": "ror",
+      "value": "05amyt365"
+    },
     "entity": {
       "raw_name": "Directory of Open Access Journals",
       "raw_website": "https://doaj.org",
@@ -48,11 +51,14 @@
       "support_url": "https://www.doabooks.org/en/librarians/how-to-become-a-doab-supporter",
       "legal_entity_description": "DOAB & OAPEN have the same legal entity, located in the Netherlands.See <a href=\"https://www.wikidata.org/wiki/Q21750281\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    DOAB on wikidata</a>,<a href=\"https://www.wikidata.org/wiki/Q109123141\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    OAPEN on wikidata</a>."
     },
-    "static_logo": "LOGO_oapen_doab.png",
+    "static_logo": "oapen_doab_logo.png",
     "static_icon": "doab_icon.ico"
   },
   {
-    "pid": { "registry_id": "ror", "value": "00rfexj26" },
+    "pid": {
+      "registry_id": "ror",
+      "value": "00rfexj26"
+    },
     "entity": {
       "raw_name": "OPERAS",
       "raw_website": "https://operas-eu.org",
@@ -70,7 +76,10 @@
     "static_icon": "operas_icon.png"
   },
   {
-    "pid": { "registry_id": "ror", "value": "0315saa81" },
+    "pid": {
+      "registry_id": "ror",
+      "value": "0315saa81"
+    },
     "entity": {
       "raw_name": "Peer Community In",
       "raw_website": "https://peercommunityin.org",
@@ -89,7 +98,10 @@
     "static_icon": "pci_icon.jpg"
   },
   {
-    "pid": { "registry_id": "ror", "value": "05br64h13" },
+    "pid": {
+      "registry_id": "ror",
+      "value": "05br64h13"
+    },
     "entity": {
       "raw_name": "SciPost",
       "raw_website": "https://scipost.org",
@@ -107,5 +119,63 @@
       "legal_entity_description": "The legal entity is located in the Netherlands, see <a href=\"https://www.wikidata.org/wiki/Q52663237\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    SciPost on wikidata</a>."
     },
     "static_icon": "scipost_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q16668108"
+    },
+    "entity": {
+      "raw_name": "OpenEdition",
+      "raw_website": "https://www.openedition.org/",
+      "name": "OpenEdition",
+      "short_name": "OpenEdition",
+      "website": "https://www.openedition.org/",
+      "is_partner": false,
+      "description": "OpenEdition is a comprehensive digital infrastructure for academic communication in the humanities and social sciences. It brings together four complementary platforms focused respectively on journals (OpenEdition Journals), book series (OpenEdition Books), research blogs (Hypotheses) and academic events (Calenda)."
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/openedition",
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q2945983\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenEdition Center on wikidata</a>."
+    },
+    "static_icon": "openedition_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "04d2k0j65"
+    },
+    "entity": {
+      "raw_name": "SPARC Europe",
+      "raw_website": "https://sparceurope.org",
+      "name": "SPARC Europe",
+      "short_name": "SPARC Europe",
+      "website": "https://sparceurope.org",
+      "is_partner": false,
+      "description": "Advocacy group for open access to research and data."
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in the Netherlands, see <a href=\"https://www.wikidata.org/wiki/Q50195409\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">SPARC Europe on wikidata</a>."
+    },
+    "static_logo": "sparceurope_logo.png",
+    "static_icon": "sparceurope_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q3144107"
+    },
+    "entity": {
+      "raw_name": "HAL",
+      "raw_website": "https://hal.science/",
+      "name": "HAL",
+      "short_name": "HAL",
+      "website": "https://hal.science/",
+      "is_partner": false
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q2945988\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">CCSD on wikidata</a>."
+    },
+    "static_icon": "hal_icon.png"
   }
 ]

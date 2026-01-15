@@ -142,7 +142,7 @@ def test_fetch_corrupted_empty_ror_records(
 ):
     print("Testing fetching error of corrupted empty ROR identifier")
     # Non-existent ROR - https://ror.org/a00000000
-    id_1 = IdentifierFactory.create(registry_id=REGISTRY_ROR, value="a00000000")
+    id_1 = IdentifierFactory.create(registry_id=REGISTRY_ROR, value="000000000")
 
     # Test table is empty on init
     versions = IdentifierVersion.objects.all()
