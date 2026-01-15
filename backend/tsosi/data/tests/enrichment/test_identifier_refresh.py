@@ -122,8 +122,8 @@ def test_refresh_corrupted_ror_record(
     registries, identifier_fetch_setting, mocker, uga_ror_record
 ):
     print("Testing fetching error of corrupted ROR identifier.")
-    # Non-existent ROR - https://ror.org/a00000000
-    id_1 = IdentifierFactory.create(registry_id=REGISTRY_ROR, value="a00000000")
+    # Non-existent ROR - https://ror.org/000000000
+    id_1 = IdentifierFactory.create(registry_id=REGISTRY_ROR, value="000000000")
     a_while_ago = datetime.now(UTC) - timedelta(days=30)
     id_v_1 = IdentifierVersionFactory.create(
         identifier=id_1,

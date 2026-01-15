@@ -14,6 +14,7 @@ from tsosi.models.date import (
     DATE_PRECISION_CHOICES,
     DATE_PRECISION_YEAR,
     format_date,
+    parse_date_precision,
 )
 from tsosi.models.static_data import DATA_SOURCES
 
@@ -574,17 +575,19 @@ class RawDataConfig:
                     cols_to_export.append(f.NAME)
                     continue
                 format = f.format if f.format else DATE_FORMAT
-                df[f.NAME] = pd.to_datetime(
-                    df[f.NAME], format=format, utc=True, errors="raise"
+                parsed_dates = pd.to_datetime(
+                    df[f.NAME], format="ISO8601", utc=True, errors="raise"
                 ).dt.date
                 date_precision = (
-                    f.date_precision
+                    pd.Series(f.date_precision)
+                    .repeat(len(df))
+                    .reset_index(drop=True)
                     if f.date_precision
-                    else DATE_PRECISION_YEAR
+                    else parse_date_precision(df[f.NAME])
                 )
-                df[f.NAME] = df[f.NAME].apply(
-                    lambda x: format_date(x, date_precision)
-                )
+                df[f.NAME] = pd.concat(
+                    [parsed_dates, date_precision], axis=1
+                ).apply(lambda x: format_date(x.iloc[0], x.iloc[1]), axis=1)
                 if f.default is not None:
                     df[f.NAME] = df[f.NAME].apply(
                         lambda x: f.default if pd.isna(x) else x
@@ -721,7 +724,7 @@ class RawDataConfigFromFile(RawDataConfig):
                     "when populating data from a spreadsheet."
                 )
             xls = pd.ExcelFile(self.input_file_name)
-            df = pd.read_excel(xls, self.input_sheet_name)
+            df = pd.read_excel(xls, self.input_sheet_name, dtype=str)
             self.origin = (
                 f"{self.input_file_name.split("/")[-1]}_{self.input_sheet_name}"
             )

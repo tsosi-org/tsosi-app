@@ -14,6 +14,10 @@ export function getEntityUrl(entity: Entity): string {
   if (ror) {
     return getEntityBaseUrl() + ror.value
   }
+  const wikidata = entity.identifiers.find((id) => id.registry == "wikidata")
+  if (wikidata) {
+    return getEntityBaseUrl() + wikidata.value
+  }
   const custom = entity.identifiers.find((id) => id.registry == "_custom")
   if (custom) {
     return getEntityBaseUrl() + custom.value

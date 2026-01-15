@@ -5,7 +5,12 @@ import pytest
 from tsosi.data.enrichment.merging import merge_entities
 from tsosi.data.exceptions import DataException
 from tsosi.models import TransferEntityMatching
-from tsosi.models.transfer import MATCH_CRITERIA_MERGED
+from tsosi.models.transfer import (
+    MATCH_CRITERIA_MERGED,
+    TRANSFER_ENTITY_TYPE_AGENT,
+    TRANSFER_ENTITY_TYPE_EMITTER,
+    TRANSFER_ENTITY_TYPE_RECIPIENT,
+)
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 
 from ..factories import (
@@ -77,15 +82,27 @@ def test_merging(datasources):
     assert t_a.agent == e_1
 
     # Check TransfertEntityMatching creation
-    t_e_m = TransferEntityMatching.objects.get(transfer=t_e_1)
+    t_e_m = TransferEntityMatching.objects.get(
+        transfer=t_e_1,
+        entity__merged_with__isnull=True,
+        transfer_entity_type=TRANSFER_ENTITY_TYPE_EMITTER,
+    )
     assert t_e_m.entity == e_1
     assert t_e_m.transfer_entity_type == "emitter"
 
-    t_r_m = TransferEntityMatching.objects.get(transfer=t_r)
+    t_r_m = TransferEntityMatching.objects.get(
+        transfer=t_r,
+        entity__merged_with__isnull=True,
+        transfer_entity_type=TRANSFER_ENTITY_TYPE_RECIPIENT,
+    )
     assert t_r_m.entity == e_1
     assert t_r_m.transfer_entity_type == "recipient"
 
-    t_a_m = TransferEntityMatching.objects.get(transfer=t_a)
+    t_a_m = TransferEntityMatching.objects.get(
+        transfer=t_a,
+        entity__merged_with__isnull=True,
+        transfer_entity_type=TRANSFER_ENTITY_TYPE_AGENT,
+    )
     assert t_a_m.entity == e_1
     assert t_a_m.transfer_entity_type == "agent"
 

@@ -4,10 +4,10 @@
  */
 import { fetchUrl, get } from "@/services/api"
 import {
-  initDateWithPrecision,
   initDateProperty,
-  type DateWithPrecision,
+  initDateWithPrecision,
   shuffleArray,
+  type DateWithPrecision,
 } from "@/utils/data-utils"
 
 
@@ -241,7 +241,7 @@ export function getEntitySummary(id: string): DeepReadonly<Entity> | null {
   return refData.entities[id]
 }
 
-const rorIdRegex = new RegExp("^[a-zA-Z0-9]{9}$")
+const rorIdRegex = new RegExp("^0[a-z|0-9]{6}[0-9]{2}$")
 const wikidataIdRegex = new RegExp("^Q[0-9]+$")
 const uuid4Regex = new RegExp(
   "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
