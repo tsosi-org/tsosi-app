@@ -329,6 +329,7 @@ class DataLoadSource:
     date_data_obtained: date
     year: int | None = None
     full_data: bool = False
+    entity_id: str | None = None
 
     def __post_init__(self):
         """

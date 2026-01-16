@@ -637,9 +637,16 @@ def ingest(
 
     df = pd.DataFrame.from_records(ingestion_config.data)
     dc.create_missing_fields(df)
-    source = DataLoadSource(**ingestion_config.source.serialize())
+    dls_config = ingestion_config.source.serialize()
+    dls_entity_id = dls_config.pop("entity_id", None)
+    source = DataLoadSource(**dls_config)
 
     ingest_new_records(df, source, send_signals)
+
+    if dls_entity_id:
+        entity = Identifier.objects.get(value=dls_entity_id).entity
+        source.entity = entity
+        source.save()
 
     return True
 

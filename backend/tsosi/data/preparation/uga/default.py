@@ -10,6 +10,7 @@ def get_config(
 ) -> rdc.RawDataConfigFromFile:
     source = rdc.DataLoadSource(
         data_source_id="uga",
+        entity_id="02rx3b187",
         full_data=True,
         data_load_name=Path(file_path).name,
         date_data_obtained=date_data,

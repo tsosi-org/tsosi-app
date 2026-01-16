@@ -152,10 +152,6 @@ class InfrastructureDetails(TimestampedModel):
     legal_entity_description = models.TextField(null=True)
 
     hide_amount = models.BooleanField(default=False)
-    # Clc fields
-    date_data_update = models.DateField(null=True)
-    date_data_start = models.DateField(null=True)
-    date_data_end = models.DateField(null=True)
 
     class Meta:
         constraints = [

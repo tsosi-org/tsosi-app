@@ -254,11 +254,11 @@ function isDoab(): boolean {
               supporters is not available.
               <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution">See the FAQ</RouterLink>.
             </li>
-            <li v-if="props.entity.infrastructure?.date_data_update">
+            <li v-if="props.entity.date_data_update">
               Last data update:
               {{
                 formatDateWithPrecision(
-                  props.entity.infrastructure.date_data_update,
+                  props.entity.date_data_update,
                   "day"
                 )
               }}.
@@ -266,15 +266,6 @@ function isDoab(): boolean {
           </ul>
         </div>
       </Panel>
-      <!--
-      <InfrastructureInfoBox
-        v-if="props.entity.infrastructure"
-        :data="props.entity"
-        :full-width="false"
-        :breakdown-disclaimer="isDoaj()"
-      />
-      <EmitterInfoBox v-else />
-      -->
     </section>
   </div>
 </template>

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from tsosi.models import (
     Analytic,
     Currency,
+    DataLoadSource,
     Entity,
     Identifier,
     InfrastructureDetails,
@@ -59,6 +60,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
         source="infrastructure_details", required=False
     )
     children = serializers.SerializerMethodField(read_only=True)
+    date_data_update = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Entity
@@ -82,10 +84,20 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "is_agent",
             "infrastructure",
             "is_partner",
+            "date_data_update",
         ]
 
     def get_children(self, obj) -> list[str]:
         return [e.id for e in Entity.objects.get(id=obj.id).get_all_children()]
+
+    def get_date_data_update(self, obj):
+        dls = (
+            DataLoadSource.objects.filter(entity=obj)
+            .order_by("-date_data_obtained")
+            .values_list("date_data_obtained", flat=True)
+            .first()
+        )
+        return dls
 
 
 class BaseTransferSerializer(serializers.ModelSerializer):

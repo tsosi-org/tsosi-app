@@ -54,6 +54,7 @@ def get_file_config(
         full_data=True,
         data_load_name=file_path.split("/")[-1],
         date_data_obtained=date_data,
+        entity_id="05br64h13",
     )
     return rdc.RawDataConfigFromFile(
         "scipost_from_file",
@@ -88,6 +89,7 @@ def get_api_config() -> ScipostRawDataConfigFromApi:
         full_data=True,
         data_load_name="scipost_api",
         date_data_obtained=date.today(),
+        entity_id="05br64h13",
     )
     return ScipostRawDataConfigFromApi(
         "scipost_from_api", "api", source, fields=SCIPOST_CONFIG_FIELDS

@@ -17,7 +17,6 @@ IDENTIFIER_CREATE_FIELDS = [
     "value",
     "entity_id",
     "date_created",
-    "date_last_updated",
 ]
 IDENTIFIER_MATCHING_CREATE_FIELDS = [
     "entity_id",
@@ -26,7 +25,6 @@ IDENTIFIER_MATCHING_CREATE_FIELDS = [
     "match_source",
     "date_start",
     "date_created",
-    "date_last_updated",
 ]
 
 

@@ -13,6 +13,5 @@ from .database_related import (
     update_entity_from_pid_records,
     update_entity_names,
     update_entity_roles_clc,
-    update_infrastructure_metrics,
     update_transfer_date_clc,
 )

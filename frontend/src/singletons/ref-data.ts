@@ -51,9 +51,6 @@ export interface InfrastructureDetails extends ApiData {
   date_scoss_end?: Date
   legal_entity_description?: string
   hide_amount: boolean
-  date_data_update?: Date
-  date_data_start?: Date
-  date_data_end?: Date
 }
 
 export interface Entity extends ApiData {
@@ -80,6 +77,7 @@ export interface EntityDetails extends Entity {
   infrastructure?: InfrastructureDetails
   is_emitter: boolean
   is_agent: boolean
+  date_data_update?: Date
 }
 
 export interface Transfer extends ApiData {
@@ -279,13 +277,11 @@ export async function getEntityDetails(
   if (result.data) {
     const val = result.data as Record<string, any>
     initDateProperty(val, "date_inception")
+    initDateProperty(val, "date_data_update")
     if (val.infrastructure) {
       for (const property of [
         "date_scoss_start",
         "date_scoss_end",
-        "date_data_start",
-        "date_data_end",
-        "date_data_update",
       ]) {
         initDateProperty(val.infrastructure, property)
       }

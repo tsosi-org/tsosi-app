@@ -210,7 +210,6 @@ def update_clc_fields():
     tasks: list[Callable] = [
         enrichment.update_entity_active_status,
         enrichment.update_entity_roles_clc,
-        enrichment.update_infrastructure_metrics,
         enrichment.compute_analytics,
     ]
     _ = [t() for t in tasks]
