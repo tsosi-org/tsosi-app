@@ -457,7 +457,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
       <template v-else-if="column.type == 'entityLink'" #body="{ data }">
         <div class="inline-container"> 
           <div class="info-button-inline">
-            <InfoButtonAtom :icon="['fas', 'circle-info']" v-if="column.field == 'emitter' && data.emitter_id != props.id.slice(0, 36)">
+            <InfoButtonAtom :icon="['fas', 'circle-info']" v-if="column.field == 'emitter' && data.emitter_id != props.id.slice(0, 36) && props.id.slice(37) == 'emitter'">
               <template #popup>
                 <span>
                   This support comes from a child entity, based on ror.org hierarchy. See
