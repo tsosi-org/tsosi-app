@@ -11,11 +11,11 @@ from ..factories import DataLoadSourceFactory, TransferFactory
 
 
 @pytest.mark.django_db
-def test_deduplicate_transfers(datasources):
-    dls = DataLoadSourceFactory.create()
+def test_deduplicate_transferss(datasources):
+    dls = DataLoadSourceFactory.create(data_source_id="uga")
     transfers = TransferFactory.create_batch(2, data_load_sources=(dls,))
     transfer = transfers[0]
-    dls = DataLoadSourceFactory.create()
+    dls = DataLoadSourceFactory.create(data_source_id="pci")
     TransferFactory.create(
         data_load_sources=(dls,),
         emitter_id=transfer.emitter_id,
@@ -35,10 +35,10 @@ def test_deduplicate_transfers(datasources):
 
 @pytest.mark.django_db
 def test_deduplicate_transfers_multiple_match(datasources):
-    dls = DataLoadSourceFactory.create()
+    dls = DataLoadSourceFactory.create(data_source_id="uga")
     transfers = TransferFactory.create_batch(1, data_load_sources=(dls,))
     transfer = transfers[0]
-    dls = DataLoadSourceFactory.create()
+    dls = DataLoadSourceFactory.create(data_source_id="pci")
     TransferFactory.create(
         data_load_sources=(dls,),
         emitter_id=transfer.emitter_id,
