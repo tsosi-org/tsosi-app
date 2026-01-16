@@ -1,5 +1,6 @@
 from django.db import models
 
+from .entity import Entity
 from .utils import TimestampedModel
 
 
@@ -20,6 +21,7 @@ class DataLoadSource(TimestampedModel):
     year = models.IntegerField(null=True)
     full_data = models.BooleanField(default=False)
     date_data_obtained = models.DateField(null=False)
+    entity = models.ForeignKey(Entity, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         constraints = [
