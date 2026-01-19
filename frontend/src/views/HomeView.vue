@@ -3,7 +3,9 @@ import Carousel from "primevue/carousel"
 import { computed, onBeforeMount, onMounted, onUnmounted } from "vue"
 
 import cosoLogoUrl from "@/assets/img/coso-black-logo.svg"
+import gricadLogoUrl from "@/assets/img/logo_gricad_noir.svg"
 import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg"
+import ExternalLink from "@/components/atoms/ExternalLinkAtom.vue"
 import ImageAtom from "@/components/atoms/ImageAtom.vue"
 import CardComponent from "@/components/CardComponent.vue"
 import EntityMap from "@/components/EntityMap.vue"
@@ -78,7 +80,13 @@ const citations = [
     <section class="banner">
       <div class="container">
         <div class="content-section">
-          <Carousel :value="citations" :num-visible="1" :num-scroll="1" circular :autoplay-interval="5000">
+          <Carousel
+            :value="citations"
+            :num-visible="1"
+            :num-scroll="1"
+            circular
+            :autoplay-interval="5000"
+          >
             <template #item="slotProps">
               <div class="citation">
                 <h2>
@@ -108,8 +116,13 @@ const citations = [
             countries that have supported open science infrastructure.
           </h2>
 
-          <EntityMap class="home-map" :id="'home-supporters-map'" :supporters="emitters" :data-loaded="true"
-            :export-title-base="'overall supporters'" />
+          <EntityMap
+            class="home-map"
+            :id="'home-supporters-map'"
+            :supporters="emitters"
+            :data-loaded="true"
+            :export-title-base="'overall supporters'"
+          />
         </div>
       </div>
     </section>
@@ -121,15 +134,32 @@ const citations = [
             TSOSI data comes from the following organizations:
           </h2>
           <div class="partner-cards">
-            <RouterLink :to="getEntityUrl(entity)" v-for="entity of partners"
-              :key="entity.id" class="card-link">
+            <RouterLink
+              :to="getEntityUrl(entity)"
+              v-for="entity of partners"
+              :key="entity.id"
+              class="card-link"
+            >
               <CardComponent :no-body="true">
                 <template #header>
-                  <ImageAtom :src="entity.logo" :width="partnerLogoWidth" :center="true" />
+                  <ImageAtom
+                    :src="entity.logo"
+                    :width="partnerLogoWidth"
+                    :center="true"
+                  />
                 </template>
               </CardComponent>
             </RouterLink>
           </div>
+        </div>
+        <div class="regular-content content-section">
+          <h2 class="banner-title" style="text-align: center">
+            Be part of this! See how to
+            <RouterLink :to="'/pages/faq#join-tsosi'"> join TSOSI</RouterLink>.
+          </h2>
+          <!-- <div style="max-width: 700px; margin: 0 auto">
+            <p :style="`margin-top: ${isDesktop ? '4em' : '2em'}`"></p>
+          </div> -->
         </div>
       </div>
     </section>
@@ -144,8 +174,8 @@ const citations = [
             <div class="explain-box" style="--l-pos: 80px">
               <h3>1. We collect financial data from TSOSI partners</h3>
               <p>
-                We collect financial data from various organization. We started with infrastructures and we have added
-                institutions.
+                We collect financial data from various organization. We started
+                with infrastructures and we have added institutions.
               </p>
             </div>
             <div class="explain-box" style="--l-pos: calc(100% - 80px)">
@@ -166,47 +196,63 @@ const citations = [
         </div>
       </div>
     </section>
-
-    <section id="join-banner" class="banner">
+    <section id="who-is-behind" class="banner">
       <div class="container">
         <div class="regular-content content-section">
-          <div class="grid-2-cols">
-            <div>
-              <h2 class="banner-title" style="text-align: center">
-                How to join TSOSI?
-              </h2>
-              <div style="max-width: 700px; margin: 0 auto">
-                <p :style="`margin-top: ${isDesktop ? '4em' : '2em'}`">
-                  The project started in September 2024, and the platform was
-                  launched in June 2025. Any support and feedback are really
-                  welcome. If you represent an institution, a consortium or an
-                  infrastructure, feel free to
-                  <RouterLink :to="'/pages/faq#contact-us'">
-                    drop us a line</RouterLink>.
-                </p>
-              </div>
-            </div>
-            <div>
-              <h2 class="banner-title" style="text-align: center">
-                Who is behind TSOSI?
-              </h2>
-              <div style="
-                  max-width: 700px;
-                  margin: 0 auto;
-                  display: flex;
-                  flex-wrap: wrap;
-                  justify-content: space-around;
-                  align-items: center;
-                ">
-                <ImageAtom :src="ugaLogoUrl" :width="isDesktop ? '150px' : '125px'" :center="true" />
-                <ImageAtom :src="cosoLogoUrl" :width="isDesktop ? '200px' : '150px'" :center="true" />
-              </div>
-              <div style="text-align: center">
-                <RouterLink :to="'/pages/about'">
-                  See governance and partners
-                </RouterLink>
-              </div>
-            </div>
+          <h2 class="banner-title" style="text-align: center">
+            Who is behind TSOSI?
+          </h2>
+          <div class="partner-cards">
+            <ExternalLink
+              href="https://www.ouvrirlascience.fr/home/"
+              class="card-link"
+            >
+              <CardComponent :no-body="true">
+                <template #header>
+                  <ImageAtom
+                    :src="cosoLogoUrl"
+                    :width="isDesktop ? '205px' : '140px'"
+                    :height="isDesktop ? '150px' : 'auto'"
+                    :center="true"
+                  />
+                </template>
+              </CardComponent>
+            </ExternalLink>
+            <ExternalLink
+              href="https://www.univ-grenoble-alpes.fr/english/"
+              class="card-link"
+            >
+              <CardComponent :no-body="true">
+                <template #header>
+                  <ImageAtom
+                    :src="ugaLogoUrl"
+                    :width="isDesktop ? '140px' : '110px'"
+                    :height="isDesktop ? '150px' : 'auto'"
+                    :center="true"
+                  />
+                </template>
+              </CardComponent>
+            </ExternalLink>
+            <ExternalLink
+              href="https://gricad.univ-grenoble-alpes.fr/en/"
+              class="card-link"
+            >
+              <CardComponent :no-body="true">
+                <template #header>
+                  <ImageAtom
+                    :src="gricadLogoUrl"
+                    :width="isDesktop ? '130px' : '100px'"
+                    :height="isDesktop ? '150px' : 'auto'"
+                    :center="true"
+                  />
+                </template>
+              </CardComponent>
+            </ExternalLink>
+          </div>
+          <div style="text-align: center">
+            <RouterLink :to="'/pages/about'">
+              See governance and partners
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -215,12 +261,11 @@ const citations = [
 </template>
 
 <style scoped>
-#home>*:first-child {
+#home > *:first-child {
   padding-top: 15vh;
 }
 
 #home.mobile {
-
   .citation,
   .citation h2 {
     font-size: 2.8rem;
