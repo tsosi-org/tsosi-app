@@ -133,8 +133,16 @@ async function updateTransfers() {
     if (transfer.amount) {
       transferWithAmount = true
     }
-    if (transfer.emitter_id == props.entity.id || props.entity.children.some((c) => c == transfer.emitter_id)) {
+    if (transfer.emitter_id == props.entity.id) {
       sortedTransfers["emitter"].push(transfer)
+    } else if (props.entity.children.some((c) => c == transfer.emitter_id)) {
+      sortedTransfers["emitter"].push({
+        ...transfer,
+        emitter: {
+          ...transfer.emitter,
+          is_child: true,
+        } as Entity,
+      })
     } else if (transfer.recipient_id == props.entity.id) {
       sortedTransfers["recipient"].push(transfer)
     } else if (transfer.agent_id == props.entity.id) {
@@ -333,7 +341,12 @@ const supporterTableProps = computed(() => {
   const toRemoveCols = []
   const supporterData = [...transfers.value.emitter, ...transfers.value.agent]
 
-  if (!(transfers.value.agent?.length || transfers.value.emitter.some((t) => t.emitter_id != props.entity.id))) {
+  if (
+    !(
+      transfers.value.agent?.length ||
+      transfers.value.emitter.some((t) => t.emitter_id != props.entity.id)
+    )
+  ) {
     toRemoveCols.push("emitter")
   }
   return {
