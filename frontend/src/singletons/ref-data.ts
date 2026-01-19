@@ -68,6 +68,7 @@ export interface Entity extends ApiData {
   is_recipient: boolean
   is_partner: boolean
   children: string[]
+  is_child?: boolean
 }
 
 export interface EntityDetails extends Entity {

@@ -455,18 +455,27 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         <Skeleton></Skeleton>
       </template>
       <template v-else-if="column.type == 'entityLink'" #body="{ data }">
-        <div class="inline-container"> 
+        <div class="inline-container">
           <div class="info-button-inline">
-            <InfoButtonAtom :icon="['fas', 'circle-info']" v-if="column.field == 'emitter' && data.emitter_id != props.id.slice(0, 36) && props.id.slice(37) == 'emitter'">
+            <InfoButtonAtom
+              v-if="
+                column.field == 'emitter' && data.emitter?.is_child === true
+              "
+              :icon="['fas', 'circle-info']"
+            >
               <template #popup>
                 <span>
-                  This support comes from a child entity, based on ror.org hierarchy. See
-                <ExternalLinkAtom href="https://ror.org/about/faqs/#does-ror-support-relationships-and-hierarchies">FAQ</ExternalLinkAtom>.
-              </span>
-            </template>
-          </InfoButtonAtom>
-        </div>
-        <EntityLinkDataAtom :data="data" :dataField="column" />
+                  This support comes from a child entity, based on the ROR
+                  hierarchy; see their
+                  <ExternalLinkAtom
+                    href="https://ror.org/about/faqs/#does-ror-support-relationships-and-hierarchies"
+                    >FAQ</ExternalLinkAtom
+                  >.
+                </span>
+              </template>
+            </InfoButtonAtom>
+          </div>
+          <EntityLinkDataAtom :data="data" :dataField="column" />
         </div>
       </template>
       <template v-else-if="column.type == 'pageLink'" #body="{ data }">
