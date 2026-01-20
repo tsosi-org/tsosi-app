@@ -13,6 +13,7 @@ def get_config(
         full_data=True,
         data_load_name=file_path.split("/")[-1],
         date_data_obtained=date_data,
+        entity_id="05amyt365",
     )
     return rdc.RawDataConfigFromFile(
         "doaj_library_2023",

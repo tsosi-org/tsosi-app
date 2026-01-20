@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from django.core.exceptions import ObjectDoesNotExist
 from tsosi.data.enrichment import new_identifiers_from_records
-from tsosi.models import Entity, Identifier
+from tsosi.models import Identifier
 from tsosi.models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
 
 from ..factories import EntityFactory, IdentifierFactory

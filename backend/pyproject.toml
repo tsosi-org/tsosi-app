@@ -23,7 +23,7 @@ psycopg = "~3.2.3"
 # Backend jobs deps
 pandas = "~2.2.3"
 aiohttp = "~3.10.9"
-openpyxl = "~3.1.5" # Pandas requires this package but it's not in the dependencies 
+openpyxl = "~3.1.5"
 pycountry = "~24.6.1"
 requests = "~2.32"
 pillow = "~11.0.0"

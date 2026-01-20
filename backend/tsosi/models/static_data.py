@@ -142,10 +142,14 @@ def update_partners():
             setattr(entity, field, value)
         entity.save(update_fields=list(infra["entity"].keys()))
 
-        details: InfrastructureDetails = entity.infrastructure_details
-        for field, value in infra["infrastructure"].items():
-            setattr(details, field, value)
-        details.save(update_fields=list(infra["infrastructure"].keys()))
+        try:
+            details: InfrastructureDetails = entity.infrastructure_details
+        except ObjectDoesNotExist:
+            details = InfrastructureDetails(**infra["infrastructure"])
+        else:
+            for field, value in infra["infrastructure"].items():
+                setattr(details, field, value)
+            details.save(update_fields=list(infra["infrastructure"].keys()))
 
         if static_logo:
             if entity.logo.name == static_logo:
@@ -170,6 +174,7 @@ DATA_SOURCES = [
     "doab_oapen_sponsor",
     "operas",
     "uga",
+    "couperin",
 ]
 
 

@@ -43,7 +43,7 @@ class Date:
     def serialize(self):
         return {"value": self.value, "precision": self.precision}
 
-    def format(self):
+    def format(self) -> str:
         if self.precision == DATE_PRECISION_YEAR:
             return self.value[:4]
         elif self.precision == DATE_PRECISION_MONTH:

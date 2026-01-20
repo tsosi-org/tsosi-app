@@ -139,10 +139,7 @@ function isDoab(): boolean {
             Description (manual) takes precedence on automatically
             fetched Wikipedia summary
           -->
-          <div v-if="props.entity.description">
-            <p>
-              {{ props.entity.description }}
-            </p>
+          <div v-if="props.entity.description" v-html="props.entity.description">
           </div>
           <div v-else-if="props.entity.wikipedia_extract">
             <p>
