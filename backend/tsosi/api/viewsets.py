@@ -154,7 +154,7 @@ class TransferFilter(filters.FilterSet):
         TODO: Check the perf of doing OR condition with Django ORM.
         It might be way more efficient to perform separate requests on each
         condition and then UNION them
-        TODO: Recursive query should be made in postgres
+        TODO: Recursive query should be made in raw postgresql
         """
         if value is None or not value:
             raise ValidationError(

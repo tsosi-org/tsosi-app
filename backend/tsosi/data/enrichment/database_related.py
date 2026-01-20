@@ -7,16 +7,14 @@ from datetime import UTC, date, datetime
 
 import pandas as pd
 from django.db import transaction
-from django.db.models import Count, F, Max, QuerySet
+from django.db.models import Count, F
 from django.utils import timezone
 from tsosi.app_settings import app_settings
 from tsosi.data.db_utils import (
     IDENTIFIER_CREATE_FIELDS,
     IDENTIFIER_MATCHING_CREATE_FIELDS,
-    DateExtremas,
     bulk_create_from_df,
     bulk_update_from_df,
-    date_extremas_from_queryset,
 )
 from tsosi.data.exceptions import DataException
 from tsosi.data.pid_registry.ror import (
@@ -29,12 +27,12 @@ from tsosi.data.signals import identifiers_created
 from tsosi.data.task_result import TaskResult
 from tsosi.data.utils import clean_null_values
 from tsosi.models import (
+    DataLoadSource,
     Entity,
     EntityName,
     Identifier,
     IdentifierEntityMatching,
     IdentifierVersion,
-    InfrastructureDetails,
     Transfer,
 )
 from tsosi.models.date import DATE_PRECISION_YEAR, Date
@@ -701,7 +699,7 @@ def update_entity_active_status():
 
 def update_entity_roles_clc():
     """
-    Update the `is_emitter`, `is_recipient`, `is_agent` booleans according
+    Update the `is_emitter`, `is_recipient`, `is_agent`, `is_partner` booleans according
     to the transfer data.
     """
     logger.info("Updating entity roles.")
@@ -712,7 +710,7 @@ def update_entity_roles_clc():
             "id", *transfer_cols
         )
     )
-    entities_cols = [f"is_{t}" for t in TRANSFER_ENTITY_TYPES]
+    entities_cols = [f"is_{t}" for t in TRANSFER_ENTITY_TYPES + ["partner"]]
     entities = pd.DataFrame.from_records(
         Entity.objects.filter(is_active=True).values("id", *entities_cols)
     )
@@ -725,7 +723,15 @@ def update_entity_roles_clc():
         entities[f"new_is_{t}"] = entities["id"].isin(e_of_type)
         entities[f"{t}_diff"] = entities[f"is_{t}"] != entities[f"new_is_{t}"]
 
-    diff_cols = [f"{t}_diff" for t in TRANSFER_ENTITY_TYPES]
+    dls_entities = DataLoadSource.objects.values_list(
+        "entity_id", flat=True
+    ).distinct()
+    entities["new_is_partner"] = entities["id"].isin(dls_entities)
+    entities["partner_diff"] = (
+        entities["is_partner"] != entities["new_is_partner"]
+    )
+
+    diff_cols = [f"{t}_diff" for t in TRANSFER_ENTITY_TYPES + ["partner"]]
     e_to_update = entities[entities[diff_cols].any(axis=1)].copy()
 
     if e_to_update.empty:

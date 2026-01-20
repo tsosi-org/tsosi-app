@@ -9,7 +9,6 @@
       "raw_website": "https://doaj.org",
       "name": "Directory of Open Access Journals",
       "website": "https://doaj.org",
-      "is_partner": true,
       "short_name": "DOAJ",
       "description": "DOAJ is a unique and extensive index of diverse open access journals from around the world, driven by a growing community, and is committed to insuring quality content is freely available online for everyone."
     },
@@ -39,8 +38,7 @@
       "country": "NL",
       "description": "OAPEN is an open infrastructure dedicated to promoting and supporting the transition to open access for books. The Directory of Open Access Books (DOAB) is an open, global, and trusted community-driven discovery service that indexes and provides free access to scholarly, peer-reviewed open access books.",
       "manual_logo": true,
-      "date_inception": "2010-01-01",
-      "is_partner": true
+      "date_inception": "2010-01-01"
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/directory-of-open-access-books",
@@ -65,8 +63,7 @@
       "name": "OPERAS",
       "short_name": "OPERAS",
       "website": "https://operas-eu.org",
-      "description": "OPERAS is the Research Infrastructure supporting open scholarly communication in the social sciences and humanities (SSH) in the European Research Area. Its mission is to coordinate and federate resources in Europe to efficiently address the scholarly communication needs of European researchers in the field of SSH.",
-      "is_partner": true
+      "description": "OPERAS is the Research Infrastructure supporting open scholarly communication in the social sciences and humanities (SSH) in the European Research Area. Its mission is to coordinate and federate resources in Europe to efficiently address the scholarly communication needs of European researchers in the field of SSH."
     },
     "infrastructure": {
       "posi_url": "https://operas-eu.org/principles-of-open-scholarly-infrastructure-posi",
@@ -86,7 +83,6 @@
       "short_name": "PCI",
       "name": "Peer Community In",
       "website": "https://peercommunityin.org",
-      "is_partner": true,
       "description": "PCI is a non-profit organisation of researchers offering peer review, recommendation and publication of scientific articles in open access for free."
     },
     "infrastructure": {
@@ -108,7 +104,6 @@
       "name": "SciPost",
       "short_name": "SciPost",
       "website": "https://scipost.org",
-      "is_partner": true,
       "description": "SciPost is a complete diamond open access publishing infrastructure serving professional scientists worldwide."
     },
     "infrastructure": {
@@ -131,7 +126,6 @@
       "name": "OpenEdition",
       "short_name": "OpenEdition",
       "website": "https://www.openedition.org/",
-      "is_partner": false,
       "description": "OpenEdition is a comprehensive digital infrastructure for academic communication in the humanities and social sciences. It brings together four complementary platforms focused respectively on journals (OpenEdition Journals), book series (OpenEdition Books), research blogs (Hypotheses) and academic events (Calenda)."
     },
     "infrastructure": {
@@ -151,14 +145,14 @@
       "name": "SPARC Europe",
       "short_name": "SPARC Europe",
       "website": "https://sparceurope.org",
-      "is_partner": false,
       "description": "Advocacy group for open access to research and data."
     },
     "infrastructure": {
+      "support_url": "https://sparceurope.org/ourmembers/join-sparc-europe/supporting-our-work/",
       "legal_entity_description": "The legal entity is located in the Netherlands, see <a href=\"https://www.wikidata.org/wiki/Q50195409\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">SPARC Europe on wikidata</a>."
     },
     "static_logo": "sparceurope_logo.png",
-    "static_icon": "sparceurope_logo.png"
+    "static_icon": "sparceurope_icon.png"
   },
   {
     "pid": {
@@ -170,8 +164,7 @@
       "raw_website": "https://hal.science/",
       "name": "HAL",
       "short_name": "HAL",
-      "website": "https://hal.science/",
-      "is_partner": false
+      "website": "https://hal.science/"
     },
     "infrastructure": {
       "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q2945988\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">CCSD on wikidata</a>.",
@@ -179,5 +172,367 @@
       "support_url": "https://www.ccsd.cnrs.fr/en/funding/"
     },
     "static_icon": "hal_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "_custom",
+      "value": "open_policy_finder"
+    },
+    "entity": {
+      "raw_name": "Open Policy Finder",
+      "raw_website": "https://openpolicyfinder.jisc.ac.uk/",
+      "raw_country": "GB",
+      "name": "Open Policy Finder",
+      "short_name": "Open Policy Finder",
+      "website": "https://openpolicyfinder.jisc.ac.uk/",
+      "country": "GB",
+      "description": "Open Policy Finder (formerly Sherpa Services) is an online platform that consolidates and presents standardised summaries of open access policies for publishers (journals and books) and funders worldwide. Serving as a centralised resource, it simplifies the complex landscape of open access requirements by aggregating and summarising publisher self-archiving and funder policies. Open Policy Finder supports university librarians, research staff, and the scholarly community, reducing time spent searching multiple sites and allowing users to focus on core tasks. With a user-friendly interface and open API, Open Policy Finder provides easy access to comprehensive policy data for institutions and researchers globally."
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/sherpa-services-sherpa-romeo-sherpa-juliet-and-opendoar",
+      "support_url": "https://openpolicyfinder.jisc.ac.uk/supporter-scheme"
+    },
+    "static_icon": "open_policy_finder_logo.png",
+    "static_logo": "open_policy_finder_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "_custom",
+      "value": "metopes"
+    },
+    "entity": {
+      "raw_name": "Métopes",
+      "raw_website": "https://www.metopes.fr/",
+      "name": "Métopes",
+      "short_name": "Métopes",
+      "website": "https://www.metopes.fr/"
+    },
+    "infrastructure": {},
+    "static_icon": "metopes_icon.png",
+    "static_logo": "metopes_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "_custom",
+      "value": "edch"
+    },
+    "entity": {
+      "raw_name": "European Diamond Capacity Hub",
+      "raw_website": "https://diamas.org/",
+      "name": "European Diamond Capacity Hub",
+      "short_name": "EDCH",
+      "website": "https://diamas.org/"
+    },
+    "infrastructure": {},
+    "static_icon": "edch_icon.png",
+    "static_logo": "edch_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "00m2zh467"
+    },
+    "entity": {
+      "raw_name": "arXiv",
+      "raw_website": "https://arxiv.org/",
+      "raw_country": "US",
+      "name": "arXiv",
+      "short_name": "arXiv",
+      "website": "https://arxiv.org/",
+      "country": "US",
+      "description": "arXiv is a free distribution service and an open-access archive for 2.3M scholarly articles in the fields of physics, mathematics, computer science, quantitative biology, quantitative finance, statistics, electrical engineering and systems science, and economics. arXiv promotes equitable access to science by serving as an open forum where researchers can share and discover new, relevant, emerging science and establish their contribution to advancing research."
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/arxiv",
+      "support_url": "https://info.arxiv.org/about/funding.html"
+    },
+    "static_icon": "arxiv_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q55606850"
+    },
+    "entity": {
+      "raw_name": "Centre Mersenne",
+      "raw_website": "https://www.centre-mersenne.org/",
+      "name": "Centre Mersenne",
+      "short_name": "Centre Mersenne",
+      "website": "https://www.centre-mersenne.org/"
+    },
+    "infrastructure": {
+      "support_url": "https://www.centre-mersenne.org/en/join-us/"
+    },
+    "static_icon": "mersenne_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q110235640"
+    },
+    "entity": {
+      "raw_name": "Research Organization Registry",
+      "raw_website": "http://ror.org",
+      "name": "Research Organization Registry",
+      "short_name": "ROR",
+      "website": "http://ror.org",
+      "description": "The Research Organization Registry (ROR) is a global, community-led registry of open persistent identifiers for research organizations. ROR makes it easy for anyone or any system to disambiguate institution names and connect research organizations and funders to researchers and research outputs."
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/research-organization-registry",
+      "support_url": "https://ror.org/community/sustain/"
+    },
+    "static_icon": "ror_icon.ico",
+    "static_logo": "ror_logo.svg"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q117355383"
+    },
+    "entity": {
+      "raw_name": "Repères",
+      "raw_website": "https://reseau-reperes.fr/",
+      "name": "Repères",
+      "short_name": "Repères",
+      "website": "https://reseau-reperes.fr/"
+    },
+    "infrastructure": {},
+    "static_icon": "reperes_icon.png",
+    "static_logo": "reperes_logo.svg"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q17072915"
+    },
+    "entity": {
+      "raw_name": "Open Library of Humanities",
+      "raw_website": "https://www.openlibhums.org/",
+      "name": "Open Library of Humanities",
+      "short_name": "OLH",
+      "website": "https://www.openlibhums.org/"
+    },
+    "infrastructure": {
+      "support_url": "https://www.openlibhums.org/site/become-a-supporter/"
+    },
+    "static_icon": "olh_icon.png",
+    "static_logo": "olh_logo.jpeg"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q23688650"
+    },
+    "entity": {
+      "raw_name": "Episciences",
+      "raw_website": "https://www.episciences.org/",
+      "name": "Episciences",
+      "short_name": "Episciences",
+      "website": "https://www.episciences.org/",
+      "description": "Episciences is an overlay journal platform to host and disseminate diamond open access publications from all disciplines. Hosted in France, supported by the Centre pour la Communication Scientifique Directe (CCSD), a support and research unit created by the CNRS, joining Inria and INRAE. It benefits from the support of the French Ministry of Higher Education and Research.Episciences offers technical and editorial support to journal teams from all over the world.Documents published by Episciences overlay journals are hosted by open repositories such as arXiv, HAL, Zenodo, bioRxiv, medRxiv. Episciences welcomes new or existing journals from any country or language.Academic-led and owned, initiated by researchers, the aim of the infrastructure is to provide a complete publishing system for overlay journals. In addition to the free technical support, the software development and hosting, Episciences provides free services to support the journal’s editorial workflows."
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/episciences",
+      "posi_url": "https://www.episciences.org/fr/principes-posi/",
+      "support_url": "https://www.episciences.org/scoss-funding-for-episciences/"
+    },
+    "static_icon": "episcience.ico"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q25338539"
+    },
+    "entity": {
+      "raw_name": "Research data alliance",
+      "raw_website": "https://www.rd-alliance.org/",
+      "name": "Research data alliance",
+      "short_name": "RDA",
+      "website": "https://www.rd-alliance.org/"
+    },
+    "infrastructure": {
+      "posi_url": "https://www.rd-alliance.org/wp-content/uploads/2024/10/Measuring-the-RDA-compiance-with-POSI_nov2024.pdf",
+      "support_url": "https://www.rd-alliance.org/membership/"
+    },
+    "static_icon": "rda_icon.png",
+    "static_logo": "rda_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q25389821"
+    },
+    "entity": {
+      "raw_name": "Mir@bel",
+      "raw_website": "https://reseau-mirabel.info/",
+      "name": "Mir@bel",
+      "short_name": "Mir@bel",
+      "website": "https://reseau-mirabel.info/"
+    },
+    "infrastructure": {
+      "support_url": "https://reseau-mirabel.info/site/page/soutenir"
+    },
+    "static_icon": "mirabel_icon.ico",
+    "static_logo": "mirabel_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q28127082"
+    },
+    "entity": {
+      "raw_name": "Software Heritage",
+      "raw_website": "https://www.softwareheritage.org/",
+      "name": "Software Heritage",
+      "short_name": "Software Heritage",
+      "website": "https://www.softwareheritage.org/"
+    },
+    "infrastructure": {
+      "support_url": "https://www.softwareheritage.org/soutiens/sponsors/programme-de-soutien/"
+    },
+    "static_icon": "soft_heritage_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "00wb4mk85"
+    },
+    "entity": {
+      "raw_name": "OpenCitations",
+      "raw_website": "https://opencitations.net/",
+      "raw_country": "IT",
+      "name": "OpenCitations",
+      "short_name": "OpenCitations",
+      "website": "https://opencitations.net/",
+      "country": "IT",
+      "description": "OpenCitations is an independent not-for-profit infrastructure organization for open scholarship dedicated to the publication of open bibliographic and citation data by the use of Semantic Web (Linked Data) technologies. It is also engaged in advocacy for open citations, particularly in its role as a key founding member of the Initiative for Open Citations (I4OC)."
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/opencitations",
+      "posi_url": "https://opencitations.hypotheses.org/1260",
+      "support_url": "https://opencitations.net/support-opencitations/"
+    },
+    "static_icon": "opencitations_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q4689837"
+    },
+    "entity": {
+      "raw_name": "African Journals Online",
+      "raw_website": "https://www.ajol.info",
+      "name": "African Journals Online",
+      "short_name": "AJOL",
+      "website": "https://www.ajol.info"
+    },
+    "infrastructure": {
+      "support_url": "https://www.ajol.info/index.php/ajol/supporters-AJOL"
+    },
+    "static_icon": "ajol_icon.ico",
+    "static_logo": "ajol_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q48789578"
+    },
+    "entity": {
+      "raw_name": "COAR",
+      "raw_website": "https://coar-repositories.org/",
+      "name": "COAR",
+      "short_name": "COAR",
+      "website": "https://coar-repositories.org/"
+    },
+    "infrastructure": {
+      "support_url": "https://coar-repositories.org/join-coar/"
+    },
+    "static_icon": "coar_logo.png",
+    "static_logo": "coar_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "024pbfj84"
+    },
+    "entity": {
+      "raw_name": "LA Referencia",
+      "raw_website": "https://www.lareferencia.info",
+      "raw_country": "CL",
+      "name": "LA Referencia",
+      "short_name": "LA Referencia",
+      "website": "https://www.lareferencia.info",
+      "country": "CL",
+      "description": "The Federated Network of Institutional Repositories of Scientific Publications, or simply LA Referencia, is a Latin American network of open access repositories. Through its services, it supports national Open Access strategies in Latin America through a platform with interoperability standards, sharing and giving visibility to the scientific production generated in institutions of higher education and scientific research."
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/la-referencia"
+    },
+    "static_logo": "la_ref_logo.png",
+    "static_icon": "la_ref_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q680086"
+    },
+    "entity": {
+      "raw_name": "Public Knowledge Project",
+      "raw_website": "https://pkp.sfu.ca/",
+      "name": "Public Knowledge Project",
+      "short_name": "PKP",
+      "website": "https://pkp.sfu.ca/"
+    },
+    "infrastructure": {
+      "posi_url": "https://pkp.sfu.ca/pkp-posi-self-assessment/",
+      "support_url": "https://pkp.sfu.ca/about/sustainability/financial-contributors/"
+    },
+    "static_logo": "pkp_logo.png",
+    "static_icon": "pkp_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "04wxnsj81"
+    },
+    "entity": {
+      "raw_name": "DataCite",
+      "raw_website": "https://datacite.org/",
+      "raw_country": "DE",
+      "name": "DataCite",
+      "short_name": "DataCite",
+      "website": "https://datacite.org/",
+      "country": "DE",
+      "description": "<p>DataCite offers several services to enable the registration and retrieval of DOIs and metadata.</p><ul><li> DataCite Fabrica: a DOI and metadata management service allowing organizations to register and manage DOIs for their research outputs. With Fabrica, organizations can easily assign DOIs, maintain accurate and FAIR metadata, and ensure persistent links for long-term accessibility and citation of their valuable research outputs.<li> DataCite REST API: enables organizations to create DOIs systematically, expanding the flexibility and scalability of DOI creation and management within their research workflows. It also enables harvesting of metadata associated with registered DOIs. Integrating this functionality into your workflows, ensures up-to-date and accessible information about research outputs and fosters a more open and interconnected scholarly communication.<li> DataCite Commons: By working with metrics and relational metadata files, DataCite facilitates the visibility of research impact within its discovery system DataCite Commons. Providing analytics dashboards, it empowers researchers and organizations to gain insights and make informed decisions based on comprehensive and interconnected metadata.<li> DataCite GraphQL API: The DataCite GraphQL API supports complex queries of the PID Graph showing connections between entities using the GraphQL query language.</ul>"
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/datacite",
+      "posi_url": "https://datacite.org/blog/our-commitment-to-posi/",
+      "support_url": "https://datacite.org/become-a-member/"
+    },
+    "static_icon": "datacite_icon.ico"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "02nr0ka47"
+    },
+    "entity": {
+      "raw_name": "OpenAlex",
+      "raw_website": "https://openalex.org/",
+      "raw_country": "CA",
+      "name": "OpenAlex",
+      "short_name": "OpenAlex",
+      "website": "https://openalex.org/",
+      "country": "CA",
+      "description": "Inspired by the ancient Library of Alexandria, OpenAlex is an index of hundreds of millions of interconnected entities across the global research system. We're 100% free and open source, and offer access via a web interface, API, and database snapshot."
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/openalex",
+      "posi_url": "https://blog.openalex.org/posi/"
+    },
+    "static_icon": "openalex_icon.png",
+    "static_logo": "openalex_logo.png"
   }
 ]

@@ -3,6 +3,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from openpyxl import Workbook
+from openpyxl.styles import Border, Side
+from openpyxl.utils.dataframe import dataframe_to_rows
 from tsosi.app_settings import app_settings
 from tsosi.data.exceptions import DataException
 from tsosi.models import (
@@ -12,10 +15,10 @@ from tsosi.models import (
     TransferEntityMatching,
 )
 from tsosi.models.date import (
-    DATE_PRECISION_DAY,
     DATE_PRECISION_MONTH,
     DATE_PRECISION_YEAR,
     Date,
+    format_date,
 )
 from tsosi.models.transfer import MATCH_CRITERIA_MERGED
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
@@ -26,6 +29,49 @@ CRITERIA_AMOUNT = "amount"
 CRITERIA_DATE_INVOICE = "date_invoice"
 CRITERIA_DATE_PAYMENT_EMITTER = "date_payment_emitter"
 CRITERIA_DATE_PAYMENT_RECIPIENT = "date_payment_recipient"
+CRITERIA_DATE_START = "date_start"
+CRITERIA_DATE_END = "date_end"
+
+
+def format_date(date: Date | None, precision: str | None = None) -> str | None:
+    """
+    Format a Date object to string based on its precision.
+    """
+    if date is None:
+        return None
+    if precision is None:
+        precision = date["precision"]
+    if precision == DATE_PRECISION_YEAR:
+        return date["value"][:4]
+    elif precision == DATE_PRECISION_MONTH:
+        return date["value"][:7]
+    return date["value"]
+
+
+def date_contains(
+    date_start: Date | None, date_end: Date | None, date_check: Date | None
+) -> bool:
+    """
+    Check if date_check is within the range of date_start and date_end.
+    If any is None, consider it True.
+    """
+    if date_check is None:
+        return True
+    if date_start is not None:
+        largest_precision = max(
+            date_start["precision"], date_check["precision"]
+        )
+        if format_date(date_check, largest_precision) < format_date(
+            date_start, largest_precision
+        ):
+            return False
+    if date_end is not None:
+        largest_precision = max(date_end["precision"], date_check["precision"])
+        if format_date(date_check, largest_precision) > format_date(
+            date_end, largest_precision
+        ):
+            return False
+    return True
 
 
 def date_is_matching(date_left: Date, date_right: Date) -> bool:
@@ -34,20 +80,11 @@ def date_is_matching(date_left: Date, date_right: Date) -> bool:
     Use the largest precision of the two dates for comparison.
     For example "2025" (year precision) matches "2025-05-10" (day precision).
     """
-    date_precision_to_len = {
-        DATE_PRECISION_YEAR: 4,
-        DATE_PRECISION_MONTH: 7,
-        DATE_PRECISION_DAY: 10,
-    }
     if date_left is None or date_right is None:
         return True
     largest_precision = max(date_left["precision"], date_right["precision"])
-    date_left_precised = date_left["value"][
-        : date_precision_to_len[largest_precision]
-    ]
-    date_right_precised = date_right["value"][
-        : date_precision_to_len[largest_precision]
-    ]
+    date_left_precised = format_date(date_left, largest_precision)
+    date_right_precised = format_date(date_right, largest_precision)
     return date_left_precised == date_right_precised
 
 
@@ -67,7 +104,7 @@ def transfer_is_matching(
     # Check amount
     if not transfer_left.currency or not transfer_right.currency:
         return False, CRITERIA_AMOUNT
-    if transfer_left.currency.id == transfer_right.currency.id:
+    elif transfer_left.currency.id == transfer_right.currency.id:
         if not np.isclose(transfer_left.amount, transfer_right.amount):
             return False, CRITERIA_AMOUNT
     elif (
@@ -77,6 +114,7 @@ def transfer_is_matching(
         if not np.isclose(
             transfer_left.amount,
             transfer_right.amounts_clc[transfer_left.currency.id],
+            atol=0.1,
         ):
             return False, CRITERIA_AMOUNT
     else:
@@ -87,12 +125,35 @@ def transfer_is_matching(
         ("date_invoice", CRITERIA_DATE_INVOICE),
         ("date_payment_emitter", CRITERIA_DATE_PAYMENT_EMITTER),
         ("date_payment_recipient", CRITERIA_DATE_PAYMENT_RECIPIENT),
+        ("date_start", CRITERIA_DATE_END),
+        ("date_end", CRITERIA_DATE_START),
     ]:
         if not date_is_matching(
             getattr(transfer_left, date_field),
             getattr(transfer_right, date_field),
         ):
             return False, criteria
+
+    # Check date ranges
+    for a, b in [
+        (transfer_left, transfer_right),
+        (transfer_right, transfer_left),
+    ]:
+        for date_field, criteria in [
+            ("date_invoice", CRITERIA_DATE_INVOICE),
+            ("date_payment_emitter", CRITERIA_DATE_PAYMENT_EMITTER),
+            ("date_payment_recipient", CRITERIA_DATE_PAYMENT_RECIPIENT),
+        ]:
+            if not (
+                date_contains(
+                    a.date_start,
+                    a.date_end,
+                    getattr(b, date_field),
+                )
+            ):
+                return False, criteria
+            elif getattr(b, date_field) is not None:
+                break
 
     return True, None
 
@@ -180,9 +241,25 @@ def merge_transfers(
             transfer_right.data_load_sources.first().data_source_id: transfer_right.raw_data,
         },
     }
+    # Merge amount and currency
     fields["amount"], fields["currency"] = get_best_amount_and_currency(
         transfer_left, transfer_right
     )
+    # Merge raw_data
+    raw_data = {
+        transfer_left.data_load_sources.first().data_source_id: transfer_left.raw_data
+    }
+    if transfer_right.data_load_sources.count() > 1:
+        for dls in transfer_right.data_load_sources.all():
+            raw_data[dls.data_source_id] = transfer_right.raw_data[
+                dls.data_source_id
+            ]
+    else:
+        raw_data[transfer_right.data_load_sources.first().data_source_id] = (
+            transfer_right.raw_data
+        )
+    fields["raw_data"] = raw_data
+    # Merge sub_entity
     sub_entity = get_non_null(
         transfer_left.transferentitymatching_set.filter(
             transfer_entity_type="emitter"
@@ -195,6 +272,7 @@ def merge_transfers(
         .first()
         .sub_entity,
     )
+    # Merge transfers
     child = Transfer(**fields)
     child.data_load_sources.set(
         transfer_left.data_load_sources.all()
@@ -223,9 +301,10 @@ def merge_transfers(
     return child
 
 
-def save_duplicate_matches(
+def save_matches(
     matches: dict[str, list[str]],
     reverse_matches: dict[str, list[str]],
+    full_data: bool = False,
 ) -> None:
     """ """
     fields = [
@@ -239,28 +318,71 @@ def save_duplicate_matches(
         "date_invoice",
         "date_payment_emitter",
         "date_payment_recipient",
+        "date_start",
+        "date_end",
     ]
     output_path = Path(app_settings.ERROR_OUTPUT_FOLDER) / "duplicate_matches"
     output_path.mkdir(exist_ok=True, parents=True)
+    full_data = []
     for transfer_left_id, transfers_right_ids in matches.items():
-        transfer_left = Transfer.objects.filter(id=transfer_left_id)
+        transfers_left = Transfer.objects.filter(id=transfer_left_id)
         transfers_right = Transfer.objects.filter(id__in=transfers_right_ids)
+        if transfers_left.count() == 1 and transfers_right.count() == 1:
+            full_data.extend(
+                [
+                    list(transfers_left.values(*fields))[0],
+                    list(transfers_right.values(*fields))[0],
+                ]
+            )
+            continue
         with pd.ExcelWriter(
-            output_path / (str(transfer_left.first().id) + ".xlsx"),
+            output_path / (str(transfers_left.first().id) + ".xlsx"),
             engine="xlsxwriter",
         ) as writer:
-            pd.DataFrame(list(transfer_left.values(*fields))).to_excel(
+            pd.DataFrame(list(transfers_left.values(*fields))).to_excel(
                 writer, sheet_name="transfers_left", index=False
             )
             pd.DataFrame(list(transfers_right.values(*fields))).to_excel(
                 writer, sheet_name="transfers_right", index=False
             )
+    if full_data:
+        wb = Workbook()
+        ws = wb.active
+        border = Border(bottom=Side(border_style="double", color="000000"))
+        df = pd.DataFrame(full_data)
+        df["date_invoice"] = df["date_invoice"].apply(format_date)
+        df["date_payment_emitter"] = df["date_payment_emitter"].apply(
+            format_date
+        )
+        df["date_payment_recipient"] = df["date_payment_recipient"].apply(
+            format_date
+        )
+        df["date_start"] = df["date_start"].apply(format_date)
+        df["date_end"] = df["date_end"].apply(format_date)
+        for r_idx, row in enumerate(
+            dataframe_to_rows(df.astype(str), index=False),
+            1,
+        ):
+            for c_idx, value in enumerate(row, 1):
+                cell = ws.cell(row=r_idx, column=c_idx)
+                if value != "None":
+                    cell.value = value
+                if r_idx % 2 == 1:
+                    cell.border = border
+        ws.auto_filter.ref = ws.dimensions
+        ws.column_dimensions["D"].width = 22
+        ws.column_dimensions["E"].width = 22
+        ws.column_dimensions["H"].width = 12
+        ws.column_dimensions["I"].width = 12
+        ws.column_dimensions["J"].width = 12
+        ws.column_dimensions["K"].width = 12
+        ws.column_dimensions["L"].width = 12
+        wb.save(output_path / "all_matches.xlsx")
 
 
 def raise_if_multiple_matches(
     matches: list[tuple[Transfer, Transfer]],
     reverse_matches: list[tuple[Transfer, Transfer]],
-    save_matches: bool = False,
 ) -> None:
     """
     Checks if there are multiple matches in the list of matches.
@@ -279,17 +401,16 @@ def raise_if_multiple_matches(
         if len(matched_ids) > 1
     }
     if multiple_matches:
-        if save_matches:
-            save_duplicate_matches(matches, reverse_matches)
+        save_matches(matches, reverse_matches)
         raise DataException(
             f"More than one transfer in db matched with a transfer from new source: {multiple_matches}"
         )
     if multiple_reverse_matches:
-        if save_matches:
-            save_duplicate_matches(matches, reverse_matches)
+        save_matches(matches, reverse_matches)
         raise DataException(
             f"More than one new source transfer matched with a transfer from db: {multiple_reverse_matches}"
         )
+    save_matches(matches, reverse_matches)
 
 
 def deduplicate_transfers(source: DataLoadSource) -> None:
@@ -315,7 +436,7 @@ def deduplicate_transfers(source: DataLoadSource) -> None:
                 matches[transfer.id].append(other_transfer.id)
                 reverse_matches[other_transfer.id].append(transfer.id)
     # Raise if multiple matches found
-    raise_if_multiple_matches(matches, reverse_matches, save_matches=True)
+    raise_if_multiple_matches(matches, reverse_matches)
     # Merge transfers
     nb_merged = 0
     for transfer_id, matched_ids in matches.items():
