@@ -548,7 +548,7 @@ def new_identifiers_from_records(registry_id: str) -> TaskResult:
         base_col = "ror_id"
         new_col = "wikidata_ror_id"
         match_criteria = MATCH_CRITERIA_FROM_WIKIDATA
-        force = False
+        force = True
     elif registry_id == REGISTRY_WIKIDATA:
         base_col = "wikidata_id"
         new_col = "ror_wikidata_id"

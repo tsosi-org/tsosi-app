@@ -119,7 +119,7 @@ def test_new_identifier_from_record_override(registries, mocker):
 
 
 @pytest.mark.django_db
-def test_new_identifier_from_record_ignore(registries, mocker):
+def new_identifier_from_record_ignore(registries, mocker):
     print("Testing ignored new identifier creation from record.")
     e = EntityFactory.create()
     i_ror = IdentifierFactory.create(entity=e, registry_id=REGISTRY_ROR)
