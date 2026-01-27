@@ -28,15 +28,18 @@ function copyFragmentLink() {
         v-if="!props.titleTag || props.titleTag == 'h2'"
         class="section-title"
       >
-        {{ props.title }}
-        <a
-          v-if="props.id && !props.noLink"
-          :href="`#${props.id}`"
-          @click="copyFragmentLink"
-          class="section-link"
-        >
-          <font-awesome-icon :icon="['fas', 'link']" />
-        </a>
+        {{ props.title.split(" ").slice(0, -1).join(" ") }}
+        <span style="white-space: nowrap">
+          {{ props.title.split(" ").slice(-1)[0] }}
+          <a
+            v-if="props.id && !props.noLink"
+            :href="`#${props.id}`"
+            @click="copyFragmentLink"
+            class="section-link"
+          >
+            <font-awesome-icon :icon="['fas', 'link']" />
+          </a>
+        </span>
         <span v-if="copied" class="copy-indicator" style="margin-left: 2px">
           Copied
           <font-awesome-icon
