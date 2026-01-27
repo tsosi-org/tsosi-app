@@ -40,7 +40,6 @@ import {
 } from "@/utils/data-utils"
 import debounce, { type DebounceStatus } from "@/utils/debounce"
 
-
 interface AppliedFilters {
   [columnId: string]: string
 }
@@ -92,7 +91,8 @@ const filters: Ref<
 const filterModels: { [id: string]: Ref<string | null | undefined> } = {}
 const minDataForFilters = 10
 // Holds the applied filters in the form { columnId: filterValue }
-const appliedFilters: Ref<{[columnId: string]: string | null | undefined}> = ref({})
+const appliedFilters: Ref<{ [columnId: string]: string | null | undefined }> =
+  ref({})
 const filteredData: Ref<Array<Record<string, any>>> = ref([])
 const minWidthWithFilter = "100px"
 const useFilters = computed(
@@ -466,10 +466,9 @@ function isColumnFiltered(column: TableColumnProps): boolean {
               <template #popup>
                 <span>
                   This support comes from a child entity, based on the ROR
-                  hierarchy; see their
-                  <ExternalLinkAtom
-                    href="https://ror.org/about/faqs/#does-ror-support-relationships-and-hierarchies"
-                    >FAQ</ExternalLinkAtom
+                  hierarchy.
+                  <RouterLink to="/pages/faq/#entities-hierarchies"
+                    >See our FAQ</RouterLink
                   >.
                 </span>
               </template>
@@ -613,5 +612,4 @@ function isColumnFiltered(column: TableColumnProps): boolean {
 .info-button-inline {
   color: var(--p-neutral-500);
 }
-
 </style>
