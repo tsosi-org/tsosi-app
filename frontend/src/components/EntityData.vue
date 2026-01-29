@@ -55,9 +55,7 @@ const displayHistogram = computed(() => {
 const displaySkeletonTable = ref(true)
 
 // Transfer data
-const transfers: Ref<Record<TransferEntityType, Transfer[]> | null> = ref(null)
-// Stores whether there's at least 1 transfer with a discoled amount
-const showAmount: Ref<boolean> = ref(true)
+const transfers: Ref<Transfer[] | null> = ref(null)
 // Tabs
 const activeTab = ref("0")
 const tabs = useTemplateRef("entity-tabs")
@@ -80,16 +78,14 @@ watch(selectedCurrency, () => {
     return
   }
   const updatedTransfers = transfers.value
-  for (const key in updatedTransfers) {
-    updatedTransfers[key as TransferEntityType].forEach((t) =>
-      fillTransferAmountCurrency(
-        t,
-        selectedCurrency.value.id,
-        amountColumn,
-        currencyColumn,
-      ),
-    )
-  }
+  updatedTransfers.forEach((t) =>
+    fillTransferAmountCurrency(
+      t,
+      selectedCurrency.value.id,
+      amountColumn,
+      currencyColumn,
+    ),
+  )
 })
 watch(activeTab, () => {
   if (activeTab.value == "1" && chartTabTriggered.value !== true) {
@@ -117,12 +113,7 @@ async function updateTransfers() {
     return
   }
 
-  const sortedTransfers: { [key in TransferEntityType]: Transfer[] } = {
-    emitter: [],
-    recipient: [],
-    agent: [],
-  }
-  let transferWithAmount = false
+  const cleanedTransfers:Transfer[] = []
   for (const transfer of rawTransfers) {
     fillTransferAmountCurrency(
       transfer,
@@ -130,104 +121,20 @@ async function updateTransfers() {
       amountColumn,
       currencyColumn,
     )
-    if (transfer.amount) {
-      transferWithAmount = true
+    if (props.entity.children.some((c) => c == transfer.emitter_id)) {
+      transfer.emitter = {
+        ...transfer.emitter,
+        is_child_transfer: true,
+      }
     }
-    if (transfer.emitter_id == props.entity.id) {
-      sortedTransfers["emitter"].push(transfer)
-    } else if (props.entity.children.some((c) => c == transfer.emitter_id)) {
-      sortedTransfers["emitter"].push({
-        ...transfer,
-        emitter: {
-          ...transfer.emitter,
-          is_child: true,
-        } as Entity,
-      })
-    } else if (transfer.recipient_id == props.entity.id) {
-      sortedTransfers["recipient"].push(transfer)
-    } else if (transfer.agent_id == props.entity.id) {
-      sortedTransfers["agent"].push(transfer)
-    } else {
-      console.warn(
-        `Following transfer does not involve entity ${props.entity.id}: ${transfer}`,
-      )
-    }
+    cleanedTransfers.push(transfer)
   }
-  showAmount.value = transferWithAmount
-  transfers.value = sortedTransfers
+  transfers.value = cleanedTransfers
 }
 
 const currencyColumn = "__currency"
 const amountColumn = "__amount"
-const baseSupporterColumns: TableColumnProps[] = [
-  {
-    id: "date_clc",
-    title: "Date",
-    field: "date_clc",
-    type: "dateWithPrecision",
-    sortable: true,
-    info: "The date field is relative.",
-    infoLink: {
-      href: "/pages/faq#what-does-the-date-column-refer-to",
-      label: "See more in FAQ",
-      type: "internal",
-    },
-    filter: {
-      enable: true,
-    },
-  },
-  {
-    id: "emitter",
-    title: "Supporter",
-    field: "emitter",
-    type: "entityLink",
-    fieldLabel: "emitter.name",
-    sortable: true,
-    filter: {
-      enable: true,
-    },
-  },
-  {
-    id: "agent",
-    title: "Intermediary",
-    field: "agent",
-    type: "entityLink",
-    fieldLabel: "agent.name",
-    sortable: true,
-    info: "When a transfer is done through another entity like a library consortia, it appears in this column.",
-    filter: {
-      enable: true,
-    },
-  },
-  {
-    id: "recipient",
-    title: "Beneficiary",
-    field: "recipient",
-    type: "entityLink",
-    fieldLabel: "recipient.short_name", // This is only used for filtering - All recipients have shortnames so it works fine for now
-    sortable: true,
-    filter: {
-      enable: true,
-    },
-  },
-  {
-    id: "amount",
-    title: "Amount",
-    field: amountColumn,
-    type: "number",
-    sortable: true,
-    nullValueTemplate: '<span class="data-label hidden-amount">hidden</span>',
-  },
-  {
-    id: "currency",
-    title: "Currency",
-    field: currencyColumn,
-    type: "string",
-    currencySelector: true,
-  },
-]
-
-const baseInfrastructureColumns: TableColumnProps[] = [
+const baseColumns: TableColumnProps[] = [
   {
     id: "date_clc",
     title: "Date",
@@ -278,6 +185,17 @@ const baseInfrastructureColumns: TableColumnProps[] = [
     },
   },
   {
+    id: "recipient",
+    title: "Beneficiary",
+    field: "recipient",
+    type: "entityLink",
+    fieldLabel: "recipient.short_name", // This is only used for filtering - All recipients have shortnames so it works fine for now
+    sortable: true,
+    filter: {
+      enable: true,
+    },
+  },
+  {
     id: "amount",
     title: "Amount",
     field: amountColumn,
@@ -294,31 +212,6 @@ const baseInfrastructureColumns: TableColumnProps[] = [
   },
 ]
 
-/**
- * Adapt the transfer table columns according to parameters and the data to
- * display.
- * @param showAmount
- * @param removedColumns
- */
-function getTableColumns(
-  baseColumns: TableColumnProps[],
-  showAmount: boolean,
-  transfers: Transfer[],
-  removedColumns: string[] = [],
-): TableColumnProps[] {
-  let columns = baseColumns.filter((col) => !removedColumns.includes(col.id))
-  if (!showAmount) {
-    const toRemove = props.entity.infrastructure
-      ? ["amount", "currency"]
-      : ["currency"]
-    columns = columns.filter((col) => !toRemove.includes(col.id))
-  }
-  if (transfers.every((t) => t.agent == null)) {
-    columns = columns.filter((col) => col.id != "agent")
-  }
-  return columns
-}
-
 const buttons: Array<ButtonProps> = [
   {
     id: "transferDetails",
@@ -332,56 +225,36 @@ const buttons: Array<ButtonProps> = [
   },
 ]
 
-// Config for the supporter transfer table
 const exportString = `TSOSI_${props.entity.name.replace(/\s+/g, "_")}`
-const supporterTableProps = computed(() => {
-  if (!transfers.value?.emitter.length && !transfers.value?.agent.length) {
+// Config for the transfer table
+const tableProps = computed(() => {
+  if (!transfers.value?.length) {
     return null
   }
-  const toRemoveCols = []
-  const supporterData = [...transfers.value.emitter, ...transfers.value.agent]
-
-  if (
-    !(
-      transfers.value.agent?.length ||
-      transfers.value.emitter.some((t) => t.emitter_id != props.entity.id)
-    )
-  ) {
+  let toRemoveCols: string[] = []
+  if (transfers.value.every((t) => t.amount == null)) {
+    toRemoveCols.push("currency")
+    if (props.entity.is_recipient) {
+      toRemoveCols.push("amount")
+    }
+  }
+  if (transfers.value.every((t) => t.agent == null)) {
+    toRemoveCols.push("agent")
+  }
+  if (transfers.value.every((t) => t.emitter_id == props.entity.id)) {
     toRemoveCols.push("emitter")
   }
-  return {
-    id: `${props.entity.id}-emitter`,
-    data: supporterData,
-    columns: getTableColumns(
-      baseSupporterColumns,
-      showAmount.value,
-      supporterData,
-      toRemoveCols,
-    ),
-    defaultSort: {
-      sortField: "date_clc",
-      sortOrder: -1 as 0 | 1 | -1,
-    },
-    rowUniqueId: "id",
-    buttons: buttons,
-    exportTitle: exportString,
+  if (!props.entity.is_recipient) {
+    toRemoveCols.push("emitterCountry")
   }
-})
+  if (transfers.value.every((t) => t.recipient_id == props.entity.id)) {
+    toRemoveCols.push("recipient")
+  }
 
-// Config for the infrastructure transfer table
-const recipientTableProps = computed(() => {
-  if (!transfers.value?.recipient.length) {
-    return null
-  }
   return {
-    id: `${props.entity.id}-recipient`,
-    data: transfers.value.recipient,
-    columns: getTableColumns(
-      baseInfrastructureColumns,
-      showAmount.value,
-      transfers.value.recipient,
-      ["recipient"],
-    ),
+    id: `${props.entity.id}-transfers`,
+    data: transfers.value,
+    columns: baseColumns.filter((col) => !toRemoveCols.includes(col.id)),
     defaultSort: {
       sortField: "date_clc",
       sortOrder: -1 as 0 | 1 | -1,
@@ -395,9 +268,7 @@ const recipientTableProps = computed(() => {
 const skeletonTableProps = {
   id: `${props.entity.id}-skeleton-table`,
   data: new Array(10).fill({ field: "dummy" }),
-  columns: props.entity.is_recipient
-    ? baseInfrastructureColumns
-    : baseSupporterColumns,
+  columns: baseColumns,
   rowUniqueId: "id",
   skeleton: true,
   exportTitle: exportString,
@@ -439,12 +310,8 @@ async function updateMapData() {
           </div>
           <div v-if="transfers" class="transfer-tables">
             <Table
-              v-if="recipientTableProps"
-              v-bind="recipientTableProps"
-            ></Table>
-            <Table
-              v-if="supporterTableProps"
-              v-bind="supporterTableProps"
+              v-if="tableProps"
+              v-bind="tableProps"
             ></Table>
           </div>
         </TabPanel>
@@ -477,8 +344,7 @@ async function updateMapData() {
       <Table v-bind="skeletonTableProps"></Table>
     </div>
     <div v-if="transfers" class="transfer-tables">
-      <Table v-if="recipientTableProps" v-bind="recipientTableProps"></Table>
-      <Table v-if="supporterTableProps" v-bind="supporterTableProps"></Table>
+      <Table v-if="tableProps" v-bind="tableProps"></Table>
     </div>
   </div>
 </template>

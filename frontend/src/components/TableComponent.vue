@@ -459,7 +459,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
           <div class="info-button-inline">
             <InfoButtonAtom
               v-if="
-                column.field == 'emitter' && data.emitter?.is_child === true
+                column.field == 'emitter' && data.emitter?.is_child_transfer === true
               "
               :icon="['fas', 'circle-info']"
             >
