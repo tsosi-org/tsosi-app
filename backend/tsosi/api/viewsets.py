@@ -160,15 +160,15 @@ class TransferFilter(filters.FilterSet):
             raise ValidationError(
                 detail=f"Query parameter value for `entity_id` is not accepted: {value}"
             )
-        values = {value} | set(
+        value_and_childs = {value} | set(
             Entity.objects.get(id=value)
             .get_all_children()
             .values_list("id", flat=True)
         )
         condition = (
-            Q(emitter_id__in=values)
-            | Q(recipient_id__in=values)
-            | Q(agent_id__in=values)
+            Q(emitter_id__in=value_and_childs)
+            | Q(recipient_id=value)
+            | Q(agent_id=value)
         )
         return queryset.filter(condition)
 
