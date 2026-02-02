@@ -415,7 +415,7 @@ async function updateMapData() {
 </script>
 
 <template>
-  <div v-if="props.entity.is_recipient">
+  <div v-if="props.entity.is_recipient && props.entity.is_partner">
     <Tabs v-model:value="activeTab" ref="entity-tabs">
       <TabList class="tab-list">
         <Tab value="0" as="button">
