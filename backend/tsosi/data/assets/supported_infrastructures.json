@@ -174,7 +174,9 @@
       "is_partner": false
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q2945988\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">CCSD on wikidata</a>."
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q2945988\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">CCSD on wikidata</a>.",
+      "posi_url": "https://www.ccsd.cnrs.fr/principes-posi/",
+      "support_url": "https://www.ccsd.cnrs.fr/modele-economique/"
     },
     "static_icon": "hal_icon.png"
   }

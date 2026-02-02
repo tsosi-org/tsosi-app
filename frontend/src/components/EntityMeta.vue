@@ -224,6 +224,9 @@ function isDoab(): boolean {
         </template>
         <div class="info-box-content">
           <ul>
+            <li v-if="props.entity.is_recipient && !props.entity.is_partner" class="important-info">
+              The data below come only from TSOSI’s provider institutions; they represent only a subset of infrastructure supporters.
+            </li>
             <li>
               Each line of the table below shows a financial support,
               <RouterLink to="/pages/faq#contracts-or-transfers">see the FAQ</RouterLink>.
@@ -490,5 +493,10 @@ a.special-button:focus-visible {
   &:focus-visible {
     background-color: var(--p-surface-200);
   }
+}
+
+.important-info {
+  background-color: var(--p-yellow-100);
+  width: fit-content;
 }
 </style>
