@@ -3,8 +3,8 @@ import { onBeforeMount, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
 import NewsSubButtonAtom from "@/components/atoms/NewsSubButtonAtom.vue"
-import type { Post } from "@/components/PostComponent.vue"
-import PostComponentVue from "@/components/PostComponent.vue"
+import type { Post } from "@/components/NewsComponent.vue"
+import NewsComponentVue from "@/components/NewsComponent.vue"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 
 
@@ -61,11 +61,11 @@ onBeforeMount(async () => {
           <font-awesome-icon :icon="['fas', 'chevron-left']" />
           All newsletters
         </RouterLink>
-        <PostComponentVue v-bind="newsletter" full-page />
+        <NewsComponentVue v-bind="newsletter" full-page />
       </div>
       <!-- List view -->
       <div v-else>
-        <PostComponentVue v-for="n in newsletters" :key="n.id" v-bind="n" />
+        <NewsComponentVue v-for="n in newsletters" :key="n.id" v-bind="n" />
       </div>
     </div>
   </StaticContentComponent>

@@ -22,3 +22,6 @@ npm-debug.log*
 
 # DevOps
 .devcontainer/postgres.env
+
+# Blog
+frontend/public/pages/blog

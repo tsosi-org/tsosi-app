@@ -14,6 +14,7 @@ import {
   faChevronLeft,
   faCircleInfo,
   faCircleQuestion,
+  faClock,
   faDownload,
   faEllipsisVertical,
   faEnvelope,
@@ -28,6 +29,7 @@ import {
   faSpinner,
   faSquareCheck,
   faSquareXmark,
+  faUser,
   faXmark
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
@@ -118,6 +120,8 @@ const usedIcons = [
   faChartColumn,
   faCheck,
   faChevronLeft,
+  faUser,
+  faClock,
   faCircleQuestion,
   faCircleInfo,
   faDownload,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { changeMetaTitle } from "@/utils/dom-utils"
+import { changeMetaTitle } from "@/utils/dom-utils";
 
 
 export interface StaticContentComponentProps {
@@ -14,7 +14,7 @@ changeMetaTitle(props.title)
   <div class="container small">
     <div class="regular-content static-content">
       <h1 class="page-title">{{ props.title }}</h1>
-      <slot> My static content </slot>
+      <slot> </slot>
     </div>
   </div>
 </template>

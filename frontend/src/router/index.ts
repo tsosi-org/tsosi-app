@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router"
 
 import { targetElement } from "@/utils/dom-utils"
 import AboutView from "@/views/AboutView.vue"
+import BlogView from "@/views/BlogView.vue"
 import EntityView from "@/views/EntityView.vue"
 import FaqView from "@/views/FaqView.vue"
 import HomeView from "@/views/HomeView.vue"
@@ -54,6 +55,16 @@ const router = createRouter({
       path: "/pages/newsletter/:id",
       name: "newsletter",
       component: NewsView,
+    },
+    {
+      path: "/pages/blog",
+      name: "blog-list",
+      component: BlogView,
+    },
+    {
+      path: "/pages/blog/:id",
+      name: "blog",
+      component: BlogView,
     },
     {
       path: "/pages/privacy-policy",
