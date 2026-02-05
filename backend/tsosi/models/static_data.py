@@ -174,6 +174,7 @@ DATA_SOURCES = [
     "doab_oapen_sponsor",
     "operas",
     "uga",
+    "uminho",
     "couperin",
 ]
 
