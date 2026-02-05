@@ -534,5 +534,44 @@
     },
     "static_icon": "openalex_icon.png",
     "static_logo": "openalex_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q138153740"
+    },
+    "entity": {
+      "raw_name": "The Global Dataverse Community Consortium",
+      "raw_website": "https://www.gdcc.io",
+      "name": "The Global Dataverse Community Consortium",
+      "short_name": "GDCC",
+      "country": "US",
+      "website": "https://www.gdcc.io",
+      "description": "The Global Dataverse Community Consortium (GDCC) is dedicated to providing international organization to existing Dataverse community efforts, and will provide a collaborative venue for institutions to leverage economies of scale in support of Dataverse repositories around the world."
+    },
+    "infrastructure": {},
+    "static_icon": "gdcc_icon.png",
+    "static_logo": "gdcc_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "019kf3481"
+    },
+    "entity": {
+      "raw_name": "OpenAIRE",
+      "raw_website": "https://www.openaire.eu/openaire-amke",
+      "name": "OpenAIRE Non-Profit Civil Partnership",
+      "country": "GR",
+      "short_name": "OpenAIRE AMKE",
+      "website": "https://www.openaire.eu/openaire-amke",
+      "description": "Nonprofit organization registered in Greece; oversees OpenAire project in Europe."
+    },
+    "infrastructure": {
+      "support_url": "https://www.openaire.eu/expression-of-interest-eoi-to-join-the-openaire-amke",
+      "posi_url": "https://www.openaire.eu/principles-open-scholarly-infrastructure-openaire-assessment-v2"
+    },
+    "static_icon": "openaire_icon.png",
+    "static_logo": "openaire_logo.webp"
   }
 ]
