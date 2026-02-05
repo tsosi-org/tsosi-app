@@ -18,11 +18,7 @@ const props = defineProps<{
         <RouterLink to="/pages/faq">FAQ</RouterLink>
       </li>
       <li>
-        <ExternalLinkAtom
-        :href="'https://blog.tsosi.org'"
-        :label="'Blog'"
-        :target="'_self'"
-        />
+        <RouterLink to="/pages/blog">Blog</RouterLink>
       </li>
     </ul>
   </div>
