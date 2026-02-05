@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
-import ImageAtom from "@/components/atoms/ImageAtom.vue"
-import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
-import StaticContentComponent from "@/views/StaticContentView.vue"
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue";
+import ImageAtom from "@/components/atoms/ImageAtom.vue";
+import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue";
+import StaticContentComponent from "@/views/StaticContentView.vue";
 </script>
 
 <template>
@@ -165,9 +165,14 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
                 style="display: inline-block; margin-right: 4px"
               />
             </ExternalLinkAtom>
-            is the project leader
+            - Project leader
           </li>
-          <li>Guillaume Alzieu is the data and web engineer</li>
+          <li>
+            Baptiste Lefeuvre - Data and web engineer
+          </li>
+          <li>
+            Guillaume Alzieu - Project engineer [2024-2025]
+          </li>
         </ul>
         <p>
           Both are based at Grenoble Alpes University, within the
