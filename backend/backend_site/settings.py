@@ -34,6 +34,7 @@ from .settings_local import (
     TSOSI_FRONTEND_CUSTOM_HEADER,
     TSOSI_LOG_LEVEL,
     TSOSI_MAIN_LOG_FILE,
+    TSOSI_PUBLIC_RELPATH,
 )
 
 # Import optionnal settings

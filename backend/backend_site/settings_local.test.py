@@ -38,6 +38,7 @@ TSOSI_SCIPOST_AUTH = {
 CACHES = {}
 DRF_NUM_PROXIES = 0
 TSOSI_FRONTEND_CUSTOM_HEADER = "X-Frontend-Origin"
+TSOSI_PUBLIC_RELPATH = "../frontend/public/"
 
 # Create dirs if not existing
 for path_name in [

@@ -158,6 +158,13 @@ class AppSettings:
         return self._setting("FRONTEND_CUSTOM_HEADER_VALUES", ["tsosi-app"])
 
     @property
+    def PUBLIC_RELPATH(self) -> str:
+        """
+        Relative path to the public frontend directory.
+        """
+        return self._setting("PUBLIC_RELPATH")
+
+    @property
     def API_RATE(self) -> str:
         """
         The rate limit for the API, defaults to 10 per minute.

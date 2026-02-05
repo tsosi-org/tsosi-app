@@ -64,11 +64,11 @@ onMounted(async () => {
   border-bottom: 0;
 }
 
-.post-title {
+h2.post-title {
   font-size: 30px;
-  font-weight: 800 !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  font-weight: 800;
+  padding: 0;
+  margin: 0;
   color: var(--p-primary-800);
 }
 

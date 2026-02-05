@@ -54,6 +54,7 @@ CACHES = {
 }
 DRF_NUM_PROXIES = 0
 TSOSI_FRONTEND_CUSTOM_HEADER = "X-Frontend-Origin"
+TSOSI_PUBLIC_RELPATH = "../frontend/public/"
 
 if "test" in sys.argv or "pytest" in sys.modules:
     DATABASES["default"] = {"ENGINE": "django.db.backends.sqlite3"}
