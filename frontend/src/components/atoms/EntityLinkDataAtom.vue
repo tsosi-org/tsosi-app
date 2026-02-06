@@ -67,6 +67,9 @@ onBeforeMount(() => {
   flex-wrap: nowrap;
   align-items: center;
   gap: 0.5em;
+  width: 100%;
+  height: 100%;
+  padding: 2px 4px;
 
   &.icon {
     white-space: nowrap;
@@ -76,4 +79,5 @@ onBeforeMount(() => {
 .entity-label-detail {
   margin-left: 0.2em;
 }
+
 </style>
