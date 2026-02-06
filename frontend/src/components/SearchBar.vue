@@ -462,7 +462,6 @@ function onPopoverShow() {
   align-items: center;
   text-wrap: nowrap;
   max-width: var(--content-width);
-  padding: 2px 4px;
   border-radius: 4x;
   text-decoration: unset;
 
