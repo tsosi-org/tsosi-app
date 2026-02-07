@@ -349,12 +349,6 @@ async function updateMapData() {
 </template>
 
 <style scoped>
-.tab-list {
-  position: sticky;
-  top: var(--header-height);
-  z-index: 2000;
-}
-
 .tab-header {
   display: flex;
   flex-direction: row;

@@ -85,13 +85,6 @@ function copyFragmentLink() {
   }
 }
 
-.section-header {
-  background-color: var(--color-background);
-  position: sticky;
-  top: var(--header-height);
-  z-index: 2000;
-}
-
 .section-link {
   margin: 0 0.5em;
   font-size: 0.8em;

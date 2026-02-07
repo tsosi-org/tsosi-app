@@ -9,17 +9,23 @@ const props = defineProps<{
 </script>
 
 <template>
-  <ul>
-    <li>
-      <RouterLink to="/pages/faq">FAQ</RouterLink>
-    </li>
-    <li>
-      <RouterLink to="/pages/blog">Blog</RouterLink>
-    </li>
-    <li>
-      <RouterLink to="/pages/about">About</RouterLink>
-    </li>
-  </ul>
+  <div class="nagivation-list">
+    <ul>
+      <li>
+        <RouterLink to="/pages/about">About</RouterLink>
+      </li>
+      <li>
+        <RouterLink to="/pages/faq">FAQ</RouterLink>
+      </li>
+      <li>
+        <ExternalLinkAtom
+        :href="'https://blog.tsosi.org'"
+        :label="'Blog'"
+        :target="'_self'"
+        />
+      </li>
+    </ul>
+  </div>
 </template>
 
 <style scoped>
@@ -41,7 +47,7 @@ a {
   display: block;
   text-decoration: none;
   color: var(--local-color);
-  padding: calc((var(--header-height) - var(--this-lh) * var(--this-fs)) / 2);
+  padding: 15px;
 }
 
 li::after {
@@ -52,14 +58,13 @@ li::after {
   background-color: var(--local-color);
   position: absolute;
   right: 0;
-  top: calc((var(--header-height) - var(--height)) / 2 + 1px);
 }
 
 li:last-child::after {
   all: unset;
 }
 
-ul.nav-standalone {
+div.nav-standalone {
   width: 100%;
   gap: 0;
   flex-direction: column;
