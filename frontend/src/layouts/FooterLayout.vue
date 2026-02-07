@@ -77,8 +77,6 @@ import { isDesktop } from "@/composables/useMediaQuery"
         <h3>Navigation</h3>
         <NavigationListAtom
           :color="$dt('neutral.50').value"
-          font-size="1em"
-          style="--gap: 0"
         />
       </div>
     </div>

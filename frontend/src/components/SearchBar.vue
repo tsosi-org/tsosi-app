@@ -463,13 +463,12 @@ function onPopoverShow() {
   text-wrap: nowrap;
   max-width: var(--content-width);
   border-radius: 4x;
-  text-decoration: unset;
+  text-decoration: none;
 
   &.highlighted,
   &:hover {
     cursor: pointer;
     background-color: var(--p-surface-200);
-    text-decoration: underline;
   }
 
   & :deep(.entity-label) {
@@ -487,5 +486,9 @@ function onPopoverShow() {
   top: 0;
   background-color: var(--color-background);
   padding: 0.35em 0;
+}
+
+.entity-label {
+  color: var(--color-text);
 }
 </style>

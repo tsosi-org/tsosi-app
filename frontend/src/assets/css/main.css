@@ -30,7 +30,6 @@
     border-radius: 10px;
     display: inline-block;
   }
-
 }
 
 .init-big-header {
@@ -113,7 +112,11 @@ h1,
   text-wrap: balance;
 }
 
-h2, h3, h4, h5, h6 {
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--color-heading);
   font-weight: 700;
   border-radius: 4px;
@@ -123,8 +126,14 @@ h2, h3, h4, h5, h6 {
   }
 }
 
-h1, h2, h3, h4, h5, h6, .as-heading {
-  font-family: 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.as-heading {
+  font-family:
     Mount,
     Verdana,
     -apple-system,
@@ -159,7 +168,7 @@ a.wikidata-inline-link {
 
 a.wikidata-inline-link::before {
   background: url("/img/wikidata_icon.svg");
-  content: '';
+  content: "";
   position: absolute;
   left: calc(-1 * (var(--icon-width) + 3px));
   top: 0;
@@ -170,16 +179,19 @@ a.wikidata-inline-link::before {
   background-repeat: no-repeat;
 }
 
-
 .p-popover.p-component.popover-no-arrow::before,
 .p-popover.p-component.popover-no-arrow::after {
   display: none;
 }
 
+.p-popover {
+  top: auto !important;
+  left: auto !important;
+}
+
 .loader-icon-animate {
   animation: uniform-spinning 1s linear infinite;
 }
-
 
 @keyframes uniform-spinning {
   0% {
