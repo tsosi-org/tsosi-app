@@ -80,7 +80,7 @@ function onDrawerToggle(show: boolean) {
             :as-growing-button="false"
           />
 
-          <NavigationListAtom/>
+          <NavigationListAtom color=""/>
         </div>
         </div>
     </div>

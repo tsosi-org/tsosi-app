@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
-import StaticContentComponent from "@/views/StaticContentView.vue"
 import ImageAtom from "@/components/atoms/ImageAtom.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
+import StaticContentComponent from "@/views/StaticContentView.vue"
 </script>
 
 <template>
@@ -10,11 +10,12 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
     <template #default>
       <p style="text-align: center; font-size: 1.5rem; padding: 1rem 0">
         <!-- bigger font like a header text, try centered text also-->
-        TSOSI aims to make financial contributions to open science
-        infrastructure the norm. How? By highlighting all the organizations that
-        have supported open science infrastructure. TSOSI highlights these
-        supporters to encourage broader participation in sustaining open science
-        infrastructure.
+        TSOSI makes support for open infrastructure visible. It shows which
+        organizations financially support which open infrastructures. By making
+        this visible, TSOSI helps turn support for open infrastructure into
+        common practice. Institutions, infrastructures, consortia, and others
+        are really welcome to join TSOSI: let’s make support for open
+        infrastructure the norm!
       </p>
 
       <StaticSectionAtom id="how-it-started" title="How it started">

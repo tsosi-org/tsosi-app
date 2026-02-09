@@ -1,5 +1,6 @@
 Welcome to the front-end application of TSOSI, built with [Vue.js](https://vuejs.org/guide/introduction.html) and [PrimeVue](https://primevue.org/) (components library).
 We additionally use:
+
 - [Leaflet](https://leafletjs.com/) for maps
 - Chart.js for charts, with [built-in handlers](https://primevue.org/chart/) in PrimeVue.
 
@@ -37,22 +38,22 @@ npm run dev
 
 The different routes are defined [here](./src/router/index.ts).
 We have only 4 pages as of 2025-07-07:
+
 - [Home page](./src/views/HomeView.vue)
 - [Static pages](./src/views/StaticContentView.vue) - If more static pages appear, we should think of migrating to Nuxt.js to handle that properly (built-in feature).
 - [Entity pages](./src/views/EntityView.vue) - The core of the application, individual entity page showing metadata and listing transfers.
 - [Transfer pages](./src/views/TransferView.vue) - Individual transfer page.
 
-
 ## [Ref-data](./src/singletons/ref-data.ts)
 
 As of now (2025-07-07), we fetch the referential data on the application startup, that is then used throughout the app.
 This includes:
+
 - Currency data - All the currencies referenced in TSOSI transfers.
 - Country data - A static list of all the country codes, names and icons.
-- Entity data - The list of all entities in TSOSI database with basic metadata: primary ID, name, identifiers and image link.  
+- Entity data - The list of all entities in TSOSI database with basic metadata: primary ID, name, identifiers and image link.
 
   **TODO**: This must be watched when the entity dataset grows as it might slow down the app.
-
 
 ## [Components](./src/components/)
 
@@ -76,7 +77,6 @@ As much as possible, data components are abstracted to work with any data type (
 The goal is to pass a "config" object to the component that indicates how to retrive the data and how to process it, mainly according to the data type.
 See [data.utils.ts](./src/utils/data-utils.ts).
 
-
 ## Icons - Font Awesome
 
 We use icons from [Font Awesome free icons](https://fontawesome.com/search?ic=free), installed with dedicated vue libraries (`@fortawersome` something in [package.json](./package.json)).
@@ -92,6 +92,5 @@ Then you can use it in templates with the default array syntax:
 
 The static `country.json` file is a mix of the following sources:
 
-* Country flags are downloaded from https://flagicons.lipis.dev
-* Country centroïds are taken from https://github.com/gavinr/world-countries-centroids?tab=readme-ov-file
-
+- Country flags are downloaded from https://flagicons.lipis.dev
+- Country centroïds are taken from https://github.com/gavinr/world-countries-centroids?tab=readme-ov-file

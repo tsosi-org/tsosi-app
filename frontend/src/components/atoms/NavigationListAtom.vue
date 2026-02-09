@@ -9,7 +9,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="nagivation-list">
+  <div class="navigation-list">
     <ul>
       <li>
         <RouterLink to="/pages/about">About</RouterLink>
