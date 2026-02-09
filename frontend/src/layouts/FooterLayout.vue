@@ -15,7 +15,7 @@ import { isDesktop } from "@/composables/useMediaQuery"
           <img src="@/assets/img/logo_white.svg" />
         </div>
         <div class="copyright">
-          &copy; 2025 TSOSI under a
+          &copy; 2026 TSOSI under a
           <RouterLink to="/pages/legal-notice">
             Creative Commons BY-SA license</RouterLink
           >.
@@ -75,9 +75,7 @@ import { isDesktop } from "@/composables/useMediaQuery"
       </div>
       <div class="footer-nav">
         <h3>Navigation</h3>
-        <NavigationListAtom
-          :color="$dt('neutral.50').value"
-        />
+        <NavigationListAtom :color="$dt('neutral.50').value" />
       </div>
     </div>
   </footer>
