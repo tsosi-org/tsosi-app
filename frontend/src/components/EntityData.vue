@@ -26,8 +26,7 @@ import {
   getTransfers,
   type Entity,
   type EntityDetails,
-  type Transfer,
-  type TransferEntityType,
+  type Transfer
 } from "@/singletons/ref-data"
 import { fillTransferAmountCurrency } from "@/utils/data-utils"
 import { getTransferBaseUrl } from "@/utils/url-utils"
@@ -108,12 +107,12 @@ watch(chartTabTriggered, () => {
 })
 
 async function updateTransfers() {
-  const rawTransfers = await getTransfers(props.entity.id)
+  const rawTransfers: Transfer[] | null = await getTransfers(props.entity.id)
   if (!rawTransfers) {
     return
   }
 
-  const cleanedTransfers:Transfer[] = []
+  const cleanedTransfers: Transfer[] = []
   for (const transfer of rawTransfers) {
     fillTransferAmountCurrency(
       transfer,
@@ -125,7 +124,7 @@ async function updateTransfers() {
       transfer.emitter = {
         ...transfer.emitter,
         is_child_transfer: true,
-      }
+      } as Entity
     }
     cleanedTransfers.push(transfer)
   }

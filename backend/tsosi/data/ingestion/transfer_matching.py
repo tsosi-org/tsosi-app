@@ -1,3 +1,4 @@
+import shutil
 from collections import defaultdict
 from pathlib import Path
 
@@ -101,25 +102,6 @@ def transfer_is_matching(
     if transfer_left.recipient_id != transfer_right.recipient_id:
         return False, CRITERIA_RECIPIENT
 
-    # Check amount
-    if not transfer_left.currency or not transfer_right.currency:
-        return False, CRITERIA_AMOUNT
-    elif transfer_left.currency.id == transfer_right.currency.id:
-        if not np.isclose(transfer_left.amount, transfer_right.amount):
-            return False, CRITERIA_AMOUNT
-    elif (
-        transfer_right.amounts_clc
-        and transfer_left.currency.id in transfer_right.amounts_clc
-    ):
-        if not np.isclose(
-            transfer_left.amount,
-            transfer_right.amounts_clc[transfer_left.currency.id],
-            atol=0.1,
-        ):
-            return False, CRITERIA_AMOUNT
-    else:
-        return False, CRITERIA_AMOUNT
-
     # Check dates
     for date_field, criteria in [
         ("date_invoice", CRITERIA_DATE_INVOICE),
@@ -154,6 +136,25 @@ def transfer_is_matching(
                 return False, criteria
             elif getattr(b, date_field) is not None:
                 break
+
+    # Check amount
+    if not transfer_left.currency or not transfer_right.currency:
+        return False, CRITERIA_AMOUNT
+    elif transfer_left.currency.id == transfer_right.currency.id:
+        if not np.isclose(transfer_left.amount, transfer_right.amount):
+            return False, CRITERIA_AMOUNT
+    elif (
+        transfer_right.amounts_clc
+        and transfer_left.currency.id in transfer_right.amounts_clc
+    ):
+        if not np.isclose(
+            transfer_left.amount,
+            transfer_right.amounts_clc[transfer_left.currency.id],
+            atol=0.1,
+        ):
+            return False, CRITERIA_AMOUNT
+    else:
+        return False, CRITERIA_AMOUNT
 
     return True, None
 
@@ -302,11 +303,9 @@ def merge_transfers(
 
 
 def save_matches(
-    matches: dict[str, list[str]],
-    reverse_matches: dict[str, list[str]],
-    full_data: bool = False,
-) -> None:
-    """ """
+    matches: list[tuple[str, str]],
+    to_check: list[tuple[str, str]],
+) -> Path:
     fields = [
         "data_load_sources__data_source__id",
         "id",
@@ -322,67 +321,67 @@ def save_matches(
         "date_end",
     ]
     output_path = Path(app_settings.ERROR_OUTPUT_FOLDER) / "duplicate_matches"
+    shutil.rmtree(output_path) if output_path.exists() else None
     output_path.mkdir(exist_ok=True, parents=True)
-    full_data = []
-    for transfer_left_id, transfers_right_ids in matches.items():
-        transfers_left = Transfer.objects.filter(id=transfer_left_id)
-        transfers_right = Transfer.objects.filter(id__in=transfers_right_ids)
-        if transfers_left.count() == 1 and transfers_right.count() == 1:
-            full_data.extend(
-                [
-                    list(transfers_left.values(*fields))[0],
-                    list(transfers_right.values(*fields))[0],
-                ]
+    full_matches = []
+    full_to_check = []
+    for transfer_left, transfer_right in matches:
+        full_matches.extend(
+            list(
+                Transfer.objects.filter(id__in=[transfer_left, transfer_right])
+                .order_by("data_load_sources__data_source__id")
+                .values(*fields)
             )
-            continue
-        with pd.ExcelWriter(
-            output_path / (str(transfers_left.first().id) + ".xlsx"),
-            engine="xlsxwriter",
-        ) as writer:
-            pd.DataFrame(list(transfers_left.values(*fields))).to_excel(
-                writer, sheet_name="transfers_left", index=False
-            )
-            pd.DataFrame(list(transfers_right.values(*fields))).to_excel(
-                writer, sheet_name="transfers_right", index=False
-            )
-    if full_data:
-        wb = Workbook()
-        ws = wb.active
-        border = Border(bottom=Side(border_style="double", color="000000"))
-        df = pd.DataFrame(full_data)
-        df["date_invoice"] = df["date_invoice"].apply(format_date)
-        df["date_payment_emitter"] = df["date_payment_emitter"].apply(
-            format_date
         )
-        df["date_payment_recipient"] = df["date_payment_recipient"].apply(
-            format_date
+    for transfer_left, transfer_right in to_check:
+        full_to_check.extend(
+            list(
+                Transfer.objects.filter(id__in=[transfer_left, transfer_right])
+                .order_by("data_load_sources__data_source__id")
+                .values(*fields)
+            )
         )
-        df["date_start"] = df["date_start"].apply(format_date)
-        df["date_end"] = df["date_end"].apply(format_date)
-        for r_idx, row in enumerate(
-            dataframe_to_rows(df.astype(str), index=False),
-            1,
-        ):
-            for c_idx, value in enumerate(row, 1):
-                cell = ws.cell(row=r_idx, column=c_idx)
-                if value != "None":
-                    cell.value = value
-                if r_idx % 2 == 1:
-                    cell.border = border
-        ws.auto_filter.ref = ws.dimensions
-        ws.column_dimensions["D"].width = 22
-        ws.column_dimensions["E"].width = 22
-        ws.column_dimensions["H"].width = 12
-        ws.column_dimensions["I"].width = 12
-        ws.column_dimensions["J"].width = 12
-        ws.column_dimensions["K"].width = 12
-        ws.column_dimensions["L"].width = 12
-        wb.save(output_path / "all_matches.xlsx")
+
+    wb = Workbook()
+    ws = wb.active
+    border = Border(bottom=Side(border_style="double", color="000000"))
+    df_match = pd.DataFrame(full_matches, columns=fields)
+    df_match["match"] = True
+    df_to_check = pd.DataFrame(full_to_check, columns=fields)
+    df_to_check["match"] = False
+    df = pd.concat([df_match, df_to_check], ignore_index=True)
+    df["date_invoice"] = df["date_invoice"].apply(format_date)
+    df["date_payment_emitter"] = df["date_payment_emitter"].apply(format_date)
+    df["date_payment_recipient"] = df["date_payment_recipient"].apply(
+        format_date
+    )
+    df["date_start"] = df["date_start"].apply(format_date)
+    df["date_end"] = df["date_end"].apply(format_date)
+    for r_idx, row in enumerate(
+        dataframe_to_rows(df.astype(str), index=False),
+        1,
+    ):
+        for c_idx, value in enumerate(row, 1):
+            cell = ws.cell(row=r_idx, column=c_idx)
+            if value != "None":
+                cell.value = value
+            if r_idx % 2 == 1:
+                cell.border = border
+    ws.auto_filter.ref = ws.dimensions
+    ws.column_dimensions["D"].width = 22
+    ws.column_dimensions["E"].width = 22
+    ws.column_dimensions["H"].width = 12
+    ws.column_dimensions["I"].width = 12
+    ws.column_dimensions["J"].width = 12
+    ws.column_dimensions["K"].width = 12
+    ws.column_dimensions["L"].width = 12
+    wb.save(output_path / "all_matches.xlsx")
+    return output_path
 
 
 def raise_if_multiple_matches(
-    matches: list[tuple[Transfer, Transfer]],
-    reverse_matches: list[tuple[Transfer, Transfer]],
+    matches: list[tuple[str, str]],
+    to_check: list[tuple[str, str]],
 ) -> None:
     """
     Checks if there are multiple matches in the list of matches.
@@ -390,27 +389,16 @@ def raise_if_multiple_matches(
     transfer matches multiple new transfers.
     Raises a DataException if multiple matches are found.
     """
-    multiple_matches = {
-        transfer_id: matched_ids
-        for transfer_id, matched_ids in matches.items()
-        if len(matched_ids) > 1
-    }
-    multiple_reverse_matches = {
-        transfer_id: matched_ids
-        for transfer_id, matched_ids in reverse_matches.items()
-        if len(matched_ids) > 1
-    }
-    if multiple_matches:
-        save_matches(matches, reverse_matches)
+    if not matches:
+        return
+    left_ids, right_ids = zip(*matches)
+    pathname = save_matches(matches, to_check)
+    if len(set(left_ids)) < len(left_ids) or len(set(right_ids)) < len(
+        right_ids
+    ):
         raise DataException(
-            f"More than one transfer in db matched with a transfer from new source: {multiple_matches}"
+            f"Failed to deduplicate transfers: see {pathname} for details"
         )
-    if multiple_reverse_matches:
-        save_matches(matches, reverse_matches)
-        raise DataException(
-            f"More than one new source transfer matched with a transfer from db: {multiple_reverse_matches}"
-        )
-    save_matches(matches, reverse_matches)
 
 
 def deduplicate_transfers(source: DataLoadSource) -> None:
@@ -427,22 +415,22 @@ def deduplicate_transfers(source: DataLoadSource) -> None:
         merged_into__isnull=True,
     )
     # Find matches
-    matches = defaultdict(list)
-    reverse_matches = defaultdict(list)
+    matches = []
+    to_check = []
     for transfer in source_transfers:
         for other_transfer in all_other_transfers:
-            is_matching, _ = transfer_is_matching(transfer, other_transfer)
+            is_matching, reason = transfer_is_matching(transfer, other_transfer)
             if is_matching:
-                matches[transfer.id].append(other_transfer.id)
-                reverse_matches[other_transfer.id].append(transfer.id)
+                matches.append((transfer.id, other_transfer.id))
+            elif reason == CRITERIA_AMOUNT:
+                to_check.append((transfer.id, other_transfer.id))
     # Raise if multiple matches found
-    raise_if_multiple_matches(matches, reverse_matches)
+    raise_if_multiple_matches(matches, to_check)
     # Merge transfers
     nb_merged = 0
-    for transfer_id, matched_ids in matches.items():
-        if matched_ids:
-            transfer = source_transfers.get(id=transfer_id)
-            matched_transfer = all_other_transfers.get(id=matched_ids[0])
-            merge_transfers(transfer, matched_transfer)
-            nb_merged += 1
+    for transfer_id, matched_id in matches:
+        transfer = source_transfers.get(id=transfer_id)
+        matched_transfer = all_other_transfers.get(id=matched_id)
+        merge_transfers(transfer, matched_transfer)
+        nb_merged += 1
     return nb_merged
