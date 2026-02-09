@@ -3,6 +3,7 @@ import { RouterLink } from "vue-router"
 
 import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
+import ObfuscatedMail from "@/components/atoms/ObfuscatedMail.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
 import { getPartners, type Entity } from "@/singletons/ref-data"
 import { shuffleArray } from "@/utils/data-utils"
@@ -149,12 +150,8 @@ function formatPartners(partners: Entity[]): String {
 
       <StaticSectionAtom id="contact-us" title="How to contact TSOSI?">
         <p>
-          Any support and feedback are strongly welcome, reach us at
-          <CodeBlockAtom
-            :content="'contact (the at symbol) tsosi.org'"
-            :inline="true"
-            :background="true"
-          />.
+          We look forward to hearing from you. Contact us at
+          <ObfuscatedMail mail="pbagnpg@gfbfv.bet" />
         </p>
       </StaticSectionAtom>
 
