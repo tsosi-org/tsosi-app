@@ -5,6 +5,7 @@ import { computed, onBeforeMount, onMounted, onUnmounted } from "vue"
 import cosoLogoUrl from "@/assets/img/coso-black-logo.svg"
 import gricadLogoUrl from "@/assets/img/logo_gricad_noir.svg"
 import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg"
+import mesrLogoUrl from "@/assets/img/mesr_logo_noir.png"
 import ExternalLink from "@/components/atoms/ExternalLinkAtom.vue"
 import ImageAtom from "@/components/atoms/ImageAtom.vue"
 import CardComponent from "@/components/CardComponent.vue"
@@ -204,6 +205,21 @@ const citations = [
           </h2>
           <div class="partner-cards">
             <ExternalLink
+              href="https://www.enseignementsup-recherche.gouv.fr/fr"
+              class="card-link"
+            >
+              <CardComponent :no-body="true">
+                <template #header>
+                  <ImageAtom
+                    :src="mesrLogoUrl"
+                    :width="'120px'"
+                    :height="'110px'"
+                    :center="true"
+                  />
+                </template>
+              </CardComponent>
+            </ExternalLink>
+            <ExternalLink
               href="https://www.ouvrirlascience.fr/home/"
               class="card-link"
             >
@@ -211,8 +227,8 @@ const citations = [
                 <template #header>
                   <ImageAtom
                     :src="cosoLogoUrl"
-                    :width="isDesktop ? '205px' : '140px'"
-                    :height="isDesktop ? '150px' : 'auto'"
+                    :width="'150px'"
+                    :height="'100px'"
                     :center="true"
                   />
                 </template>
@@ -226,8 +242,8 @@ const citations = [
                 <template #header>
                   <ImageAtom
                     :src="ugaLogoUrl"
-                    :width="isDesktop ? '140px' : '110px'"
-                    :height="isDesktop ? '150px' : 'auto'"
+                    :width="'100px'"
+                    :height="'100px'"
                     :center="true"
                   />
                 </template>
@@ -241,8 +257,8 @@ const citations = [
                 <template #header>
                   <ImageAtom
                     :src="gricadLogoUrl"
-                    :width="isDesktop ? '130px' : '100px'"
-                    :height="isDesktop ? '150px' : 'auto'"
+                    :width="'90px'"
+                    :height="'100px'"
                     :center="true"
                   />
                 </template>
