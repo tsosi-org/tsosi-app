@@ -549,7 +549,9 @@
       "website": "https://www.gdcc.io",
       "description": "The Global Dataverse Community Consortium (GDCC) is dedicated to providing international organization to existing Dataverse community efforts, and will provide a collaborative venue for institutions to leverage economies of scale in support of Dataverse repositories around the world."
     },
-    "infrastructure": {},
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q138153740\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">GDCC on wikidata</a>."
+    },
     "static_icon": "gdcc_icon.png",
     "static_logo": "gdcc_logo.png"
   },
@@ -569,7 +571,8 @@
     },
     "infrastructure": {
       "support_url": "https://www.openaire.eu/expression-of-interest-eoi-to-join-the-openaire-amke",
-      "posi_url": "https://www.openaire.eu/principles-open-scholarly-infrastructure-openaire-assessment-v2"
+      "posi_url": "https://www.openaire.eu/principles-open-scholarly-infrastructure-openaire-assessment-v2",
+      "legal_entity_description": "The legal entity is located in Greece, see <a href=\"https://www.wikidata.org/wiki/Q109497870\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenAIRE AMKE on wikidata</a>."
     },
     "static_icon": "openaire_icon.png",
     "static_logo": "openaire_logo.webp"
