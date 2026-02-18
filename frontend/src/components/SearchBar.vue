@@ -432,6 +432,10 @@ function onPopoverShow() {
     }
   }
 }
+.search-bar:deep(.p-popover) {
+  top: auto !important;
+  left: auto !important;
+}
 
 .search-bar-input {
   display: inline-block;

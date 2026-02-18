@@ -184,11 +184,6 @@ a.wikidata-inline-link::before {
   display: none;
 }
 
-.p-popover {
-  top: auto !important;
-  left: auto !important;
-}
-
 .loader-icon-animate {
   animation: uniform-spinning 1s linear infinite;
 }
