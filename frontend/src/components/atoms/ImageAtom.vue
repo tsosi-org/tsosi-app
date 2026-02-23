@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, useTemplateRef, computed } from "vue"
+import { computed, onMounted, ref, useTemplateRef } from "vue";
 
 const props = defineProps<{
   src?: string
@@ -74,6 +74,5 @@ onMounted(() => {
   max-height: 100%;
   object-fit: contain;
   object-position: center;
-  border-radius: 4px;
 }
 </style>

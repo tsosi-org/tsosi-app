@@ -157,19 +157,22 @@
   },
   {
     "pid": {
-      "registry_id": "_custom",
-      "value": "open_policy_finder"
+      "registry_id": "wikidata",
+      "value": "Q138427491"
     },
     "entity": {
       "name": "Open Policy Finder",
-      "short_name": "Open Policy Finder",
+      "short_name": "OPF",
       "website": "https://openpolicyfinder.jisc.ac.uk/",
       "country": "GB",
       "description": "Open Policy Finder (formerly Sherpa Services) is an online platform that consolidates and presents standardised summaries of open access policies for publishers (journals and books) and funders worldwide. Serving as a centralised resource, it simplifies the complex landscape of open access requirements by aggregating and summarising publisher self-archiving and funder policies. Open Policy Finder supports university librarians, research staff, and the scholarly community, reducing time spent searching multiple sites and allowing users to focus on core tasks. With a user-friendly interface and open API, Open Policy Finder provides easy access to comprehensive policy data for institutions and researchers globally."
     },
     "infrastructure": {
+      "date_scoss_start": "2017-01-01",
+      "date_scoss_end": "2020-01-01",
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/sherpa-services-sherpa-romeo-sherpa-juliet-and-opendoar",
-      "support_url": "https://openpolicyfinder.jisc.ac.uk/supporter-scheme"
+      "support_url": "https://openpolicyfinder.jisc.ac.uk/supporter-scheme",
+      "legal_entity_description": "The legal entity is located in UK, see <a href=\"https://www.wikidata.org/wiki/Q138427491\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Policy Finder on wikidata</a>."
     },
     "static_icon": "open_policy_finder_icon.png",
     "static_logo": "open_policy_finder_logo.png"
