@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, inject, computed, watch, onMounted } from "vue"
+import { computed, inject, onMounted, ref, watch } from "vue"
 
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
-import StaticContentComponent from "@/views/StaticContentView.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
-
+import { useContactModal } from "@/composables/useContactModal"
+import StaticContentComponent from "@/views/StaticContentView.vue"
+const { openContactModal } = useContactModal()
 
 const matomoCheckboxValue = ref(false)
 const optOutStatus = ref(false)
@@ -151,7 +152,7 @@ function isOptedOut(): boolean | undefined {
           Saint Martin d'Hères, France
           <br />
           <br />
-          <RouterLink :to="'/pages/faq#contact-us'">Contact TSOSI</RouterLink>
+          <a @click="openContactModal">Contact TSOSI</a>
         </p>
         <p v-if="matomoTracker">
           <br />

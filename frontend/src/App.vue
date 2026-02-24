@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue"
-import { RouterView, useRoute } from "vue-router"
 import DynamicDialog from "primevue/dynamicdialog"
 import { useDialog } from "primevue/usedialog"
+import { onMounted, ref, watch } from "vue"
+import { RouterView, useRoute } from "vue-router"
 
 import SiteInConstructionAtom from "./components/atoms/SiteInConstructionAtom.vue"
 import { targetElement } from "./utils/dom-utils"
 
-import HeaderLayout from "@/layouts/HeaderLayout.vue"
 import Loader from "@/components/atoms/LoaderAtom.vue"
-import { refDataPromise } from "@/singletons/ref-data"
+import ContactComponent from "@/components/ContactComponent.vue"
 import FooterLayout from "@/layouts/FooterLayout.vue"
-
+import HeaderLayout from "@/layouts/HeaderLayout.vue"
+import { refDataPromise } from "@/singletons/ref-data"
 
 const loading = ref(true)
 const route = useRoute()
@@ -68,6 +68,7 @@ function scrollToHash(retry: boolean) {
     <HeaderLayout />
     <main id="main" class="page-content">
       <RouterView v-if="!loading" :key="$route.path" />
+      <ContactComponent />
     </main>
     <FooterLayout />
   </template>

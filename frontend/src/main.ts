@@ -1,13 +1,14 @@
 import "@/assets/css/main.css"
 
 import { library } from "@fortawesome/fontawesome-svg-core"
-import { faGithub } from "@fortawesome/free-brands-svg-icons"
+import { faGithub, faLinkedin } from "@fortawesome/free-brands-svg-icons"
 import {
   faAngleRight,
   faArrowUpRightFromSquare,
   faAt,
   faBars,
   faBuildingColumns,
+  faBullhorn,
   faCalendar,
   faChartColumn,
   faCheck,
@@ -30,7 +31,7 @@ import {
   faSquareCheck,
   faSquareXmark,
   faUser,
-  faXmark
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 import { definePreset } from "@primevue/themes"
@@ -128,6 +129,8 @@ const usedIcons = [
   faEllipsisVertical,
   faEnvelope,
   faGithub,
+  faLinkedin,
+  faBullhorn,
   faGlobe,
   faHouse,
   faImage,

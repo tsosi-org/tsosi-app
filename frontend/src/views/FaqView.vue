@@ -3,11 +3,12 @@ import { RouterLink } from "vue-router"
 
 import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
-import ObfuscatedMail from "@/components/atoms/ObfuscatedMail.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
+import { useContactModal } from "@/composables/useContactModal"
 import { getPartners, type Entity } from "@/singletons/ref-data"
 import { shuffleArray } from "@/utils/data-utils"
 import StaticContentComponent from "@/views/StaticContentView.vue"
+const { openContactModal } = useContactModal()
 
 const partners = getPartners() as Entity[]
 shuffleArray(partners)
@@ -44,7 +45,7 @@ function formatPartners(partners: Entity[]): String {
             organizations received by TSOSI is handwritten, and the identifiers
             are added semi-manually by the TSOSI operational team. Therefore,
             the TSOSI data may contain errors. Please
-            <RouterLink :to="'#contact-us'">contact us</RouterLink>
+            <a @click="openContactModal">contact us</a>
             if you think you have found one.
           </li>
         </ul>
@@ -115,8 +116,8 @@ function formatPartners(partners: Entity[]): String {
             :href="'https://github.com/tsosi-org/data-collection-schema'"
           />
           on Github to review the data needed, and
-          <RouterLink :to="'#contact-us'">contact us</RouterLink> to be part of
-          this exciting initiative.
+          <a @click="openContactModal">contact us</a> to be part of this
+          exciting initiative.
         </p>
       </StaticSectionAtom>
 
@@ -145,13 +146,6 @@ function formatPartners(partners: Entity[]): String {
           did not have the breakdown data, but only intermediary entities, such
           as library consortium. These two factors can explain why you don't see
           your institution's contribution.
-        </p>
-      </StaticSectionAtom>
-
-      <StaticSectionAtom id="contact-us" title="How to contact TSOSI?">
-        <p>
-          We look forward to hearing from you. Contact us at
-          <ObfuscatedMail mail="pbagnpg@gfbfv.bet" />
         </p>
       </StaticSectionAtom>
 
@@ -221,7 +215,7 @@ function formatPartners(partners: Entity[]): String {
           Note that <b>only the URLs with the ROR identifier are persistent</b>.
           The others may change each time TSOSI ingests new data. If you find a
           missing ROR for an institution, please
-          <RouterLink :to="'#contact-us'">contact us</RouterLink>.
+          <a @click="openContactModal">contact us</a>.
         </p>
       </StaticSectionAtom>
 
@@ -271,7 +265,7 @@ function formatPartners(partners: Entity[]): String {
           >
           fore more details. We'd love to hear about how you're using the data,
           so feel free to
-          <RouterLink :label="''" :to="'#contact-us'">let us know</RouterLink>!
+          <a @click="openContactModal">let us know</a>!
         </p>
       </StaticSectionAtom>
 

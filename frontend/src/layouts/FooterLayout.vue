@@ -4,7 +4,9 @@ import { RouterLink } from "vue-router"
 
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
+import { useContactModal } from "@/composables/useContactModal"
 import { isDesktop } from "@/composables/useMediaQuery"
+const { openContactModal } = useContactModal()
 </script>
 
 <template>
@@ -48,12 +50,12 @@ import { isDesktop } from "@/composables/useMediaQuery"
         <h3>Community</h3>
         <ul>
           <li>
-            <ExternalLinkAtom href="https://github.com/tsosi-org">
+            <a @click="openContactModal">
               <font-awesome-icon
-                :icon="['fab', 'github']"
+                :icon="['fas', 'at']"
                 class="link-icon"
-              />Github
-            </ExternalLinkAtom>
+              />Contact
+            </a>
           </li>
           <li>
             <RouterLink to="/pages/newsletter">
@@ -64,12 +66,20 @@ import { isDesktop } from "@/composables/useMediaQuery"
             </RouterLink>
           </li>
           <li>
-            <RouterLink to="/pages/faq#contact-us">
+            <ExternalLinkAtom href="https://linkedin.com/company/tsosi/">
               <font-awesome-icon
-                :icon="['fas', 'at']"
+                :icon="['fab', 'linkedin']"
                 class="link-icon"
-              />Contact
-            </RouterLink>
+              />Linkedin
+            </ExternalLinkAtom>
+          </li>
+          <li>
+            <ExternalLinkAtom href="https://github.com/tsosi-org">
+              <font-awesome-icon
+                :icon="['fab', 'github']"
+                class="link-icon"
+              />Github
+            </ExternalLinkAtom>
           </li>
         </ul>
       </div>
