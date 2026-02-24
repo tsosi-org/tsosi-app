@@ -77,7 +77,7 @@ def main() -> None:
 
     for year in range(1, 4):
         mask = df["year"] == f"year_{year}"
-        df.loc[mask, "date_invoice"] = str(FIRST_YEAR - 1 + year)
+        df.loc[mask, "year"] = str(FIRST_YEAR - 1 + year)
 
     # Add institution identifiers
     institution_lookup_path = (
