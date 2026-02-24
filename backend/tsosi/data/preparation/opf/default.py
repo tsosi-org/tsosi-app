@@ -31,9 +31,9 @@ def get_config(
             rdc.FieldAgentRorId(field="agent/ror_id"),
             rdc.FieldAgentWikidataId(field="agent/wikidata_id"),
             rdc.FieldAmount(field="amount"),
-            rdc.FieldHideAmount(constant=False),
+            rdc.FieldHideAmount(constant=True),
             rdc.FieldCurrency(constant="EUR"),
             rdc.FieldDatePaymentEmitter(field="date_paid"),
-            rdc.FieldDateInvoice(field="date_invoice"),
+            rdc.FieldDateInvoice(field="year"),
         ],
     )
