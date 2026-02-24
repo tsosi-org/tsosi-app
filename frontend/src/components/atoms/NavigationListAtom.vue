@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { useContactModal } from "@/composables/useContactModal";
 import { RouterLink } from "vue-router";
-
+const { openContactModal } = useContactModal()
 
 
 const props = defineProps<{
@@ -19,6 +20,9 @@ const props = defineProps<{
       </li>
       <li>
         <RouterLink to="/pages/blog">Blog</RouterLink>
+      </li>
+      <li>
+        <a @click="openContactModal">Contact & News</a>
       </li>
     </ul>
   </div>

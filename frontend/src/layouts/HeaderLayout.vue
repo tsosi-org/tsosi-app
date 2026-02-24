@@ -2,7 +2,6 @@
 import { $dt } from "@primevue/themes"
 import Drawer from "primevue/drawer"
 import { ref, watch } from "vue"
-import { RouterLink, useRouter } from "vue-router"
 
 import Button from "@/components/atoms/ButtonAtom.vue"
 import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
@@ -11,10 +10,11 @@ import { isDesktop } from "@/composables/useMediaQuery"
 import { bigHeader } from "@/singletons/fixedHeaderStore"
 
 
-const router = useRouter()
 const navMenuVisible = ref(false)
 const searchMenuVisible = ref(false)
 
+import { RouterLink, useRouter } from "vue-router"
+const router = useRouter()
 watch(router.currentRoute, closeDrawers)
 
 function closeDrawers() {

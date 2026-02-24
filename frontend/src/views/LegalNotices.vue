@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue";
-import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue";
-import StaticContentComponent from "@/views/StaticContentView.vue";
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
+import ImageAtom from "@/components/atoms/ImageAtom.vue"
+import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
+import { useContactModal } from "@/composables/useContactModal"
+import StaticContentComponent from "@/views/StaticContentView.vue"
+const { openContactModal } = useContactModal()
 </script>
 
 <template>
@@ -36,7 +39,7 @@ import StaticContentComponent from "@/views/StaticContentView.vue";
           herein is owned by Université Grenoble Alpes, 621 Avenue Centrale,
           38400 Saint-Martin-d'Hères, France. All defaults to all rights
           reserved unless otherwise specified.
-          <RouterLink :to="'/pages/faq#contact-us'">Contact TSOSI</RouterLink>.
+          <a @click="openContactModal">Contact TSOSI</a>.
         </p>
       </StaticSectionAtom>
 
@@ -58,7 +61,10 @@ import StaticContentComponent from "@/views/StaticContentView.vue";
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom id="personal-data-protection" title="Protection of personal data">
+      <StaticSectionAtom
+        id="personal-data-protection"
+        title="Protection of personal data"
+      >
         <p>
           Information on personal data protection for this site is available on
           the
@@ -95,10 +101,28 @@ import StaticContentComponent from "@/views/StaticContentView.vue";
 
       <StaticSectionAtom id="credits" title="Credits">
         <ul>
-          <li>Project leader: Maxence Larrieu</li>
-          <li>Data and web engineer: Guillaume Alzieu</li>
-          <li>Logo: Gilles Esparbet</li>
+          <li>
+            Maxence Larrieu
+            <ExternalLinkAtom :href="'https://orcid.org/0000-0002-1834-3007'">
+              <ImageAtom
+                :src="'/img/orcid_badge.svg'"
+                :width="'1em'"
+                :container-padding="'0'"
+                style="display: inline-block; margin-right: 4px"
+              />
+            </ExternalLinkAtom>
+            - Project leader
+          </li>
+          <li>Baptiste Lefeuvre - Data and web engineer</li>
+          <li>Guillaume Alzieu - Project engineer [2024-2025]</li>
         </ul>
+        <p>
+          Based at Grenoble Alpes University, within the
+          <ExternalLinkAtom
+            :href="'https://gricad.univ-grenoble-alpes.fr/en/'"
+            :label="'GRICAD research unit'"
+          />, which operates the TSOSI platform.
+        </p>
       </StaticSectionAtom>
     </template>
   </StaticContentComponent>

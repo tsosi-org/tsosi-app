@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue";
-import ImageAtom from "@/components/atoms/ImageAtom.vue";
-import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue";
-import StaticContentComponent from "@/views/StaticContentView.vue";
+import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
+import ImageAtom from "@/components/atoms/ImageAtom.vue"
+import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
+import { useContactModal } from "@/composables/useContactModal"
+import StaticContentComponent from "@/views/StaticContentView.vue"
+const { openContactModal } = useContactModal()
 </script>
 
 <template>
@@ -148,8 +150,8 @@ import StaticContentComponent from "@/views/StaticContentView.vue";
       <StaticSectionAtom id="contact" title="Contact">
         <p>
           We welcome your inquiries and feedback. Please
-          <RouterLink :to="'/pages/faq#contact-us'">contact us</RouterLink>. We
-          look forward to hearing from you.
+          <a @click="openContactModal">contact us</a>. We look forward to
+          hearing from you.
         </p>
       </StaticSectionAtom>
 
@@ -167,15 +169,11 @@ import StaticContentComponent from "@/views/StaticContentView.vue";
             </ExternalLinkAtom>
             - Project leader
           </li>
-          <li>
-            Baptiste Lefeuvre - Data and web engineer
-          </li>
-          <li>
-            Guillaume Alzieu - Project engineer [2024-2025]
-          </li>
+          <li>Baptiste Lefeuvre - Data and web engineer</li>
+          <li>Guillaume Alzieu - Project engineer [2024-2025]</li>
         </ul>
         <p>
-          Both are based at Grenoble Alpes University, within the
+          Based at Grenoble Alpes University, within the
           <ExternalLinkAtom
             :href="'https://gricad.univ-grenoble-alpes.fr/en/'"
             :label="'GRICAD research unit'"
