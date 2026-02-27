@@ -182,17 +182,19 @@ def update_static_entities() -> None:
 # These are the same IDs as the supported infrastructures.
 # We keep it separated because the project could grow with other data sources.
 DATA_SOURCES = [
-    "doaj_library",
-    "doaj_publisher",
-    "scipost",
-    "pci",
+    "couperin",
     "doab_oapen_library",
     "doab_oapen_sponsor",
+    "doaj_library",
+    "doaj_publisher",
+    "leuven",
+    "liege",
     "operas",
+    "opf",
+    "pci",
+    "scipost",
     "uga",
     "uminho",
-    "opf",
-    "couperin",
 ]
 
 
