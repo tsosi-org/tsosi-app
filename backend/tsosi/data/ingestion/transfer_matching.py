@@ -279,7 +279,6 @@ def save_matches(
     to_check: list[tuple[str, str]],
 ) -> Path:
     fields = [
-        "data_load_sources__data_source__id",
         "id",
         "original_id",
         "emitter__raw_name",
@@ -300,17 +299,17 @@ def save_matches(
     for transfer_left, transfer_right in matches:
         full_matches.extend(
             list(
-                Transfer.objects.filter(id__in=[transfer_left, transfer_right])
-                .order_by("data_load_sources__data_source__id")
-                .values(*fields)
+                Transfer.objects.filter(
+                    id__in=[transfer_left, transfer_right]
+                ).values(*fields)
             )
         )
     for transfer_left, transfer_right in to_check:
         full_to_check.extend(
             list(
-                Transfer.objects.filter(id__in=[transfer_left, transfer_right])
-                .order_by("data_load_sources__data_source__id")
-                .values(*fields)
+                Transfer.objects.filter(
+                    id__in=[transfer_left, transfer_right]
+                ).values(*fields)
             )
         )
 
