@@ -9,12 +9,7 @@ from openpyxl.styles import Border, Side
 from openpyxl.utils.dataframe import dataframe_to_rows
 from tsosi.app_settings import app_settings
 from tsosi.data.exceptions import DataException
-from tsosi.models import (
-    Currency,
-    DataLoadSource,
-    Transfer,
-    TransferEntityMatching,
-)
+from tsosi.models import Currency, DataLoadSource, Transfer
 from tsosi.models.date import (
     DATE_PRECISION_MONTH,
     DATE_PRECISION_YEAR,
@@ -200,7 +195,7 @@ def merge_transfers(
     """
     Merge two transfers into one.
     Creates a new Transfer object with the best values from both transfers,
-    and update parent transfers, and transfer_entity_matchings.
+    and update parent transfers.
     """
     fields = {
         "emitter": get_non_null(transfer_left.emitter, transfer_right.emitter),
@@ -241,6 +236,9 @@ def merge_transfers(
             transfer_left.data_load_sources.first().data_source_id: transfer_left.raw_data,
             transfer_right.data_load_sources.first().data_source_id: transfer_right.raw_data,
         },
+        "emitter_sub": get_non_null(
+            transfer_left.emitter_sub, transfer_right.emitter_sub
+        ),
     }
     # Merge amount and currency
     fields["amount"], fields["currency"] = get_best_amount_and_currency(
@@ -260,19 +258,6 @@ def merge_transfers(
             transfer_right.raw_data
         )
     fields["raw_data"] = raw_data
-    # Merge sub_entity
-    sub_entity = get_non_null(
-        transfer_left.transferentitymatching_set.filter(
-            transfer_entity_type="emitter"
-        )
-        .first()
-        .sub_entity,
-        transfer_right.transferentitymatching_set.filter(
-            transfer_entity_type="emitter"
-        )
-        .first()
-        .sub_entity,
-    )
     # Merge transfers
     child = Transfer(**fields)
     child.data_load_sources.set(
@@ -284,21 +269,6 @@ def merge_transfers(
     child.save()
     transfer_left.save()
     transfer_right.save()
-    # Create new TransferEntityMatching for child
-    for entity_type in ["emitter", "recipient", "agent"]:
-        entity = getattr(child, entity_type)
-        if entity is None:
-            continue
-        tem = TransferEntityMatching.objects.create(
-            transfer_entity_type=entity_type,
-            match_criteria=MATCH_CRITERIA_MERGED,
-            match_source=MATCH_SOURCE_AUTOMATIC,
-            entity=entity,
-            transfer=child,
-        )
-        if entity_type == "emitter" and sub_entity is not None:
-            tem.sub_entity = sub_entity
-            tem.save()
     return child
 
 

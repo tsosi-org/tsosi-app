@@ -148,8 +148,6 @@ class TransferSerializer(BaseTransferSerializer):
 
 
 class TransferDetailsSerializer(BaseTransferSerializer):
-    emitter_sub = serializers.SerializerMethodField()
-
     class Meta:
         model = Transfer
         fields = [
@@ -169,15 +167,6 @@ class TransferDetailsSerializer(BaseTransferSerializer):
             "amounts_clc",
             "raw_data",
         ]
-
-    def get_emitter_sub(self, obj: Transfer):
-        try:
-            matching = obj.transferentitymatching_set.get(
-                transfer_entity_type="emitter"
-            )
-            return matching.sub_entity
-        except Transfer.transferentitymatching_set.RelatedObjectDoesNotExist:
-            return None
 
 
 class CurrencySerializer(serializers.ModelSerializer):

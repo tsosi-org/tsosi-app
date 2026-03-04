@@ -58,6 +58,7 @@ class Transfer(TimestampedModel):
         related_name="transfer_as_emitters",
         related_query_name="transfer_as_emitter",
     )
+    emitter_sub = models.CharField(max_length=256, null=True)
     recipient = models.ForeignKey(
         Entity,
         on_delete=models.RESTRICT,
@@ -122,50 +123,5 @@ class Transfer(TimestampedModel):
                     & models.Q(currency_id__isnull=True)
                 ),
                 name="transfer_amount_currency_consistency",
-            ),
-        ]
-
-
-class TransferEntityMatching(TimestampedModel):
-    """
-    Logs how each entity was matched to a transfer.
-    """
-
-    id = models.BigAutoField(primary_key=True)
-    transfer = models.ForeignKey(Transfer, on_delete=models.CASCADE)
-    transfer_entity_type = models.CharField(
-        choices=TRANSFER_ENTITY_TYPE_CHOICES, max_length=32
-    )
-    entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
-    match_criteria = models.CharField(
-        choices=TRANSFER_ENTITY_MATCH_CRITERIA_CHOICES, max_length=32
-    )
-    match_source = models.CharField(choices=MATCH_SOURCE_CHOICES, max_length=32)
-    comments = models.TextField(null=True)
-    sub_entity = models.CharField(max_length=512, null=True)
-
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                condition=models.Q(
-                    transfer_entity_type__in=list(
-                        TRANSFER_ENTITY_TYPE_CHOICES.keys()
-                    )
-                ),
-                name="valid_transfer_entity_type_choices",
-            ),
-            models.CheckConstraint(
-                condition=models.Q(
-                    match_criteria__in=list(
-                        TRANSFER_ENTITY_MATCH_CRITERIA_CHOICES.keys()
-                    )
-                ),
-                name="transfer_entity_valid_match_criteria_choices",
-            ),
-            models.CheckConstraint(
-                condition=models.Q(
-                    match_source__in=list(MATCH_SOURCE_CHOICES.keys())
-                ),
-                name="transfer_entity_valid_match_source_choices",
             ),
         ]

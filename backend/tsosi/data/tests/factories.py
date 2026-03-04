@@ -14,7 +14,6 @@ from tsosi.models import (
     IdentifierRequest,
     IdentifierVersion,
     Transfer,
-    TransferEntityMatching,
 )
 from tsosi.models.date import DATE_PRECISION_CHOICES
 from tsosi.models.identifier import MATCH_CRITERIA_FROM_INPUT
@@ -175,25 +174,6 @@ class TransferFactory(BaseTypingFactory[Transfer]):
                 0
             ]
         self.save()
-
-    @post_generation
-    def transfer_entity_matching(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        for entity_type, entity in [
-            (TRANSFER_ENTITY_TYPE_EMITTER, self.emitter),
-            (TRANSFER_ENTITY_TYPE_AGENT, self.agent),
-            (TRANSFER_ENTITY_TYPE_RECIPIENT, self.recipient),
-        ]:
-            if entity:
-                TransferEntityMatching.objects.create(
-                    transfer_entity_type=entity_type,
-                    match_criteria=MATCH_CRITERIA_AUTO_MATCHED,
-                    match_source=MATCH_SOURCE_MANUAL,
-                    entity=entity,
-                    transfer=self,
-                )
 
 
 class IdentifierEntityMatchingFactory(
