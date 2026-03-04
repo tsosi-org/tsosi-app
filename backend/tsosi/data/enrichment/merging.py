@@ -5,13 +5,7 @@ import pandas as pd
 from django.db import transaction
 from tsosi.data.db_utils import bulk_create_from_df, bulk_update_from_df
 from tsosi.data.exceptions import DataException
-from tsosi.models import (
-    Entity,
-    Identifier,
-    IdentifierEntityMatching,
-    Transfer,
-    TransferEntityMatching,
-)
+from tsosi.models import Entity, Identifier, IdentifierEntityMatching, Transfer
 from tsosi.models.transfer import MATCH_CRITERIA_MERGED, TRANSFER_ENTITY_TYPES
 
 logger = logging.getLogger(__name__)
@@ -34,7 +28,7 @@ def merge_entities(
         from all the entities that was merged with them.
 
     4 - Update all transfers referencing the original entities to reference
-        the new ones and create new TransferEntityMatching entries.
+        the new ones.
 
     :param entities:    The DataFrame of entities to be merged.
                         It must contain the columns:
@@ -216,32 +210,4 @@ def merge_entities(
             f"Updated {len(t_to_update)} Transfer records with entity type `{e_type}`"
         )
 
-        # Create new TransferEntityMatching records
-        t_to_update["transfer_entity_type"] = e_type
-        t_to_update = t_to_update.merge(
-            to_merge[["entity_id", "match_criteria", "match_source"]].rename(
-                columns={"entity_id": "original_entity_id"}
-            ),
-            on="original_entity_id",
-            how="left",
-        )
-        t_to_update["date_created"] = date_update
-        t_to_update.rename(
-            columns={"id": "transfer_id", entity_field: "entity_id"},
-            inplace=True,
-        )
-
-        fields = [
-            "transfer_id",
-            "transfer_entity_type",
-            "entity_id",
-            "match_criteria",
-            "match_source",
-            "date_created",
-            "date_last_updated",
-        ]
-        bulk_create_from_df(TransferEntityMatching, t_to_update, fields)
-        logger.info(
-            f"Created {len(t_to_update)} TransferEntityMatching records for e_type: `{e_type}`."
-        )
     logger.info(f"Successfully merged {len(to_merge)} entities.")

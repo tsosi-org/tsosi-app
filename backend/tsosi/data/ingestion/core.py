@@ -25,7 +25,6 @@ from tsosi.models import (
     Identifier,
     IdentifierEntityMatching,
     Transfer,
-    TransferEntityMatching,
 )
 from tsosi.models.identifier import MATCH_CRITERIA_FROM_INPUT
 from tsosi.models.static_data import (
@@ -194,7 +193,6 @@ def extract_entities(transfers: pd.DataFrame) -> pd.DataFrame:
         dc.FieldEmitterRorId.NAME: "ror_id",
         dc.FieldEmitterWikidataId.NAME: "wikidata_id",
         dc.FieldEmitterCustomId.NAME: "custom_id",
-        dc.FieldEmitterSub.NAME: "sub_entity",
         dc.FieldOriginalId.NAME: "original_id",
     }
     mask = ~transfers[dc.FieldEmitterName.NAME].isna()
@@ -372,6 +370,7 @@ def create_transfers(
     fields = [
         "raw_data",
         "emitter_id",
+        "emitter_sub",
         "recipient_id",
         "agent_id",
         "amount",
@@ -391,36 +390,6 @@ def create_transfers(
     data_load_source.transfer_set.add(*transfers["transfer_id"].to_list())
     data_load_source.save()
     logger.info(f"Created {len(transfers)} Transfer records")
-
-
-def create_transfer_entity_matching(
-    transfer_entities: pd.DataFrame, date_stamp: datetime
-):
-    """
-    Utility to insert new TransfertEntityMatching records in the database.
-    It's basically a list of the model fields to find in the dataframe.
-
-    :param transfers_entities:  The transfer <-> entity matching data to create.
-    :param date_stamp:          The datetime to use as the records' creation date.
-    """
-    transfer_entities["date_created"] = date_stamp
-    transfer_entities["date_last_updated"] = date_stamp
-
-    fields = [
-        "transfer_id",
-        "transfer_entity_type",
-        "entity_id",
-        "sub_entity",
-        "match_criteria",
-        "match_source",
-        "comments",
-        "date_created",
-        "date_last_updated",
-    ]
-    bulk_create_from_df(TransferEntityMatching, transfer_entities, fields)
-    logger.info(
-        f"Created {len(transfer_entities)} TransferEntityMatching records"
-    )
 
 
 def get_data_load_source(source: dc.DataLoadSource) -> DataLoadSource:
@@ -508,7 +477,6 @@ def ingest_new_records(
     1 - Pre-match entity with existing ones. \\
     2 - Create entities for the remaining ones. \\
     3 - Create transfers with FK to the above entities. \\
-    4 - Create appropriate entries in TransferEntityMatching.
 
     :param transfers:       Tranfer data in TSOSI format, ie. prepared using
                             `RawDataConfig.prepare_data` method.
@@ -573,13 +541,6 @@ def ingest_new_records(
 
     # Create transfers
     create_transfers(transfers, source, now)
-
-    # Insert TransferEntityMatching
-    transfer_entities["transfer_id"] = transfer_entities["original_id"].map(
-        transfers.set_index("original_id")["transfer_id"]
-    )
-    transfer_entities["match_source"] = MATCH_SOURCE_AUTOMATIC
-    create_transfer_entity_matching(transfer_entities, now)
 
     if send_signals:
         send_post_ingestion_signals()

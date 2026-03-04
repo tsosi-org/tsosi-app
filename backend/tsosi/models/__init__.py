@@ -15,7 +15,7 @@ from .identifier import (
     Registry,
 )
 from .source import DataLoadSource, DataSource
-from .transfer import Transfer, TransferEntityMatching
+from .transfer import Transfer
 
 
 def empty_db(full=False):
