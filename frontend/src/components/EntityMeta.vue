@@ -295,8 +295,7 @@ function isDoab(): boolean {
               >.
             </li>
             <li v-if="isDoaj() || isDoab()">
-              Depending on the supported infrastructure, transfer amounts may be
-              hidden:
+              Most of the support amounts are hidden for DOAJ and DOAB:
               <RouterLink to="/pages/faq#amounts-hidden">see the FAQ</RouterLink
               >.
             </li>
