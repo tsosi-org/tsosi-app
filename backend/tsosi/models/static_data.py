@@ -46,12 +46,20 @@ PID_REGISTRIES = [
         link_template="",
         record_regex=CUSTOM_ID_REGEX,
     ),
+    Registry(
+        id=REGISTRY_TSOSI,
+        name="TSOSI entity registry",
+        website="",
+        link_template="",
+        record_regex=TSOSI_ID_REGEX,
+    ),
 ]
 
 PID_REGEX_OPTIONS = [
     (REGISTRY_ROR, ROR_ID_REGEX),
     (REGISTRY_WIKIDATA, WIKIDATA_ID_REGEX),
     (REGISTRY_CUSTOM, CUSTOM_ID_REGEX),
+    (REGISTRY_TSOSI, TSOSI_ID_REGEX),
 ]
 
 
