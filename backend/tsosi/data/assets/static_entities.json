@@ -5,11 +5,9 @@
       "value": "05amyt365"
     },
     "entity": {
-      "raw_name": "Directory of Open Access Journals",
-      "raw_website": "https://doaj.org",
       "name": "Directory of Open Access Journals",
-      "website": "https://doaj.org",
       "short_name": "DOAJ",
+      "website": "https://doaj.org",
       "description": "DOAJ is a unique and extensive index of diverse open access journals from around the world, driven by a growing community, and is committed to insuring quality content is freely available online for everyone."
     },
     "infrastructure": {
@@ -29,15 +27,11 @@
       "value": "doab_oapen"
     },
     "entity": {
-      "raw_name": "OAPEN & DOAB",
-      "raw_website": "https://www.doabooks.org",
-      "raw_country": "NL",
       "name": "OAPEN & DOAB",
       "short_name": "OAPEN & DOAB",
       "website": "https://www.doabooks.org",
       "country": "NL",
       "description": "OAPEN is an open infrastructure dedicated to promoting and supporting the transition to open access for books. The Directory of Open Access Books (DOAB) is an open, global, and trusted community-driven discovery service that indexes and provides free access to scholarly, peer-reviewed open access books.",
-      "manual_logo": true,
       "date_inception": "2010-01-01"
     },
     "infrastructure": {
@@ -58,8 +52,6 @@
       "value": "00rfexj26"
     },
     "entity": {
-      "raw_name": "OPERAS",
-      "raw_website": "https://operas-eu.org",
       "name": "OPERAS",
       "short_name": "OPERAS",
       "website": "https://operas-eu.org",
@@ -78,10 +70,8 @@
       "value": "0315saa81"
     },
     "entity": {
-      "raw_name": "Peer Community In",
-      "raw_website": "https://peercommunityin.org",
-      "short_name": "PCI",
       "name": "Peer Community In",
+      "short_name": "PCI",
       "website": "https://peercommunityin.org",
       "description": "PCI is a non-profit organisation of researchers offering peer review, recommendation and publication of scientific articles in open access for free."
     },
@@ -99,8 +89,6 @@
       "value": "05br64h13"
     },
     "entity": {
-      "raw_name": "SciPost",
-      "raw_website": "https://scipost.org",
       "name": "SciPost",
       "short_name": "SciPost",
       "website": "https://scipost.org",
@@ -121,8 +109,6 @@
       "value": "Q16668108"
     },
     "entity": {
-      "raw_name": "OpenEdition",
-      "raw_website": "https://www.openedition.org/",
       "name": "OpenEdition",
       "short_name": "OpenEdition",
       "website": "https://www.openedition.org/",
@@ -140,8 +126,6 @@
       "value": "04d2k0j65"
     },
     "entity": {
-      "raw_name": "SPARC Europe",
-      "raw_website": "https://sparceurope.org",
       "name": "SPARC Europe",
       "short_name": "SPARC Europe",
       "website": "https://sparceurope.org",
@@ -160,8 +144,6 @@
       "value": "Q3144107"
     },
     "entity": {
-      "raw_name": "HAL",
-      "raw_website": "https://hal.science/",
       "name": "HAL",
       "short_name": "HAL",
       "website": "https://hal.science/"
@@ -179,9 +161,6 @@
       "value": "open_policy_finder"
     },
     "entity": {
-      "raw_name": "Open Policy Finder",
-      "raw_website": "https://openpolicyfinder.jisc.ac.uk/",
-      "raw_country": "GB",
       "name": "Open Policy Finder",
       "short_name": "Open Policy Finder",
       "website": "https://openpolicyfinder.jisc.ac.uk/",
@@ -201,8 +180,6 @@
       "value": "metopes"
     },
     "entity": {
-      "raw_name": "Métopes",
-      "raw_website": "https://www.metopes.fr/",
       "name": "Métopes",
       "short_name": "Métopes",
       "website": "https://www.metopes.fr/"
@@ -217,8 +194,6 @@
       "value": "edch"
     },
     "entity": {
-      "raw_name": "European Diamond Capacity Hub",
-      "raw_website": "https://diamas.org/",
       "name": "European Diamond Capacity Hub",
       "short_name": "EDCH",
       "website": "https://diamas.org/"
@@ -233,9 +208,6 @@
       "value": "00m2zh467"
     },
     "entity": {
-      "raw_name": "arXiv",
-      "raw_website": "https://arxiv.org/",
-      "raw_country": "US",
       "name": "arXiv",
       "short_name": "arXiv",
       "website": "https://arxiv.org/",
@@ -254,8 +226,6 @@
       "value": "Q55606850"
     },
     "entity": {
-      "raw_name": "Centre Mersenne",
-      "raw_website": "https://www.centre-mersenne.org/",
       "name": "Centre Mersenne",
       "short_name": "Centre Mersenne",
       "website": "https://www.centre-mersenne.org/"
@@ -271,8 +241,6 @@
       "value": "Q110235640"
     },
     "entity": {
-      "raw_name": "Research Organization Registry",
-      "raw_website": "http://ror.org",
       "name": "Research Organization Registry",
       "short_name": "ROR",
       "website": "http://ror.org",
@@ -291,8 +259,6 @@
       "value": "Q117355383"
     },
     "entity": {
-      "raw_name": "Repères",
-      "raw_website": "https://reseau-reperes.fr/",
       "name": "Repères",
       "short_name": "Repères",
       "website": "https://reseau-reperes.fr/"
@@ -307,8 +273,6 @@
       "value": "Q17072915"
     },
     "entity": {
-      "raw_name": "Open Library of Humanities",
-      "raw_website": "https://www.openlibhums.org/",
       "name": "Open Library of Humanities",
       "short_name": "OLH",
       "website": "https://www.openlibhums.org/"
@@ -325,8 +289,6 @@
       "value": "Q23688650"
     },
     "entity": {
-      "raw_name": "Episciences",
-      "raw_website": "https://www.episciences.org/",
       "name": "Episciences",
       "short_name": "Episciences",
       "website": "https://www.episciences.org/",
@@ -345,8 +307,6 @@
       "value": "Q25338539"
     },
     "entity": {
-      "raw_name": "Research data alliance",
-      "raw_website": "https://www.rd-alliance.org/",
       "name": "Research data alliance",
       "short_name": "RDA",
       "website": "https://www.rd-alliance.org/"
@@ -364,8 +324,6 @@
       "value": "Q25389821"
     },
     "entity": {
-      "raw_name": "Mir@bel",
-      "raw_website": "https://reseau-mirabel.info/",
       "name": "Mir@bel",
       "short_name": "Mir@bel",
       "website": "https://reseau-mirabel.info/"
@@ -382,8 +340,6 @@
       "value": "Q28127082"
     },
     "entity": {
-      "raw_name": "Software Heritage",
-      "raw_website": "https://www.softwareheritage.org/",
       "name": "Software Heritage",
       "short_name": "Software Heritage",
       "website": "https://www.softwareheritage.org/"
@@ -399,9 +355,6 @@
       "value": "00wb4mk85"
     },
     "entity": {
-      "raw_name": "OpenCitations",
-      "raw_website": "https://opencitations.net/",
-      "raw_country": "IT",
       "name": "OpenCitations",
       "short_name": "OpenCitations",
       "website": "https://opencitations.net/",
@@ -421,8 +374,6 @@
       "value": "Q4689837"
     },
     "entity": {
-      "raw_name": "African Journals Online",
-      "raw_website": "https://www.ajol.info",
       "name": "African Journals Online",
       "short_name": "AJOL",
       "website": "https://www.ajol.info"
@@ -439,8 +390,6 @@
       "value": "Q48789578"
     },
     "entity": {
-      "raw_name": "COAR",
-      "raw_website": "https://coar-repositories.org/",
       "name": "COAR",
       "short_name": "COAR",
       "website": "https://coar-repositories.org/"
@@ -457,9 +406,6 @@
       "value": "024pbfj84"
     },
     "entity": {
-      "raw_name": "LA Referencia",
-      "raw_website": "https://www.lareferencia.info",
-      "raw_country": "CL",
       "name": "LA Referencia",
       "short_name": "LA Referencia",
       "website": "https://www.lareferencia.info",
@@ -478,8 +424,6 @@
       "value": "Q680086"
     },
     "entity": {
-      "raw_name": "Public Knowledge Project",
-      "raw_website": "https://pkp.sfu.ca/",
       "name": "Public Knowledge Project",
       "short_name": "PKP",
       "website": "https://pkp.sfu.ca/"
@@ -497,9 +441,6 @@
       "value": "04wxnsj81"
     },
     "entity": {
-      "raw_name": "DataCite",
-      "raw_website": "https://datacite.org/",
-      "raw_country": "DE",
       "name": "DataCite",
       "short_name": "DataCite",
       "website": "https://datacite.org/",
@@ -519,9 +460,6 @@
       "value": "02nr0ka47"
     },
     "entity": {
-      "raw_name": "OpenAlex",
-      "raw_website": "https://openalex.org/",
-      "raw_country": "CA",
       "name": "OpenAlex",
       "short_name": "OpenAlex",
       "website": "https://openalex.org/",
@@ -541,8 +479,6 @@
       "value": "Q138153740"
     },
     "entity": {
-      "raw_name": "The Global Dataverse Community Consortium",
-      "raw_website": "https://www.gdcc.io",
       "name": "The Global Dataverse Community Consortium",
       "short_name": "GDCC",
       "country": "US",
@@ -561,8 +497,6 @@
       "value": "019kf3481"
     },
     "entity": {
-      "raw_name": "OpenAIRE",
-      "raw_website": "https://www.openaire.eu/openaire-amke",
       "name": "OpenAIRE Non-Profit Civil Partnership",
       "country": "GR",
       "short_name": "OpenAIRE AMKE",
@@ -576,5 +510,15 @@
     },
     "static_icon": "openaire_icon.png",
     "static_logo": "openaire_logo.webp"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "00k4n6c32"
+    },
+    "entity": {
+      "name": "European Commission",
+      "country": "EU"
+    }
   }
 ]

@@ -2,10 +2,16 @@ import json
 from pathlib import Path
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files import File
 from django.db import transaction
 from django.utils import timezone
 from tsosi.app_settings import app_settings
 from tsosi.data.pid_registry.ror import ROR_ID_REGEX
+from tsosi.data.pid_registry.tsosi import (
+    REGISTRY_TSOSI,
+    TSOSI_ID_REGEX,
+    generate_tsosi_id,
+)
 from tsosi.data.pid_registry.wikidata import WIKIDATA_ID_REGEX
 from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
@@ -14,6 +20,7 @@ from .identifier import (
     MATCH_CRITERIA_FROM_INPUT,
     Identifier,
     IdentifierEntityMatching,
+    IdentifierVersion,
 )
 from .registry import Registry
 from .source import DataSource
@@ -78,97 +85,98 @@ def create_pid_registries():
 
 
 @transaction.atomic
-def update_partners():
+def update_static_entities() -> None:
     """
-    Create or update partners Entity data.
-    WARNING: You need to manually change the pid associated to an
-    infrastructure. Running this method will just create another entity
-    with the new identifier.
+    Create or update Entity data from local static file. These will overwrite data from others registries.
     """
     now = timezone.now()
     file_path = (
         Path(__file__).resolve().parent.parent
-        / "data/assets/supported_infrastructures.json"
+        / "data/assets/static_entities.json"
     )
     with open(file_path, "r") as f:
-        supported_infrastructures = json.load(f)
-    for infra in supported_infrastructures:
-        create = False
-        static_logo: str | None = infra.get("static_logo")
-        static_icon: str | None = infra.get("static_icon")
-        # Normalize string values
-        for k, v in infra["entity"].items():
-            infra["entity"][k] = clean_cell_value(v)
-        for k, v in infra["infrastructure"].items():
-            infra["infrastructure"][k] = clean_cell_value(v)
+        static_entities = json.load(f)
+    for row in static_entities:
+        for k, v in row.get("entity", {}).items():
+            row["entity"][k] = clean_cell_value(v)
+        for k, v in row.get("infrastructure", {}).items():
+            row["infrastructure"][k] = clean_cell_value(v)
 
-        try:
-            identifier = Identifier.objects.get(**infra["pid"])
-            entity = identifier.entity
-        except ObjectDoesNotExist:
-            identifier = Identifier(**infra["pid"])
-            entity = Entity(**infra["entity"])
-            create = True
-        # Create all instances if required:
-        # Entity, Identifier, IdentifierEntityMacthing
-        if create:
-            entity.date_created = now
-            entity.date_last_updated = now
-            if static_logo:
-                file_path = str(
-                    app_settings.TSOSI_APP_DATA_DIR / "assets" / static_logo
-                )
-                replace_model_file(entity, "logo", file_path)
-            if static_icon:
-                file_path = str(
-                    app_settings.TSOSI_APP_DATA_DIR / "assets" / static_icon
-                )
-                replace_model_file(entity, "icon", file_path)
-            entity.save()
-            details = InfrastructureDetails(**infra["infrastructure"])
-            details.entity = entity
-            details.save()
-
-            identifier.entity = entity
-            identifier.date_created = now
-            identifier.date_last_updated = now
-            identifier.save()
-
-            id_entity_matching = IdentifierEntityMatching()
-            id_entity_matching.entity = entity
-            id_entity_matching.identifier = identifier
-            id_entity_matching.date_created = now
-            id_entity_matching.date_last_updated = now
-            id_entity_matching.match_source = MATCH_SOURCE_MANUAL
-            id_entity_matching.match_criteria = MATCH_CRITERIA_FROM_INPUT
-            id_entity_matching.save()
-
-            continue
-
-        # Otherwise, only update the existing data with additional fields
-        for field, value in infra["entity"].items():
-            setattr(entity, field, value)
-        entity.save(update_fields=list(infra["entity"].keys()))
-
-        try:
-            details: InfrastructureDetails = entity.infrastructure_details
-        except ObjectDoesNotExist:
-            details = InfrastructureDetails(**infra["infrastructure"])
-        else:
-            for field, value in infra["infrastructure"].items():
-                setattr(details, field, value)
-            details.save(update_fields=list(infra["infrastructure"].keys()))
-
-        if static_logo:
-            if entity.logo.name == static_logo:
-                continue
-            file_path = app_settings.TSOSI_APP_DATA_DIR / "assets" / static_logo
-            replace_model_file(entity, "logo", str(file_path))
-        if static_icon:
-            file_path = str(
-                app_settings.TSOSI_APP_DATA_DIR / "assets" / static_icon
+        identifier, _ = Identifier.objects.get_or_create(
+            **row["pid"],
+            defaults={
+                "date_created": now,
+                "date_last_updated": now,
+            },
+        )
+        if identifier.entity_id is None:
+            # Create entity
+            entity = Entity.objects.create(
+                **row["entity"],
+                date_created=now,
+                date_last_updated=now,
             )
-            replace_model_file(entity, "icon", file_path)
+            identifier.entity = entity
+            identifier.save()
+            id_entity_matching = IdentifierEntityMatching(
+                entity=entity,
+                identifier=identifier,
+                date_created=now,
+                date_last_updated=now,
+                match_source=MATCH_SOURCE_MANUAL,
+                match_criteria=MATCH_CRITERIA_FROM_INPUT,
+            )
+            id_entity_matching.save()
+        else:
+            # Update entity
+            entity = identifier.entity
+            static_logo: str | None = row.get("static_logo")
+            if static_logo:
+                entity.logo = File(
+                    open(
+                        str(
+                            app_settings.TSOSI_APP_DATA_DIR
+                            / "assets"
+                            / static_logo
+                        ),
+                        "rb",
+                    )
+                )
+                entity.manual_logo = True
+            else:
+                entity.manual_logo = False
+            static_icon: str | None = row.get("static_icon")
+            if static_icon:
+                entity.icon = File(
+                    open(
+                        str(
+                            app_settings.TSOSI_APP_DATA_DIR
+                            / "assets"
+                            / static_icon
+                        ),
+                        "rb",
+                    ),
+                    name=static_icon,
+                )
+            else:
+                entity.icon = None
+            entity.save()
+
+        if row.get("infrastructure"):
+            InfrastructureDetails.objects.update_or_create(
+                entity=entity,
+                defaults={**row["infrastructure"], "entity": entity},
+            )
+        ## Create tsosi version if needed
+        if row.get("entity"):
+            tsosi_identifier, _ = Identifier.objects.get_or_create(
+                registry_id=REGISTRY_TSOSI,
+                entity=entity,
+                defaults={"value": generate_tsosi_id()},
+            )
+            row["entity"].pop("logo", None)
+            row["entity"].pop("icon", None)
+            tsosi_identifier.get_or_create_version(row["entity"])
 
 
 # These are the same IDs as the supported infrastructures.
@@ -210,5 +218,5 @@ def fill_static_data():
     Fill static data in the database.
     """
     create_pid_registries()
-    update_partners()
+    update_static_entities()
     create_sources()
