@@ -19,6 +19,7 @@ from tsosi.api.serializers import (
     TransferSerializer,
 )
 from tsosi.app_settings import app_settings
+from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
 from tsosi.models import Analytic, Currency, Entity, Transfer
 from tsosi.models.static_data import PID_REGEX_OPTIONS
 from tsosi.models.utils import UUID4_REGEX

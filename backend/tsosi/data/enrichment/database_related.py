@@ -40,7 +40,12 @@ from tsosi.models.identifier import (
     MATCH_CRITERIA_FROM_ROR,
     MATCH_CRITERIA_FROM_WIKIDATA,
 )
-from tsosi.models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
+from tsosi.models.static_data import (
+    REGISTRY_CUSTOM,
+    REGISTRY_ROR,
+    REGISTRY_TSOSI,
+    REGISTRY_WIKIDATA,
+)
 from tsosi.models.transfer import MATCH_CRITERIA_MERGED, TRANSFER_ENTITY_TYPES
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 
@@ -367,6 +372,28 @@ def entities_with_identifier_data() -> pd.DataFrame:
         how="left",
     )
 
+    # Extract TSOSI record data
+    tsosi_ids = identifiers[
+        identifiers["registry_id"] == REGISTRY_TSOSI
+    ].reset_index(drop=True)
+    tsosi_extract = pd.json_normalize(tsosi_ids["record"])
+    col_mapping = {c: f"tsosi_{c}" for c in tsosi_extract.columns}
+    tsosi_extract.rename(
+        columns=col_mapping,
+        inplace=True,
+    )
+    tsosi_ids = pd.concat(
+        [tsosi_ids, tsosi_extract],
+        axis=1,
+    )
+    tsosi_ids.drop(columns=["registry_id", "record"], inplace=True)
+    entities = entities.merge(
+        tsosi_ids,
+        left_on="id",
+        right_on="entity_id",
+        how="left",
+    )
+
     # Format and clean record data.
     # entities["id"] = entities["id"].apply(str)
     # Add missing columns, if any
@@ -388,13 +415,19 @@ def entities_with_identifier_data() -> pd.DataFrame:
         "ror_wikipedia_url",
         "wikidata_website",
         "wikidata_wikipedia_url",
+        "tsosi_website",
+        "tsosi_wikipedia_url",
     ]
     for col in url_cols:
         if not col in entities.columns:
             continue
         entities[col] = entities[col].apply(clean_url)
 
-    date_cols = ["ror_date_inception", "wikidata_date_inception"]
+    date_cols = [
+        "ror_date_inception",
+        "wikidata_date_inception",
+        "tsosi_date_inception",
+    ]
 
     def make_date(x) -> datetime | None:
         if pd.isna(x):
@@ -436,27 +469,35 @@ def update_entity_from_pid_records() -> TaskResult:
     # This holds for each CLC field the data to use in which order,
     # moving to the next if null.
     clc_field_priority = {
-        "name": ["ror_name", "wikidata_name", "raw_name"],
-        "country": ["ror_country", "wikidata_country", "raw_country"],
-        "website": ["ror_website", "wikidata_website", "raw_website"],
-        "logo_url": ["wikidata_logo_url", "raw_logo_url"],
-        "wikipedia_url": ["wikidata_wikipedia_url", "ror_wikipedia_url"],
-        "coordinates": ["wikidata_coordinates", "ror_coordinates"],
-        "date_inception": ["ror_date_inception", "wikidata_date_inception"],
-        "parents": ["ror_parents"],
-        "types": ["ror_types"],
+        "name": ["tsosi", "ror", "wikidata", "raw"],
+        "country": ["tsosi", "ror", "wikidata", "raw"],
+        "website": ["tsosi", "ror", "wikidata", "raw"],
+        "logo_url": ["wikidata", "raw"],
+        "wikipedia_url": ["tsosi", "wikidata", "ror"],
+        "coordinates": ["tsosi", "wikidata", "ror"],
+        "date_inception": ["tsosi", "ror", "wikidata"],
+        "parents": ["tsosi", "ror"],
+        "types": ["tsosi", "ror"],
         # The following fields are to be updated according to other fields
-        "date_logo_fetched": ["date_logo_fetched"],
-        "date_wikipedia_fetched": ["date_wikipedia_fetched"],
+        "date_logo_fetched": [""],
+        "date_wikipedia_fetched": [""],
     }
     # Compute the value for each field and check if there's a diff with existing
     # data
     cols = ["id"]
     for field, f_list in clc_field_priority.items():
+        f_list = [
+            (f"{prefix}_{field}" if prefix else field) for prefix in f_list
+        ]
+        f_list = [f for f in f_list if f in entities.columns]
         f_clc = f"{field}_clc"
         entities[f_clc] = entities[f_list].bfill(axis=1).iloc[:, 0]
         f_diff = f"{field}_diff"
-        entities[f_diff] = ~entities[field].eq(entities[f_clc])
+        entities[f_diff] = (
+            ~entities[field].isna() | ~entities[f_clc].isna()
+        ) & ~entities[field].eq(entities[f_clc])
+        if entities[f_diff].any():
+            pass
         cols.append(f_clc)
         cols.append(f_diff)
 

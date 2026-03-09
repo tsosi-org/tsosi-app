@@ -11,7 +11,7 @@ import {
 } from "@/utils/data-utils"
 
 
-type IdentifierRegistry = "ror" | "wikidata" | "_custom"
+type IdentifierRegistry = "ror" | "wikidata" | "_custom" | "tsosi"
 
 interface ApiData {
   [key: string]: any
@@ -151,6 +151,7 @@ const refData: RefData = {
     ror: {},
     wikidata: {},
     _custom: {},
+    tsosi: {},
   },
   currencies: {},
   initialized: false,
@@ -225,6 +226,7 @@ export async function getEntities(): Promise<DeepReadonly<
     ror: {},
     wikidata: {},
     _custom: {},
+    tsosi: {},
   }
   Array.from(result.data as Array<Entity>).forEach((e) => {
     mapping[e.id] = e
