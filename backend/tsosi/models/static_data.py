@@ -112,7 +112,7 @@ def update_static_entities() -> None:
         if identifier.entity_id is None:
             # Create entity
             entity = Entity.objects.create(
-                **row["entity"],
+                **row.get("entity", {}),
                 date_created=now,
                 date_last_updated=now,
             )

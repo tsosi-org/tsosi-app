@@ -513,6 +513,71 @@
   },
   {
     "pid": {
+      "registry_id": "wikidata",
+      "value": "Q19861084"
+    },
+    "entity": {
+      "name": "ORCID",
+      "country": "US",
+      "short_name": "ORCID",
+      "website": "https://orcid.org/"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in US, see <a href=\"https://www.wikidata.org/wiki/Q19861084\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">ORCID on wikidata</a>."
+    },
+    "static_icon": "orcid_icon.ico"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "05xay3m79"
+    },
+    "entity": {
+      "name": "Érudit",
+      "country": "CA",
+      "short_name": "Érudit",
+      "website": "https://www.erudit.org/"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in CA, see <a href=\"https://www.wikidata.org/wiki/Q3591464\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Érudit on wikidata</a>."
+    },
+    "static_icon": "erudit_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q38352586"
+    },
+    "entity": {
+      "name": "Unpaywall",
+      "country": "CA",
+      "short_name": "Unpaywall",
+      "website": "https://unpaywall.org"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in CA, see <a href=\"https://www.wikidata.org/wiki/Q16996711\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OurResearch on wikidata</a>."
+    },
+    "static_icon": "unpaywall_icon.png"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "00xgd4p18"
+    },
+    "entity": {
+      "name": "Knowledge Unlatched",
+      "country": "DE",
+      "website": "http://www.knowledgeunlatched.org"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in DE, see <a href=\"https://www.wikidata.org/wiki/Q16989244\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Knowledge Unlatched on wikidata</a>.",
+      "support_url": "https://knowledgeunlatched.org/wp-content/uploads/2026/02/ku-catalog-2025-JR.pdf"
+    },
+    "static_icon": "unlatched_icon.jpg",
+    "static_logo": "unlatched_logo.jpg"
+  },
+  {
+    "pid": {
       "registry_id": "ror",
       "value": "00k4n6c32"
     },
