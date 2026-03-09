@@ -13,6 +13,15 @@
     ],
     "configurations": [
         {
+            "name": "TSOSI - Shell",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/manage.py",
+            "python": "${workspaceFolder}/backend/.venv/bin/python",
+            "args": ["shell"],
+            "django": true,
+        },
+        {
             "name": "TSOSI - Django dev server",
             "type": "debugpy",
             "request": "launch",

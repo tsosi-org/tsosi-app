@@ -73,7 +73,7 @@
     "[json]": {
         "editor.tabSize": 2,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[yaml]": {
         "editor.tabSize": 2
