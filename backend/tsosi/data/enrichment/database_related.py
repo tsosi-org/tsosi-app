@@ -783,7 +783,10 @@ def update_entity_roles_clc():
     cols_for_update = {
         "id": "id",
         "date_last_updated": "date_last_updated",
-        **{f"new_is_{t}": f"is_{t}" for t in TRANSFER_ENTITY_TYPES},
+        **{
+            f"new_is_{t}": f"is_{t}"
+            for t in TRANSFER_ENTITY_TYPES + ["partner"]
+        },
     }
     e_to_update = e_to_update[cols_for_update.keys()].rename(
         columns=cols_for_update
