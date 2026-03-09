@@ -19,6 +19,29 @@ IDENTIFIER_ENTITY_MATCH_CRITERIA_CHOICES = {
 }
 
 
+class IdentifierVersion(TimestampedModel):
+    """
+    Holds the data of a version of a Permanent Identifier (PID).
+    """
+
+    id = models.BigAutoField(primary_key=True)
+    identifier = models.ForeignKey("Identifier", on_delete=models.CASCADE)
+    value = models.JSONField()
+    date_start = models.DateTimeField(default=timezone.now)
+    # null date_end corresponds to current version
+    date_end = models.DateTimeField(null=True)
+    date_last_fetched = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["identifier"],
+                condition=models.Q(date_end__isnull=True),
+                name="unique_identifier_version_with_no_date_end",
+            ),
+        ]
+
+
 class Identifier(TimestampedModel):
     """
     Represents an external Permanent Identifier (PID).
@@ -49,28 +72,25 @@ class Identifier(TimestampedModel):
             ),
         ]
 
-
-class IdentifierVersion(TimestampedModel):
-    """
-    Holds the data of a version of a Permanent Identifier (PID).
-    """
-
-    id = models.BigAutoField(primary_key=True)
-    identifier = models.ForeignKey(Identifier, on_delete=models.CASCADE)
-    value = models.JSONField()
-    date_start = models.DateTimeField(default=timezone.now)
-    # null date_end corresponds to current version
-    date_end = models.DateTimeField(null=True)
-    date_last_fetched = models.DateTimeField(default=timezone.now)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["identifier"],
-                condition=models.Q(date_end__isnull=True),
-                name="unique_identifier_version_with_no_date_end",
-            ),
-        ]
+    def get_or_create_version(
+        self, value: dict | str
+    ) -> tuple[IdentifierVersion, bool]:
+        """
+        Create a new version of the identifier with the given value if the value is different from the current version.
+        The current version is ended and the new version becomes the current one.
+        """
+        now = timezone.now()
+        if self.current_version:
+            if self.current_version.value == value:
+                return self.current_version, False
+            self.current_version.date_end = now
+            self.current_version.save()
+        new_version = IdentifierVersion.objects.create(
+            identifier=self, value=value, date_last_fetched=now, date_start=now
+        )
+        self.current_version = new_version
+        self.save()
+        return new_version, True
 
 
 class IdentifierEntityMatching(TimestampedModel):
