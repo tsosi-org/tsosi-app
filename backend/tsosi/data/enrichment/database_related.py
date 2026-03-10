@@ -745,13 +745,18 @@ def update_entity_roles_clc():
     """
     logger.info("Updating entity roles.")
 
-    transfer_cols = [f"{t}_id" for t in TRANSFER_ENTITY_TYPES]
+    fields_lookup = {
+        "emitter_id": "is_emitter",
+        "recipient_id": "is_recipient",
+        "agents__id": "is_agent",
+    }
+
     transfers = pd.DataFrame.from_records(
         Transfer.objects.filter(merged_into__isnull=True).values(
-            "id", *transfer_cols
+            "id", *fields_lookup.keys()
         )
     )
-    entities_cols = [f"is_{t}" for t in TRANSFER_ENTITY_TYPES + ["partner"]]
+    entities_cols = list(fields_lookup.values()) + ["is_partner"]
     entities = pd.DataFrame.from_records(
         Entity.objects.filter(is_active=True).values("id", *entities_cols)
     )
@@ -759,10 +764,12 @@ def update_entity_roles_clc():
         logger.info("No transfer or no active entity, no role update to make.")
         return
 
-    for t in TRANSFER_ENTITY_TYPES:
-        e_of_type = transfers[f"{t}_id"].drop_duplicates()
-        entities[f"new_is_{t}"] = entities["id"].isin(e_of_type)
-        entities[f"{t}_diff"] = entities[f"is_{t}"] != entities[f"new_is_{t}"]
+    for transfer_field, entity_field in fields_lookup.items():
+        e_of_type = transfers[transfer_field].drop_duplicates()
+        entities[f"new_{entity_field}"] = entities["id"].isin(e_of_type)
+        entities[f"{entity_field}_diff"] = (
+            entities[entity_field] != entities[f"new_{entity_field}"]
+        )
 
     dls_entities = DataLoadSource.objects.values_list(
         "entity_id", flat=True
@@ -772,7 +779,7 @@ def update_entity_roles_clc():
         entities["is_partner"] != entities["new_is_partner"]
     )
 
-    diff_cols = [f"{t}_diff" for t in TRANSFER_ENTITY_TYPES + ["partner"]]
+    diff_cols = [f for f in entities.columns if f.endswith("_diff")]
     e_to_update = entities[entities[diff_cols].any(axis=1)].copy()
 
     if e_to_update.empty:

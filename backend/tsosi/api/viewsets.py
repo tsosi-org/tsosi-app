@@ -163,20 +163,22 @@ class TransferFilter(filters.FilterSet):
             )
         value_and_childs = {value} | set(
             Entity.objects.get(id=value)
-            .get_all_children()
+            .get_children()
             .values_list("id", flat=True)
         )
         condition = (
             Q(emitter_id__in=value_and_childs)
             | Q(recipient_id=value)
-            | Q(agent_id=value)
+            | Q(agents__id__contains=value)
         )
         return queryset.filter(condition)
 
 
 class TransferViewSet(AllActionViewSet, ReadOnlyViewSet):
-    queryset = Transfer.objects.filter(merged_into__isnull=True).select_related(
-        "emitter", "recipient", "agent"
+    queryset = (
+        Transfer.objects.filter(merged_into__isnull=True)
+        .select_related("emitter", "recipient")
+        .prefetch_related("agents")
     )
     serializer_class = TransferSerializer
     filter_backends = [filters.DjangoFilterBackend, OrderingFilter]

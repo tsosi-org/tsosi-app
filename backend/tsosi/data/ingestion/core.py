@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 
 TRANSFER_ENTITY_TYPE = "transfer_entity_type"
 ENTITY_TO_CREATE_ID = "entity_to_create_id"
+MAX_AGENTS_PER_TRANSFER = 5
 
 
 def entity_is_matchable(row: pd.Series) -> bool:
@@ -216,22 +217,61 @@ def extract_entities(transfers: pd.DataFrame) -> pd.DataFrame:
     )
     recipients[TRANSFER_ENTITY_TYPE] = TRANSFER_ENTITY_TYPE_RECIPIENT
 
-    agent_cols_mapping = {
-        dc.FieldAgentName.NAME: "name",
-        dc.FieldAgentCountry.NAME: "country",
-        dc.FieldAgentUrl.NAME: "website",
-        dc.FieldAgentRorId.NAME: "ror_id",
-        dc.FieldAgentWikidataId.NAME: "wikidata_id",
-        dc.FieldAgentCustomId.NAME: "custom_id",
-        dc.FieldOriginalId.NAME: "original_id",
-    }
-    mask = transfers[dc.FieldAgentName.NAME].isna()
-    agents = transfers[~mask][agent_cols_mapping.keys()].rename(
-        columns=agent_cols_mapping
-    )
-    agents[TRANSFER_ENTITY_TYPE] = TRANSFER_ENTITY_TYPE_AGENT
+    def get_indexed_col(
+        base_name: str,
+        i: int,
+        fallback_to_base_for_all_indexes: bool = False,
+    ) -> str | None:
+        indexed = f"{base_name}_{i}"
+        if indexed in transfers.columns:
+            return indexed
+        if fallback_to_base_for_all_indexes and base_name in transfers.columns:
+            return base_name
+        if i == 1 and base_name in transfers.columns:
+            return base_name
+        return None
 
-    entities = pd.concat([emitters, recipients, agents], ignore_index=True)
+    all_agents = []
+    for i in range(1, MAX_AGENTS_PER_TRANSFER + 1):
+        name_col = get_indexed_col(dc.FieldAgentName.NAME, i)
+        if name_col is None:
+            continue
+
+        source_to_target = {}
+        for base_name, target_name in [
+            (dc.FieldAgentName.NAME, "name"),
+            (dc.FieldAgentCountry.NAME, "country"),
+            (dc.FieldAgentUrl.NAME, "website"),
+            (dc.FieldAgentRorId.NAME, "ror_id"),
+            (dc.FieldAgentWikidataId.NAME, "wikidata_id"),
+            (dc.FieldAgentCustomId.NAME, "custom_id"),
+            (dc.FieldOriginalId.NAME, "original_id"),
+        ]:
+            col = get_indexed_col(
+                base_name,
+                i,
+                fallback_to_base_for_all_indexes=(
+                    base_name == dc.FieldOriginalId.NAME
+                ),
+            )
+            if col is not None:
+                source_to_target[col] = target_name
+
+        mask = transfers[name_col].isna()
+        if all(mask):
+            continue
+
+        agents = transfers[~mask][source_to_target.keys()].rename(
+            columns=source_to_target
+        )
+        agents[TRANSFER_ENTITY_TYPE] = TRANSFER_ENTITY_TYPE_AGENT
+        all_agents.append(agents)
+
+    entities_to_concat = [emitters, recipients]
+    if all_agents:
+        entities_to_concat.append(pd.concat(all_agents, ignore_index=True))
+
+    entities = pd.concat(entities_to_concat, ignore_index=True)
     return entities
 
 
@@ -372,7 +412,6 @@ def create_transfers(
         "emitter_id",
         "emitter_sub",
         "recipient_id",
-        "agent_id",
         "amount",
         "currency_id",
         "date_invoice",
@@ -390,6 +429,33 @@ def create_transfers(
     data_load_source.transfer_set.add(*transfers["transfer_id"].to_list())
     data_load_source.save()
     logger.info(f"Created {len(transfers)} Transfer records")
+
+
+def create_transfer_agents(transfers: pd.DataFrame):
+    """
+    Insert Transfer<->Agent many-to-many relationships.
+
+    Expects an optional `agent_ids` dataframe column containing lists of
+    Entity IDs for each transfer.
+    """
+    if "agent_ids" not in transfers.columns:
+        return
+
+    through_model = Transfer.agents.through
+    to_create = []
+    for row in transfers[["transfer_id", "agent_ids"]].itertuples(index=False):
+        transfer_id = row.transfer_id
+        agent_ids = row.agent_ids
+        if not isinstance(agent_ids, list) or len(agent_ids) == 0:
+            continue
+
+        for agent_id in agent_ids:
+            to_create.append(
+                through_model(transfer_id=transfer_id, entity_id=agent_id)
+            )
+
+    if to_create:
+        through_model.objects.bulk_create(to_create)
 
 
 def get_data_load_source(source: dc.DataLoadSource) -> DataLoadSource:
@@ -518,17 +584,30 @@ def ingest_new_records(
         MATCH_CRITERIA_NEW_ENTITY
     )
 
-    # Map back every entity ID to their transfer
+    # Map back emitter and recipient IDs to transfer rows
     for e_type in [
         TRANSFER_ENTITY_TYPE_EMITTER,
         TRANSFER_ENTITY_TYPE_RECIPIENT,
-        TRANSFER_ENTITY_TYPE_AGENT,
     ]:
         e_of_type = transfer_entities[
             transfer_entities[TRANSFER_ENTITY_TYPE] == e_type
         ].set_index("original_id")["entity_id"]
         col_name = f"{e_type}_id"
         transfers[col_name] = transfers["original_id"].map(e_of_type)
+
+    # Map back all agent IDs to transfer rows
+    agents = transfer_entities[
+        transfer_entities[TRANSFER_ENTITY_TYPE] == TRANSFER_ENTITY_TYPE_AGENT
+    ][["original_id", "entity_id"]]
+    if agents.empty:
+        transfers["agent_ids"] = None
+    else:
+        agent_ids_by_transfer = agents.groupby("original_id")["entity_id"].agg(
+            lambda x: list(dict.fromkeys(x.to_list()))
+        )
+        transfers["agent_ids"] = transfers["original_id"].map(
+            agent_ids_by_transfer
+        )
 
     # Insert non-existing currencies
     currencies = (
@@ -541,6 +620,7 @@ def ingest_new_records(
 
     # Create transfers
     create_transfers(transfers, source, now)
+    create_transfer_agents(transfers)
 
     if send_signals:
         send_post_ingestion_signals()

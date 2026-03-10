@@ -14,7 +14,7 @@ The base models of our data schema are the following:
 
 - [Transfer](./transfer.py)
 
-  Represents the individual financial transfers made by a supporter (`emitter`) to an OSI (`recipient`) optionally through an intermediary (`agent`).
+  Represents the individual financial transfers made by a supporter (`emitter`) to an OSI (`recipient`) optionally through intermediaries (`agents`).
 
   Note that the amount is optionnal. We usually ask for the amount but we offer the option to hide its value with the `hide_amount` boolean.
 

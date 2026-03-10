@@ -119,7 +119,7 @@ class Entity(TimestampedModel):
             ),
         ]
 
-    def get_all_children(self) -> list[Entity]:
+    def get_children(self) -> list[Entity]:
         """
         Get all child entity IDs for a given entity ID, recursively.
         """

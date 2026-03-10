@@ -39,7 +39,7 @@ def test_merging(datasources):
     t_e_1 = TransferFactory.create(emitter=e_merged_1)
     t_e_2 = TransferFactory.create(emitter=e_merged_1)
     t_r = TransferFactory.create(recipient=e_merged_1)
-    t_a = TransferFactory.create(agent=e_merged_1)
+    t_a = TransferFactory.create(agents=[e_merged_1])
 
     merge_criteria = "Test merge"
     merge_data = pd.DataFrame(
@@ -78,7 +78,7 @@ def test_merging(datasources):
     assert t_e_1.emitter == e_1
     assert t_e_2.emitter == e_1
     assert t_r.recipient == e_1
-    assert t_a.agent == e_1
+    assert list(t_a.agents.all()) == [e_1]
 
 
 @pytest.mark.django_db

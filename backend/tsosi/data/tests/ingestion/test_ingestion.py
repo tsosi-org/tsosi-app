@@ -80,8 +80,8 @@ def test_old_data_load_deletion(datasources):
         # Ensure entities are not deleted
         t.emitter.refresh_from_db()
         t.recipient
-        if t.agent:
-            t.agent.refresh_from_db()
+        if t.agents:
+            [agent.refresh_from_db() for agent in t.agents.all()]
 
     # Check deletion of old data loads
     for dls in [dls_1, dls_2]:

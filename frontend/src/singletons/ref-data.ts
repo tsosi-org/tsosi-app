@@ -87,8 +87,8 @@ export interface Transfer extends ApiData {
   emitter?: DeepReadonly<Entity>
   recipient_id: string
   recipient?: DeepReadonly<Entity>
-  agent_id: string | null
-  agent?: DeepReadonly<Entity>
+  agent_ids: string[]
+  agents?: DeepReadonly<Entity>[]
   amount: number | null
   currency: string | null
   amounts_clc?: Record<string, number>
@@ -297,15 +297,13 @@ export async function getEntityDetails(
 function processTransferEntities<T extends Transfer>(transfer: T) {
   transfer.emitter = refData.entities[transfer.emitter_id]
   transfer.recipient = refData.entities[transfer.recipient_id]
-  transfer.agent = transfer.agent_id
-    ? refData.entities[transfer.agent_id]
-    : undefined
+  transfer.agents = transfer.agent_ids.map((id) => refData.entities[id])
   initDateWithPrecision(transfer.date_clc)
 }
 
 /**
  * Get transfer list from the API and process the result data:
- *  - Process entities: fill emitter, recipient and agent with the refData's entities.
+ *  - Process entities: fill emitter, recipient and agents with the refData's entities.
  *  - Process date_clc: create date object from raw string.
  * @param entity_id
  * @returns

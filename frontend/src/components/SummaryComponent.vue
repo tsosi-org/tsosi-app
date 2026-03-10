@@ -9,6 +9,7 @@ import Country from "@/components/atoms/CountryAtom.vue"
 import {
   type DataFieldProps,
   formatValue,
+  getEntityLinkRows,
   getItemLabel,
   getItemLink,
   nullValues,
@@ -30,7 +31,9 @@ const props = defineProps<SummaryProps>()
       <div
         v-if="
           !nullValues.includes(getItemLabel(props.data, field)) ||
-          field.type == 'boolean'
+          field.type == 'boolean' ||
+          (field.type == 'entityLink' &&
+            getEntityLinkRows(props.data, field).length > 0)
         "
         class="summary-field"
       >
@@ -41,8 +44,10 @@ const props = defineProps<SummaryProps>()
         <div class="summary-value">
           <EntityLinkDataAtom
             v-if="field.type == 'entityLink'"
-            :data="props.data"
-            :data-field="field"
+            v-for="(entityData, index) of getEntityLinkRows(props.data, field)"
+            :key="index"
+            :data="entityData"
+            :dataField="field"
           />
           <RouterLink
             v-else-if="field.type == 'pageLink'"
@@ -112,7 +117,8 @@ const props = defineProps<SummaryProps>()
 }
 
 .summary-value {
-  display: contents;
+  display: flex;
+  flex-direction: column;
 }
 
 .summary-label {

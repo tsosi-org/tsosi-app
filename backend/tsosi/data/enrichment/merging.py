@@ -189,25 +189,32 @@ def merge_entities(
 
     # 4 - Update all transfers referencing these entities
     for e_type in TRANSFER_ENTITY_TYPES:
-        entity_field = f"{e_type}_id"
-        kwargs = {f"{entity_field}__in": entity_list}
-        t_to_update = pd.DataFrame.from_records(
-            Transfer.objects.filter(**kwargs).values("id", entity_field)
-        )
-        if t_to_update.empty:
-            continue
+        count = 0
+        if e_type != "agent":
+            for entity in e_to_update.itertuples():
+                count += Transfer.objects.filter(
+                    **{f"{e_type}_id": entity.id}
+                ).update(
+                    **{
+                        f"{e_type}_id": entity.merged_with_id,
+                        "date_last_updated": date_update,
+                    }
+                )
+        else:
+            through = Transfer.agents.through
+            for entity in e_to_update.itertuples():
+                through.objects.filter(entity_id=entity.id).update(
+                    entity_id=entity.merged_with_id,
+                )
+                count += Transfer.objects.filter(
+                    agents__id=entity.merged_with_id
+                ).update(
+                    date_last_updated=date_update,
+                )
 
-        t_to_update[entity_field] = t_to_update[entity_field].astype("string")
-        t_to_update["original_entity_id"] = t_to_update[entity_field].copy()
-        t_to_update[entity_field] = t_to_update[entity_field].map(
-            mapping["merged_with_id"]
-        )
-        t_to_update["date_last_updated"] = date_update
-
-        fields = ["id", entity_field, "date_last_updated"]
-        bulk_update_from_df(Transfer, t_to_update, fields)
-        logger.info(
-            f"Updated {len(t_to_update)} Transfer records with entity type `{e_type}`"
-        )
+        if count:
+            logger.info(
+                f"Updated {count} Transfer records with entity type `{e_type}`"
+            )
 
     logger.info(f"Successfully merged {len(to_merge)} entities.")

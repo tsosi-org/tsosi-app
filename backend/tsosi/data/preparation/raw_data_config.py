@@ -532,6 +532,31 @@ class RawDataConfig:
         for field in self.active_fields:
             if not field.field:
                 continue
+
+            # Support indexed agent columns like intermediary/name/1,
+            # intermediary/name/2 -> agent_name/1, agent_name/2.
+            if field.__class__ in [
+                FieldAgentName,
+                FieldAgentCountry,
+                FieldAgentUrl,
+                FieldAgentRorId,
+                FieldAgentWikidataId,
+                FieldAgentCustomId,
+            ]:
+                indexed_pattern = re.compile(
+                    rf"^{re.escape(field.field)}/(\d+)$"
+                )
+                indexed_matches = []
+                for col in df.columns:
+                    match = indexed_pattern.match(col)
+                    if match:
+                        indexed_matches.append((col, match.group(1)))
+
+                if indexed_matches:
+                    for src_col, idx in indexed_matches:
+                        cols_to_rename[src_col] = f"{field.NAME}_{idx}"
+                    continue
+
             cols_to_rename[field.field] = field.NAME
 
         df = df.reset_index(drop=True).rename(columns=cols_to_rename)
@@ -544,6 +569,8 @@ class RawDataConfig:
 
         # Data cleaning
         for f in self.active_fields:
+            if f.field is not None and f.NAME not in df.columns:
+                continue
             # Insert constant fields
             if f.constant is not None and f.type != "date":
                 # Trying to assign a dict value to every row is troublesome

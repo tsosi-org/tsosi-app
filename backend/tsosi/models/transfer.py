@@ -65,10 +65,8 @@ class Transfer(TimestampedModel):
         related_name="transfer_as_recipients",
         related_query_name="transfer_as_recipient",
     )
-    agent = models.ForeignKey(
+    agents = models.ManyToManyField(
         Entity,
-        on_delete=models.RESTRICT,
-        null=True,
         related_name="transfer_as_agents",
         related_query_name="transfer_as_agent",
     )

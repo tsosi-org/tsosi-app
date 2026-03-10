@@ -88,7 +88,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
         ]
 
     def get_children(self, obj) -> list[str]:
-        return [e.id for e in Entity.objects.get(id=obj.id).get_all_children()]
+        return [e.id for e in Entity.objects.get(id=obj.id).get_children()]
 
     def get_date_data_update(self, obj):
         dls = (
@@ -132,13 +132,17 @@ class BaseTransferSerializer(serializers.ModelSerializer):
 
 
 class TransferSerializer(BaseTransferSerializer):
+    agent_ids = serializers.PrimaryKeyRelatedField(
+        source="agents", many=True, read_only=True
+    )
+
     class Meta:
         model = Transfer
         fields = [
             "id",
             "emitter_id",
             "recipient_id",
-            "agent_id",
+            "agent_ids",
             "amount",
             "currency",
             "date_clc",
@@ -148,6 +152,10 @@ class TransferSerializer(BaseTransferSerializer):
 
 
 class TransferDetailsSerializer(BaseTransferSerializer):
+    agent_ids = serializers.PrimaryKeyRelatedField(
+        source="agents", many=True, read_only=True
+    )
+
     class Meta:
         model = Transfer
         fields = [
@@ -155,7 +163,7 @@ class TransferDetailsSerializer(BaseTransferSerializer):
             "emitter_id",
             "emitter_sub",
             "recipient_id",
-            "agent_id",
+            "agent_ids",
             "amount",
             "currency",
             "date_clc",

@@ -13,7 +13,7 @@ from tsosi.models import Entity, Transfer
 def generate_template_file(entity_id: str) -> None:
     values = {entity_id} | set(
         Entity.objects.get(id=entity_id)
-        .get_all_children()
+        .get_children()
         .values_list("id", flat=True)
     )
     condition = (
