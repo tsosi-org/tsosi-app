@@ -33,6 +33,7 @@ import {
   exportJSON,
   formatItemLabel,
   getCountryLabel,
+  getEntityLinkRows,
   getItemLabel,
   getItemLink,
   resolveValueFromPath,
@@ -317,6 +318,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
   const filters = getAppliedFilters()
   return Object.keys(filters).includes(column.id)
 }
+
 </script>
 
 <template>
@@ -327,7 +329,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
     :paginator="props.data.length > 20 ? true : undefined"
     :rows="20"
     :rowsPerPageOptions="[10, 20, 50, 100]"
-    :multi-sort-meta="
+    :multiSortMeta="
       props.defaultSort
         ? [
             {
@@ -474,7 +476,19 @@ function isColumnFiltered(column: TableColumnProps): boolean {
               </template>
             </InfoButtonAtom>
           </div>
-          <EntityLinkDataAtom :data="data" :dataField="column" />
+          <div
+            class="entity-links-container"
+            :class="{ multiple: column.field == 'agents' }"
+          >
+            <EntityLinkDataAtom
+              v-for="(entityData, index) of getEntityLinkRows(data, column)"
+              :key="
+                `${column.id}-${entityData[column.field]?.id || entityData[column.field]?.name || index}`
+              "
+              :data="entityData"
+              :dataField="column"
+            />
+          </div>
         </div>
       </template>
       <template v-else-if="column.type == 'pageLink'" #body="{ data }">
@@ -611,5 +625,14 @@ function isColumnFiltered(column: TableColumnProps): boolean {
 
 .info-button-inline {
   color: var(--p-neutral-500);
+}
+
+.entity-links-container {
+  display: flex;
+}
+
+.entity-links-container.multiple {
+  flex-direction: column;
+  gap: 0.2em;
 }
 </style>

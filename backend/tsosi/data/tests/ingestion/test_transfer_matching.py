@@ -19,7 +19,7 @@ def test_deduplicate_transferss(datasources):
     TransferFactory.create(
         data_load_sources=(dls,),
         emitter_id=transfer.emitter_id,
-        agent_id=transfer.agent_id,
+        agents=transfer.agents.all(),
         recipient_id=transfer.recipient_id,
         amount=transfer.amount,
         currency=transfer.currency,
@@ -42,7 +42,7 @@ def test_deduplicate_transfers_multiple_match(datasources):
     TransferFactory.create(
         data_load_sources=(dls,),
         emitter_id=transfer.emitter_id,
-        agent_id=transfer.agent_id,
+        agents=transfer.agents.all(),
         recipient_id=transfer.recipient_id,
         amount=transfer.amount,
         currency=transfer.currency,
@@ -53,7 +53,7 @@ def test_deduplicate_transfers_multiple_match(datasources):
     TransferFactory.create(
         data_load_sources=(dls,),
         emitter_id=transfer.emitter_id,
-        agent_id=transfer.agent_id,
+        agents=transfer.agents.all(),
         recipient_id=transfer.recipient_id,
         amount=transfer.amount,
         currency=transfer.currency,

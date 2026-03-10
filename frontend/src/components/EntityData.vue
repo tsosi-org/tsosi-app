@@ -172,9 +172,9 @@ const baseColumns: TableColumnProps[] = [
     },
   },
   {
-    id: "agent",
+    id: "agents",
     title: "Intermediary",
-    field: "agent",
+    field: "agents",
     type: "entityLink",
     fieldLabel: "agent.name",
     sortable: true,
@@ -237,8 +237,8 @@ const tableProps = computed(() => {
       toRemoveCols.push("amount")
     }
   }
-  if (transfers.value.every((t) => t.agent == null)) {
-    toRemoveCols.push("agent")
+  if (transfers.value.every((t) => t.agent_ids.length == 0)) {
+    toRemoveCols.push("agents")
   }
   if (transfers.value.every((t) => t.emitter_id == props.entity.id)) {
     toRemoveCols.push("emitter")

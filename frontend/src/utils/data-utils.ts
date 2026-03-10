@@ -12,6 +12,8 @@ export type DataType =
   | "string"
   | "number"
   | "pageLink"
+  | "pageLinks"
+  | "entityLink"
   | "entityLink"
   | "externalLink"
   | "country"
@@ -427,4 +429,26 @@ export function capitalize(str: string): string {
     return str
   }
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+
+/**
+ * Build one or more row payloads for entity links.
+ * The `agents` column can hold an array, while other entity links hold one item.
+ */
+export function getEntityLinkRows(
+  data: Record<string, any>,
+  column: any,
+): Array<Record<string, any>> {
+  if (column.type == "entityLink" && column.field == "agents") {
+    const agents = resolveValueFromPath(data, column.field)
+    if (!Array.isArray(agents)) {
+      return [data]
+    }
+    return agents.map((agent) => ({
+      ...data,
+      [column.field]: agent,
+    }))
+  }
+  return [data]
 }

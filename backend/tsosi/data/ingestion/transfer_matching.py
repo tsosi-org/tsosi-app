@@ -202,7 +202,6 @@ def merge_transfers(
         "recipient": get_non_null(
             transfer_left.recipient, transfer_right.recipient
         ),
-        "agent": get_non_null(transfer_left.agent, transfer_right.agent),
         "date_invoice": get_best_date(
             transfer_left.date_invoice, transfer_right.date_invoice
         ),
@@ -260,6 +259,9 @@ def merge_transfers(
     fields["raw_data"] = raw_data
     # Merge transfers
     child = Transfer(**fields)
+    child.agents.set(
+        transfer_left.agents.all() | transfer_right.agents.all(),
+    )
     child.data_load_sources.set(
         transfer_left.data_load_sources.all()
         | transfer_right.data_load_sources.all(),

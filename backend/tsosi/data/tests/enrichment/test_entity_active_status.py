@@ -42,7 +42,7 @@ def test_entity_active_status(datasources):
     e_1.refresh_from_db()
     assert not e_1.is_active
 
-    t_1 = TransferFactory.create(agent=e_1)
+    t_1 = TransferFactory.create(agents=[e_1])
     update_entity_active_status()
     e_1.refresh_from_db()
     assert e_1.is_active

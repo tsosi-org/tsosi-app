@@ -118,7 +118,6 @@ class TransferFactory(BaseTypingFactory[Transfer]):
     date_payment_emitter = date_faker
     emitter = SubFactory(EntityFactory)
     recipient = SubFactory(EntityFactory)
-    agent = SubFactory(EntityFactory)
     amount = Faker("pyfloat", min_value=100, max_value=10000, right_digits=2)
     currency_id = FuzzyChoice(["USD", "EUR", "GBP"])
     date_invoice = date_faker
@@ -174,6 +173,18 @@ class TransferFactory(BaseTypingFactory[Transfer]):
                 0
             ]
         self.save()
+
+    @post_generation
+    def agents(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        num_agents = kwargs.get("nb", 0)
+
+        if num_agents > 0:
+            self.agents.set([EntityFactory()] * num_agents)
+        elif extracted:
+            self.agents.set(extracted)
 
 
 class IdentifierEntityMatchingFactory(
