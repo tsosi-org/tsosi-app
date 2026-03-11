@@ -102,8 +102,6 @@ def transfer_is_matching(
         ("date_invoice", CRITERIA_DATE_INVOICE),
         ("date_payment_emitter", CRITERIA_DATE_PAYMENT_EMITTER),
         ("date_payment_recipient", CRITERIA_DATE_PAYMENT_RECIPIENT),
-        ("date_start", CRITERIA_DATE_END),
-        ("date_end", CRITERIA_DATE_START),
     ]:
         if not date_is_matching(
             getattr(transfer_left, date_field),
@@ -117,9 +115,9 @@ def transfer_is_matching(
         (transfer_right, transfer_left),
     ]:
         for date_field, criteria in [
-            ("date_invoice", CRITERIA_DATE_INVOICE),
             ("date_payment_emitter", CRITERIA_DATE_PAYMENT_EMITTER),
             ("date_payment_recipient", CRITERIA_DATE_PAYMENT_RECIPIENT),
+            ("date_invoice", CRITERIA_DATE_INVOICE),
         ]:
             if not (
                 date_contains(

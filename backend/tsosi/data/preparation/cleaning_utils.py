@@ -237,6 +237,15 @@ def check_wikidata_id(value, error: bool = False) -> bool:
 def check_bool_value(value, error: bool = False) -> bool:
     if isinstance(value, bool):
         return True
+    elif isinstance(value, int) and value in [0, 1]:
+        return True
+    elif isinstance(value, str) and value.lower() in [
+        "true",
+        "false",
+        "1",
+        "0",
+    ]:
+        return True
     if error:
         raise DataValidationError(f"Wrong boolean value: {value}")
     return False
