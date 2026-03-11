@@ -581,6 +581,128 @@
   },
   {
     "pid": {
+      "registry_id": "wikidata",
+      "value": "Q18691678"
+    },
+    "entity": {
+      "name": "Open Science Framework",
+      "short_name": "OSF",
+      "country": "US",
+      "website": "https://osf.io"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q18691678\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Science Framework on wikidata</a>.",
+      "support_url": "https://www.cos.io/support-cos",
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/osf-open-science-framework"
+    },
+    "static_icon": "osf_icon.ico",
+    "static_logo": "osf_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "_custom",
+      "value": "osf_preprints"
+    },
+    "entity": {
+      "name": "Open Science Framework Preprints coalition",
+      "short_name": "OSF",
+      "country": "US",
+      "website": "https://osf.io"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q18691678\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Science Framework on wikidata</a>.",
+      "support_url": "https://www.cos.io/support-cos",
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/osf-open-science-framework"
+    },
+    "static_icon": "osf_icon.ico",
+    "static_logo": "osf_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q55808315"
+    },
+    "entity": {
+      "name": "Fair Open Access Alliance",
+      "short_name": "FOAA",
+      "country": "NL"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in the NL, see <a href=\"https://www.wikidata.org/wiki/Q55808315\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">FOAA on wikidata</a>."
+    },
+    "static_icon": "foaa_icon.png",
+    "static_logo": "foaa_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q48802126"
+    },
+    "entity": {
+      "name": "Open Knowledge Maps",
+      "short_name": "OKMaps",
+      "country": "AT",
+      "website": "https://openknowledgemaps.org/"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in the NL, see <a href=\"https://www.wikidata.org/wiki/Q48802126\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Knowledge Maps on wikidata</a>.",
+      "support_url": "https://openknowledgemaps.org/supporting-membership"
+    },
+    "static_icon": "okm_icon.png",
+    "static_logo": "okm_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "_custom",
+      "value": "amelica_redalyc"
+    },
+    "entity": {
+      "name": "AmeliCA & Redalyc",
+      "website": "https://amelica.org/",
+      "country": "MX"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entities are located in South America, see <a href=\"https://www.wikidata.org/wiki/Q7305434\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\"> and <a href=\"https://www.wikidata.org/wiki/Q65163744\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\"> on wikidata</a>.",
+      "support_url": "https://openknowledgemaps.org/supporting-membership",
+      "date_scoss_start": "2021-01-01",
+      "date_scoss_end": "2024-01-01"
+    },
+    "static_icon": "amelica_redalyc_icon.ico",
+    "static_logo": "amelica_redalyc_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q30640195"
+    },
+    "entity": {
+      "name": "PsyArXiv",
+      "website": "http://www.psyarxiv.com",
+      "country": "US"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entities are located in the US, see <a href=\"https://www.wikidata.org/wiki/Q30640195\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">PsyArXiv on wikidata</a>."
+    },
+    "static_icon": "psyarxiv_icon.ico"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "00dyx6f45"
+    },
+    "entity": {
+      "name": "Thoth Open Metadata",
+      "website": "https://thoth.pub/",
+      "country": "UK"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entities are located in the US, see <a href=\"https://www.wikidata.org/wiki/Q115681745\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Thoth Open Metadata on wikidata</a>."
+    },
+    "static_icon": "thoth_icon.png",
+    "static_logo": "thoth_logo.png"
+  },
+  {
+    "pid": {
       "registry_id": "ror",
       "value": "00k4n6c32"
     },
