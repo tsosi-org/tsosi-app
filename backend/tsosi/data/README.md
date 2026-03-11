@@ -9,7 +9,6 @@ The data preparation is currently only performed locally.
 
 The following diagram summarizes the preparation process:
 
-
 ```mermaid
 flowchart LR
     A("Get raw data")
@@ -27,13 +26,11 @@ flowchart LR
     class e1,e2,e3,e4,e5 animate;
 ```
 
-
 ## Raw data source
 
 All our partners provide data in the form of .xlsx spreadsheets except for SciPost where we use a dedicated API with private credentials, see `get_scipost_raw_data` in [get_data.py](./preparation/scipost/get_data.py).
 
 All the data files at different stages are stored on the UGA cloud, with private access.
-
 
 ## Infra-dependent processing
 
@@ -47,7 +44,7 @@ This processing includes:
 
 - Some little processing to match our available inputs, see more in `RawDataConfig` below.
 
-Note that this step and the enrichment step are sometimes inverted, or an additional infra-dependent processing might take place after the enrichment. 
+Note that this step and the enrichment step are sometimes inverted, or an additional infra-dependent processing might take place after the enrichment.
 
 Each infrastructure has a dedicated repository with a README.md file describing the custom processing, example [here](./preparation/pci/README.md) for PCI.
 
@@ -72,18 +69,16 @@ flowchart LR
 
 1. Run the [pid_matching.prepare_manual_matching](./pid_matching.py) to pre-match the entities to the ROR. This uses the [ROR affiliation API](https://ror.readme.io/docs/api-affiliation) and derives whether the given match can be automatically trusted.
 
-    If the spreadsheet has intermediary data, it should also be pre-matched.
-    I usually put the supporter matching results directly in the original dataset in a spreadsheet named `Transfers`, and the intermediary matching result in a separate sheet called `Consortiums`.
-
+   If the spreadsheet has intermediary data, it should also be pre-matched.
+   I usually put the supporter matching results directly in the original dataset in a spreadsheet named `Transfers`, and the intermediary matching result in a separate sheet called `Consortiums`.
 
 2. Export and upload the resulting results to a google sheet. We continue the enrichment there to use our custom [google_sheet_script.gs](./manual_review/google_sheet_script.js).
 
-    This step consists in verifying untrusted affiliation results and adding Wikidata IDs when nor ROR record exists.
-
+   This step consists in verifying untrusted affiliation results and adding Wikidata IDs when nor ROR record exists.
 
 3. Download the enriched data and process it using [pid_matching.process_enriched_data](./pid_matching.py).
 
-    As in step 1., the processing should also be performed on intermediaries/consortiums, if any.
+   As in step 1., the processing should also be performed on intermediaries/consortiums, if any.
 
 Note that SciPost data enrichment process is different, cf. its dedicated [notebook](./preparation/scipost/run.ipynb).
 
@@ -99,11 +94,9 @@ This also requires extra arguments:
 
 - A valid source name and an an optional year (when the data is for a given year), to attach a data load source (see next section).
 
-- The path to the "raw" (or prepared) dataset. 
+- The path to the "raw" (or prepared) dataset.
 
-
-The class exposes methods to clean and import the data. 
-
+The class exposes methods to clean and import the data.
 
 ### The [DataLoadSource](/backend/tsosi/models/source.py) model
 
@@ -119,7 +112,6 @@ A prepared dataset must be identified with the following fields:
 
 - `full_data` - Whether the dataset is full for the corresponding source and year.
 
-
 ## Generate TSOSI data file
 
 The final step is to generate a `.json` file in a specific format that can be ingested in the next step.
@@ -128,18 +120,17 @@ This is simply done by calling the `generate_data_file` method of the `RawDataCo
 
 It is responsible for parsing and performing various checks on the data. Errors will be raised if the provided data does not suit our standard and the configurated Fields. For example, the following cases should raise an error/warning:
 
-* No date value (at least one date is mandatory).
+- No date value (at least one date is mandatory).
 
-* An amount is provided without a currency.
+- An amount is provided without a currency.
 
-* The provided currency does not fit our sublist of supported currencies (in [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) format).
+- The provided currency does not fit our sublist of supported currencies (in [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) format).
 
-* The provided country cannot be mapped to an actual country using pycountries.
+- The provided country cannot be mapped to an actual country using pycountries.
 
-* ...
+- ...
 
 The output file of this preparation is ready to be ingested in our database.
-
 
 ## Notes and ideas on the data preparation
 
@@ -156,19 +147,17 @@ I propose the following as improvements.
 
 - TSOSI needs to require an exhaustive and curated dataset of transfers from the data providers. This should not be our work to derive them from whatever data source we are provided with.
 
-    I believe the idea was to try and work with whatever material the infrastructures could provide (mainly accounting/budget reports) to lessen their amount of work.
-    
-    We should not be the one to question the provided data.
+  I believe the idea was to try and work with whatever material the infrastructures could provide (mainly accounting/budget reports) to lessen their amount of work.
+
+  We should not be the one to question the provided data.
 
 - The data preparation process should be part of TSOSI's platform. The workflow could be something like:
-
-    1. Upload a dataset
-    2. Configure the field mapping, basically the underlying `RawDataConfig` object
-    3. Check the input data against the input config is valid - Required to go further.
-    3. OPTIONNAL - Request data enrichment via a button or smthg
-    4. OPTIONNAL - Perform manual review
-    5. Request ingestion of the prepared and verified dataset
-
+  1. Upload a dataset
+  2. Configure the field mapping, basically the underlying `RawDataConfig` object
+  3. Check the input data against the input config is valid - Required to go further.
+  4. OPTIONNAL - Request data enrichment via a button or smthg
+  5. OPTIONNAL - Perform manual review
+  6. Request ingestion of the prepared and verified dataset
 
 **Single file per year per source constraint**
 
@@ -176,11 +165,9 @@ We need to remove this constraint with the following upgrades:
 
 - We need a solid process of transfer de-duplication. When that is available, we should not be worried anymore about ingesting twice the same dataset as it will be flagged as duplicated and thus discarded or at least ignored.
 
-    EDIT: This can be delayed until we get data from multiple sources (not only recipients, infras, but also emitters and/or intermediaries).
+  EDIT: This can be delayed until we get data from multiple sources (not only recipients, infras, but also emitters and/or intermediaries).
 
 - Additionally The platform should offer a way to explore and correct the data for the trusted users.
-
-
 
 # [Data ingestion](./ingestion/)
 
@@ -210,33 +197,30 @@ poetry run python manage.py ingest_file <FILE_PATH>
 poetry run python manage.py ingest_all --dir-path <FILE_DIR>
 ```
 
-
 ## Data format & source validation
 
 - Parse the file to the expected data format.
 
 - Use the given and existing `DataLoadSource` objects to prevent data duplication:
+  - If there already exists a full dataset for the given source and year, the ingestion is prevented unless this is the same or "wider" full dataset (year-based: a full dataset with no year information is considered to be all the data ever so it's wider than a single year dataset).
 
-    - If there already exists a full dataset for the given source and year, the ingestion is prevented unless this is the same or "wider" full dataset (year-based: a full dataset with no year information is considered to be all the data ever so it's wider than a single year dataset). 
+    In the last scenario, we erase the corresponding existing dataset(s) and insert this new one.
 
-        In the last scenario, we erase the corresponding existing dataset(s) and insert this new one. 
+  - If the dataset is full, all corresponding "smaller" datasets are erased and this one is ingested.
 
-    - If the dataset is full, all corresponding "smaller" datasets are erased and this one is ingested.
-
-    - If the dataset is not full and there's no full one for the given source and year, we proceed with normal procedure.
-
+  - If the dataset is not full and there's no full one for the given source and year, we proceed with normal procedure.
 
 ## Pre-match entities with existing ones
 
 Match the given entities with the ones in the database. The matching is made on the attached identifiers, name and country.
 
 An entity with an identifier can only match or be matched to an entity with an identifier.
-Reversely , an entity without identifier can only match or be matched  to an entity without identifier.
+Reversely , an entity without identifier can only match or be matched to an entity without identifier.
 
 ## Create database records
 
 - Create Entities and related identifiers without match
-- Create Transfers and matching data. 
+- Create Transfers and matching data.
 
 **Note:** There's no check on the potential duplications of transfers. That's why we currently remove old data loads then ingest the new one when we want to make updates.
 
@@ -244,7 +228,6 @@ Reversely , an entity without identifier can only match or be matched  to an ent
 
 Send the [transfers_created](./signals.py) and [identifiers_created](./signals.py) django signals.
 Automated tasks are triggered based on that signal.
-
 
 # [Data enrichment](./enrichment/)
 
@@ -267,12 +250,12 @@ flowchart LR
     TRIGGER_2("Scheduled tasks (Automatic)")
 
     Ta("post_ingestion_pipeline")
-    Tb("update_clc_fields")
+    Tb("update_clc_fields_hourly")
     Tc("currency_rates_workflow")
 
     Td("fetch_empty_ror_records")
     Te("fetch_empty_wikidata_records")
-    
+
     Tf("identifier_version_cleaning")
 
     Tg("process_identifier_data")
@@ -287,11 +270,11 @@ flowchart LR
 
 
     Tz("identifier_update")
-    
+
 
     TRIGGER_1 -- send --> A
     TRIGGER_1 -- send --> B
-    
+
     A a1@==> Ta
     Ta a18@--> Tb
     Ta a19@--> Tc
@@ -347,7 +330,7 @@ flowchart LR
 
     classDef apiTask color:#954949;
     class Tc,Td,Te,Th,Ti,Tj,Tz,Tu1 apiTask;
-    
+
 
     classDef animate stroke-dasharray: 9\,5,stroke-dashoffset: 900,animation: dash 25s linear infinite;
     class a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20 animate;
@@ -355,9 +338,9 @@ flowchart LR
 
 The enrichment consists in:
 
-* Fetching of external PID records (ROR, Wikidata).
-* Fetching of wikipedia extract and wikidata logo files.
-* Processing of the above data.
+- Fetching of external PID records (ROR, Wikidata).
+- Fetching of wikipedia extract and wikidata logo files.
+- Processing of the above data.
 
 The code is split in 2 files:
 
@@ -367,17 +350,15 @@ The code is split in 2 files:
 
 Ideally, one should split each task realated code into one file and create a template "task core" class (the core of the task, separately of Celery tasks), given that everything does quite the same: select data to work with, perform method-specific stuff, log things, ...
 
-
 ## PID records fetching
 
 The requests made to the registries are throttled using the token bucket algorithm implemented in [TokenBucket](./token_bucket.py).
 The tasks are automatically re-scheduled when they're throttled, see [TsosiTask](./tasks.py).
 
-
 ## [Currencies](data/currencies/currency_rates.py)
 
 This contains the code to fetch the rates of the supported currencies and to convert the transfer amounts in those currencies.
 
-* We rely on the [BIS data portal](https://data.bis.org) to fetch the historical currency rates 
+- We rely on the [BIS data portal](https://data.bis.org) to fetch the historical currency rates
 
-* We only fetch the rates for the timeline spanned by the transfers in the database and for the distinct currencies present in the transfer table.   
+- We only fetch the rates for the timeline spanned by the transfers in the database and for the distinct currencies present in the transfer table.

@@ -17,6 +17,7 @@ from tsosi.data.db_utils import (
     bulk_update_from_df,
 )
 from tsosi.data.exceptions import DataException
+from tsosi.data.ingestion.transfer_matching import format_date
 from tsosi.data.pid_registry.ror import (
     ROR_EXTRACT_MAPPING,
     ror_record_extractor,
@@ -803,6 +804,46 @@ def update_entity_roles_clc():
     bulk_update_from_df(Entity, e_to_update, cols_for_update)
 
     logger.info(f"Updated {len(e_to_update)} Entity's role.")
+
+
+def update_transfer_status_clc():
+    """
+    Update the `is_future` field of transfers, based on the `date_clc` field.
+    """
+    logger.info("Updating transfer CLC status.")
+    transfers = Transfer.objects.filter(merged_into__isnull=True).values(
+        "id", "date_clc", "is_future"
+    )
+    if len(transfers) == 0:
+        logger.info("No transfer to update CLC status for.")
+        return
+
+    data = pd.DataFrame.from_records(transfers)
+    data["new_is_future"] = data["date_clc"].map(format_date) > data[
+        "date_clc"
+    ].map(
+        lambda y: (
+            format_date({"value": timezone.now().isoformat()}, y["precision"])
+            if y is not None
+            else None
+        )
+    )
+    data["diff"] = data["is_future"] != data["new_is_future"]
+    data_to_update = data[data["diff"]].copy()
+    if data_to_update.empty:
+        logger.info("No transfer with CLC status to update.")
+        return
+
+    data_to_update["date_last_updated"] = timezone.now()
+    cols = ["id", "new_is_future", "date_last_updated"]
+    data_to_update = data_to_update[cols].rename(
+        columns={"new_is_future": "is_future"}
+    )
+    bulk_update_from_df(
+        Transfer, data_to_update, ["id", "is_future", "date_last_updated"]
+    )
+
+    logger.info(f"Updated {len(data_to_update)} Transfer's is_future status.")
 
 
 def identifier_versions_for_cleaning() -> pd.DataFrame:

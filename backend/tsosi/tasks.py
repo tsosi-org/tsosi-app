@@ -196,21 +196,30 @@ def post_ingestion_pipeline():
     """
     enrichment.update_transfer_date_clc()
     currency_rates_workflow.delay()  # type:ignore
-    update_clc_fields.delay()  # type:ignore
+    update_clc_fields_hourly.delay()  # type:ignore
     return TaskResult(partial=False, data_modified=False)
 
 
 @shared_task(base=TsosiLockedTask)
-def update_clc_fields():
+def update_clc_fields_hourly():
     """
-    Task to be run everytime the Transfer and Entity tables are modified.
-    This is not linked to a signal but it's explicitely called by other
-    tasks modifiying the related data.
+    Task to be run hourly to update clc fields.
     """
     tasks: list[Callable] = [
         enrichment.update_entity_active_status,
         enrichment.update_entity_roles_clc,
         enrichment.compute_analytics,
+    ]
+    _ = [t() for t in tasks]
+
+
+@shared_task(base=TsosiLockedTask)
+def update_clc_fields_daily():
+    """
+    Task to be run daily to update CLC fields.
+    """
+    tasks: list[Callable] = [
+        enrichment.update_transfer_status_clc,
     ]
     _ = [t() for t in tasks]
 
@@ -223,20 +232,20 @@ def process_identifier_data():
     enrichment.ingest_extra_logo_urls()
     enrichment.update_entity_from_pid_records()
     enrichment.update_entity_names()
-    update_clc_fields.delay()  # type:ignore
+    update_clc_fields_hourly.delay()  # type:ignore
     update_wiki_data.delay()  # type:ignore
 
 
 @shared_task(base=TsosiLockedTask)
 def new_wikidata_identifers_from_records():
     enrichment.new_identifiers_from_records(REGISTRY_WIKIDATA)
-    update_clc_fields.delay()  # type:ignore
+    update_clc_fields_hourly.delay()  # type:ignore
 
 
 @shared_task(base=TsosiLockedTask)
 def new_ror_identifers_from_records():
     enrichment.new_identifiers_from_records(REGISTRY_ROR)
-    update_clc_fields.delay()  # type:ignore
+    update_clc_fields_hourly.delay()  # type:ignore
 
 
 @shared_task(base=TsosiLockedTask)
