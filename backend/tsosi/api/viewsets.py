@@ -176,7 +176,7 @@ class TransferFilter(filters.FilterSet):
 
 class TransferViewSet(AllActionViewSet, ReadOnlyViewSet):
     queryset = (
-        Transfer.objects.filter(merged_into__isnull=True)
+        Transfer.objects.filter(merged_into__isnull=True, is_future=False)
         .select_related("emitter", "recipient")
         .prefetch_related("agents")
     )

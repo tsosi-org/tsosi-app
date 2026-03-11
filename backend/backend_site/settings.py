@@ -271,8 +271,8 @@ TSOSI_CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 TSOSI_CELERY_BEAT_SCHEDULER = "tsosi.scheduler:DatabaseSchedulerWithCleanup"
 TSOSI_CELERY_BEAT_SCHEDULE = {
     # Hourly
-    "periodic-clc-fields-updates": {
-        "task": "tsosi.tasks.update_clc_fields",
+    "hourly-clc-fields-updates": {
+        "task": "tsosi.tasks.update_clc_fields_hourly",
         "schedule": crontab(minute="30"),
     },
     # Daily
@@ -283,6 +283,10 @@ TSOSI_CELERY_BEAT_SCHEDULE = {
     "periodic-wiki-data-update": {
         "task": "tsosi.tasks.update_wiki_data",
         "schedule": crontab(minute="0", hour="23"),
+    },
+    "daily-clc-fields-updates": {
+        "task": "tsosi.tasks.update_clc_fields_daily",
+        "schedule": crontab(minute="0", hour="1"),
     },
     # Weekly
     "periodic-currency-update": {

@@ -84,6 +84,7 @@ class Transfer(TimestampedModel):
     hide_amount = models.BooleanField(default=False)
     original_amount_field = models.CharField(max_length=128)
     scoss = models.BooleanField(default=False)
+    is_future = models.BooleanField(default=False)
     merged_into = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,

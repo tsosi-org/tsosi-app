@@ -41,7 +41,7 @@ def format_date(date: Date | None, precision: str | None = None) -> str | None:
         return date["value"][:4]
     elif precision == DATE_PRECISION_MONTH:
         return date["value"][:7]
-    return date["value"]
+    return date["value"][:10]
 
 
 def date_contains(
