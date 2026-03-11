@@ -3,6 +3,7 @@ import datetime
 import pytest
 import tsosi.data.preparation.raw_data_config as dc
 from django.core.exceptions import ObjectDoesNotExist
+from tsosi.data.ingestion import core
 from tsosi.data.ingestion.core import ingest
 from tsosi.models import DataLoadSource, Transfer
 from tsosi.tasks import ingest_test
@@ -95,3 +96,153 @@ def test_old_data_load_deletion(datasources):
     transfers = Transfer.objects.all()
     assert len(transfers) == 2
     assert transfers[0].recipient.name == transfers[1].recipient.name == "R_1"
+
+
+@pytest.mark.django_db
+def test_ingest_replaced_loads_deduplicate_connected_sources_only(
+    datasources, monkeypatch
+):
+    print(
+        "Testing deduplication call on connected sources when replacing loads."
+    )
+
+    kwargs_base = {
+        "data_source_id": "pci",
+        "date_data_obtained": datetime.date.today(),
+        "full_data": True,
+    }
+    old_1 = DataLoadSourceFactory.create(**kwargs_base, year=2020)
+    old_2 = DataLoadSourceFactory.create(**kwargs_base, year=2021)
+
+    t_old_1 = TransferFactory.create(data_load_sources=(old_1,))
+    t_old_2 = TransferFactory.create(data_load_sources=(old_2,))
+
+    connected_1 = DataLoadSourceFactory.create(
+        data_source_id="scipost",
+        date_data_obtained=datetime.date.today(),
+        full_data=False,
+    )
+    connected_2 = DataLoadSourceFactory.create(
+        data_source_id="operas",
+        date_data_obtained=datetime.date.today(),
+        full_data=False,
+    )
+
+    TransferFactory.create(
+        merged_into=t_old_1,
+        data_load_sources=(connected_1,),
+    )
+    TransferFactory.create(
+        merged_into=t_old_1,
+        data_load_sources=(connected_1,),
+    )
+    TransferFactory.create(
+        merged_into=t_old_2,
+        data_load_sources=(connected_2,),
+    )
+
+    monkeypatch.setattr(
+        core, "ingest_new_records", lambda *args, **kwargs: None
+    )
+
+    dedup_called_for = []
+
+    def mock_deduplicate(source):
+        dedup_called_for.append(source.pk)
+        return 0
+
+    monkeypatch.setattr(core, "deduplicate_transfers", mock_deduplicate)
+
+    new_source = dc.DataLoadSource(
+        data_source_id="pci",
+        data_load_name="replacement_full",
+        date_data_obtained=datetime.date.today(),
+        full_data=True,
+    )
+    config = dc.DataIngestionConfig(
+        date_generated=datetime.datetime.now(datetime.UTC).isoformat(
+            timespec="seconds"
+        ),
+        source=new_source,
+        count=1,
+        data=[
+            {
+                "emitter_name": "E_1",
+                "recipient_name": "R_1",
+                "date_payment_recipient": "2025-01-01",
+                "original_id": "1",
+                "amount": 50,
+                "currency": "EUR",
+                "original_amount_field": "amount",
+                "hide_amount": False,
+                "raw_data": {},
+            }
+        ],
+    )
+
+    result = ingest(config, send_signals=False)
+
+    assert result is True
+    assert set(dedup_called_for) == {connected_1.pk, connected_2.pk}
+    assert len(dedup_called_for) == 2
+
+
+@pytest.mark.django_db
+def test_ingest_replaced_loads_without_connected_sources(
+    datasources, monkeypatch
+):
+    print(
+        "Testing no deduplication call when replaced loads have no connections."
+    )
+
+    old = DataLoadSourceFactory.create(
+        data_source_id="pci",
+        date_data_obtained=datetime.date.today(),
+        full_data=True,
+        year=2020,
+    )
+    TransferFactory.create(data_load_sources=(old,))
+
+    monkeypatch.setattr(
+        core, "ingest_new_records", lambda *args, **kwargs: None
+    )
+
+    dedup_called_for = []
+
+    def mock_deduplicate(source):
+        dedup_called_for.append(source.pk)
+        return 0
+
+    monkeypatch.setattr(core, "deduplicate_transfers", mock_deduplicate)
+
+    new_source = dc.DataLoadSource(
+        data_source_id="pci",
+        data_load_name="replacement_full",
+        date_data_obtained=datetime.date.today(),
+        full_data=True,
+    )
+    config = dc.DataIngestionConfig(
+        date_generated=datetime.datetime.now(datetime.UTC).isoformat(
+            timespec="seconds"
+        ),
+        source=new_source,
+        count=1,
+        data=[
+            {
+                "emitter_name": "E_1",
+                "recipient_name": "R_1",
+                "date_payment_recipient": "2025-01-01",
+                "original_id": "1",
+                "amount": 50,
+                "currency": "EUR",
+                "original_amount_field": "amount",
+                "hide_amount": False,
+                "raw_data": {},
+            }
+        ],
+    )
+
+    result = ingest(config, send_signals=False)
+
+    assert result is True
+    assert dedup_called_for == []

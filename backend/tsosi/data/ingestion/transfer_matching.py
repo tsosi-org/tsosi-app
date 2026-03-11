@@ -102,6 +102,8 @@ def transfer_is_matching(
         ("date_invoice", CRITERIA_DATE_INVOICE),
         ("date_payment_emitter", CRITERIA_DATE_PAYMENT_EMITTER),
         ("date_payment_recipient", CRITERIA_DATE_PAYMENT_RECIPIENT),
+        ("date_start", CRITERIA_DATE_END),
+        ("date_end", CRITERIA_DATE_START),
     ]:
         if not date_is_matching(
             getattr(transfer_left, date_field),
@@ -115,9 +117,9 @@ def transfer_is_matching(
         (transfer_right, transfer_left),
     ]:
         for date_field, criteria in [
+            ("date_invoice", CRITERIA_DATE_INVOICE),
             ("date_payment_emitter", CRITERIA_DATE_PAYMENT_EMITTER),
             ("date_payment_recipient", CRITERIA_DATE_PAYMENT_RECIPIENT),
-            ("date_invoice", CRITERIA_DATE_INVOICE),
         ]:
             if not (
                 date_contains(
@@ -279,8 +281,8 @@ def save_matches(
     fields = [
         "id",
         "original_id",
-        "emitter__raw_name",
-        "recipient__raw_name",
+        "emitter__name",
+        "recipient__name",
         "amount",
         "currency__id",
         "date_invoice",
@@ -298,7 +300,8 @@ def save_matches(
         full_matches.extend(
             list(
                 Transfer.objects.filter(
-                    id__in=[transfer_left, transfer_right]
+                    merged_into__isnull=True,
+                    id__in=[transfer_left, transfer_right],
                 ).values(*fields)
             )
         )
@@ -306,7 +309,8 @@ def save_matches(
         full_to_check.extend(
             list(
                 Transfer.objects.filter(
-                    id__in=[transfer_left, transfer_right]
+                    merged_into__isnull=True,
+                    id__in=[transfer_left, transfer_right],
                 ).values(*fields)
             )
         )
@@ -380,8 +384,8 @@ def deduplicate_transfers(source: DataLoadSource) -> None:
         data_load_sources__data_source__id__contains=source.data_source.id
     )
     source_transfers = Transfer.objects.filter(
-        data_load_sources__data_source__id__contains=source.data_source.id,
         merged_into__isnull=True,
+        data_load_sources__data_source__id__contains=source.data_source.id,
     )
     # Find matches
     matches = []
