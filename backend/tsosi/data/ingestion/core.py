@@ -661,11 +661,14 @@ def ingest(
             f"{'\t'.join([d.serialize() for d in oldies])}"
         )
         transfers = Transfer.objects.filter(data_load_sources__in=oldies)
-        connected_sources = (
+        connected_sources = list(
             Transfer.objects.filter(merged_into__in=transfers)
             .values_list("data_load_sources", flat=True)
             .distinct()
         )
+        connected_sources = DataLoadSource.objects.filter(
+            pk__in=connected_sources
+        ).all()
         transfers.delete()
         DataLoadSource.objects.filter(pk__in=[o.pk for o in oldies]).delete()
         nb_merged = 0
