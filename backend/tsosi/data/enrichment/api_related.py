@@ -652,6 +652,8 @@ def update_logos(
         logger.info("No entity logo to update.")
         return result
 
+    logger.info(f"{len(instances)} entities with logo to update.")
+
     entity_mapping = {e.id: e for e in instances}
 
     df = pd.DataFrame.from_records(
