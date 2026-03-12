@@ -246,7 +246,7 @@ async def fetch_wikipedia_page_extract(
 
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         result.error = True
-        result.error_msg = f"Error while querying Wikipedia with url {url}"
+        result.error_msg = f"Error while querying Wikipedia with url {url}\n"
         result.error_msg += f" Original exception: {e}"
         logger.warning(result.error_msg)
 
@@ -285,7 +285,7 @@ async def fetch_wikimedia_file(
             result.final_url = str(response.url)
     except (HTTPStatusError, aiohttp.ClientError, JSONDecodeError) as e:
         result.error = True
-        result.error_msg = f"Error while querying {url}"
+        result.error_msg = f"Error while querying {url}\n"
         result.error_msg += f"Original exception:\n{e}"
         logger.warning(result.error_msg)
 

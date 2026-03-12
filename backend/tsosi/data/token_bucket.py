@@ -199,7 +199,7 @@ WIKIPEDIA_TOKEN_BUCKET = TokenBucket(REDIS_CLIENT, "wikipedia", 200, 5)
 # Since begginning of 2026, Wikimedia Commons API set undocumented new rate limits.
 # So we set a very conservative limit here, and don't allow parralel requests.
 # phabricator.wikimedia.org/T413570
-WIKIMEDIA_TOKEN_BUCKET = TokenBucket(REDIS_CLIENT, "wikimedia", 50, 120)
+WIKIMEDIA_TOKEN_BUCKET = TokenBucket(REDIS_CLIENT, "wikimedia", 10, 20)
 
 TOKEN_BUCKETS = [
     ROR_TOKEN_BUCKET,
