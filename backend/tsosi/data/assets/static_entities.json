@@ -710,5 +710,12 @@
       "name": "European Commission",
       "country": "EU"
     }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "003vg9w96"
+    },
+    "static_logo": "inrae_logo.jpg"
   }
 ]
