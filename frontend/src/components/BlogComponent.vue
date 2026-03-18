@@ -125,6 +125,7 @@ a:hover,
 .post-detail:deep(div > a > img) {
   display: block;
   margin: auto;
+  width: 100%;
 }
 
 .post-content:deep(p), .post-content:deep(h1), .post-content:deep(h2), .post-content:deep(h3), .post-content:deep(h4), .post-content:deep(h5), .post-content:deep(h6) {
