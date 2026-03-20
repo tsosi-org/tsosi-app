@@ -58,9 +58,9 @@ mapping = {
     "Institution/origine du soutien": "emitter/name",
     "ROR": "emitter/ror_id",
     "wikidata": "emitter/wikidata_id",
-    "Country": "emitter/country",
-    "Website": "emitter/website",
-    "Type of structure": "emitter/type",
+    # "Country": "emitter/country",
+    # "Website": "emitter/website",
+    # "Type of structure": "emitter/type",
 }
 ids_emitters = ids_emitters.rename(columns=mapping)[mapping.values()]
 ids_emitters = ids_emitters.drop_duplicates()
@@ -76,6 +76,8 @@ ids_emitters = pd.concat(
 ).drop_duplicates(["emitter/name"], keep="last")
 
 df = df.merge(ids_emitters, on="emitter/name", how="left")
+
+# df[df["emitter/ror_id"].isnull() & df["emitter/wikidata_id"].isnull()]
 
 ids_consortiums = pd.read_excel(id_path, "Consortiums")
 ids_consortiums = ids_consortiums.map(clean_cell_value)
