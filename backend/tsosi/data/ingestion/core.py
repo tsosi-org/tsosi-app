@@ -426,7 +426,7 @@ def create_transfers(
         "original_amount_field",
     ]
     bulk_create_from_df(Transfer, transfers, fields, "transfer_id")
-    data_load_source.transfer_set.add(*transfers["transfer_id"].to_list())
+    data_load_source.transfers.add(*transfers["transfer_id"].to_list())
     data_load_source.save()
     logger.info(f"Created {len(transfers)} Transfer records")
 

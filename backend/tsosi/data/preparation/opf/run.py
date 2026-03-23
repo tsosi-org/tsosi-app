@@ -26,11 +26,12 @@ FIRST_YEAR = 2017
 def main() -> None:
     raw_folder = Path(BASE_DIR) / "_no_git/data/raw/opf"
     raw_path = str(
-        raw_folder / f"Sherpa_Romeo - Open Policy Finder - SCOSS Funding.xlsx"
+        raw_folder
+        / f"Sherpa_Romeo - Open Policy Finder - SCOSS Funding - manually fixed.xlsx"
     )
     export_path = str(raw_folder / f"2026-02-19_opf_full.xlsx")
 
-    df = pd.read_excel(raw_path)
+    df = pd.read_excel(raw_path, dtype=str)
 
     mapping = {
         "Funder Full Name": "emitter/name",
@@ -38,7 +39,7 @@ def main() -> None:
         "Funder Country": "emitter/country",
         # "Funder Contact Name": "",
         # "Funder Contact Email": "",
-        # "Total Committed by the Funder (in Euros)": "",
+        "Total Committed by the Funder (in Euros)": "to_keep_total_committed",
         # "Date of Funding Commitment": "",
         "Year 1 Amount Paid (in Euros)": "year_1_amount",
         "Year 1 Paid Date": "year_1_date_paid",
@@ -50,6 +51,9 @@ def main() -> None:
         # "Additional Comments": "",
     }
     df = df.rename(columns=mapping)[mapping.values()]
+
+    df = df[df["to_keep_total_committed"].notna()]
+    df = df.drop(columns=["to_keep_total_committed"])
 
     # Clean string values
     df.loc[:, ["emitter/name", "agent/name", "emitter/country"]] = df[
@@ -71,13 +75,18 @@ def main() -> None:
     df = df[df["amount"].notna() & (df["amount"] != 0) & (df["amount"] != "")]
 
     # Format date
-    df["date_paid"] = pd.to_datetime(
-        df["date_paid"], errors="coerce"
-    ).dt.strftime("%Y-%m-%d")
+    dates = pd.to_datetime(df["date_paid"], errors="coerce").dt.strftime(
+        "%Y-%m-%d"
+    )
+    dates.loc[dates.isna()] = df.loc[dates.isna(), "date_paid"]
+    df["date_paid"] = dates
 
     for year in range(1, 4):
         mask = df["year"] == f"year_{year}"
         df.loc[mask, "year"] = str(FIRST_YEAR - 1 + year)
+
+    mask = df["date_paid"].isna()
+    df.loc[mask, "date_paid"] = df.loc[mask, "year"]
 
     # Add institution identifiers
     institution_lookup_path = (
@@ -104,7 +113,17 @@ def main() -> None:
         intermediary_lookup,
         how="left",
     )
-    df.loc[df["agent/ror_id"].isna(), "agent/name"] = None
+
+    # df[
+    #     (df["agent/ror_id"].isna() & df["agent/wikidata_id"].isna())
+    #     & ~df["agent/name"].isna()
+    # ]["agent/name"].unique()
+
+    df.loc[
+        df["agent/ror_id"].isna() & df["agent/wikidata_id"].isna(), "agent/name"
+    ] = None
+
+    df = df.drop(columns=["year"])
 
     df.to_excel(export_path, index=False)
 
