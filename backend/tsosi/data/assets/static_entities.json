@@ -219,7 +219,10 @@
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/arxiv",
-      "support_url": "https://info.arxiv.org/about/funding.html"
+      "support_url": "https://info.arxiv.org/about/funding.html",
+      "date_scoss_start": "2021-01-01",
+      "date_scoss_end": "2024-01-01",
+      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q118398\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">arXiv on wikidata</a>."
     },
     "static_icon": "arxiv_icon.png"
   },
@@ -247,11 +250,16 @@
       "name": "Research Organization Registry",
       "short_name": "ROR",
       "website": "http://ror.org",
+      "country": "US",
       "description": "The Research Organization Registry (ROR) is a global, community-led registry of open persistent identifiers for research organizations. ROR makes it easy for anyone or any system to disambiguate institution names and connect research organizations and funders to researchers and research outputs."
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/research-organization-registry",
-      "support_url": "https://ror.org/community/sustain/"
+      "support_url": "https://ror.org/community/sustain/",
+      "date_scoss_start": "2022-01-01",
+      "date_scoss_end": "2025-01-01",
+      "posi_url": "https://doi.org/10.71938/n0kg-4k60",
+      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q110235640\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">ROR on wikidata</a>."
     },
     "static_icon": "ror_icon.ico",
     "static_logo": "ror_logo.svg"
@@ -294,13 +302,17 @@
     "entity": {
       "name": "Episciences",
       "short_name": "Episciences",
+      "country": "FR",
       "website": "https://www.episciences.org/",
       "description": "Episciences is an overlay journal platform to host and disseminate diamond open access publications from all disciplines. Hosted in France, supported by the Centre pour la Communication Scientifique Directe (CCSD), a support and research unit created by the CNRS, joining Inria and INRAE. It benefits from the support of the French Ministry of Higher Education and Research.Episciences offers technical and editorial support to journal teams from all over the world.Documents published by Episciences overlay journals are hosted by open repositories such as arXiv, HAL, Zenodo, bioRxiv, medRxiv. Episciences welcomes new or existing journals from any country or language.Academic-led and owned, initiated by researchers, the aim of the infrastructure is to provide a complete publishing system for overlay journals. In addition to the free technical support, the software development and hosting, Episciences provides free services to support the journal’s editorial workflows."
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/episciences",
       "posi_url": "https://www.episciences.org/fr/principes-posi/",
-      "support_url": "https://www.episciences.org/scoss-funding-for-episciences/"
+      "support_url": "https://www.episciences.org/scoss-funding-for-episciences/",
+      "date_scoss_start": "2024-01-01",
+      "date_scoss_end": "2027-01-01",
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q23688650\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Episciences on wikidata</a>."
     },
     "static_icon": "episcience.ico"
   },
@@ -315,8 +327,9 @@
       "website": "https://www.rd-alliance.org/"
     },
     "infrastructure": {
-      "posi_url": "https://www.rd-alliance.org/wp-content/uploads/2024/10/Measuring-the-RDA-compiance-with-POSI_nov2024.pdf",
-      "support_url": "https://www.rd-alliance.org/membership/"
+      "posi_url": "https://www.rd-alliance.org/news/rda-and-the-principles-of-open-scholarly-infrastructure-posi/",
+      "support_url": "https://www.rd-alliance.org/membership/",
+      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q25338539\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">RDA on wikidata</a>."
     },
     "static_icon": "rda_icon.png",
     "static_logo": "rda_logo.png"
@@ -329,10 +342,12 @@
     "entity": {
       "name": "Mir@bel",
       "short_name": "Mir@bel",
+      "country": "FR",
       "website": "https://reseau-mirabel.info/"
     },
     "infrastructure": {
-      "support_url": "https://reseau-mirabel.info/site/page/soutenir"
+      "support_url": "https://reseau-mirabel.info/site/page/soutenir",
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q25389821\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Mir@bel on wikidata</a>."
     },
     "static_icon": "mirabel_icon.ico",
     "static_logo": "mirabel_logo.png"
@@ -348,7 +363,10 @@
       "website": "https://www.softwareheritage.org/"
     },
     "infrastructure": {
-      "support_url": "https://www.softwareheritage.org/soutiens/sponsors/programme-de-soutien/"
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q28127082\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Software Heritage on wikidata</a>.",
+      "support_url": "https://www.softwareheritage.org/soutiens/sponsors/programme-de-soutien/",
+      "date_scoss_start": "2023-01-01",
+      "date_scoss_end": "2026-01-01"
     },
     "static_icon": "soft_heritage_icon.png"
   },
@@ -367,7 +385,10 @@
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/opencitations",
       "posi_url": "https://opencitations.hypotheses.org/1260",
-      "support_url": "https://opencitations.net/support-opencitations/"
+      "support_url": "https://opencitations.net/support-opencitations/",
+      "date_scoss_start": "2019-01-01",
+      "date_scoss_end": "2022-01-01",
+      "legal_entity_description": "The legal entity is located in Italy, see <a href=\"https://www.wikidata.org/wiki/Q29279836\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenCitations on wikidata</a>."
     },
     "static_icon": "opencitations_icon.png"
   },
@@ -416,7 +437,8 @@
       "description": "The Federated Network of Institutional Repositories of Scientific Publications, or simply LA Referencia, is a Latin American network of open access repositories. Through its services, it supports national Open Access strategies in Latin America through a platform with interoperability standards, sharing and giving visibility to the scientific production generated in institutions of higher education and scientific research."
     },
     "infrastructure": {
-      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/la-referencia"
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/la-referencia",
+      "posi_url": ""
     },
     "static_logo": "la_ref_logo.png",
     "static_icon": "la_ref_icon.png"
@@ -448,12 +470,13 @@
       "short_name": "DataCite",
       "website": "https://datacite.org/",
       "country": "DE",
-      "description": "<p>DataCite offers several services to enable the registration and retrieval of DOIs and metadata.</p><ul><li> DataCite Fabrica: a DOI and metadata management service allowing organizations to register and manage DOIs for their research outputs. With Fabrica, organizations can easily assign DOIs, maintain accurate and FAIR metadata, and ensure persistent links for long-term accessibility and citation of their valuable research outputs.<li> DataCite REST API: enables organizations to create DOIs systematically, expanding the flexibility and scalability of DOI creation and management within their research workflows. It also enables harvesting of metadata associated with registered DOIs. Integrating this functionality into your workflows, ensures up-to-date and accessible information about research outputs and fosters a more open and interconnected scholarly communication.<li> DataCite Commons: By working with metrics and relational metadata files, DataCite facilitates the visibility of research impact within its discovery system DataCite Commons. Providing analytics dashboards, it empowers researchers and organizations to gain insights and make informed decisions based on comprehensive and interconnected metadata.<li> DataCite GraphQL API: The DataCite GraphQL API supports complex queries of the PID Graph showing connections between entities using the GraphQL query language.</ul>"
+      "description": "DataCite is an international non-profit organization that provides persistent identifiers (DOIs) for research data and other scholarly outputs.  They connect researchers, institutions, and data repositories through a global infrastructure that promotes open, FAIR data sharing and long-term preservation."
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/datacite",
       "posi_url": "https://datacite.org/blog/our-commitment-to-posi/",
-      "support_url": "https://datacite.org/become-a-member/"
+      "support_url": "https://datacite.org/become-a-member/",
+      "legal_entity_description": "The legal entity is located in Germany, see <a href=\"https://www.wikidata.org/wiki/Q821542\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">DataCite on wikidata</a>."
     },
     "static_icon": "datacite_icon.ico"
   },
@@ -542,6 +565,7 @@
       "website": "https://www.erudit.org/"
     },
     "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/erudit",
       "legal_entity_description": "The legal entity is located in CA, see <a href=\"https://www.wikidata.org/wiki/Q3591464\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Érudit on wikidata</a>."
     },
     "static_icon": "erudit_icon.png"
@@ -558,7 +582,7 @@
       "website": "https://unpaywall.org"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entity is located in CA, see <a href=\"https://www.wikidata.org/wiki/Q16996711\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OurResearch on wikidata</a>."
+      "legal_entity_description": "The legal entity is located in CA, see <a href=\"https://www.wikidata.org/wiki/Q38352586\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Unpaywall on wikidata</a>."
     },
     "static_icon": "unpaywall_icon.png"
   },
