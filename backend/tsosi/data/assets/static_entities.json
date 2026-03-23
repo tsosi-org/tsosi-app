@@ -8,7 +8,7 @@
       "name": "Directory of Open Access Journals",
       "short_name": "DOAJ",
       "website": "https://doaj.org",
-      "description": "DOAJ is a unique and extensive index of diverse open access journals from around the world, driven by a growing community, and is committed to insuring quality content is freely available online for everyone."
+      "description": "DOAJ is a unique and extensive index of diverse open access journals from around the world, drfrontendiven by a growing community, and is committed to insuring quality content is freely available online for everyone."
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/doaj-directory-of-open-access-journals",
@@ -112,11 +112,11 @@
       "name": "OpenEdition",
       "short_name": "OpenEdition",
       "website": "https://www.openedition.org/",
-      "description": "OpenEdition is a comprehensive digital infrastructure for academic communication in the humanities and social sciences. It brings together four complementary platforms focused respectively on journals (OpenEdition Journals), book series (OpenEdition Books), research blogs (Hypotheses) and academic events (Calenda)."
+      "country": "FR"
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/openedition",
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q2945983\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenEdition Center on wikidata</a>."
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q16668108\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenEdition on wikidata</a>."
     },
     "static_icon": "openedition_icon.png"
   },
@@ -129,7 +129,7 @@
       "name": "SPARC Europe",
       "short_name": "SPARC Europe",
       "website": "https://sparceurope.org",
-      "description": "Advocacy group for open access to research and data."
+      "country": "NL"
     },
     "infrastructure": {
       "support_url": "https://sparceurope.org/ourmembers/join-sparc-europe/supporting-our-work/",
@@ -146,10 +146,11 @@
     "entity": {
       "name": "HAL",
       "short_name": "HAL",
-      "website": "https://hal.science/"
+      "website": "https://hal.science/",
+      "country": "FR"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q2945988\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">CCSD on wikidata</a>.",
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q3144107\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">CCSD on wikidata</a>.",
       "posi_url": "https://www.ccsd.cnrs.fr/en/posi-principles/",
       "support_url": "https://www.ccsd.cnrs.fr/en/funding/"
     },
@@ -164,15 +165,14 @@
       "name": "Open Policy Finder",
       "short_name": "OPF",
       "website": "https://openpolicyfinder.jisc.ac.uk/",
-      "country": "GB",
-      "description": "Open Policy Finder (formerly Sherpa Services) is an online platform that consolidates and presents standardised summaries of open access policies for publishers (journals and books) and funders worldwide. Serving as a centralised resource, it simplifies the complex landscape of open access requirements by aggregating and summarising publisher self-archiving and funder policies. Open Policy Finder supports university librarians, research staff, and the scholarly community, reducing time spent searching multiple sites and allowing users to focus on core tasks. With a user-friendly interface and open API, Open Policy Finder provides easy access to comprehensive policy data for institutions and researchers globally."
+      "country": "GB"
     },
     "infrastructure": {
       "date_scoss_start": "2017-01-01",
       "date_scoss_end": "2020-01-01",
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/sherpa-services-sherpa-romeo-sherpa-juliet-and-opendoar",
       "support_url": "https://openpolicyfinder.jisc.ac.uk/supporter-scheme",
-      "legal_entity_description": "The legal entity is located in UK, see <a href=\"https://www.wikidata.org/wiki/Q138427491\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Policy Finder on wikidata</a>."
+      "legal_entity_description": "The legal entity is located in GB, see <a href=\"https://www.wikidata.org/wiki/Q138427491\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Policy Finder on wikidata</a>."
     },
     "static_icon": "open_policy_finder_icon.png",
     "static_logo": "open_policy_finder_logo.png"
@@ -185,7 +185,8 @@
     "entity": {
       "name": "Métopes",
       "short_name": "Métopes",
-      "website": "https://www.metopes.fr/"
+      "website": "https://www.metopes.fr/",
+      "country": "FR"
     },
     "infrastructure": {},
     "static_icon": "metopes_icon.png",
@@ -199,7 +200,8 @@
     "entity": {
       "name": "European Diamond Capacity Hub",
       "short_name": "EDCH",
-      "website": "https://diamas.org/"
+      "website": "https://diamas.org/",
+      "country": "EU"
     },
     "infrastructure": {},
     "static_icon": "edch_icon.png",
@@ -214,8 +216,7 @@
       "name": "arXiv",
       "short_name": "arXiv",
       "website": "https://arxiv.org/",
-      "country": "US",
-      "description": "arXiv is a free distribution service and an open-access archive for 2.3M scholarly articles in the fields of physics, mathematics, computer science, quantitative biology, quantitative finance, statistics, electrical engineering and systems science, and economics. arXiv promotes equitable access to science by serving as an open forum where researchers can share and discover new, relevant, emerging science and establish their contribution to advancing research."
+      "country": "US"
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/arxiv",
@@ -234,10 +235,12 @@
     "entity": {
       "name": "Centre Mersenne",
       "short_name": "Centre Mersenne",
-      "website": "https://www.centre-mersenne.org/"
+      "website": "https://www.centre-mersenne.org/",
+      "country": "FR"
     },
     "infrastructure": {
-      "support_url": "https://www.centre-mersenne.org/en/join-us/"
+      "support_url": "https://www.centre-mersenne.org/en/join-us/",
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q55606850\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Centre Mersenne on wikidata</a>."
     },
     "static_icon": "mersenne_icon.png"
   },
@@ -250,8 +253,7 @@
       "name": "Research Organization Registry",
       "short_name": "ROR",
       "website": "http://ror.org",
-      "country": "US",
-      "description": "The Research Organization Registry (ROR) is a global, community-led registry of open persistent identifiers for research organizations. ROR makes it easy for anyone or any system to disambiguate institution names and connect research organizations and funders to researchers and research outputs."
+      "country": "US"
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/research-organization-registry",
@@ -272,9 +274,12 @@
     "entity": {
       "name": "Repères",
       "short_name": "Repères",
-      "website": "https://reseau-reperes.fr/"
+      "website": "https://reseau-reperes.fr/",
+      "country": "FR"
     },
-    "infrastructure": {},
+    "infrastructure": {
+      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q117355383\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Repères on wikidata</a>."
+    },
     "static_icon": "reperes_icon.png",
     "static_logo": "reperes_logo.svg"
   },
@@ -286,10 +291,12 @@
     "entity": {
       "name": "Open Library of Humanities",
       "short_name": "OLH",
-      "website": "https://www.openlibhums.org/"
+      "website": "https://www.openlibhums.org/",
+      "country": "GB"
     },
     "infrastructure": {
-      "support_url": "https://www.openlibhums.org/site/become-a-supporter/"
+      "support_url": "https://www.openlibhums.org/site/become-a-supporter/",
+      "legal_entity_description": "The legal entity is located in GB, see <a href=\"https://www.wikidata.org/wiki/Q17072915\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OLH on wikidata</a>."
     },
     "static_icon": "olh_icon.png",
     "static_logo": "olh_logo.jpeg"
@@ -303,8 +310,7 @@
       "name": "Episciences",
       "short_name": "Episciences",
       "country": "FR",
-      "website": "https://www.episciences.org/",
-      "description": "Episciences is an overlay journal platform to host and disseminate diamond open access publications from all disciplines. Hosted in France, supported by the Centre pour la Communication Scientifique Directe (CCSD), a support and research unit created by the CNRS, joining Inria and INRAE. It benefits from the support of the French Ministry of Higher Education and Research.Episciences offers technical and editorial support to journal teams from all over the world.Documents published by Episciences overlay journals are hosted by open repositories such as arXiv, HAL, Zenodo, bioRxiv, medRxiv. Episciences welcomes new or existing journals from any country or language.Academic-led and owned, initiated by researchers, the aim of the infrastructure is to provide a complete publishing system for overlay journals. In addition to the free technical support, the software development and hosting, Episciences provides free services to support the journal’s editorial workflows."
+      "website": "https://www.episciences.org/"
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/episciences",
@@ -324,12 +330,13 @@
     "entity": {
       "name": "Research data alliance",
       "short_name": "RDA",
+      "country": "GB",
       "website": "https://www.rd-alliance.org/"
     },
     "infrastructure": {
       "posi_url": "https://www.rd-alliance.org/news/rda-and-the-principles-of-open-scholarly-infrastructure-posi/",
       "support_url": "https://www.rd-alliance.org/membership/",
-      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q25338539\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">RDA on wikidata</a>."
+      "legal_entity_description": "The legal entity is located in the GB, see <a href=\"https://www.wikidata.org/wiki/Q25338539\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">RDA on wikidata</a>."
     },
     "static_icon": "rda_icon.png",
     "static_logo": "rda_logo.png"
@@ -360,7 +367,8 @@
     "entity": {
       "name": "Software Heritage",
       "short_name": "Software Heritage",
-      "website": "https://www.softwareheritage.org/"
+      "website": "https://www.softwareheritage.org/",
+      "country": "FR"
     },
     "infrastructure": {
       "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q28127082\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Software Heritage on wikidata</a>.",
@@ -379,8 +387,7 @@
       "name": "OpenCitations",
       "short_name": "OpenCitations",
       "website": "https://opencitations.net/",
-      "country": "IT",
-      "description": "OpenCitations is an independent not-for-profit infrastructure organization for open scholarship dedicated to the publication of open bibliographic and citation data by the use of Semantic Web (Linked Data) technologies. It is also engaged in advocacy for open citations, particularly in its role as a key founding member of the Initiative for Open Citations (I4OC)."
+      "country": "IT"
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/opencitations",
@@ -400,9 +407,11 @@
     "entity": {
       "name": "African Journals Online",
       "short_name": "AJOL",
-      "website": "https://www.ajol.info"
+      "website": "https://www.ajol.info",
+      "country": "ZA"
     },
     "infrastructure": {
+      "legal_entity_description": "The legal entity is located in South Africa, see <a href=\"https://www.wikidata.org/wiki/Q4689837\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">AJOL on wikidata</a>.",
       "support_url": "https://www.ajol.info/index.php/ajol/supporters-AJOL"
     },
     "static_icon": "ajol_icon.ico",
@@ -416,10 +425,12 @@
     "entity": {
       "name": "COAR",
       "short_name": "COAR",
-      "website": "https://coar-repositories.org/"
+      "website": "https://coar-repositories.org/",
+      "country": "DE"
     },
     "infrastructure": {
-      "support_url": "https://coar-repositories.org/join-coar/"
+      "support_url": "https://coar-repositories.org/join-coar/",
+      "legal_entity_description": "The legal entity is located in Germany, see <a href=\"https://www.wikidata.org/wiki/Q48789578\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">COAR on wikidata</a>."
     },
     "static_icon": "coar_logo.png",
     "static_logo": "coar_logo.png"
@@ -433,12 +444,11 @@
       "name": "LA Referencia",
       "short_name": "LA Referencia",
       "website": "https://www.lareferencia.info",
-      "country": "CL",
-      "description": "The Federated Network of Institutional Repositories of Scientific Publications, or simply LA Referencia, is a Latin American network of open access repositories. Through its services, it supports national Open Access strategies in Latin America through a platform with interoperability standards, sharing and giving visibility to the scientific production generated in institutions of higher education and scientific research."
+      "country": "CL"
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/la-referencia",
-      "posi_url": ""
+      "legal_entity_description": "The legal entity is located in Chile, see <a href=\"https://www.wikidata.org/wiki/Q65557864\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">LA Referencia on wikidata</a>."
     },
     "static_logo": "la_ref_logo.png",
     "static_icon": "la_ref_icon.png"
@@ -451,11 +461,13 @@
     "entity": {
       "name": "Public Knowledge Project",
       "short_name": "PKP",
-      "website": "https://pkp.sfu.ca/"
+      "website": "https://pkp.sfu.ca/",
+      "country": "CA"
     },
     "infrastructure": {
       "posi_url": "https://pkp.sfu.ca/pkp-posi-self-assessment/",
-      "support_url": "https://pkp.sfu.ca/about/sustainability/financial-contributors/"
+      "support_url": "https://pkp.sfu.ca/about/sustainability/financial-contributors/",
+      "legal_entity_description": "The legal entity is located in Canada, see <a href=\"https://www.wikidata.org/wiki/Q680086\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">PKP on wikidata</a>."
     },
     "static_logo": "pkp_logo.png",
     "static_icon": "pkp_icon.png"
@@ -469,8 +481,7 @@
       "name": "DataCite",
       "short_name": "DataCite",
       "website": "https://datacite.org/",
-      "country": "DE",
-      "description": "DataCite is an international non-profit organization that provides persistent identifiers (DOIs) for research data and other scholarly outputs.  They connect researchers, institutions, and data repositories through a global infrastructure that promotes open, FAIR data sharing and long-term preservation."
+      "country": "DE"
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/datacite",
@@ -489,12 +500,12 @@
       "name": "OpenAlex",
       "short_name": "OpenAlex",
       "website": "https://openalex.org/",
-      "country": "CA",
-      "description": "Inspired by the ancient Library of Alexandria, OpenAlex is an index of hundreds of millions of interconnected entities across the global research system. We're 100% free and open source, and offer access via a web interface, API, and database snapshot."
+      "country": "CA"
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/openalex",
-      "posi_url": "https://blog.openalex.org/posi/"
+      "posi_url": "https://blog.openalex.org/posi/",
+      "legal_entity_description": "The legal entity is located in Canada, see <a href=\"https://www.wikidata.org/wiki/Q107507571\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenAlex on wikidata</a>."
     },
     "static_icon": "openalex_icon.png",
     "static_logo": "openalex_logo.png"
@@ -508,8 +519,7 @@
       "name": "The Global Dataverse Community Consortium",
       "short_name": "GDCC",
       "country": "US",
-      "website": "https://www.gdcc.io",
-      "description": "The Global Dataverse Community Consortium (GDCC) is dedicated to providing international organization to existing Dataverse community efforts, and will provide a collaborative venue for institutions to leverage economies of scale in support of Dataverse repositories around the world."
+      "website": "https://www.gdcc.io"
     },
     "infrastructure": {
       "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q138153740\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">GDCC on wikidata</a>."
@@ -526,8 +536,7 @@
       "name": "OpenAIRE Non-Profit Civil Partnership",
       "country": "GR",
       "short_name": "OpenAIRE AMKE",
-      "website": "https://www.openaire.eu/openaire-amke",
-      "description": "Nonprofit organization registered in Greece; oversees OpenAire project in Europe."
+      "website": "https://www.openaire.eu/openaire-amke"
     },
     "infrastructure": {
       "support_url": "https://www.openaire.eu/expression-of-interest-eoi-to-join-the-openaire-amke",
@@ -624,25 +633,6 @@
   },
   {
     "pid": {
-      "registry_id": "_custom",
-      "value": "osf_preprints"
-    },
-    "entity": {
-      "name": "Open Science Framework Preprints coalition",
-      "short_name": "OSF",
-      "country": "US",
-      "website": "https://osf.io"
-    },
-    "infrastructure": {
-      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q18691678\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Science Framework on wikidata</a>.",
-      "support_url": "https://www.cos.io/support-cos",
-      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/osf-open-science-framework"
-    },
-    "static_icon": "osf_icon.ico",
-    "static_logo": "osf_logo.png"
-  },
-  {
-    "pid": {
       "registry_id": "wikidata",
       "value": "Q55808315"
     },
@@ -652,7 +642,7 @@
       "country": "NL"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entity is located in the NL, see <a href=\"https://www.wikidata.org/wiki/Q55808315\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">FOAA on wikidata</a>."
+      "legal_entity_description": "The legal entity is located in the Netherlands, see <a href=\"https://www.wikidata.org/wiki/Q55808315\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">FOAA on wikidata</a>."
     },
     "static_icon": "foaa_icon.png",
     "static_logo": "foaa_logo.png"
@@ -669,7 +659,7 @@
       "website": "https://openknowledgemaps.org/"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entity is located in the NL, see <a href=\"https://www.wikidata.org/wiki/Q48802126\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Knowledge Maps on wikidata</a>.",
+      "legal_entity_description": "The legal entity is located in Austria, see <a href=\"https://www.wikidata.org/wiki/Q48802126\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Knowledge Maps on wikidata</a>.",
       "support_url": "https://openknowledgemaps.org/supporting-membership"
     },
     "static_icon": "okm_icon.png",
@@ -720,7 +710,7 @@
       "country": "GB"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entities are located in the US, see <a href=\"https://www.wikidata.org/wiki/Q115681745\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Thoth Open Metadata on wikidata</a>."
+      "legal_entity_description": "The legal entities are located in the GB, see <a href=\"https://www.wikidata.org/wiki/Q115681745\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Thoth Open Metadata on wikidata</a>."
     },
     "static_icon": "thoth_icon.png",
     "static_logo": "thoth_logo.png"
