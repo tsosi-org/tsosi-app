@@ -134,6 +134,8 @@ function getSortValue(
     // as YYYY-MM-DD.
     // Using the computed dateObj does not work with multisorting.
     return resolveValueFromPath(item, columnProps.field + ".value")
+  } else if (columnProps.type == "entityLink" && columnProps.field == "agents") {
+    return item.agents?.map((a: any) => a.name).join(", ") || null
   }
   return getItemLabel(item, columnProps)
 }
