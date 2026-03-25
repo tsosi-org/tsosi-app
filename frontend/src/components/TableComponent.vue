@@ -634,7 +634,6 @@ function isColumnFiltered(column: TableColumnProps): boolean {
 }
 
 .entity-links-container.multiple {
-  flex-direction: column;
   gap: 0.2em;
 }
 </style>

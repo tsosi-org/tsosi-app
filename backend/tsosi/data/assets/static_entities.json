@@ -731,5 +731,25 @@
       "value": "003vg9w96"
     },
     "static_logo": "inrae_logo.jpg"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q76612327"
+    },
+    "entity": {
+      "name": "Bibliothèque Interuniversitaire de la Communauté française de Belgique",
+      "short_name": "BICfB"
+    }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "00q3h2974"
+    },
+    "entity": {
+      "name": "Vlaamse Interuniversitaire Raad",
+      "short_name": "VLIR"
+    }
   }
 ]
