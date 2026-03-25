@@ -171,7 +171,7 @@ class TransferFilter(filters.FilterSet):
             | Q(recipient_id=value)
             | Q(agents__id__contains=value)
         )
-        return queryset.filter(condition)
+        return queryset.filter(condition).distinct()
 
 
 class TransferViewSet(AllActionViewSet, ReadOnlyViewSet):

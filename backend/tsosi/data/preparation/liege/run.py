@@ -49,6 +49,8 @@ def main() -> None:
         ["recipient/name", "intermediary/name", "date_received"]
     ].map(clean_cell_value)
 
+    df = df[df["recipient/name"] != "Knowledge-Unlatched"]
+
     # Add institution identifiers
     infrastructure_path = (
         Path(BASE_DIR)
