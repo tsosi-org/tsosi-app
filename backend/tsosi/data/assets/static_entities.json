@@ -751,5 +751,16 @@
       "name": "Vlaamse Interuniversitaire Raad",
       "short_name": "VLIR"
     }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "01jmqcy63"
+    },
+    "entity": {
+      "name": "Consortium of Swiss Academic Libraries",
+      "short_name": "CSAL"
+    },
+    "static_logo": "csal_logo.png"
   }
 ]
