@@ -52,9 +52,7 @@ class Transfer(TimestampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     raw_data = models.JSONField()
     data_load_sources = models.ManyToManyField(
-        DataLoadSource,
-        related_name="transfers",
-        related_query_name="transfer",
+        DataLoadSource, related_name="transfers"
     )
     emitter = models.ForeignKey(
         Entity,
