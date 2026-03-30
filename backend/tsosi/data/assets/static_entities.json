@@ -163,7 +163,6 @@
     },
     "entity": {
       "name": "Open Policy Finder",
-      "short_name": "OPF",
       "website": "https://openpolicyfinder.jisc.ac.uk/",
       "country": "GB"
     },
@@ -334,6 +333,8 @@
       "website": "https://www.rd-alliance.org/"
     },
     "infrastructure": {
+      "date_scoss_start": "2023-01-01",
+      "date_scoss_end": "2026-01-01",
       "posi_url": "https://www.rd-alliance.org/news/rda-and-the-principles-of-open-scholarly-infrastructure-posi/",
       "support_url": "https://www.rd-alliance.org/membership/",
       "legal_entity_description": "The legal entity is located in the GB, see <a href=\"https://www.wikidata.org/wiki/Q25338539\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">RDA on wikidata</a>."
@@ -397,7 +398,8 @@
       "date_scoss_end": "2022-01-01",
       "legal_entity_description": "The legal entity is located in Italy, see <a href=\"https://www.wikidata.org/wiki/Q29279836\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenCitations on wikidata</a>."
     },
-    "static_icon": "opencitations_icon.png"
+    "static_icon": "opencitations_icon.png",
+    "static_logo": "opencitations_logo.png"
   },
   {
     "pid": {
@@ -594,23 +596,6 @@
       "legal_entity_description": "The legal entity is located in CA, see <a href=\"https://www.wikidata.org/wiki/Q38352586\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Unpaywall on wikidata</a>."
     },
     "static_icon": "unpaywall_icon.png"
-  },
-  {
-    "pid": {
-      "registry_id": "ror",
-      "value": "00xgd4p18"
-    },
-    "entity": {
-      "name": "Knowledge Unlatched",
-      "country": "DE",
-      "website": "http://www.knowledgeunlatched.org"
-    },
-    "infrastructure": {
-      "legal_entity_description": "The legal entity is located in DE, see <a href=\"https://www.wikidata.org/wiki/Q16989244\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Knowledge Unlatched on wikidata</a>.",
-      "support_url": "https://knowledgeunlatched.org/wp-content/uploads/2026/02/ku-catalog-2025-JR.pdf"
-    },
-    "static_icon": "unlatched_icon.jpg",
-    "static_logo": "unlatched_logo.jpg"
   },
   {
     "pid": {
