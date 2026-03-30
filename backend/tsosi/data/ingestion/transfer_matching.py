@@ -27,6 +27,7 @@ CRITERIA_DATE_PAYMENT_EMITTER = "date_payment_emitter"
 CRITERIA_DATE_PAYMENT_RECIPIENT = "date_payment_recipient"
 CRITERIA_DATE_START = "date_start"
 CRITERIA_DATE_END = "date_end"
+CRITERIA_DATE_CLC = "date_clc"
 
 
 def format_date(date: Date | None, precision: str | None = None) -> str | None:
@@ -84,6 +85,18 @@ def date_is_matching(date_left: Date, date_right: Date) -> bool:
     return date_left_precised == date_right_precised
 
 
+def get_date_clc(transfer: Transfer) -> Date | None:
+    for field in [
+        "date_payment_recipient",
+        "date_payment_emitter",
+        "date_invoice",
+        "date_start",
+    ]:
+        if getattr(transfer, field) is not None:
+            return getattr(transfer, field)
+    return None
+
+
 def transfer_is_matching(
     transfer_left: Transfer, transfer_right: Transfer
 ) -> tuple[bool, str | None]:
@@ -110,6 +123,13 @@ def transfer_is_matching(
             getattr(transfer_right, date_field),
         ):
             return False, criteria
+
+    # Check date clc
+    if not date_is_matching(
+        get_date_clc(transfer_left),
+        get_date_clc(transfer_right),
+    ):
+        return False, CRITERIA_DATE_CLC
 
     # Check date ranges
     for a, b in [
@@ -348,6 +368,7 @@ def save_matches(
     ws.column_dimensions["J"].width = 12
     ws.column_dimensions["K"].width = 12
     ws.column_dimensions["L"].width = 12
+    ws.column_dimensions["M"].width = 12
     wb.save(output_path / "all_matches.xlsx")
     return output_path
 
@@ -380,12 +401,10 @@ def deduplicate_transfers(source: DataLoadSource) -> None:
     """
     all_other_transfers = Transfer.objects.filter(
         merged_into__isnull=True
-    ).exclude(
-        data_load_sources__data_source__id__contains=source.data_source.id
-    )
+    ).exclude(data_load_sources__data_source_id=source.data_source_id)
     source_transfers = Transfer.objects.filter(
         merged_into__isnull=True,
-        data_load_sources__data_source__id__contains=source.data_source.id,
+        data_load_sources=source,
     )
     # Find matches
     matches = []

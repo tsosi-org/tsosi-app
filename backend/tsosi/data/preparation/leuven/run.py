@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import date
 from pathlib import Path
 
 import django
@@ -20,11 +21,12 @@ django.setup()
 from tsosi.data.ingestion.core import MAX_AGENTS_PER_TRANSFER
 from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
+NAME = "leuven"
+RAW_FOLDER = Path(BASE_DIR) / "_no_git/data/raw" / NAME
+
 
 def main() -> None:
-    raw_folder = Path(BASE_DIR) / "_no_git/data/raw/leuven"
-    raw_path = str(raw_folder / f"20260309_TSOSI_template_completed.xlsx")
-    export_path = str(raw_folder / f"2026-03-09_leuven_full.xlsx")
+    raw_path = str(RAW_FOLDER / f"20260309_TSOSI_template_completed.xlsx")
     df = pd.read_excel(raw_path)
 
     mapping = {
@@ -35,8 +37,8 @@ def main() -> None:
         "date_invoice": "date_invoice",
         "date_emitted": "date_emitted",
         "date_received": "date_received",
-        "contract/date_start": "contract/date_start",
-        "contract/date_end": "contract/date_end",
+        # "contract/date_start": "contract/date_start",
+        # "contract/date_end": "contract/date_end",
     }
     df = df.rename(columns=mapping)[mapping.values()]
 
@@ -80,6 +82,9 @@ def main() -> None:
     )
     df.loc[df["hide_amount"], "amount"] = None
 
+    export_path = str(
+        RAW_FOLDER / f"{date.today().isoformat()}_{NAME}_full.xlsx"
+    )
     df.to_excel(export_path, index=False)
 
 

@@ -187,6 +187,7 @@ DATA_SOURCES = [
     "doab_oapen_sponsor",
     "doaj_library",
     "doaj_publisher",
+    "doaj",
     "leuven",
     "liege",
     "operas",
