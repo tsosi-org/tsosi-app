@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 CUSTOM_COUNTRY_MAPPING = {
     "USA": "United States",
     "Russia": "Russian Federation",
+    "Turkey": "Türkiye",
 }
 COUNTRY_NAME_MAPPING = {c.name: c for c in pycountry.countries}  # type:ignore
 COUNTRY_ALPHA_2_MAPPING = {
