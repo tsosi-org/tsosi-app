@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useContactModal } from "@/composables/useContactModal";
-import { RouterLink } from "vue-router";
+import { useContactModal } from "@/composables/useContactModal"
+import { RouterLink } from "vue-router"
+
 const { openContactModal } = useContactModal()
 
 
