@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import Carousel from "primevue/carousel"
-import { computed, onBeforeMount, onMounted, onUnmounted } from "vue"
+import Carousel from "primevue/carousel";
+import { computed, onBeforeMount, onMounted, onUnmounted } from "vue";
 
-import cosoLogoUrl from "@/assets/img/coso-black-logo.svg"
-import gricadLogoUrl from "@/assets/img/logo_gricad_noir.svg"
-import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg"
-import mesrLogoUrl from "@/assets/img/mesr_logo_noir.png"
-import ExternalLink from "@/components/atoms/ExternalLinkAtom.vue"
-import ImageAtom from "@/components/atoms/ImageAtom.vue"
-import CardComponent from "@/components/CardComponent.vue"
-import EntityMap from "@/components/EntityMap.vue"
-import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery"
-import { setBigHeader, togglePageNoHeader } from "@/singletons/fixedHeaderStore"
-import { getEmitters, getPartners, type Entity } from "@/singletons/ref-data"
-import { shuffleArray } from "@/utils/data-utils"
+import cosoLogoUrl from "@/assets/img/coso-black-logo.svg";
+import gricadLogoUrl from "@/assets/img/logo_gricad_noir.svg";
+import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg";
+import mesrLogoUrl from "@/assets/img/mesr_logo_noir.png";
+import ExternalLink from "@/components/atoms/ExternalLinkAtom.vue";
+import ImageAtom from "@/components/atoms/ImageAtom.vue";
+import CardComponent from "@/components/CardComponent.vue";
+import EntityMap from "@/components/EntityMap.vue";
+import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery";
+import { setBigHeader, togglePageNoHeader } from "@/singletons/fixedHeaderStore";
+import { getEmitters, getPartners, type Entity } from "@/singletons/ref-data";
+import { shuffleArray } from "@/utils/data-utils";
 import {
   changeMetaDescripion,
   changeMetaTitle,
   changeMetaUrl,
-} from "@/utils/dom-utils"
-import { getEntityUrl } from "@/utils/url-utils"
+} from "@/utils/dom-utils";
+import { getEntityUrl } from "@/utils/url-utils";
 
 changeMetaUrl(true)
 changeMetaDescripion(

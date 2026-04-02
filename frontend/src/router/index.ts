@@ -78,6 +78,9 @@ const router = createRouter({
     },
   ],
   scrollBehavior(to, from, savedPosition) {
+    if (to.hash === "#contact") {
+      return false
+    }
     const defaultScroll = { el: "#main", top: 500 }
     if (to.hash) {
       const scrollData: { [id: string]: any } = { el: to.hash, top: undefined }

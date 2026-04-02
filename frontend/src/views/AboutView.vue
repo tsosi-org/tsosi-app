@@ -147,7 +147,7 @@ const { openContactModal } = useContactModal()
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom id="contact" title="Contact">
+      <StaticSectionAtom id="contact-us" title="Contact">
         <p>
           We welcome your inquiries and feedback. Please
           <a @click="openContactModal">contact us</a>. We look forward to

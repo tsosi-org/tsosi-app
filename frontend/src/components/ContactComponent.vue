@@ -1,19 +1,12 @@
 <script setup lang="ts">
 import ObfuscatedMail from "@/components/atoms/ObfuscatedMail.vue"
 import { useContactModal } from "@/composables/useContactModal"
-import { watch } from "vue"
 
 import Dialog from "primevue/dialog"
-import { RouterLink, useRouter } from "vue-router"
+import { RouterLink } from "vue-router"
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
-const router = useRouter()
 
 const { isContactModalOpen, closeContactModal } = useContactModal()
-watch(router.currentRoute, () => {
-  if (isContactModalOpen.value) {
-    closeContactModal()
-  }
-})
 </script>
 
 <template>
@@ -25,7 +18,6 @@ watch(router.currentRoute, () => {
       :draggable="false"
       :style="{ width: '45rem', padding: '1.5rem' }"
       :pt="{ mask: { style: { backdropFilter: 'blur(4px)' } } }"
-      v-on:hide="closeContactModal"
     >
       <template #header>
         <h2>Contact</h2>
