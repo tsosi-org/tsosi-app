@@ -577,6 +577,7 @@
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/erudit",
+      "support_url": "https://apropos.erudit.org/partenariat/",
       "legal_entity_description": "The legal entity is located in CA, see <a href=\"https://www.wikidata.org/wiki/Q3591464\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Érudit on wikidata</a>."
     },
     "static_icon": "erudit_icon.png"
