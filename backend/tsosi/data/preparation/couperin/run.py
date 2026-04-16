@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import date
 from pathlib import Path
 
 import django
@@ -20,27 +21,13 @@ django.setup()
 from tsosi.app_settings import app_settings
 from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
+NAME = "couperin"
+RAW_FOLDER = Path(BASE_DIR) / "_no_git/data/raw" / NAME
+
 
 def main() -> None:
-    raw_folder = Path(BASE_DIR) / "_no_git/data/raw/couperin"
-    raw_path = str(raw_folder / f"Couperin_Soutiens_SO_20260203_fixed.xlsx")
-    export_path = str(raw_folder / f"2026-02-03_couperin_full.xlsx")
-
-    infra_lookup_path = (
-        Path(BASE_DIR) / "tsosi/data/preparation/couperin" / "infra_lookup.csv"
-    )
-    institution_lookup_path = (
-        Path(BASE_DIR)
-        / "tsosi/data/preparation/couperin"
-        / "institution_lookup.csv"
-    )
-
+    raw_path = str(RAW_FOLDER / "Couperin_Soutiens_SO_20260203_fixed.xlsx")
     df = pd.read_excel(raw_path, sheet_name="Feuil1").iloc[:, :10]
-    infra_lookup = pd.read_csv(infra_lookup_path, delimiter=";", dtype=str)
-    institution_lookup = pd.read_csv(
-        institution_lookup_path, delimiter=";", dtype=str
-    )
-
     df.columns = [
         "recipient/name",
         "couperin",
@@ -76,9 +63,6 @@ def main() -> None:
     # Filter to keep only rows with couperin as agent
     df = df[is_couperin]
 
-    # Filter to keep only couperin campaign infra
-    df = df[df["recipient/name"].isin(infra_lookup["name"])]
-
     # Filter to remove zero amounts
     df = df[df["amount"] != 0]
 
@@ -88,6 +72,13 @@ def main() -> None:
         "https://ror.org/", ""
     )
 
+    # Filter to keep only couperin campaign infra
+    infra_lookup_path = (
+        Path(BASE_DIR) / "tsosi/data/preparation" / NAME / "infra_lookup.csv"
+    )
+    infra_lookup = pd.read_csv(infra_lookup_path, delimiter=";", dtype=str)
+    df = df[df["recipient/name"].isin(infra_lookup["name"])]
+
     # Add infra identifiers
     for field in ["ror_id", "wikidata_id", "custom_id"]:
         df[f"recipient/{field}"] = df["recipient/name"].replace(
@@ -95,6 +86,15 @@ def main() -> None:
         )
 
     # Add institution identifiers
+    institution_lookup_path = (
+        Path(BASE_DIR)
+        / "tsosi/data/preparation"
+        / NAME
+        / "institution_lookup.csv"
+    )
+    institution_lookup = pd.read_csv(
+        institution_lookup_path, delimiter=";", dtype=str
+    )
     for field in ["ror_id", "wikidata_id"]:
         mask = df["emitter/name"].isin(institution_lookup["name"])
         df.loc[mask, f"emitter/{field}"] = df.loc[mask, "emitter/name"].replace(
@@ -113,8 +113,11 @@ def main() -> None:
     # Add dates
     df["date_end"] = df["date_start"]
     mask = df["3-year"] == "oui"
-    df.loc[mask, "date_end"] = df.loc[mask, "date_start"] + 3
+    df.loc[mask, "date_end"] = df.loc[mask, "date_start"] + 2
 
+    export_path = str(
+        RAW_FOLDER / f"{date.today().isoformat()}_{NAME}_full.xlsx"
+    )
     df.to_excel(export_path, index=False)
 
 
