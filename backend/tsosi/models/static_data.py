@@ -184,14 +184,16 @@ def update_static_entities() -> None:
 # We keep it separated because the project could grow with other data sources.
 DATA_SOURCES = [
     "couperin",
+    "csal",
     "doab_oapen_library",
     "doab_oapen_sponsor",
     "doaj_library",
     "doaj_publisher",
     "doaj",
-    "mersenne",
     "leuven",
     "liege",
+    "mersenne",
+    "mirabel",
     "operas",
     "opf",
     "pci",

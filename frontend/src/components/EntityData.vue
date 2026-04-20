@@ -171,6 +171,7 @@ const baseColumns: TableColumnProps[] = [
     title: "Intermediary",
     field: "agents",
     type: "entityLink",
+    labelGetter: (item: any) => item.agents?.map((agent: any) => `${agent?.name}` + (agent?.short_name ? ` (${agent.short_name})` : "")).join(", ") || "",
     fieldLabel: "agent.name",
     sortable: true,
     info: "When a transfer is done through another entity like a library consortia, it appears in this column.",
@@ -183,7 +184,7 @@ const baseColumns: TableColumnProps[] = [
     title: "Beneficiary",
     field: "recipient",
     type: "entityLink",
-    fieldLabel: "recipient.short_name", // This is only used for filtering - All recipients have shortnames so it works fine for now
+    labelGetter: (item: any) => `${item.recipient?.name}` + (item.recipient?.short_name ? ` (${item.recipient.short_name})` : ""),
     sortable: true,
     filter: {
       enable: true,
