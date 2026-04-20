@@ -33,7 +33,7 @@ def get_config(
             rdc.FieldRecipientCustomId(field="recipient/custom_id"),
             rdc.FieldAmount(field="amount"),
             rdc.FieldCurrency(field="currency"),
-            rdc.FieldHideAmount(field="hide_amount"),
+            rdc.FieldHideAmount(constant=False),
             rdc.FieldDatePaymentEmitter(field="date_invoice"),
             # rdc.FieldDateStart(field="contract/date_start"),
             # rdc.FieldDateEnd(field="contract/date_end"),

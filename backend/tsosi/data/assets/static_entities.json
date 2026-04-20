@@ -710,6 +710,22 @@
   },
   {
     "pid": {
+      "registry_id": "wikidata",
+      "value": "Q116784455"
+    },
+    "entity": {
+      "name": "Open journals",
+      "website": "http://openjournals.nl/",
+      "country": "NL"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entities are located in NL, see <a href=\"https://www.wikidata.org/wiki/Q116784455\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">openjournals.nl on wikidata</a>."
+    },
+    "static_icon": "open_journal_icon.png",
+    "static_logo": "openjournals_logo.png"
+  },
+  {
+    "pid": {
       "registry_id": "ror",
       "value": "00k4n6c32"
     },

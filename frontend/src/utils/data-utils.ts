@@ -276,9 +276,6 @@ export function formatItemLabel(
   columnProps: DataFieldProps,
   target: FormatTarget = "html",
 ): string | number | null {
-  if (columnProps.type == "entityLink" && columnProps.field == "agents") {
-    return item.agents?.map((a: any) => a.name).join(", ") || formatValue(null, columnProps.type, target)
-  }
   const itemValue = getItemLabel(item, columnProps)
   return formatValue(itemValue, columnProps.type, target)
 }

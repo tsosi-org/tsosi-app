@@ -59,8 +59,15 @@ def main() -> None:
         infrastructure_lookup,
         how="left",
     )
+    # Remove rows without recipient identifiers
+    df = df[
+        ~(
+            df["recipient/ror_id"].isna()
+            & df["recipient/wikidata_id"].isna()
+            & df["recipient/custom_id"].isna()
+        )
+    ]
 
-    # df[df["recipient/ror_id"].isna() & df["recipient/wikidata_id"].isna()]
     consortium_lookup_path = (
         Path(BASE_DIR)
         / "tsosi/data/preparation/leuven"
@@ -77,10 +84,10 @@ def main() -> None:
         how="left",
     )
 
-    df["hide_amount"] = ~df["amount"].map(
-        lambda x: isinstance(x, int) | isinstance(x, float)
-    )
-    df.loc[df["hide_amount"], "amount"] = None
+    ## Remove row without amount
+    df = df[
+        df["amount"].map(lambda x: isinstance(x, int) | isinstance(x, float))
+    ]
 
     export_path = str(
         RAW_FOLDER / f"{date.today().isoformat()}_{NAME}_full.xlsx"
