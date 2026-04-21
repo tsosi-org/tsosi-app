@@ -154,7 +154,7 @@ def transfer_is_matching(
 
     # Check amount
     if not transfer_left.currency or not transfer_right.currency:
-        return False, CRITERIA_AMOUNT
+        return True, None
     elif transfer_left.currency.id == transfer_right.currency.id:
         if not np.isclose(transfer_left.amount, transfer_right.amount):
             return False, CRITERIA_AMOUNT

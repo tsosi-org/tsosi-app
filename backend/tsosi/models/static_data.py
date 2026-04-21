@@ -191,7 +191,6 @@ DATA_SOURCES = [
     "doaj_publisher",
     "doaj",
     "leuven",
-    "mirabel",
     "liege",
     "mersenne",
     "mirabel",
