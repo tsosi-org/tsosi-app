@@ -726,6 +726,66 @@
   },
   {
     "pid": {
+      "registry_id": "wikidata",
+      "value": "Q139497168"
+    },
+    "entity": {
+      "name": "Make Data Count",
+      "website": "https://makedatacount.org/",
+      "country": "US"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entities are located in US, see <a href=\"https://www.wikidata.org/wiki/Q139497168\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Make Data Count on wikidata</a>.",
+      "date_scoss_start": "2024-01-01",
+      "date_scoss_end": "2027-01-01"
+    },
+    "static_icon": "mdc_icon.png",
+    "static_logo": "mdc_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q595786"
+    },
+    "entity": {
+      "name": "DSpace",
+      "website": "https://dspace.org/",
+      "country": "US"
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entities are located in US, see <a href=\"https://www.wikidata.org/wiki/Q595786\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">DSpace on wikidata</a>.",
+      "date_scoss_start": "2021-01-01",
+      "date_scoss_end": "2024-01-01",
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/dspace",
+      "support_url": "https://dspace.org/meet-our-members/"
+    },
+    "static_icon": "dspace_icon.png",
+    "static_logo": "dspace_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "00x6h5n95"
+    },
+    "entity": {
+      "name": "Dryad",
+      "website": "https://datadryad.org/",
+      "country": "US",
+      "is_barcelona": true
+    },
+    "infrastructure": {
+      "legal_entity_description": "The legal entities are located in US, see <a href=\"https://www.wikidata.org/wiki/Q5309616\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Dryad on wikidata</a>.",
+      "date_scoss_start": "2022-01-01",
+      "date_scoss_end": "2025-01-01",
+      "posi_url": "https://blog.datadryad.org/2020/12/08/dryads-commitment-to-the-principles-of-open-scholarly-infrastructure/",
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/dryad",
+      "support_url": "https://datadryad.org/stash/join_us#fees"
+    },
+    "static_icon": "dryad_icon.png",
+    "static_logo": "dryad_logo.png"
+  },
+  {
+    "pid": {
       "registry_id": "ror",
       "value": "00k4n6c32"
     },
@@ -768,7 +828,8 @@
     },
     "entity": {
       "name": "Consortium of Swiss Academic Libraries",
-      "short_name": "CSAL"
+      "short_name": "CSAL",
+      "description": "The Consortium of Swiss Academic Libraries obtains licenses for scientific resources (electronic journals, eBooks and databases). It offers a broad range of services and supports the efforts to establish a national open access strategy. It therefore plays an instrumental role in guaranteeing the quality and competitiveness of Switzerland as a university and research hub."
     },
     "static_logo": "csal_logo.png"
   }
