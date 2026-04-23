@@ -17,7 +17,7 @@ import { useRoute, useRouter } from "vue-router"
 
 import { getCountries, getEntities, type Entity } from "@/singletons/ref-data"
 
-const rowsPerPage = 16
+const rowsPerPage = 64
 const route = useRoute()
 const router = useRouter()
 
@@ -28,10 +28,10 @@ type FilterValue = {
 
 const allEntities: Ref<DeepReadonly<Entity[]>> = ref([])
 const roleOptions: Ref<FilterValue[]> = ref([
-  { name: "Institution", code: "emitter" },
   { name: "Infrastructure", code: "recipient" },
+  { name: "Institution", code: "emitter" },
 ])
-const selectedRole: Ref<string> = ref("emitter")
+const selectedRole: Ref<string> = ref("recipient")
 const countryOptions: Ref<FilterValue[]> = ref([])
 const selectedCountries: Ref<FilterValue[]> = ref([])
 const isPartner = ref(false)
@@ -105,8 +105,8 @@ function parseBooleanQuery(value: unknown): boolean {
 function applyQueryToFilters() {
   isSyncingFromRoute.value = true
 
-  const roleCode = route.query?.role || "emitter"
-  selectedRole.value = roleCode === "recipient" ? "recipient" : "emitter"
+  const roleCode = route.query?.role || "recipient"
+  selectedRole.value = roleCode === "emitter" ? "emitter" : "recipient"
 
   const countryCodes = new Set(
     parseCsvQuery(route.query.countries).map((code) => code.toUpperCase()),
@@ -200,7 +200,7 @@ const filteredEntities = computed(() => {
   <div class="container">
     <div class="container title-container">
       <h1 class="title">
-        Explore the open science infrastructure funding graph
+        Explore the funding graph of open science infrastructure
       </h1>
     </div>
     <div class="container select-container">
@@ -221,31 +221,60 @@ const filteredEntities = computed(() => {
               v-model="isPartner"
               onLabel="TSOSI provider"
               offLabel="TSOSI provider"
-            />
+              class="icon-right"
+            >
+              <template #icon>
+                <font-awesome-icon
+                  :icon="['fas', 'circle-question']"
+                  v-tooltip="{ value: 'Those who have shared data with TSOSI. See <a href=\'https://tsosi.org/pages/faq#data-provider\'>the FAQ</a>.', escape: false, autoHide: false }"
+                />
+              </template>
+            </ToggleButton>
             <ToggleButton
               v-model="isBarcelona"
               onLabel="Barcelona Decl. signatory"
               offLabel="Barcelona Decl. signatory"
-            />
+              class="icon-right"
+            >
+              <template #icon>
+                <font-awesome-icon
+                  :icon="['fas', 'circle-question']"
+                  v-tooltip="{ value: 'Signatories of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>.', escape: false, autoHide: false }"
+                />
+              </template>
+            </ToggleButton>
             <ToggleButton
-              :disabled="selectedRole == 'emitter'"
-              :class="{ hidden: selectedRole == 'emitter' }"
+              v-if="selectedRole == 'recipient'"
               v-model="isSCOSS"
               onLabel="SCOSS selected"
               offLabel="SCOSS selected"
-            />
+              class="icon-right"
+            >
+              <template #icon>
+                <font-awesome-icon
+                  :icon="['fas', 'circle-question']"
+                  v-tooltip="{ value: 'infrastructures that have been selected by <a target=\'_blank\' href=\'https://scoss.org/\'>SCOSS</a>.', escape: false, autoHide: false }"
+                />
+              </template>
+            </ToggleButton>
             <ToggleButton
-              :disabled="selectedRole == 'emitter'"
-              :class="{ hidden: selectedRole == 'emitter' }"
+              v-if="selectedRole == 'recipient'"
               v-model="isPOSI"
               onLabel="POSI adopter"
               offLabel="POSI adopter"
-            />
+              class="icon-right"
+            >
+              <template #icon>
+                <font-awesome-icon
+                  :icon="['fas', 'circle-question']"
+                  v-tooltip="{ value: 'Infrastructures that have adopted the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>.', escape: false, autoHide: false }"
+                />
+              </template>
+            </ToggleButton>
           </div>
           <div>
             <MultiSelect
-              :disabled="selectedRole == 'recipient'"
-              :class="{ hidden: selectedRole == 'recipient' }"
+              v-if="selectedRole == 'emitter'"
               v-model="selectedCountries"
               :options="countryOptions"
               optionLabel="name"
@@ -266,14 +295,17 @@ const filteredEntities = computed(() => {
         optionValue="code"
       />
     </div> -->
+    <div class="counter-container">
+      <p class="filter-title">Showing {{ filteredEntities.length }} {{ selectedRole == "emitter" ? "institutions" : "infrastructures" }} </p>
+    </div>
     </div>
     <div class="container">
       <DataView
         :value="filteredEntities"
         layout="grid"
+        dataKey="id"
         paginator
         :rows="rowsPerPage"
-        dataKey="id"
         class="entity-dataview"
       >
         <template #grid="slotProps">
@@ -281,7 +313,7 @@ const filteredEntities = computed(() => {
             <EntityCard
               v-for="entity in slotProps.items"
               :key="entity.id"
-              :entity_id="entity.id"
+              :entity="entity"
             />
           </div>
         </template>
@@ -300,6 +332,7 @@ const filteredEntities = computed(() => {
 }
 
 .title {
+  text-transform: none;
   font-size: 3em;
   text-align: center;
 }
@@ -320,7 +353,9 @@ const filteredEntities = computed(() => {
 
 .filter-container {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
+  align-items: center;
+  height: 40px;
   margin-bottom: 20px;
 }
 
@@ -361,6 +396,12 @@ const filteredEntities = computed(() => {
   opacity: 0%;
 }
 
+.counter-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .entity-dataview {
   width: 100%;
 }
@@ -372,9 +413,15 @@ const filteredEntities = computed(() => {
   flex-wrap: wrap;
   justify-content: center;
   gap: 1rem;
+  margin-bottom: 20px;
 }
 
 :deep(svg.p-icon) {
   margin: -0.5rem;
 }
+
+.icon-right:deep(.p-togglebutton-content) {
+  flex-direction: row-reverse;
+}
+
 </style>
