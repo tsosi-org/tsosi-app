@@ -90,26 +90,8 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
 
         self.pagination_class = None
         ids = Transfer.objects.filter(
-            Q(recipient_id=entity_id) | Q(agent_id=entity_id),
-            merged_into__isnull=True,
+            merged_into__isnull=True, recipient_id=entity_id
         ).values_list("emitter_id", flat=True)
-        self.queryset = Entity.objects.filter(id__in=ids).distinct()
-        return self.list(request, *args, **kwargs)
-
-    @action(
-        detail=False, methods=["get"], permission_classes=[BypassPagination]
-    )
-    def recipients(self, request: Request, *args, **kwargs):
-        """ """
-        entity_id = request.query_params.get("entity_id")
-        if entity_id is None:
-            raise ValidationError(f"`entity_id` query parameter if missing.")
-
-        self.pagination_class = None
-        ids = Transfer.objects.filter(
-            Q(emitter_id=entity_id) | Q(agent_id=entity_id),
-            merged_into__isnull=True,
-        ).values_list("recipient_id", flat=True)
         self.queryset = Entity.objects.filter(id__in=ids).distinct()
         return self.list(request, *args, **kwargs)
 
