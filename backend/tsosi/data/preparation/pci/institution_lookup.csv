@@ -1,66 +1,165 @@
-emitter/name;emitter/wikidata_id;emitter/ror_id
+emitter/name;emitter/wikidata_id;emitter/ror_id;emitter/sub
+AgroParisTech;;02kbmgc12
+Agropolis Fondation;Q2827244;
 Aix Marseille Université;;035xkbk20
 Association Plume!;Q3392629;
 Autorité de sûreté nucléaire et de radioprotection;;04dbtaf18
 Bibliothéques de l'Université de Montréal;;0161xgx34 
+Bodleian Library;Q82133;
+Centre national de la recherche scientifique (CNRS);;02feahw73
 CNRS DDOR;;02feahw73
 CNRS Écologie & Environnement;;01q76b368
+CNRS Ecologie et environnement (INEE);;01q76b368
 COMUE de Toulouse;;04ezk3x31
+Confederation of Open Access Repositories (COAR);Q48789578;
+Consejo Superior de Investigaciones Científicas (CSIC);;02gfc7t72
 Consejo Superior De Investigaciones Científicas (CSIC);;02gfc7t72
-Département ACT INRAE;;003vg9w96
-Département AgroEcoSystem INRAE;;003vg9w96
-Département ECODIV INRAE;;042w6m452
-Département Génétique Animale INRAE;;029xmsm82
-Département MathNum INRAE;;003vg9w96
-Département PHASE INRAE;;03tpcfk14
-Département SA INRAE;;003vg9w96
-Département TRANSFORM INRAE;;00sxj6k90
+Delft university of Technology;;02e2c7k09
+Département ACT INRAE;;003vg9w96;ACT
+Département AgroEcoSystem INRAE;;003vg9w96;AgroEcoSystem
+Département ECODIV INRAE;;003vg9w96;ECODIV
+Département Génétique Animale INRAE;;003vg9w96;Génétique Animale
+Département MathNum INRAE;;003vg9w96;MathNum
+Département PHASE INRAE;;003vg9w96;PHASE
+Département SA INRAE;;003vg9w96;SA
+Département Santé des Plantes INRAE;;003vg9w96;Santé des Plantes
+Département SPE INRAE;;003vg9w96;SPE
+Département TRANSFORM INRAE;;003vg9w96;TRANSFORM
 DipSO INRAE;;003vg9w96
 Direction des bibliothèques de l’Université de Montréal;;0161xgx34 
-Direction pour la Science Ouverte (DipSO) INRAE;;043nepn57
+Direction pour la Science Ouverte (DipSO) INRAE;;003vg9w96
 École Pratique des Hautes Études - Université PSL;;046b3cj80
-Ecotox Network;;003vg9w96
+Ecole Pratiques des Hautes Etudes (EPHE);;046b3cj80
+Ecotox Network;;003vg9w96;Ecotox Network
 ENS Lyon;;04zmssz18
 Erasmus University Rotterdam Diamond Fund;;057w15z03
 ETH Zurich;;05a28rw58
+European Society for Evolutionary Biology (ESEB);;01zbp0650
+FNRS;;03q83t159
+Fonds National pour la Science Ouverte (FNSO);Q132450832;
 Foundation for Science and Technology (FCT)|FCCN;;00snfqn58
 Georg-August-Universität Göttingen;;01y9bpm73
+Ghent University;;00cv9y106
+Harvard Library;Q3232931;
 IFREMER;;044jxhp58
+Imperial College London;;041kmwe10
+IMT Atlantique;;030hj3061
+Institut de Radioprotection et de Sûreté Nucléaire (IRSN);;01ha22c77
+Institut de recherche pour le développement (IRD);;05q3vnk25
+Institut de Recherche sur la Sécurité Nucléaire (IRSN);;01ha22c77
+Institut des Sciences de l'Evolution de Montpellier (ISEM);;01cah1n37
 Institut des Sciences de l'Evolution de Montpellier;;01cah1n37
+Institut français de recherche pour l'exploitation de la mer (Ifremer);;044jxhp58
+Institut national de la santé et de la recherche médicale (INSERM);;02vjkv261
 Institut national de recherche en sciences et technologies du numérique;;02kvxyf05
+Institut National De Recherches Archeologiques Preventives (Inrap);;04andmq85
+Institut national de recherches archeologiques préventives (INRAP);;04andmq85
+Institut Pasteur;;0495fxg12
+Iowa State University;;04rswrd78
 John Hopkins University;;00za53h95
+Johns Hopkins University;;00za53h95
+KU Leuven;;05f950310
 La Rochelle Université;;04mv1z119
-LabEx BASC;;
-LabEx CEBA;;
-LabEx ECOFECT;;
-Personnal donation;;
+LabEx CEMEB;;04eeyfe07
+LabEx TULIP;;003vg9w96;LabEx TULIP
+Laboratoire de Linguistique Formelle;;0223bz716
+Liber innovative award 2020;;05emsba88
+Library of the University of Ottawa;Q57942111;
+Max Planck Digital Library;;0061msm67
+Museum National d'Histoire Naturelle;;03wkt5x30
+Nantes Université;;03gnr7b55
+National Library of Sweden;;049bh0z35
+Queen Mary University of London;;026zzn846
 Réseau des URFIST;Q117462162;
-Royal Dutch Zoological Society (KNDV);;
+Réseau national des URFIST;Q117462162;
+Réseaux national des URFIST;Q117462162;
+Royal Danish Library;;03vvy0v27
+Société Française d'Écologie et d'Évolution (SFE²);Q3488296;
+Société Française d'Ecologie et d'Evolution (SFE2);Q3488296;
+Society for Systematic Biology (SSB);;0575b2v60
+Society of Systematic Biologists (SSB);;0575b2v60
+Sorbonne Université;;02en5vm52
 Stockholm University;;05f0yaq80 
-UMR PALEVOPRIM;;04xhy8q59 
+Swiss Institute of Bioinformatics (SIB);;002n09z45
+The Society for the Study of Evolution (SSE);;057kr0a20
+Tilburg University;;04b8v1s79
+UMR CBGP;;003vg9w96;UMR CBGP
+UMR ISA;;003vg9w96;UMR ISA
+UMR PALEVOPRIM;;04xhy8q59;UMR PALEVOPRIM
 Universidade do Minho;;037wpkx04
+Université Angers;;04yrqp957
+Université Catholique de Louvain;;02495e989
 Université Clermont Auvergne;;01a8ajp46
 Université Côté Azur;;019tgvf94
+Université d'Aix Marseille;;035xkbk20
+Université d'Angers;;04yrqp957
+Université de Bordeaux;;057qpr032
 Université de Bourgogne Europe;;00g700j37
+Université de Bretagne Occidentale;;0372th171
+Université de Clermont-Auvergne;;01a8ajp46
+Université de Côte Azur;;019tgvf94
+Université de Grenoble Alpes;;02rx3b187
+Université de Guyane;;00nb39k71
 Université de Lausanne;;019whta54
+Université de Liège;;00afp2z80
+Université de Lille;;02kzqn938
+Université de Limoges;;02cp04407
+Université de Lorraine;;04vfs2w97
+Université de Lyon 1;;029brtt94
+Université de Montpellier;;051escj72
+Université de Paris Nanterre;;013bkhk48
+Université de Paris Saclay;;03xjwb503
+Université de Paris-Saclay;;03xjwb503
+Université de Perpignan Via Domitia;;03am2jy38
 Université de Perpignan;;03am2jy38
+Université de Poitiers;;04xhy8q59
 Université de Reims Champagne Ardennes;;03hypw319
+Université de Rennes;;015m7wh34
+Université de Strasbourg;;00pg6eq24
+Université de Toulon;;02m9kbe37
+Université de Toulouse;;004raaa70
+Université de Tours;;02wwzvj46
+Université de Versailles St Quentin en Yvelines;;03mkjjy25
 Université Grenoble Alpes;;02rx3b187
+Université Libre de Bruxelles;;01r9htc13
 Université Marie Louis Pasteur;;04asdee31 
+Université Paris Cité;;05f82e368
 Université Paris Nanterre;;013bkhk48
 Université Paris Saclay;;03xjwb503
 Université Paris-Dauphine - Parix iX;;052bz7812
 Université Paris-Est Créteil Val de Marne - Paris XII UPEC;;05ggc9x40
+Université Reims Champagne Ardennes;;03hypw319
+Université Sorbonne Paris Nord;;0199hds37
 Université Versailles Saint-Quentin-en-Yvelines;;03mkjjy25
+University College London;;02jx3x895
+University of Amsterdam;;04dkp9463
+University of Bath;;002h8g185
 University of Bern;;02k7v4d05
+University of Birmingham;;03angcq70
+University of Bristol;;0524sp257
 University of Cambridge;;013meh722
+University of Exeter;;03yghzc09
+University of Glasgow;;00vtgdb53
 University of Graz;;01faaaf77
 University of Groningen;;012p63287
+University of Leeds;;024mrxd33
+University of Leiden;;027bh9e22
+University of Liverpool;;04xs57h96
+University of Melbourne;;01ej9dk98
 University of Milan;;00wjc7c48
+University of Oxford;;052gg0110
+University of Sheffield;;05krs5044
+University of Surrey;;00ks66431
+University of Sussex;;00ayhx656
+University of Texas at Austin;;00hj54h04
+University of York;;04m01e293
 University Utrecht;;04pp8hn57
 Universoty of Leeds;;024mrxd33
 Univesité de Lille;;02kzqn938
 Univesité de Saint Etienne;;030bahv93
 Univesity of York;;04m01e293
+URFIST de Lyon;Q107521691;
+Utrecht University;;04pp8hn57
+Vrije Universiteit Amsterdam;;008xxew50
 VU Amsterdam;;008xxew50
-Université de Bretagne Occidentale;;0372th171
+ZPID - Leibniz Institute for Psychology;;0165gz615

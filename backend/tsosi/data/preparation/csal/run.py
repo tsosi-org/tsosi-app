@@ -38,10 +38,7 @@ def main() -> None:
         "date_received": "date_received",
     }
     df = df.rename(columns=mapping)[mapping.values()]
-
-    df.loc[:, ["emitter/name", "recipient/name"]] = df[
-        ["emitter/name", "recipient/name"]
-    ].map(clean_cell_value)
+    df = df.map(clean_cell_value)
 
     # Add infra identifiers
     infra_path = (
