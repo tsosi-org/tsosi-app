@@ -8,7 +8,8 @@
       "name": "Directory of Open Access Journals",
       "short_name": "DOAJ",
       "website": "https://doaj.org",
-      "description": "DOAJ is a unique and extensive index of diverse open access journals from around the world, drfrontendiven by a growing community, and is committed to insuring quality content is freely available online for everyone."
+      "description": "DOAJ is a unique and extensive index of diverse open access journals from around the world, drfrontendiven by a growing community, and is committed to insuring quality content is freely available online for everyone.",
+      "is_barcelona": true
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/doaj-directory-of-open-access-journals",
@@ -32,7 +33,8 @@
       "website": "https://www.doabooks.org",
       "country": "NL",
       "description": "OAPEN is an open infrastructure dedicated to promoting and supporting the transition to open access for books. The Directory of Open Access Books (DOAB) is an open, global, and trusted community-driven discovery service that indexes and provides free access to scholarly, peer-reviewed open access books.",
-      "date_inception": "2010-01-01"
+      "date_inception": "2010-01-01",
+      "is_barcelona": true
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/directory-of-open-access-books",
@@ -129,7 +131,8 @@
       "name": "SPARC Europe",
       "short_name": "SPARC Europe",
       "website": "https://sparceurope.org",
-      "country": "NL"
+      "country": "NL",
+      "is_barcelona": true
     },
     "infrastructure": {
       "support_url": "https://sparceurope.org/ourmembers/join-sparc-europe/supporting-our-work/",
@@ -215,7 +218,8 @@
       "name": "arXiv",
       "short_name": "arXiv",
       "website": "https://arxiv.org/",
-      "country": "US"
+      "country": "US",
+      "is_barcelona": true
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/arxiv",
@@ -428,7 +432,8 @@
       "name": "COAR",
       "short_name": "COAR",
       "website": "https://coar-repositories.org/",
-      "country": "DE"
+      "country": "DE",
+      "is_barcelona": true
     },
     "infrastructure": {
       "support_url": "https://coar-repositories.org/join-coar/",
@@ -659,7 +664,8 @@
     "entity": {
       "name": "AmeliCA & Redalyc",
       "website": "https://amelica.org/",
-      "country": "MX"
+      "country": "MX",
+      "is_barcelona": true
     },
     "infrastructure": {
       "legal_entity_description": "The legal entities are located in South America, see <a href=\"https://www.wikidata.org/wiki/Q7305434\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\"> and <a href=\"https://www.wikidata.org/wiki/Q65163744\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\"> on wikidata</a>.",

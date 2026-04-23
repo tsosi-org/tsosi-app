@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { getCountryIcon, getCountryLabel } from "@/utils/data-utils"
 
-
 interface CountryProps {
   code?: string
+  onlyFlag?: boolean
 }
 
 const props = defineProps<CountryProps>()
@@ -16,7 +16,7 @@ const props = defineProps<CountryProps>()
       :src="getCountryIcon(props.code)"
       :title="props.code"
     />
-    {{ getCountryLabel(props.code) }}
+    {{ onlyFlag ? undefined : getCountryLabel(props.code) }}
   </div>
 </template>
 

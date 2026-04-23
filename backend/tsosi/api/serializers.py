@@ -47,8 +47,13 @@ class EntitySerializer(BaseEntitySerializer):
             "coordinates",
             "logo",
             "icon",
+            "is_emitter",
+            "is_agent",
             "is_recipient",
             "is_partner",
+            "is_scoss",
+            "is_posi",
+            "is_barcelona",
         ]
         extra_kwargs = {
             "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
@@ -84,6 +89,9 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "is_agent",
             "infrastructure",
             "is_partner",
+            "is_scoss",
+            "is_posi",
+            "is_barcelona",
             "date_data_update",
         ]
 

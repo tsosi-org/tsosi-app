@@ -277,6 +277,11 @@ def refresh_scipost_data():
     data_updates.refresh_scipost_data()
 
 
+@shared_task(base=TsosiLockedTask)
+def refresh_barcelona_data():
+    data_updates.refresh_barcelona_data()
+
+
 ## Signal handlers to trigger related tasks
 def trigger_post_ingestion_pipeline(sender, **kwargs):
     if not app_settings.TRIGGER_JOBS:

@@ -13,6 +13,7 @@ const props = defineProps<{
     :href="props.href"
     :rel="props.rel || 'noopener noreferrer'"
     :target="props.target || '_blank'"
+    onclick="event.stopPropagation();"
   >
     <slot>
       {{ props.label }}
