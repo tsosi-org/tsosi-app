@@ -38,6 +38,7 @@ const isPartner = ref(false)
 const isSCOSS = ref(false)
 const isPOSI = ref(false)
 const isBarcelona = ref(false)
+const currentPage = ref(1)
 const isSyncingFromRoute = ref(false)
 
 onMounted(async () => {
@@ -66,7 +67,15 @@ watch(
 )
 
 watch(
-  [selectedRole, selectedCountries, isPartner, isSCOSS, isPOSI, isBarcelona],
+  [
+    selectedRole,
+    selectedCountries,
+    isPartner,
+    isSCOSS,
+    isPOSI,
+    isBarcelona,
+    currentPage,
+  ],
   () => {
     if (isSyncingFromRoute.value) {
       return
@@ -102,6 +111,12 @@ function parseBooleanQuery(value: unknown): boolean {
   return normalized === "1" || normalized === "true"
 }
 
+function parsePageQuery(value: unknown): number {
+  const normalized = normalizeQueryValue(value)
+  const parsed = Number.parseInt(normalized, 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1
+}
+
 function applyQueryToFilters() {
   isSyncingFromRoute.value = true
 
@@ -119,6 +134,7 @@ function applyQueryToFilters() {
   isSCOSS.value = parseBooleanQuery(route.query.scoss)
   isPOSI.value = parseBooleanQuery(route.query.posi)
   isBarcelona.value = parseBooleanQuery(route.query.barcelona)
+  currentPage.value = parsePageQuery(route.query.page)
 
   isSyncingFromRoute.value = false
 }
@@ -136,10 +152,15 @@ function syncFiltersToQuery() {
     scoss: isSCOSS.value ? "true" : undefined,
     posi: isPOSI.value ? "true" : undefined,
     barcelona: isBarcelona.value ? "true" : undefined,
+    page: currentPage.value > 1 ? String(currentPage.value) : undefined,
     countries: countryCodes.length > 0 ? countryCodes.join(",") : undefined,
   }
 
   void router.replace({ query: nextQuery })
+}
+
+function onPageChange(event: { page?: number }) {
+  currentPage.value = (event.page ?? 0) + 1
 }
 
 const filteredEntities = computed(() => {
@@ -306,6 +327,8 @@ const filteredEntities = computed(() => {
         dataKey="id"
         paginator
         :rows="rowsPerPage"
+        :first="(currentPage - 1) * rowsPerPage"
+        @page="onPageChange"
         class="entity-dataview"
       >
         <template #grid="slotProps">
@@ -348,7 +371,8 @@ const filteredEntities = computed(() => {
 }
 
 .divider {
-  width: 100%;
+  margin: 15px;
+  width: auto;
 }
 
 .filter-container {
@@ -357,6 +381,10 @@ const filteredEntities = computed(() => {
   align-items: center;
   height: 40px;
   margin-bottom: 20px;
+}
+
+.filter-container div {
+  margin: 0 15px
 }
 
 .filter-subcontainer,
