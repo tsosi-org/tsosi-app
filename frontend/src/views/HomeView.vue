@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import Carousel from "primevue/carousel";
-import { computed, onBeforeMount, onMounted, onUnmounted } from "vue";
+import Card from "primevue/card"
+import Carousel from "primevue/carousel"
+import { computed, onBeforeMount, onMounted, onUnmounted } from "vue"
 
-import cosoLogoUrl from "@/assets/img/coso-black-logo.svg";
-import gricadLogoUrl from "@/assets/img/logo_gricad_noir.svg";
-import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg";
-import mesrLogoUrl from "@/assets/img/mesr_logo_noir.png";
-import ExternalLink from "@/components/atoms/ExternalLinkAtom.vue";
-import ImageAtom from "@/components/atoms/ImageAtom.vue";
-import CardComponent from "@/components/CardComponent.vue";
-import EntityMap from "@/components/EntityMap.vue";
-import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery";
-import { setBigHeader, togglePageNoHeader } from "@/singletons/fixedHeaderStore";
-import { getEmitters, getPartners, type Entity } from "@/singletons/ref-data";
-import { shuffleArray } from "@/utils/data-utils";
+import cosoLogoUrl from "@/assets/img/coso-black-logo.svg"
+import gricadLogoUrl from "@/assets/img/logo_gricad_noir.svg"
+import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg"
+import mesrLogoUrl from "@/assets/img/mesr_logo_noir.png"
+import ExternalLink from "@/components/atoms/ExternalLinkAtom.vue"
+import ImageAtom from "@/components/atoms/ImageAtom.vue"
+import EntityMap from "@/components/EntityMap.vue"
+import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery"
+import { setBigHeader, togglePageNoHeader } from "@/singletons/fixedHeaderStore"
+import { getEmitters, getPartners, type Entity } from "@/singletons/ref-data"
+import { shuffleArray } from "@/utils/data-utils"
 import {
   changeMetaDescripion,
   changeMetaTitle,
   changeMetaUrl,
-} from "@/utils/dom-utils";
-import { getEntityUrl } from "@/utils/url-utils";
+} from "@/utils/dom-utils"
+import { getEntityUrl } from "@/utils/url-utils"
 
 changeMetaUrl(true)
 changeMetaDescripion(
@@ -141,7 +141,7 @@ const citations = [
               :key="entity.id"
               class="card-link"
             >
-              <CardComponent :no-body="true">
+              <Card class="partner-card">
                 <template #header>
                   <ImageAtom
                     :src="entity.logo"
@@ -149,7 +149,7 @@ const citations = [
                     :center="true"
                   />
                 </template>
-              </CardComponent>
+              </Card>
             </RouterLink>
           </div>
         </div>
@@ -158,9 +158,6 @@ const citations = [
             Be part of this! See how to
             <RouterLink :to="'/pages/faq#join-tsosi'"> join TSOSI</RouterLink>.
           </h2>
-          <!-- <div style="max-width: 700px; margin: 0 auto">
-            <p :style="`margin-top: ${isDesktop ? '4em' : '2em'}`"></p>
-          </div> -->
         </div>
       </div>
     </section>
@@ -208,7 +205,7 @@ const citations = [
               href="https://www.enseignementsup-recherche.gouv.fr/fr"
               class="card-link"
             >
-              <CardComponent :no-body="true">
+              <Card class="partner-card">
                 <template #header>
                   <ImageAtom
                     :src="mesrLogoUrl"
@@ -217,13 +214,13 @@ const citations = [
                     :center="true"
                   />
                 </template>
-              </CardComponent>
+              </Card>
             </ExternalLink>
             <ExternalLink
               href="https://www.ouvrirlascience.fr/home/"
               class="card-link"
             >
-              <CardComponent :no-body="true">
+              <Card class="partner-card">
                 <template #header>
                   <ImageAtom
                     :src="cosoLogoUrl"
@@ -232,13 +229,13 @@ const citations = [
                     :center="true"
                   />
                 </template>
-              </CardComponent>
+              </Card>
             </ExternalLink>
             <ExternalLink
               href="https://www.univ-grenoble-alpes.fr/english/"
               class="card-link"
             >
-              <CardComponent :no-body="true">
+              <Card class="partner-card">
                 <template #header>
                   <ImageAtom
                     :src="ugaLogoUrl"
@@ -247,13 +244,13 @@ const citations = [
                     :center="true"
                   />
                 </template>
-              </CardComponent>
+              </Card>
             </ExternalLink>
             <ExternalLink
               href="https://gricad.univ-grenoble-alpes.fr/en/"
               class="card-link"
             >
-              <CardComponent :no-body="true">
+              <Card class="partner-card">
                 <template #header>
                   <ImageAtom
                     :src="gricadLogoUrl"
@@ -262,7 +259,7 @@ const citations = [
                     :center="true"
                   />
                 </template>
-              </CardComponent>
+              </Card>
             </ExternalLink>
           </div>
           <div style="text-align: center">
@@ -350,9 +347,13 @@ const citations = [
   display: block;
   text-decoration: unset;
 
-  &:deep(.card) {
+  &:deep(.p-card.partner-card) {
     padding: 10px;
     box-shadow: unset;
+  }
+
+  &:deep(.p-card.partner-card .p-card-body) {
+    padding: 0;
   }
 
   &:hover,
@@ -360,7 +361,7 @@ const citations = [
     text-decoration: underline;
     outline: unset;
 
-    & :deep(.card) {
+    & :deep(.p-card.partner-card) {
       box-shadow:
         rgba(0, 0, 0, 0.1) 0px 1px 5px 5px,
         rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
@@ -368,7 +369,7 @@ const citations = [
   }
 
   &:focus-visible {
-    & :deep(.card) {
+    & :deep(.p-card.partner-card) {
       outline: 2px solid var(--p-primary-color);
     }
   }

@@ -60,7 +60,7 @@ class Entity(TimestampedModel):
     )
     website = models.URLField(max_length=256, null=True)
     date_inception = models.DateField(null=True)
-    types = models.JSONField(null=True)
+    types = models.JSONField(null=False, default=list)
 
     logo_url = models.CharField(max_length=256, null=True)
     logo = models.ImageField(
@@ -73,6 +73,7 @@ class Entity(TimestampedModel):
     date_wikipedia_fetched = models.DateTimeField(null=True)
 
     is_partner = models.BooleanField(default=False)
+    is_barcelona = models.BooleanField(default=False)
     # Coordinates according to WGS84 coordinates system in form `POINT(LNG LAT)`
     # TODO: Use two distinct fields, `lon` & `lat` for coordinates as we will
     # never use something else than point coordinates.
@@ -136,6 +137,20 @@ class Entity(TimestampedModel):
                     print(child_id)
                     children_to_process.add(child_id)
         return Entity.objects.filter(id__in=all_children)
+
+    @property
+    def is_scoss(self) -> bool:
+        return (
+            hasattr(self, "infrastructure_details")
+            and self.infrastructure_details.date_scoss_start is not None
+        )
+
+    @property
+    def is_posi(self) -> bool:
+        return (
+            hasattr(self, "infrastructure_details")
+            and self.infrastructure_details.posi_url is not None
+        )
 
 
 class InfrastructureDetails(TimestampedModel):

@@ -71,7 +71,7 @@ class AllActionViewSet(viewsets.ModelViewSet):
 
 class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
     queryset = Entity.objects.filter(is_active=True).prefetch_related(
-        "identifiers", "identifiers__registry"
+        "identifiers", "identifiers__registry", "infrastructure_details"
     )
     serializer_class = EntitySerializer
     filter_backends = [OrderingFilter, SearchFilter]
@@ -90,8 +90,26 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
 
         self.pagination_class = None
         ids = Transfer.objects.filter(
-            merged_into__isnull=True, recipient_id=entity_id
+            Q(recipient_id=entity_id) | Q(agent_id=entity_id),
+            merged_into__isnull=True,
         ).values_list("emitter_id", flat=True)
+        self.queryset = Entity.objects.filter(id__in=ids).distinct()
+        return self.list(request, *args, **kwargs)
+
+    @action(
+        detail=False, methods=["get"], permission_classes=[BypassPagination]
+    )
+    def recipients(self, request: Request, *args, **kwargs):
+        """ """
+        entity_id = request.query_params.get("entity_id")
+        if entity_id is None:
+            raise ValidationError(f"`entity_id` query parameter if missing.")
+
+        self.pagination_class = None
+        ids = Transfer.objects.filter(
+            Q(emitter_id=entity_id) | Q(agent_id=entity_id),
+            merged_into__isnull=True,
+        ).values_list("recipient_id", flat=True)
         self.queryset = Entity.objects.filter(id__in=ids).distinct()
         return self.list(request, *args, **kwargs)
 

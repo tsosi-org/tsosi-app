@@ -64,8 +64,11 @@ export interface Entity extends ApiData {
   icon?: string
   is_recipient: boolean
   is_partner: boolean
-  children: string[]
-  is_child?: boolean
+  is_emitter: boolean
+  is_agent: boolean
+  is_scoss: boolean
+  is_posi: boolean
+  is_barcelona: boolean
   is_child_transfer?: boolean
 }
 
@@ -76,9 +79,8 @@ export interface EntityDetails extends Entity {
   wikipedia_url?: string
   wikipedia_extract?: string
   infrastructure?: InfrastructureDetails
-  is_emitter: boolean
-  is_agent: boolean
   date_data_update?: Date
+  children: string[]
 }
 
 export interface Transfer extends ApiData {

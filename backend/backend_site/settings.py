@@ -297,4 +297,8 @@ TSOSI_CELERY_BEAT_SCHEDULE = {
         "task": "tsosi.tasks.refresh_scipost_data",
         "schedule": crontab(minute="0", hour="5", day_of_week="sun"),
     },
+    "periodic-barcelona-data-refresh": {
+        "task": "tsosi.tasks.refresh_barcelona_data",
+        "schedule": crontab(minute="0", hour="3", day_of_week="sun"),
+    },
 }

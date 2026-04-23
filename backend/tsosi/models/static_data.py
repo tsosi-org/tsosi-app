@@ -161,6 +161,7 @@ def update_static_entities() -> None:
             else:
                 entity.icon = None
             entity.save()
+            Entity.objects.filter(id=entity.id).update(**row.get("entity", {}))
 
         if row.get("infrastructure"):
             InfrastructureDetails.objects.update_or_create(

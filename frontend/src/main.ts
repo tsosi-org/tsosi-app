@@ -1,7 +1,7 @@
-import "@/assets/css/main.css"
+import "@/assets/css/main.css";
 
-import { library } from "@fortawesome/fontawesome-svg-core"
-import { faGithub, faLinkedin } from "@fortawesome/free-brands-svg-icons"
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { faGithub, faLinkedin } from "@fortawesome/free-brands-svg-icons";
 import {
   faAngleRight,
   faArrowUpRightFromSquare,
@@ -32,18 +32,19 @@ import {
   faSquareXmark,
   faUser,
   faXmark,
-} from "@fortawesome/free-solid-svg-icons"
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
-import { definePreset } from "@primevue/themes"
-import Aura from "@primevue/themes/aura"
-import PrimeVue from "primevue/config"
-import DialogService from "primevue/dialogservice"
-import { createApp } from "vue"
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { definePreset } from "@primevue/themes";
+import Aura from "@primevue/themes/aura";
+import PrimeVue from "primevue/config";
+import DialogService from "primevue/dialogservice";
+import Tooltip from 'primevue/tooltip';
+import { createApp } from "vue";
 // @ts-expect-error No available types for vue-matomo
-import VueMatomo from "vue-matomo"
+import VueMatomo from "vue-matomo";
 
-import App from "@/App.vue"
-import router from "@/router"
+import App from "@/App.vue";
+import router from "@/router";
 
 const app = createApp(App)
 
@@ -148,6 +149,8 @@ library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)
 
 app.use(router)
+
+app.directive("tooltip", Tooltip)
 
 // Matomo plugin for Vue.js
 const hasMatomoInfo =
