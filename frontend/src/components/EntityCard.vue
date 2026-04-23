@@ -1,65 +1,51 @@
 <script setup lang="ts">
-import Loader from "@/components/atoms/LoaderAtom.vue"
-import { getEntityDetails, type EntityDetails } from "@/singletons/ref-data"
-import { onMounted, ref, type Ref } from "vue"
+import { type Entity } from "@/singletons/ref-data"
+import { getEntityUrl } from "@/utils/url-utils"
+import { ref, type Ref } from "vue"
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 import ProviderCorner from "./atoms/ProviderCornerAtom.vue"
 
 interface EntityCardProps {
-  entity_id: string
+  entity: Entity
   amounts?: Record<string, number>
   currency?: string
 }
 
 const props = defineProps<EntityCardProps>()
-const entityDetails: Ref<EntityDetails | null> = ref(null)
-const loading: Ref<boolean> = ref(true)
-
-onMounted(async () => {
-  entityDetails.value = (await getEntityDetails(props.entity_id).catch(
-    (error) => {
-      console.error("Error fetching entity details:", error)
-      return null
-    },
-  )) as EntityDetails
-  loading.value = false
-})
+const entity: Ref<Entity | null> = ref(props.entity)
 </script>
 
 <template>
-  <div class="container" v-if="loading">
-    <Loader width="200px" />
-  </div>
   <RouterLink
-    v-else-if="entityDetails"
-    :to="`/entities/${props.entity_id}`"
+    v-if="entity"
+    :to="getEntityUrl(entity)"
     class="container"
   >
-    <ProviderCorner v-if="entityDetails.is_partner" />
+    <ProviderCorner v-if="entity.is_partner" />
     <div class="info-container">
       <div class="top-container">
         <div class="logo-container">
           <img
-            v-if="entityDetails.logo"
+            v-if="entity.logo"
             class="logo"
-            :src="entityDetails.logo"
+            :src="entity.logo"
           />
           <h2 class="name" v-else>
-            {{ entityDetails.short_name || entityDetails.name.slice(0, 60) }}
+            {{ entity.short_name || entity.name.slice(0, 60) }}
           </h2>
         </div>
         <!-- <div class="types-container">
           <Chip
-            v-if="entityDetails.country"
-            :label="getCountryLabel(entityDetails.country)"
+            v-if="entity.country"
+            :label="getCountryLabel(entity.country)"
           >
             <template #icon>
               <font-awesome-icon :icon="['fas', 'location-dot']" />
             </template>
           </Chip>
           <Chip
-            v-if="entityDetails.date_inception"
-            :label="`Since ${entityDetails.date_inception.getFullYear()}`"
+            v-if="entity.date_inception"
+            :label="`Since ${entity.date_inception.getFullYear()}`"
           >
             <template #icon>
               <font-awesome-icon :icon="['fas', 'calendar']" />
@@ -70,17 +56,17 @@ onMounted(async () => {
       </div> -->
         <!-- <div
         class="desc-container"
-        v-if="entityDetails.description || entityDetails.wikipedia_extract"
+        v-if="entity.description || entity.wikipedia_extract"
       >
         <p class="desc">
-          {{ entityDetails.description || entityDetails.wikipedia_extract }}
+          {{ entity.description || entity.wikipedia_extract }}
         </p>
       </div> -->
       </div>
       <div v-if="props.amounts" class="meta-container">
-        <div class="meta-entry" v-if="entityDetails.infrastructure?.posi_url">
+        <div class="meta-entry" v-if="entity.infrastructure?.posi_url">
           <ExternalLinkAtom
-            :href="entityDetails.infrastructure.posi_url"
+            :href="entity.infrastructure.posi_url"
             aria-label="Link to POSI declaration"
           >
             <p>POSI adopter</p>
@@ -90,12 +76,12 @@ onMounted(async () => {
         <div
           class="meta-entry"
           v-if="
-            entityDetails.infrastructure?.date_scoss_start &&
-            entityDetails.infrastructure?.posi_url
+            entity.infrastructure?.date_scoss_start &&
+            entity.infrastructure?.posi_url
           "
         >
           <ExternalLinkAtom
-            :href="entityDetails.infrastructure.posi_url"
+            :href="entity.infrastructure.posi_url"
             aria-label="Link to Infrafinder page"
           >
             <p>SCOSS selected</p>
