@@ -1,28 +1,27 @@
 <script setup lang="ts">
-import Chart from "primevue/chart"
-import { ref, watch, onMounted, computed, useTemplateRef, type Ref } from "vue"
-import Select from "primevue/select"
-import Checkbox from "primevue/checkbox"
 import { type TooltipItem } from "chart.js"
+import Chart from "primevue/chart"
+import Checkbox from "primevue/checkbox"
+import Select from "primevue/select"
+import { computed, onMounted, ref, useTemplateRef, watch, type Ref } from "vue"
 
 import CurrencySelector from "./CurrencySelector.vue"
 
 import Loader from "@/components/atoms/LoaderAtom.vue"
+import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
+import {
+  defaultCurrency,
+  originalCurrency,
+  selectedCurrency,
+  setSelectedCurrency,
+} from "@/singletons/currencyStore"
 import {
   getAnalytics,
   type Analytic,
-  type Entity,
   type DeepReadonly,
+  type Entity,
 } from "@/singletons/ref-data"
-import {
-  selectedCurrency,
-  defaultCurrency,
-  originalCurrency,
-  setSelectedCurrency,
-} from "@/singletons/currencyStore"
-import { getCountryRegion, exportPNG } from "@/utils/data-utils"
-import { type DataFieldProps, exportCSV, exportJSON } from "@/utils/data-utils"
-import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
+import { exportCSV, exportJSON, exportPNG, getCountryRegion, type DataFieldProps } from "@/utils/data-utils"
 
 
 export interface EntityHistogramProps {

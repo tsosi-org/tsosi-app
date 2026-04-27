@@ -44,7 +44,7 @@ onBeforeMount(() => {
       :container-padding="'0px'"
     />
     <span class="entity-label">
-      {{ entity.short_name || entity.name }} 
+      {{ entity.short_name || entity.name }}
     </span>
   </RouterLink>
   <span v-if="entity && props.dataField.field == 'emitter' && props.data.emitter_sub" class="entity-label-detail">{{ `(${props.data.emitter_sub})` }}</span>
