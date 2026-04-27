@@ -8,7 +8,7 @@
       "name": "Directory of Open Access Journals",
       "short_name": "DOAJ",
       "website": "https://doaj.org",
-      "description": "DOAJ is a unique and extensive index of diverse open access journals from around the world, drfrontendiven by a growing community, and is committed to insuring quality content is freely available online for everyone.",
+      "description": "DOAJ is a unique and extensive index of diverse open access journals from around the world, driven by a growing community, and is committed to insuring quality content is freely available online for everyone.",
       "is_barcelona": true
     },
     "infrastructure": {
@@ -103,7 +103,8 @@
       "support_url": "https://scipost.org/sponsors/",
       "legal_entity_description": "The legal entity is located in the Netherlands, see <a href=\"https://www.wikidata.org/wiki/Q52663237\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    SciPost on wikidata</a>."
     },
-    "static_icon": "scipost_icon.png"
+    "static_icon": "scipost_icon.png",
+    "static_logo": "scipost_logo.png"
   },
   {
     "pid": {

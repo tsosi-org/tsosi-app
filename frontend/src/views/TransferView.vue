@@ -210,6 +210,10 @@ const metadataConfig: Array<DataFieldProps> = [
   flex: 0 0 50%;
 }
 
+.data-content:deep(a) {
+  text-decoration: underline;
+}
+
 .summary-title {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;

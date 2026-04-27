@@ -76,11 +76,11 @@ onBeforeMount(async () => {
       navigation: {
         ...data.navigation,
         next: data.navigation.has_next && data.navigation.next ? {
-          ...data.navigation.next, 
+          ...data.navigation.next,
           permalink: data.navigation.next.permalink.split("/")[2]
         } : undefined,
         prev: data.navigation.has_prev && data.navigation.prev ? {
-          ...data.navigation.prev, 
+          ...data.navigation.prev,
           permalink: data.navigation.prev.permalink.split("/")[2]
         } : undefined,
       }
@@ -129,7 +129,7 @@ onBeforeMount(async () => {
       <!-- Empty state -->
       <p class="empty-state" v-else>
         No posts yet. Check back later!
-      </p>  
+      </p>
     </div>
   </StaticContentComponent>
 </template>

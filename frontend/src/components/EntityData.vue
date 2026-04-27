@@ -366,6 +366,10 @@ async function updateMapData() {
   margin-bottom: initial;
 }
 
+.transfer-tables:deep(a.entity-link) {
+  text-decoration: underline;
+}
+
 .data-chart-panel {
   width: 100%;
   padding: 1em 0;
@@ -379,4 +383,5 @@ async function updateMapData() {
   width: 100%;
   overflow-x: auto;
 }
+
 </style>

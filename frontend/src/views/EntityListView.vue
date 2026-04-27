@@ -253,8 +253,8 @@ const filteredEntities = computed(() => {
             </ToggleButton>
             <ToggleButton
               v-model="isBarcelona"
-              onLabel="Barcelona Decl. signatory"
-              offLabel="Barcelona Decl. signatory"
+              onLabel="Barcelona Declaration signatory"
+              offLabel="Barcelona Declaration signatory"
               class="icon-right"
             >
               <template #icon>

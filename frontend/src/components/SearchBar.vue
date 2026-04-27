@@ -457,6 +457,10 @@ function onPopoverShow() {
   position: relative;
 }
 
+.search-results:deep(a) {
+  text-decoration: none;
+}
+
 .search-howto {
   width: 100%;
 }
