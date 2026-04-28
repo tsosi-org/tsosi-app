@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from "primevue/button"
+import Divider from "primevue/divider"
 import Panel from "primevue/panel"
 import { computed, onMounted, ref, watch, type Ref } from "vue"
 
@@ -39,6 +40,16 @@ const bottomButtons: Ref<Array<any>> = ref([])
 
 watch(() => props.entity, loadChips)
 onMounted(() => loadChips())
+
+const hasButtons = computed(() => {
+  return (
+    props.entity.is_partner ||
+    props.entity.is_scoss ||
+    props.entity.infrastructure?.posi_url ||
+    props.entity.is_barcelona ||
+    props.entity.infrastructure?.infra_finder_url
+  )
+})
 
 function loadChips() {
   if (props.entity.country) {
@@ -143,7 +154,8 @@ function isDoab(): boolean {
               >how to improve this </RouterLink
             >.
           </div>
-          <div  class="entity-header__links">
+          <div class="entity-header__links">
+            <div class="entity-header__links_circles">
             <Button
               v-if="props.entity.website"
               :href="props.entity.website"
@@ -176,6 +188,7 @@ function isDoab(): boolean {
             >
               <img alt="Wikidata logo" src="@/assets/img/wikidata_icon.ico" />
             </Button>
+            </div>
             <Button
             v-if="props.entity.infrastructure?.support_url"
             variant="outlined"  severity="secondary"
@@ -191,14 +204,15 @@ function isDoab(): boolean {
             </template>
           </Button>
           </div>
-          <div class="entity-header__buttons">
+          <Divider v-if="hasButtons"/>
+          <div v-if="hasButtons" class="entity-header__buttons">
             <Button
               v-if="props.entity.is_partner"
               as="a" target="_blank" rel="noopener"
               href="https://scoss.org/how-it-works/current-funding-calls/"
               label="TSOSI"
               variant="outlined"
-              v-tooltip.bottom="{ value: 'TSOSI provider. See the <a href=\'https://tsosi.org/pages/faq#data-provider\'>FAQ</a>.', escape: false, autoHide: false }"
+              v-tooltip.top="{ value: 'TSOSI provider. See the <a href=\'https://tsosi.org/pages/faq#data-provider\'>FAQ</a>.', escape: false, autoHide: false }"
             >
               <template #icon>
                 <img src="/img/favicon-192x192.png" />
@@ -210,7 +224,7 @@ function isDoab(): boolean {
               href="https://scoss.org/how-it-works/current-funding-calls/"
               label="SCOSS"
               variant="outlined"
-              v-tooltip.bottom="{ value: `Selected by <a target=\'_blank\' href=\'https://scoss.org/how-it-works/current-funding-calls\'>SCOSS</a> for the period ${props.entity.infrastructure?.date_scoss_start?.getFullYear()}-${props.entity.infrastructure?.date_scoss_end?.getFullYear()}.`, escape: false, autoHide: false }"
+              v-tooltip.top="{ value: `Selected by <a target=\'_blank\' href=\'https://scoss.org/how-it-works/current-funding-calls\'>SCOSS</a> for the period ${props.entity.infrastructure?.date_scoss_start?.getFullYear()}-${props.entity.infrastructure?.date_scoss_end?.getFullYear()}.`, escape: false, autoHide: false }"
             >
               <template #icon>
                 <img src="@/assets/img/scoss_icon.png" />
@@ -222,7 +236,7 @@ function isDoab(): boolean {
               :href="props.entity.infrastructure.posi_url"
               variant="outlined"
               label="POSI"
-              v-tooltip.bottom="{ value: 'Adopter of the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>.', escape: false, autoHide: false }"
+              v-tooltip.top="{ value: 'Adopter of the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>.', escape: false, autoHide: false }"
             >
               <template #icon>
                 <img src="@/assets/img/posi_icon.ico" />
@@ -234,7 +248,7 @@ function isDoab(): boolean {
               href="https://barcelona-declaration.org/signatories/"
               variant="outlined"
               label="Barcelona Declaration"
-              v-tooltip.bottom="{ value: 'Signatory of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>.', escape: false, autoHide: false }"
+              v-tooltip.top="{ value: 'Signatory of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>.', escape: false, autoHide: false }"
             >
               <template #icon>
                 <img class="barcelona_icon" src="@/assets/img/barcelona_icon.jpg" />
@@ -246,7 +260,7 @@ function isDoab(): boolean {
               :href="props.entity.infrastructure?.infra_finder_url"
               variant="outlined"
               label="Infra Finder"
-              v-tooltip.bottom="{ value: 'Included in <a target=\'_blank\' href=\'https://infrafinder.investinopen.org/solutions/\'>Infra Finder</a>.', escape: false, autoHide: false }"
+              v-tooltip.top="{ value: 'Included in <a target=\'_blank\' href=\'https://infrafinder.investinopen.org/solutions/\'>Infra Finder</a>.', escape: false, autoHide: false }"
             >
               <template #icon>
                 <img src="@/assets/img/ioi_icon.ico" />
@@ -352,7 +366,14 @@ function isDoab(): boolean {
 .entity-header__links {
   display: flex;
   flex-direction: row;
+  gap: 0.5em;
+}
+
+.entity-header__links_circles {
+  display: flex;
+  flex-direction: row;
   gap: 0.5rem;
+  margin-right: 20px;
 }
 
 .entity-header__links .p-button {
@@ -429,6 +450,10 @@ function isDoab(): boolean {
   flex-wrap: wrap;
 }
 
+.p-divider {
+  margin: 0; 
+}
+
 .entity-header__buttons .p-button:deep(span) {
   color: black;
 }
@@ -454,12 +479,23 @@ function isDoab(): boolean {
   width: fit-content;
 }
 
-.support_button {
-  margin-left: 20px;
-}
-
 .icon-right.p-button {
   flex-direction: row-reverse;
+}
+
+@media (max-width: 500px) {
+  .entity-header__grid {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .entity-header__links {
+    flex-direction: column;
+  }
+
+  .entity-header__buttons {
+  justify-content: center;
+}
 }
 
 </style>
