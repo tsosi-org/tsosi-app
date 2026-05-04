@@ -3,7 +3,6 @@ import { RouterLink } from "vue-router"
 
 import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
-import InfoButtonAtom from "./atoms/InfoButtonAtom.vue"
 
 import Country from "@/components/atoms/CountryAtom.vue"
 import {
@@ -39,7 +38,7 @@ const props = defineProps<SummaryProps>()
       >
         <div class="summary-label">
           {{ field.title
-          }}<InfoButtonAtom v-if="field.info" :content="field.info" />&nbsp;:
+          }}&nbsp;:
         </div>
         <div class="summary-value">
           <EntityLinkDataAtom

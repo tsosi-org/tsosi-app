@@ -61,7 +61,7 @@ https://primevue.org/theming/styled/#colors
 
   --p-tooltip-background: var(--color-background);
   --p-tooltip-color: var(--color-text);
-  --p-tooltip-max-width: 20rem;
+  --p-tooltip-max-width: 30rem;
 }
 
 @media (min-width: 1000px) {
@@ -144,4 +144,12 @@ body {
 *::selection {
   color: white;
   background-color: var(--p-primary-500);
+}
+
+.p-tooltip-text {
+  border: 1px solid var(--p-popover-border-color);
+}
+
+.left-aligned-tooltip {
+  transform: translateX(50%);
 }

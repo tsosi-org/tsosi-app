@@ -1,42 +1,40 @@
 <script setup lang="ts">
-import "leaflet/dist/leaflet.css"
+import { type Feature } from "geojson"
 import * as L from "leaflet"
-import Skeleton from "primevue/skeleton"
+import "leaflet/dist/leaflet.css"
 import Accordion from "primevue/accordion"
-import AccordionPanel from "primevue/accordionpanel"
-import AccordionHeader from "primevue/accordionheader"
 import AccordionContent from "primevue/accordioncontent"
+import AccordionHeader from "primevue/accordionheader"
+import AccordionPanel from "primevue/accordionpanel"
+import Skeleton from "primevue/skeleton"
 import {
-  ref,
-  onMounted,
-  watch,
-  type Ref,
-  nextTick,
-  useTemplateRef,
   computed,
+  nextTick,
+  onMounted,
+  ref,
+  useTemplateRef,
+  watch,
   type App,
   type Component,
+  type Ref,
 } from "vue"
-import { type Feature } from "geojson"
 
 import Loader from "./atoms/LoaderAtom.vue"
 
-import { getEntitySummary } from "@/singletons/ref-data"
+import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
+import CountryItemList from "@/components/CountryItemList.vue"
+import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
+import { isDesktop } from "@/composables/useMediaQuery"
+import { getEntitySummary, type Entity } from "@/singletons/ref-data"
 import {
-  parsePointCoordinates,
-  getCountryCoordinates,
-  getCountryLabel,
   exportCSV,
   exportJSON,
+  getCountryCoordinates,
+  getCountryLabel,
+  parsePointCoordinates,
   type DataFieldProps,
 } from "@/utils/data-utils"
-import { type Entity } from "@/singletons/ref-data"
-import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
-import CountryItemList from "@/components/CountryItemList.vue"
 import { createComponent } from "@/utils/dom-utils"
-import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
-import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
-import { isDesktop } from "@/composables/useMediaQuery"
 
 
 export interface EntityMapProps {
@@ -513,14 +511,6 @@ const legendDt = {
                   ></div>
                   <span>
                     Countries
-                    <InfoButtonAtom>
-                      <template #popup>
-                        <span>
-                          Gather all funders from the given country without a
-                          precise location information.
-                        </span>
-                      </template>
-                    </InfoButtonAtom>
                   </span>
                 </div>
                 <div v-if="layers.infra" class="legend-item">

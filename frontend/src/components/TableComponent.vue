@@ -25,7 +25,6 @@ import CustomButton, {
 import Country from "@/components/atoms/CountryAtom.vue"
 import EntityLinkDataAtom from "@/components/atoms/EntityLinkDataAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
-import InfoButtonAtom from "@/components/atoms/InfoButtonAtom.vue"
 import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
 import CurrencySelector from "@/components/CurrencySelector.vue"
 import {
@@ -49,11 +48,6 @@ export interface TableColumnProps extends DataFieldProps {
   sortable?: boolean
   sortField?: string // field used to sort the column. Defaults to fieldLabel
   info?: string
-  infoLink?: {
-    href: string
-    label: string
-    type: "internal" | "external"
-  }
   currencySelector?: boolean
   nullValueTemplate?: string
   filter?: {
@@ -401,23 +395,13 @@ function isColumnFiltered(column: TableColumnProps): boolean {
     >
       <!-- Header template -->
       <template #header>
-        <InfoButtonAtom v-if="column.info || column.infoLink">
-          <template #popup>
-            <span v-if="column.info"> {{ column.info }}&nbsp; </span>
-            <RouterLink
-              v-if="column.infoLink?.type == 'internal'"
-              :to="column.infoLink.href"
-            >
-              {{ column.infoLink.label }}
-            </RouterLink>
-            <ExternalLinkAtom
-              v-else-if="column.infoLink?.type == 'external'"
-              :href="column.infoLink.href"
-            >
-              {{ column.infoLink.label }}
-            </ExternalLinkAtom>
-          </template>
-        </InfoButtonAtom>
+        <span
+          v-tooltip.bottom="{value: column.info, escape: false, autoHide: false, pt: { root: { class: 'left-aligned-tooltip' }}}"
+        >
+        <font-awesome-icon
+          v-if="column.info"
+          :icon="['fas', 'circle-question']"
+        ></font-awesome-icon></span>
         <span class="p-datatable-column-title">
           {{ column.title }}
         </span>
@@ -461,22 +445,21 @@ function isColumnFiltered(column: TableColumnProps): boolean {
       <template v-else-if="column.type == 'entityLink'" #body="{ data }">
         <div class="inline-container">
           <div class="info-button-inline">
-            <InfoButtonAtom
-              v-if="
-                column.field == 'emitter' && data.emitter?.is_child_transfer === true
-              "
-              :icon="['fas', 'circle-info']"
+            <span
+            v-if="
+              column.field == 'emitter' && data.emitter?.is_child_transfer === true
+            "
+            v-tooltip.bottom="{
+              value: 'This support comes from a child entity, based on the ROR hierarchy. <a href=\'/pages/faq/#entities-hierarchies\'>See our FAQ</a>.',
+              escape: false,
+              autoHide: false,
+              pt: { root: { class: 'left-aligned-tooltip' } }
+            }"
             >
-              <template #popup>
-                <span>
-                  This support comes from a child entity, based on the ROR
-                  hierarchy.
-                  <RouterLink to="/pages/faq/#entities-hierarchies"
-                    >See our FAQ</RouterLink
-                  >.
-                </span>
-              </template>
-            </InfoButtonAtom>
+            <font-awesome-icon
+              :icon="['fas', 'circle-info']"
+            ></font-awesome-icon>
+            </span>
           </div>
           <div
             class="entity-links-container"
@@ -636,4 +619,5 @@ function isColumnFiltered(column: TableColumnProps): boolean {
 .entity-links-container.multiple {
   gap: 0.2em;
 }
+
 </style>
