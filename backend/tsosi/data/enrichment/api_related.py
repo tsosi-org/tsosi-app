@@ -624,7 +624,7 @@ def update_null_logo_url(date_update: datetime | None):
 def update_entity_logo_file(row: pd.Series):
     """"""
     e: Entity = row["entity"]
-    url = row.get("final_url", row["url"])
+    url = row.get("info", row["url"])
     date_update = row["date_last_updated"]
     file_name = unquote(url.split("/")[-1])
     file_content: bytes = row["file_bytes"]
