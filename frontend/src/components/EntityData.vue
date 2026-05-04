@@ -140,12 +140,7 @@ const baseColumns: TableColumnProps[] = [
     field: "date_clc",
     type: "dateWithPrecision",
     sortable: true,
-    info: "The date field is relative.",
-    infoLink: {
-      href: "/pages/faq#what-does-the-date-column-refer-to",
-      label: "See more in FAQ",
-      type: "internal",
-    },
+    info: "The date field is relative. <a href=\'/pages/faq#what-does-the-date-column-refer-to\'>See our FAQ</a>",
     filter: {
       enable: true,
     },

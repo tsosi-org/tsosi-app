@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Button from "primevue/button"
-import Divider from "primevue/divider"
 import Panel from "primevue/panel"
 import { computed, onMounted, ref, watch, type Ref } from "vue"
 
@@ -204,7 +203,6 @@ function isDoab(): boolean {
             </template>
           </Button>
           </div>
-          <Divider v-if="hasButtons"/>
           <div v-if="hasButtons" class="entity-header__buttons">
             <Button
               v-if="props.entity.is_partner"
@@ -444,6 +442,7 @@ function isDoab(): boolean {
 }
 
 .entity-header__buttons {
+  margin-top: 2.2em;
   display: flex;
   gap: 10px;
   justify-content: start;
@@ -494,7 +493,9 @@ function isDoab(): boolean {
   }
 
   .entity-header__buttons {
+    flex-direction: column;
   justify-content: center;
+  margin-top: 0em;
 }
 }
 
