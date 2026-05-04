@@ -206,10 +206,9 @@ function isDoab(): boolean {
           <div v-if="hasButtons" class="entity-header__buttons">
             <Button
               v-if="props.entity.is_partner"
-              as="a" target="_blank" rel="noopener"
-              href="https://scoss.org/how-it-works/current-funding-calls/"
               label="TSOSI"
               variant="outlined"
+              as="div"
               v-tooltip.top="{ value: 'TSOSI provider. See the <a href=\'https://tsosi.org/pages/faq#data-provider\'>FAQ</a>.', escape: false, autoHide: false }"
             >
               <template #icon>
@@ -290,8 +289,8 @@ function isDoab(): boolean {
               v-if="props.entity.is_recipient && !props.entity.is_partner"
               class="important-info"
             >
-              The data below come only from TSOSI’s provider institutions; they
-              represent only a subset of infrastructure supporters.
+              The data below comes from TSOSI’s providers; they
+              represent only a subset of this infrastructure's supporters.
             </li>
             <li>Each line of the table below shows a financial support.</li>
             <li>
@@ -341,6 +340,14 @@ function isDoab(): boolean {
 
 .p-button {
   text-decoration: none;
+}
+
+div.p-button {
+  cursor: reset;
+}
+
+div.p-button:hover {
+  background-color: transparent;
 }
 
 .entity-header__grid {
