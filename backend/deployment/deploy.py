@@ -64,11 +64,17 @@ def scp_execute(
         f"{colored("RUNNING: ", "blue")} {colored(f"scp {local_path} {remote_path}", "yellow")}"
     )
     transport = ssh_client.get_transport()
+    transport.set_keepalive(30)
     if transport is None:
         raise Exception("The underlying SSH transport object is None.")
 
     with SCPClient(transport) as scp:
-        scp.put(local_path, remote_path, recursive=True, preserve_times=False)
+        scp.put(
+            local_path,
+            remote_path,
+            recursive=True,
+            preserve_times=False,
+        )
 
     if close_client:
         ssh_client.close()

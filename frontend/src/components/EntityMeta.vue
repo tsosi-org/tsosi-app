@@ -193,7 +193,7 @@ function isDoab(): boolean {
             variant="outlined"  severity="secondary"
             as="a" target="_blank" rel="noopener"
             :href="props.entity.infrastructure.support_url"
-            label="Find out how to support DOAJ"
+            label="Find out how to support"
             class="support_button icon-right"
           >
             <template #icon>
