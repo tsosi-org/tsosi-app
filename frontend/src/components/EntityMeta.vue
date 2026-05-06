@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { devMode } from "@/singletons/devMode"
 import Button from "primevue/button"
 import Panel from "primevue/panel"
 import { computed, onMounted, ref, watch, type Ref } from "vue"
@@ -329,7 +330,7 @@ function isDoab(): boolean {
       </div>
     </section>
 
-    <section class="data-info">
+    <section class="data-info" v-if="!devMode">
       <Panel
         toggleable
         class="info-box"

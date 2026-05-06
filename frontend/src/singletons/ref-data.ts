@@ -242,6 +242,32 @@ export async function getEntities(): Promise<DeepReadonly<
   return refData.entities
 }
 
+export function getEntitiesFromTransfers(transfers: Transfer[]): Record<string, Entity[]> {
+  const entities: Record<string, Record<string, Entity>> = {
+    emitters: {},
+    recipients: {},
+    agents: {},
+  }
+  for (const transfer of transfers) {
+    if (!entities[transfer.emitter_id]) {
+      entities["emitters"][transfer.emitter_id] = refData.entities[transfer.emitter_id] as Entity
+    }
+    if (!entities[transfer.recipient_id]) {
+      entities["recipients"][transfer.recipient_id] = refData.entities[transfer.recipient_id] as Entity
+    }
+    for (const agentId of transfer.agent_ids) {
+      if (!entities[agentId]) {
+        entities["agents"][agentId] = refData.entities[agentId] as Entity
+      }
+    }
+  }
+  return {
+    emitters: Object.values(entities["emitters"]),
+    recipients: Object.values(entities["recipients"]),
+    agents: Object.values(entities["agents"]),
+  }
+}
+
 export function getEntitySummary(id: string): DeepReadonly<Entity> | null {
   return refData.entities[id]
 }
@@ -378,17 +404,6 @@ export async function getAnalytics(
     return null
   }
   return result.data as Analytic[]
-}
-
-export async function getEmittersForEntity(
-  entityId: string,
-): Promise<Entity[] | null> {
-  const queryParams = new URLSearchParams({ entity_id: entityId })
-  const result = await get("entities/emitters/", true, queryParams)
-  if (result.error || !result.data) {
-    return null
-  }
-  return result.data as Entity[]
 }
 
 /**

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { devMode } from "@/singletons/devMode"
 import Drawer from "primevue/drawer"
 import { ref, watch } from "vue"
 
@@ -58,7 +59,7 @@ function onDrawerToggle(show: boolean) {
             <img class="logo-img" src="@/assets/img/logo_white.svg" />
           </RouterLink>
           <RouterLink to="/pages/faq#beta-version" class="beta-badge">
-            beta version
+            beta version{{ devMode ? " / preview" : "" }}
           </RouterLink>
         </div>
         <div class="header-citation">
@@ -156,7 +157,7 @@ function onDrawerToggle(show: boolean) {
             <img class="logo-img" src="@/assets/img/logo_white.svg" />
           </RouterLink>
           <RouterLink to="/pages/faq#beta-version" class="beta-badge">
-            beta version
+            beta version{{ devMode ? " / preview" : "" }}
           </RouterLink>
         </div>
         <div class="header-citation">

@@ -21,13 +21,13 @@ import {
   type DeepReadonly,
   type Entity,
 } from "@/singletons/ref-data"
-import { exportCSV, exportJSON, exportPNG, getCountryRegion, type DataFieldProps } from "@/utils/data-utils"
-
-
-export interface EntityHistogramProps {
-  entity: DeepReadonly<Entity>
-  disableExport?: boolean
-}
+import {
+  exportCSV,
+  exportJSON,
+  exportPNG,
+  getCountryRegion,
+  type DataFieldProps,
+} from "@/utils/data-utils"
 
 interface ChartSerie {
   type: string
@@ -52,7 +52,10 @@ const metricOptions = [
     name: "Count of funding",
   },
 ]
-const props = defineProps<EntityHistogramProps>()
+const props = defineProps<{
+  entity: DeepReadonly<Entity>
+  disableExport?: boolean
+}>()
 const rawData: Ref<Analytic[] | null> = ref(null)
 const dataLoaded = ref(false)
 const loading = ref(true)
@@ -348,9 +351,7 @@ async function downloadData(format: "json" | "csv") {
     <div class="chart-description">
       <div style="padding: 0 min(2vw, 2em)">
         This graph shows all the funding received by the infrastructure,
-        distributed by year of receipt and by continent of the supporters. The
-        date and amount of funding are received from the infrastructure, while
-        the continent of the supporters comes from ROR and Wikidata.
+        distributed by year of receipt and by continent of the supporters.
       </div>
     </div>
   </div>

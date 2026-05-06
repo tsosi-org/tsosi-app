@@ -36,7 +36,6 @@ import {
 } from "@/utils/data-utils"
 import { createComponent } from "@/utils/dom-utils"
 
-
 export interface EntityMapProps {
   id: string
   infrastructures?: Entity[]
@@ -45,6 +44,7 @@ export interface EntityMapProps {
   dataLoaded?: boolean
   exportTitleBase?: string
   disableExport?: boolean
+  disableLegend?: boolean
   showIconLegend?: boolean
   showLegend?: boolean
 }
@@ -325,7 +325,7 @@ async function updateMarkers() {
   Object.values(layers.value).forEach((group) =>
     bonds.extend(group.getBounds()),
   )
-  map.fitBounds(bonds)
+  map.fitBounds(bonds, { maxZoom: 7 })
 }
 
 function createPopup(
@@ -442,21 +442,6 @@ const legendDt = {
 
 <template>
   <div class="map-wrapper" :class="{ desktop: isDesktop }">
-    <div class="map-header" v-if="props.title">
-      <h2 class="map-title">{{ props.title }}</h2>
-      <span v-if="plottedSupporters">
-        {{ plottedSupporters.total }} supporters from
-        {{ plottedSupporters.countries }} different countries
-      </span>
-      <Skeleton
-        v-else
-        width="10em"
-        border-radius="5px"
-        height="1em"
-        style="display: inline-block"
-      ></Skeleton>
-    </div>
-
     <div class="map-container">
       <div v-show="loading" class="loader-wrapper">
         <Loader width="200px"></Loader>
@@ -465,6 +450,7 @@ const legendDt = {
     </div>
 
     <Accordion
+      v-if="!props.disableLegend"
       :value="props.showLegend ? '0' : undefined"
       :dt="legendDt"
       style="margin-top: 1em"
@@ -509,9 +495,7 @@ const legendDt = {
                     class="legend-icon diamond-icon"
                     v-html="diamondSvg"
                   ></div>
-                  <span>
-                    Countries
-                  </span>
+                  <span> Countries </span>
                 </div>
                 <div v-if="layers.infra" class="legend-item">
                   <div class="legend-icon house-icon" v-html="houseSvg"></div>
@@ -568,6 +552,24 @@ const legendDt = {
         </AccordionContent>
       </AccordionPanel>
     </Accordion>
+  </div>
+  <div class="map-header" v-if="props.title">
+    <h2 class="map-title">{{ props.title }}</h2>
+    <span v-if="plottedSupporters && plottedSupporters.total > 1">
+      {{ plottedSupporters.total }} supporters from
+      {{ plottedSupporters.countries }} different countries
+    </span>
+    <span v-if="plottedSupporters && plottedSupporters.total > 1">
+      {{ plottedSupporters.total }} supporters from
+      {{ plottedSupporters.countries }} different countries
+    </span>
+    <Skeleton
+      v-if="!plottedSupporters"
+      width="10em"
+      border-radius="5px"
+      height="1em"
+      style="display: inline-block"
+    ></Skeleton>
   </div>
 </template>
 

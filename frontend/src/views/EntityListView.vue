@@ -201,7 +201,7 @@ const filteredEntities = computed(() => {
       return true
     })
     .sort((a, b) => {
-      // Sort by is_partner, has logo, and random
+      // Sort by is_partner, has logo, and name
       const scoreA = (a.is_partner ? 3 : 0) + (a.logo ? 2 : 0)
       const scoreB = (b.is_partner ? 3 : 0) + (b.logo ? 2 : 0)
       return scoreB - scoreA + a.name.localeCompare(b.name)

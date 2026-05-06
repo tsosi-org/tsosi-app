@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { type Entity } from "@/singletons/ref-data";
-import { getEntityUrl } from "@/utils/url-utils";
-import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue";
-import ProviderCorner from "./atoms/ProviderCornerAtom.vue";
+import { type Entity } from "@/singletons/ref-data"
+import { getEntityUrl } from "@/utils/url-utils"
+import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
+import ProviderCorner from "./atoms/ProviderCornerAtom.vue"
 
 const props = defineProps<{
   entity: Entity
   amounts?: Record<string, number>
-  currency?: string
 }>()
 </script>
 
@@ -92,13 +91,17 @@ const props = defineProps<{
       </div>
     </div>
     <!-- <div class="see-more">Show data</div> -->
-    <div v-if="props.amounts" class="amount-container">
-      <p class="amount">
-        {{ props.amounts[props.currency || "EUR"]?.toLocaleString() || "0" }}
-        {{ props.currency || "EUR" }}
+    <!-- <div v-if="props.amounts" class="amount-container"> -->
+    <!-- <p class="amount">
+        {{
+          props.amounts[selectedCurrency.id || "EUR"]?.toLocaleString() || "0"
+        }}
+        {{ selectedCurrency.id || "EUR" }}
+      </p> -->
+    <!-- <p v-if="props.amounts.since" class="subamount">
+        support started in {{ props.amounts.since }}
       </p>
-      <p class="subamount">since 2012</p>
-    </div>
+    </div> -->
   </RouterLink>
 </template>
 
@@ -225,14 +228,13 @@ a.container:hover {
 }
 
 .amount-container {
-  height: 80px;
+  height: 40px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: var(--p-primary-100);
-  border-top: 1px solid var(--p-primary-200);
+  background-color: #f1f5f9;
   border-radius: 0px 0px 15px 15px;
 
   p {
