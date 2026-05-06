@@ -79,22 +79,6 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
     ordering_fields = ["name", "is_recipient"]
     search_fields = ["name", "short_name", "names__value", "identifiers__value"]
 
-    @action(
-        detail=False, methods=["get"], permission_classes=[BypassPagination]
-    )
-    def emitters(self, request: Request, *args, **kwargs):
-        """ """
-        entity_id = request.query_params.get("entity_id")
-        if entity_id is None:
-            raise ValidationError(f"`entity_id` query parameter if missing.")
-
-        self.pagination_class = None
-        ids = Transfer.objects.filter(
-            merged_into__isnull=True, recipient_id=entity_id
-        ).values_list("emitter_id", flat=True)
-        self.queryset = Entity.objects.filter(id__in=ids).distinct()
-        return self.list(request, *args, **kwargs)
-
     def get_serializer_class(self):
         if self.action == "retrieve":
             return EntityDetailsSerializer

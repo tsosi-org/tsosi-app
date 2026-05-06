@@ -1,134 +1,20 @@
 <script setup lang="ts">
-import Tab from "primevue/tab"
-import TabList from "primevue/tablist"
-import TabPanel from "primevue/tabpanel"
-import TabPanels from "primevue/tabpanels"
-import Tabs from "primevue/tabs"
-import {
-  computed,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  shallowRef,
-  useTemplateRef,
-  watch,
-  type Ref,
-  type ShallowRef,
-} from "vue"
+import { computed, ref } from "vue"
 
 import type { ButtonProps } from "@/components/atoms/ButtonAtom.vue"
-import EntityHistogram from "@/components/EntityHistogram.vue"
-import EntityMap from "@/components/EntityMap.vue"
 import Table, { type TableColumnProps } from "@/components/TableComponent.vue"
 import { selectedCurrency } from "@/singletons/currencyStore"
-import {
-  getEmittersForEntity,
-  getTransfers,
-  type Entity,
-  type EntityDetails,
-  type Transfer,
-} from "@/singletons/ref-data"
-import { fillTransferAmountCurrency } from "@/utils/data-utils"
+import { type EntityDetails, type Transfer } from "@/singletons/ref-data"
 import { getTransferBaseUrl } from "@/utils/url-utils"
 
 const props = defineProps<{
   entity: EntityDetails
+  transfers: Transfer[] | null
 }>()
 
-const noHistogramIds =
-  import.meta.env.VITE_INFRA_HISTOGRAM_OPT_OUT?.split(",") || []
-// Whether to display the histogram
-const displayHistogram = computed(() => {
-  if (!noHistogramIds.length) {
-    return true
-  }
-  return !props.entity.identifiers.some((id) =>
-    noHistogramIds.includes(id.value),
-  )
-})
-
-// Refs for test.
 // There seems to be Memory leak because of the datatable component,
 // mainly caused by this skeleton table.
 const displaySkeletonTable = ref(true)
-
-// Transfer data
-const transfers: Ref<Transfer[] | null> = ref(null)
-// Tabs
-const activeTab = ref("0")
-const tabs = useTemplateRef("entity-tabs")
-// This ref is used to trigger chart data fetching only when the tab is
-// selected
-const chartTabTriggered = ref(false)
-const emittersData: ShallowRef<Entity[]> = shallowRef([])
-const mapDataLoaded = ref(false)
-
-onMounted(async () => {
-  await updateTransfers()
-})
-
-onBeforeUnmount(() => {
-  transfers.value = null
-})
-
-watch(selectedCurrency, () => {
-  if (!transfers.value) {
-    return
-  }
-  const updatedTransfers = transfers.value
-  updatedTransfers.forEach((t) =>
-    fillTransferAmountCurrency(
-      t,
-      selectedCurrency.value.id,
-      amountColumn,
-      currencyColumn,
-    ),
-  )
-})
-watch(activeTab, () => {
-  if (activeTab.value == "1" && chartTabTriggered.value !== true) {
-    chartTabTriggered.value = true
-  }
-})
-watch(chartTabTriggered, () => {
-  if (chartTabTriggered.value === true) {
-    // Scroll the tab panel back to top for the first
-    if (tabs.value != null) {
-      // @ts-expect-error PrimeVue component declaration omits basic
-      // VueJS attributes..
-      const tabPanelEl: HTMLElement = tabs.value.$el
-      if (tabPanelEl.getBoundingClientRect().top < 0) {
-        tabPanelEl.scrollIntoView({ behavior: "instant" })
-      }
-    }
-    updateMapData()
-  }
-})
-
-async function updateTransfers() {
-  const rawTransfers: Transfer[] | null = await getTransfers(props.entity.id)
-  if (!rawTransfers) {
-    return
-  }
-
-  const cleanedTransfers: Transfer[] = []
-  for (const transfer of rawTransfers) {
-    fillTransferAmountCurrency(
-      transfer,
-      selectedCurrency.value.id,
-      amountColumn,
-      currencyColumn,
-    )
-    if (props.entity.children.some((c) => c == transfer.emitter_id)) {
-      transfer.emitter = {
-        ...transfer.emitter,
-        is_child_transfer: true,
-      } as Entity
-    }
-    cleanedTransfers.push(transfer)
-  }
-  transfers.value = cleanedTransfers
-}
 
 const currencyColumn = "__currency"
 const amountColumn = "__amount"
@@ -201,6 +87,7 @@ const baseColumns: TableColumnProps[] = [
   {
     id: "amount",
     title: "Amount",
+    labelGetter: (row) => row.amounts_clc?.[selectedCurrency.value.id] ?? null,
     field: amountColumn,
     type: "number",
     sortable: true,
@@ -232,32 +119,32 @@ const buttons: Array<ButtonProps> = [
 const exportString = `TSOSI_${props.entity.name.replace(/\s+/g, "_")}`
 // Config for the transfer table
 const tableProps = computed(() => {
-  if (!transfers.value?.length) {
+  if (!props.transfers) {
     return null
   }
   let toRemoveCols: string[] = []
-  if (transfers.value.every((t) => t.amount == null)) {
+  if (props.transfers.every((t) => t.amount == null)) {
     toRemoveCols.push("currency")
     if (props.entity.is_recipient) {
       toRemoveCols.push("amount")
     }
   }
-  if (transfers.value.every((t) => t.agent_ids.length == 0)) {
+  if (props.transfers.every((t) => t.agent_ids.length == 0)) {
     toRemoveCols.push("agents")
   }
-  if (transfers.value.every((t) => t.emitter_id == props.entity.id)) {
+  if (props.transfers.every((t) => t.emitter_id == props.entity.id)) {
     toRemoveCols.push("emitter")
   }
   if (!props.entity.is_recipient) {
     toRemoveCols.push("emitterCountry")
   }
-  if (transfers.value.every((t) => t.recipient_id == props.entity.id)) {
+  if (props.transfers.every((t) => t.recipient_id == props.entity.id)) {
     toRemoveCols.push("recipient")
   }
 
   return {
     id: `${props.entity.id}-transfers`,
-    data: transfers.value,
+    data: props.transfers,
     columns: baseColumns.filter((col) => !toRemoveCols.includes(col.id)),
     defaultSort: {
       sortField: "date_clc",
@@ -279,87 +166,18 @@ const skeletonTableProps = {
   hideCount: true,
   disableExport: true,
 }
-
-async function updateMapData() {
-  const emitters = await getEmittersForEntity(props.entity.id)
-  if (emitters != null) {
-    emittersData.value = emitters
-  }
-  mapDataLoaded.value = true
-}
 </script>
 
 <template>
-  <div v-if="props.entity.is_recipient && props.entity.is_partner">
-    <Tabs v-model:value="activeTab" ref="entity-tabs">
-      <TabList class="tab-list">
-        <Tab value="0" as="button">
-          <span class="tab-header">
-            <font-awesome-icon class="icon" :icon="['fas', 'list-ul']" />
-            <span>Table</span>
-          </span>
-        </Tab>
-        <Tab value="1" as="button">
-          <span class="tab-header">
-            <font-awesome-icon class="icon" :icon="['fas', 'chart-column']" />
-            <span>Charts</span>
-          </span>
-        </Tab>
-      </TabList>
-      <TabPanels>
-        <TabPanel value="0">
-          <div v-if="!transfers && displaySkeletonTable">
-            <!-- @vue-ignore -->
-            <Table v-bind="skeletonTableProps"></Table>
-          </div>
-          <div v-if="transfers" class="transfer-tables">
-            <Table v-if="tableProps" v-bind="tableProps"></Table>
-          </div>
-        </TabPanel>
-        <TabPanel value="1">
-          <div class="data-chart-panel">
-            <div v-if="chartTabTriggered" class="dataviz-wrapper">
-              <EntityMap
-                :id="`entity-map-${props.entity.id}`"
-                :supporters="emittersData"
-                :title="'Location of the supporters'"
-                :data-loaded="mapDataLoaded"
-                :export-title-base="props.entity.name"
-                :show-legend="true"
-              />
-            </div>
-            <div
-              v-if="displayHistogram && chartTabTriggered"
-              class="dataviz-wrapper"
-            >
-              <EntityHistogram :entity="props.entity" class="entity-chart" />
-            </div>
-          </div>
-        </TabPanel>
-      </TabPanels>
-    </Tabs>
+  <div v-if="!transfers && displaySkeletonTable" class="transfer-tables">
+    <Table v-bind="skeletonTableProps"></Table>
   </div>
-  <div v-else>
-    <div v-if="!transfers && displaySkeletonTable">
-      <!-- @vue-ignore -->
-      <Table v-bind="skeletonTableProps"></Table>
-    </div>
-    <div v-if="transfers" class="transfer-tables">
-      <Table v-if="tableProps" v-bind="tableProps"></Table>
-    </div>
+  <div v-if="transfers" class="transfer-tables">
+    <Table v-if="tableProps" v-bind="tableProps"></Table>
   </div>
 </template>
 
 <style scoped>
-.tab-header {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 0.6em;
-  align-items: center;
-  font-size: 1.3em;
-}
-
 .transfer-tables > * {
   margin-bottom: 2em;
 }
@@ -370,19 +188,5 @@ async function updateMapData() {
 
 .transfer-tables:deep(a.entity-link) {
   text-decoration: underline;
-}
-
-.data-chart-panel {
-  width: 100%;
-  padding: 1em 0;
-
-  & > * {
-    margin-bottom: 4rem;
-  }
-}
-
-.dataviz-wrapper {
-  width: 100%;
-  overflow-x: auto;
 }
 </style>
