@@ -238,59 +238,65 @@ const filteredEntities = computed(() => {
         <p class="filter-title">Filter</p>
         <div class="filter-group">
           <div>
-            <ToggleButton
-              v-model="isPartner"
-              onLabel="TSOSI provider"
-              offLabel="TSOSI provider"
-              class="icon-right"
-            >
-              <template #icon>
-                <font-awesome-icon
-                  :icon="['fas', 'circle-question']"
-                  v-tooltip="{ value: 'Those who have shared data with TSOSI. See <a href=\'https://tsosi.org/pages/faq#data-provider\'>the FAQ</a>.', escape: false, autoHide: false }"
-                />
-              </template>
+            <ToggleButton v-model="isPartner">
+              <img src="/img/favicon-192x192.png" />
+              <span class="p-togglebutton-label" data-pc-section="label"
+                >TSOSI provider</span
+              >
+              <font-awesome-icon
+                :icon="['fas', 'circle-question']"
+                v-tooltip="{
+                  value:
+                    'Those who have shared data with TSOSI (see <a href=\'https://tsosi.org/pages/faq#data-provider\'>the FAQ</a>)',
+                  escape: false,
+                  autoHide: false,
+                }"
+              />
             </ToggleButton>
-            <ToggleButton
-              v-model="isBarcelona"
-              onLabel="Barcelona Declaration signatory"
-              offLabel="Barcelona Declaration signatory"
-              class="icon-right"
-            >
-              <template #icon>
-                <font-awesome-icon
-                  :icon="['fas', 'circle-question']"
-                  v-tooltip="{ value: 'Signatories of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>.', escape: false, autoHide: false }"
-                />
-              </template>
+            <ToggleButton v-if="selectedRole == 'recipient'" v-model="isSCOSS">
+              <img src="@/assets/img/scoss_icon.png" />
+              <span class="p-togglebutton-label" data-pc-section="label"
+                >SCOSS selected</span
+              >
+              <font-awesome-icon
+                :icon="['fas', 'circle-question']"
+                v-tooltip="{
+                  value:
+                    'infrastructures that have been selected by <a target=\'_blank\' href=\'https://scoss.org/\'>SCOSS</a>',
+                  escape: false,
+                  autoHide: false,
+                }"
+              />
             </ToggleButton>
-            <ToggleButton
-              v-if="selectedRole == 'recipient'"
-              v-model="isSCOSS"
-              onLabel="SCOSS selected"
-              offLabel="SCOSS selected"
-              class="icon-right"
-            >
-              <template #icon>
-                <font-awesome-icon
-                  :icon="['fas', 'circle-question']"
-                  v-tooltip="{ value: 'infrastructures that have been selected by <a target=\'_blank\' href=\'https://scoss.org/\'>SCOSS</a>.', escape: false, autoHide: false }"
-                />
-              </template>
+            <ToggleButton v-if="selectedRole == 'recipient'" v-model="isPOSI">
+              <img src="@/assets/img/posi_icon.ico" />
+              <span class="p-togglebutton-label" data-pc-section="label"
+                >POSI adopter</span
+              >
+              <font-awesome-icon
+                :icon="['fas', 'circle-question']"
+                v-tooltip="{
+                  value:
+                    'Infrastructures that have adopted the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>',
+                  escape: false,
+                  autoHide: false,
+                }"
+              />
             </ToggleButton>
-            <ToggleButton
-              v-if="selectedRole == 'recipient'"
-              v-model="isPOSI"
-              onLabel="POSI adopter"
-              offLabel="POSI adopter"
-              class="icon-right"
-            >
-              <template #icon>
-                <font-awesome-icon
-                  :icon="['fas', 'circle-question']"
-                  v-tooltip="{ value: 'Infrastructures that have adopted the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>.', escape: false, autoHide: false }"
-                />
-              </template>
+            <ToggleButton v-model="isBarcelona">
+              <img src="@/assets/img/barcelona_icon.jpg" />
+              <span class="p-togglebutton-label" data-pc-section="label"
+                >Barcelona Declaration signatory</span
+              >
+              <font-awesome-icon
+                :icon="['fas', 'circle-question']"
+                v-tooltip="{
+                  value:
+                    'Signatories of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>',
+                  escape: false,
+                  autoHide: false,
+                }"
+              />
             </ToggleButton>
           </div>
           <div>
@@ -316,9 +322,12 @@ const filteredEntities = computed(() => {
         optionValue="code"
       />
     </div> -->
-    <div class="counter-container">
-      <p class="filter-title">Showing {{ filteredEntities.length }} {{ selectedRole == "emitter" ? "institutions" : "infrastructures" }} </p>
-    </div>
+      <div class="counter-container">
+        <p class="filter-title">
+          Showing {{ filteredEntities.length }}
+          {{ selectedRole == "emitter" ? "institutions" : "infrastructures" }}
+        </p>
+      </div>
     </div>
     <div class="container">
       <DataView
@@ -379,17 +388,11 @@ const filteredEntities = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 40px;
-  margin-bottom: 20px;
+  margin: 0 15px;
+  margin-bottom: 40px;
 }
 
-.filter-container div {
-  margin: 0 15px
-}
-
-.filter-subcontainer,
-.filter-group {
-  height: 100%;
+.filter-subcontainer {
   display: flex;
   flex-direction: row;
   justify-content: start;
@@ -397,6 +400,10 @@ const filteredEntities = computed(() => {
 }
 
 .filter-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
   flex-wrap: wrap;
 }
 
@@ -418,6 +425,12 @@ const filteredEntities = computed(() => {
 
 .p-togglebutton {
   margin: 0 5px;
+  height: 40px;
+}
+
+.p-togglebutton img {
+  height: 1.2em;
+  width: 1.2em;
 }
 
 .hidden {
@@ -444,12 +457,7 @@ const filteredEntities = computed(() => {
   margin-bottom: 20px;
 }
 
-:deep(svg.p-icon) {
-  margin: -0.5rem;
-}
-
 .icon-right:deep(.p-togglebutton-content) {
   flex-direction: row-reverse;
 }
-
 </style>

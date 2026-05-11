@@ -1,37 +1,35 @@
 <script setup lang="ts">
-import { type Entity } from "@/singletons/ref-data"
-import { getEntityUrl } from "@/utils/url-utils"
-import { ref, type Ref } from "vue"
-import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
-import ProviderCorner from "./atoms/ProviderCornerAtom.vue"
+import { type Entity } from "@/singletons/ref-data";
+import { getEntityUrl } from "@/utils/url-utils";
+import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue";
+import ProviderCorner from "./atoms/ProviderCornerAtom.vue";
 
-interface EntityCardProps {
+const props = defineProps<{
   entity: Entity
   amounts?: Record<string, number>
   currency?: string
-}
-
-const props = defineProps<EntityCardProps>()
-const entity: Ref<Entity | null> = ref(props.entity)
+}>()
 </script>
 
 <template>
   <RouterLink
-    v-if="entity"
-    :to="getEntityUrl(entity)"
+    v-if="props.entity"
+    :to="getEntityUrl(props.entity)"
     class="container"
   >
-    <ProviderCorner v-if="entity.is_partner" />
+    <ProviderCorner v-if="props.entity.is_partner" />
     <div class="info-container">
       <div class="top-container">
         <div class="logo-container">
           <img
-            v-if="entity.logo"
+            v-if="props.entity.logo"
             class="logo"
-            :src="entity.logo"
+            :src="props.entity.logo"
+            :alt="`${props.entity.name} logo`"
+            :title="`${props.entity.name} logo`"
           />
           <h2 class="name" v-else>
-            {{ entity.short_name || entity.name.slice(0, 60) }}
+            {{ props.entity.short_name || props.entity.name.slice(0, 60) }}
           </h2>
         </div>
         <!-- <div class="types-container">
@@ -64,9 +62,9 @@ const entity: Ref<Entity | null> = ref(props.entity)
       </div> -->
       </div>
       <div v-if="props.amounts" class="meta-container">
-        <div class="meta-entry" v-if="entity.infrastructure?.posi_url">
+        <div class="meta-entry" v-if="props.entity.infrastructure?.posi_url">
           <ExternalLinkAtom
-            :href="entity.infrastructure.posi_url"
+            :href="props.entity.infrastructure.posi_url"
             aria-label="Link to POSI declaration"
           >
             <p>POSI adopter</p>
@@ -76,12 +74,12 @@ const entity: Ref<Entity | null> = ref(props.entity)
         <div
           class="meta-entry"
           v-if="
-            entity.infrastructure?.date_scoss_start &&
-            entity.infrastructure?.posi_url
+            props.entity.infrastructure?.date_scoss_start &&
+            props.entity.infrastructure?.posi_url
           "
         >
           <ExternalLinkAtom
-            :href="entity.infrastructure.posi_url"
+            :href="props.entity.infrastructure.posi_url"
             aria-label="Link to Infrafinder page"
           >
             <p>SCOSS selected</p>
