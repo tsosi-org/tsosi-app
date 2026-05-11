@@ -274,13 +274,11 @@ function formatPartners(partners: Entity[]): String {
         title="What does the date column refer to?"
       >
         <p>
-          The date field is relative: it can show either when the transfer was
-          made or when it was received. Therefore, when a support is made by a
-          consortium on behalf of an institution, it's the date of the transfer
-          to the infrastructure that is shown. Note also that the date accuracy
-          may vary according to the data TSOSI received: for its launching,
-          TSOSI has mainly a yearly accuracy, and sometimes a monthly or even
-          daily accuracy.
+          The date field is relative: it can represent either when the support
+          was made or when it was received. Both dates are shown in the detail
+          view; in the main table, the date of reception is prioritized. Also,
+          the date precision depends on the data TSOSI receives and may be at
+          the year, year–month, or year–month–day level.
         </p>
       </StaticSectionAtom>
 
