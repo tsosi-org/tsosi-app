@@ -58,7 +58,11 @@ function loadChips() {
       label: countryName,
     }
     const legalEntityDesc =
-      props.entity.infrastructure?.legal_entity_description
+      props.entity.is_recipient &&
+      (wikidataIdentifier ||
+        props.entity.infrastructure?.legal_entity_wikidata_id)
+        ? `The legal entity is located in ${getCountryLabel(props.entity.country)}, see<a href=\"https://www.wikidata.org/wiki/${wikidataIdentifier.value || props.entity.infrastructure?.legal_entity_wikidata_id}\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">wikidata</a>`
+        : null
     if (legalEntityDesc) {
       countryChip.info = legalEntityDesc
     }
@@ -91,9 +95,9 @@ function isDoab(): boolean {
     <section class="entity-header">
       <div class="entity-header__title">
         <div class="entity-title">
-        <h1 >
-          {{ props.entity.name }}
-        </h1>
+          <h1>
+            {{ props.entity.name }}
+          </h1>
         </div>
         <ChipList
           :chips="headerChips"
@@ -102,9 +106,7 @@ function isDoab(): boolean {
         />
       </div>
 
-      <div
-        class="entity-header__grid"
-      >
+      <div class="entity-header__grid">
         <div class="entity-header__logo">
           <Image
             style="display: inline-block"
@@ -137,7 +139,8 @@ function isDoab(): boolean {
                 <ExternalLinkAtom
                   :label="'Wikipedia'"
                   :href="props.entity.wikipedia_url!"
-                /> -
+                />
+                -
                 <ExternalLinkAtom
                   :label="'CC-BY-SA'"
                   :href="'https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License'"
@@ -155,53 +158,75 @@ function isDoab(): boolean {
           </div>
           <div class="entity-header__links">
             <div class="entity-header__links_circles">
-            <Button
-              v-if="props.entity.website"
-              :href="props.entity.website"
-              rounded variant="outlined" as="a" target="_blank" rel="noopener"
-            >
-              <template #icon>
-                <font-awesome-icon class="fa-icon" :icon="['fas', 'globe']" />
-              </template>
-            </Button>
-            <Button
-              v-if="props.entity.wikipedia_url"
-              :href="props.entity.wikipedia_url"
-              rounded variant="outlined" as="a" target="_blank" rel="noopener"
-            >
-              <img alt="Wikipedia logo" src="@/assets/img/wikipedia_icon.ico" />
-            </Button>
-            <Button
-              v-if="rorIdentifier"
-              :href="getRorUrl(rorIdentifier)"
-              rounded variant="outlined" as="a" target="_blank" rel="noopener"
-            >
-              <template #default>
-                <img alt="ROR logo" src="@/assets/img/ror_icon_rgb.svg" />
-              </template>
-            </Button>
-            <Button
-              v-if="wikidataIdentifier"
-              :href="getWikidataUrl(wikidataIdentifier)"
-              rounded variant="outlined" as="a" target="_blank" rel="noopener"
-            >
-              <img alt="Wikidata logo" src="@/assets/img/wikidata_icon.ico" />
-            </Button>
+              <Button
+                v-if="props.entity.website"
+                :href="props.entity.website"
+                rounded
+                variant="outlined"
+                as="a"
+                target="_blank"
+                rel="noopener"
+              >
+                <template #icon>
+                  <font-awesome-icon class="fa-icon" :icon="['fas', 'globe']" />
+                </template>
+              </Button>
+              <Button
+                v-if="props.entity.wikipedia_url"
+                :href="props.entity.wikipedia_url"
+                rounded
+                variant="outlined"
+                as="a"
+                target="_blank"
+                rel="noopener"
+              >
+                <img
+                  alt="Wikipedia logo"
+                  src="@/assets/img/wikipedia_icon.ico"
+                />
+              </Button>
+              <Button
+                v-if="rorIdentifier"
+                :href="getRorUrl(rorIdentifier)"
+                rounded
+                variant="outlined"
+                as="a"
+                target="_blank"
+                rel="noopener"
+              >
+                <template #default>
+                  <img alt="ROR logo" src="@/assets/img/ror_icon_rgb.svg" />
+                </template>
+              </Button>
+              <Button
+                v-if="wikidataIdentifier"
+                :href="getWikidataUrl(wikidataIdentifier)"
+                rounded
+                variant="outlined"
+                as="a"
+                target="_blank"
+                rel="noopener"
+              >
+                <img alt="Wikidata logo" src="@/assets/img/wikidata_icon.ico" />
+              </Button>
             </div>
             <Button
-            v-if="props.entity.infrastructure?.support_url"
-            variant="outlined"  severity="secondary"
-            as="a" target="_blank" rel="noopener"
-            :href="props.entity.infrastructure.support_url"
-            label="Find out how to support"
-            class="support_button icon-right"
-          >
-            <template #icon>
-              <font-awesome-icon
-                :icon="['fas', 'arrow-up-right-from-square']"
-              />
-            </template>
-          </Button>
+              v-if="props.entity.infrastructure?.support_url"
+              variant="outlined"
+              severity="secondary"
+              as="a"
+              target="_blank"
+              rel="noopener"
+              :href="props.entity.infrastructure.support_url"
+              label="Find out how to support"
+              class="support_button icon-right"
+            >
+              <template #icon>
+                <font-awesome-icon
+                  :icon="['fas', 'arrow-up-right-from-square']"
+                />
+              </template>
+            </Button>
           </div>
           <div v-if="hasButtons" class="entity-header__buttons">
             <Button
@@ -209,7 +234,12 @@ function isDoab(): boolean {
               label="TSOSI"
               variant="outlined"
               as="div"
-              v-tooltip.top="{ value: 'TSOSI provider. See the <a href=\'https://tsosi.org/pages/faq#data-provider\'>FAQ</a>.', escape: false, autoHide: false }"
+              v-tooltip.top="{
+                value:
+                  'TSOSI provider. See the <a href=\'https://tsosi.org/pages/faq#data-provider\'>FAQ</a>.',
+                escape: false,
+                autoHide: false,
+              }"
             >
               <template #icon>
                 <img src="/img/favicon-192x192.png" />
@@ -217,11 +247,17 @@ function isDoab(): boolean {
             </Button>
             <Button
               v-if="props.entity.is_scoss"
-              as="a" target="_blank" rel="noopener"
+              as="a"
+              target="_blank"
+              rel="noopener"
               href="https://scoss.org/how-it-works/current-funding-calls/"
               label="SCOSS"
               variant="outlined"
-              v-tooltip.top="{ value: `Selected by <a target=\'_blank\' href=\'https://scoss.org/how-it-works/current-funding-calls\'>SCOSS</a> for the period ${props.entity.infrastructure?.date_scoss_start?.getFullYear()}-${props.entity.infrastructure?.date_scoss_end?.getFullYear()}.`, escape: false, autoHide: false }"
+              v-tooltip.top="{
+                value: `Selected by <a target=\'_blank\' href=\'https://scoss.org/how-it-works/current-funding-calls\'>SCOSS</a> for the period ${props.entity.infrastructure?.date_scoss_start?.getFullYear()}-${props.entity.infrastructure?.date_scoss_end?.getFullYear()}.`,
+                escape: false,
+                autoHide: false,
+              }"
             >
               <template #icon>
                 <img src="@/assets/img/scoss_icon.png" />
@@ -229,11 +265,18 @@ function isDoab(): boolean {
             </Button>
             <Button
               v-if="props.entity.infrastructure?.posi_url"
-              as="a" target="_blank" rel="noopener"
+              as="a"
+              target="_blank"
+              rel="noopener"
               :href="props.entity.infrastructure.posi_url"
               variant="outlined"
               label="POSI"
-              v-tooltip.top="{ value: 'Adopter of the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>.', escape: false, autoHide: false }"
+              v-tooltip.top="{
+                value:
+                  'Adopter of the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>.',
+                escape: false,
+                autoHide: false,
+              }"
             >
               <template #icon>
                 <img src="@/assets/img/posi_icon.ico" />
@@ -241,23 +284,40 @@ function isDoab(): boolean {
             </Button>
             <Button
               v-if="props.entity.is_barcelona"
-              as="a" target="_blank" rel="noopener"
+              as="a"
+              target="_blank"
+              rel="noopener"
               href="https://barcelona-declaration.org/signatories/"
               variant="outlined"
               label="Barcelona Declaration"
-              v-tooltip.top="{ value: 'Signatory of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>.', escape: false, autoHide: false }"
+              v-tooltip.top="{
+                value:
+                  'Signatory of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>.',
+                escape: false,
+                autoHide: false,
+              }"
             >
               <template #icon>
-                <img class="barcelona_icon" src="@/assets/img/barcelona_icon.jpg" />
+                <img
+                  class="barcelona_icon"
+                  src="@/assets/img/barcelona_icon.jpg"
+                />
               </template>
             </Button>
-                    <Button
+            <Button
               v-if="props.entity.infrastructure?.infra_finder_url"
-              as="a" target="_blank" rel="noopener"
+              as="a"
+              target="_blank"
+              rel="noopener"
               :href="props.entity.infrastructure?.infra_finder_url"
               variant="outlined"
               label="Infra Finder"
-              v-tooltip.top="{ value: 'Included in <a target=\'_blank\' href=\'https://infrafinder.investinopen.org/solutions/\'>Infra Finder</a>.', escape: false, autoHide: false }"
+              v-tooltip.top="{
+                value:
+                  'Included in <a target=\'_blank\' href=\'https://infrafinder.investinopen.org/solutions/\'>Infra Finder</a>.',
+                escape: false,
+                autoHide: false,
+              }"
             >
               <template #icon>
                 <img src="@/assets/img/ioi_icon.ico" />
@@ -289,8 +349,8 @@ function isDoab(): boolean {
               v-if="props.entity.is_recipient && !props.entity.is_partner"
               class="important-info"
             >
-              The data below comes from TSOSI’s providers; they
-              represent only a subset of this infrastructure's supporters.
+              The data below comes from TSOSI’s providers; they represent only a
+              subset of this infrastructure's supporters.
             </li>
             <li>Each line of the table below shows a financial support.</li>
             <li>
@@ -394,7 +454,7 @@ div.p-button:hover {
 }
 
 .entity-header__buttons .p-button {
-    border-width: 2px;
+  border-width: 2px;
 }
 
 .entity-header__title {
@@ -457,7 +517,7 @@ div.p-button:hover {
 }
 
 .p-divider {
-  margin: 0; 
+  margin: 0;
 }
 
 .entity-header__buttons .p-button:deep(span) {
@@ -501,9 +561,8 @@ div.p-button:hover {
 
   .entity-header__buttons {
     flex-direction: column;
-  justify-content: center;
-  margin-top: 0em;
+    justify-content: center;
+    margin-top: 0em;
+  }
 }
-}
-
 </style>

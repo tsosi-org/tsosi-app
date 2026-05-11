@@ -17,8 +17,7 @@
       "date_scoss_start": "2017-01-01",
       "date_scoss_end": "2020-01-01",
       "hide_amount": true,
-      "support_url": "https://doaj.org/support/",
-      "legal_entity_description": "The legal entity is located in Denmark, see <a href=\"https://www.wikidata.org/wiki/Q1227538\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    DOAJ on wikidata</a>."
+      "support_url": "https://doaj.org/support/"
     },
     "static_icon": "doaj_icon.png"
   },
@@ -43,7 +42,7 @@
       "date_scoss_end": "2022-12-01",
       "hide_amount": true,
       "support_url": "https://www.doabooks.org/en/librarians/how-to-become-a-doab-supporter",
-      "legal_entity_description": "DOAB & OAPEN have the same legal entity, located in the Netherlands.See <a href=\"https://www.wikidata.org/wiki/Q21750281\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    DOAB on wikidata</a>,<a href=\"https://www.wikidata.org/wiki/Q109123141\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    OAPEN on wikidata</a>."
+      "legal_entity_wikidata_id": "Q21750281"
     },
     "static_logo": "oapen_doab_logo.png",
     "static_icon": "doab_icon.ico"
@@ -61,8 +60,7 @@
     },
     "infrastructure": {
       "posi_url": "https://operas-eu.org/principles-of-open-scholarly-infrastructure-posi",
-      "support_url": "https://operas-eu.org/about/want-to-know-more/want-to-join-operas/",
-      "legal_entity_description": "The legal entity is located in Belgium, see <a href=\"https://www.wikidata.org/wiki/Q54879577\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    OPERAS on wikidata</a>."
+      "support_url": "https://operas-eu.org/about/want-to-know-more/want-to-join-operas/"
     },
     "static_icon": "operas_icon.png"
   },
@@ -80,8 +78,7 @@
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/peer-community-in",
       "posi_url": "https://peercommunityin.org/2024/04/11/posi/",
-      "support_url": "https://peercommunityin.org/endorse-and-financially-support-pci/",
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q97368331\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    PCI on wikidata</a>."
+      "support_url": "https://peercommunityin.org/endorse-and-financially-support-pci/"
     },
     "static_icon": "pci_icon.jpg"
   },
@@ -100,8 +97,7 @@
       "posi_url": "https://scipost.org/posi",
       "date_scoss_start": "2024-12-01",
       "date_scoss_end": "2027-12-01",
-      "support_url": "https://scipost.org/sponsors/",
-      "legal_entity_description": "The legal entity is located in the Netherlands, see <a href=\"https://www.wikidata.org/wiki/Q52663237\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">    SciPost on wikidata</a>."
+      "support_url": "https://scipost.org/sponsors/"
     },
     "static_icon": "scipost_icon.png",
     "static_logo": "scipost_logo.png"
@@ -118,8 +114,7 @@
       "country": "FR"
     },
     "infrastructure": {
-      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/openedition",
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q16668108\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenEdition on wikidata</a>."
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/openedition"
     },
     "static_icon": "openedition_icon.png"
   },
@@ -136,8 +131,7 @@
       "is_barcelona": true
     },
     "infrastructure": {
-      "support_url": "https://sparceurope.org/ourmembers/join-sparc-europe/supporting-our-work/",
-      "legal_entity_description": "The legal entity is located in the Netherlands, see <a href=\"https://www.wikidata.org/wiki/Q50195409\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">SPARC Europe on wikidata</a>."
+      "support_url": "https://sparceurope.org/ourmembers/join-sparc-europe/supporting-our-work/"
     },
     "static_logo": "sparceurope_logo.png",
     "static_icon": "sparceurope_icon.png"
@@ -154,7 +148,6 @@
       "country": "FR"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q3144107\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">CCSD on wikidata</a>.",
       "posi_url": "https://www.ccsd.cnrs.fr/en/posi-principles/",
       "support_url": "https://www.ccsd.cnrs.fr/en/funding/"
     },
@@ -174,8 +167,7 @@
       "date_scoss_start": "2017-01-01",
       "date_scoss_end": "2020-01-01",
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/sherpa-services-sherpa-romeo-sherpa-juliet-and-opendoar",
-      "support_url": "https://openpolicyfinder.jisc.ac.uk/supporter-scheme",
-      "legal_entity_description": "The legal entity is located in GB, see <a href=\"https://www.wikidata.org/wiki/Q138427491\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Policy Finder on wikidata</a>."
+      "support_url": "https://openpolicyfinder.jisc.ac.uk/supporter-scheme"
     },
     "static_icon": "open_policy_finder_icon.png",
     "static_logo": "open_policy_finder_logo.png"
@@ -226,8 +218,7 @@
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/arxiv",
       "support_url": "https://info.arxiv.org/about/funding.html",
       "date_scoss_start": "2021-01-01",
-      "date_scoss_end": "2024-01-01",
-      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q118398\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">arXiv on wikidata</a>."
+      "date_scoss_end": "2024-01-01"
     },
     "static_icon": "arxiv_icon.png"
   },
@@ -243,8 +234,7 @@
       "country": "FR"
     },
     "infrastructure": {
-      "support_url": "https://www.centre-mersenne.org/en/join-us/",
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q55606850\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Centre Mersenne on wikidata</a>."
+      "support_url": "https://www.centre-mersenne.org/en/join-us/"
     },
     "static_icon": "mersenne_icon.png"
   },
@@ -264,8 +254,7 @@
       "support_url": "https://ror.org/community/sustain/",
       "date_scoss_start": "2022-01-01",
       "date_scoss_end": "2025-01-01",
-      "posi_url": "https://doi.org/10.71938/n0kg-4k60",
-      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q110235640\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">ROR on wikidata</a>."
+      "posi_url": "https://doi.org/10.71938/n0kg-4k60"
     },
     "static_icon": "ror_icon.ico",
     "static_logo": "ror_logo.svg"
@@ -280,9 +269,6 @@
       "short_name": "Repères",
       "website": "https://reseau-reperes.fr/",
       "country": "FR"
-    },
-    "infrastructure": {
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q117355383\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Repères on wikidata</a>."
     },
     "static_icon": "reperes_icon.png",
     "static_logo": "reperes_logo.svg"
@@ -299,8 +285,7 @@
       "country": "GB"
     },
     "infrastructure": {
-      "support_url": "https://www.openlibhums.org/site/become-a-supporter/",
-      "legal_entity_description": "The legal entity is located in GB, see <a href=\"https://www.wikidata.org/wiki/Q17072915\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OLH on wikidata</a>."
+      "support_url": "https://www.openlibhums.org/site/become-a-supporter/"
     },
     "static_icon": "olh_icon.png",
     "static_logo": "olh_logo.jpeg"
@@ -321,8 +306,7 @@
       "posi_url": "https://www.episciences.org/fr/principes-posi/",
       "support_url": "https://www.episciences.org/scoss-funding-for-episciences/",
       "date_scoss_start": "2024-01-01",
-      "date_scoss_end": "2027-01-01",
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q23688650\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Episciences on wikidata</a>."
+      "date_scoss_end": "2027-01-01"
     },
     "static_icon": "episcience.ico"
   },
@@ -341,8 +325,7 @@
       "date_scoss_start": "2023-01-01",
       "date_scoss_end": "2026-01-01",
       "posi_url": "https://www.rd-alliance.org/news/rda-and-the-principles-of-open-scholarly-infrastructure-posi/",
-      "support_url": "https://www.rd-alliance.org/membership/",
-      "legal_entity_description": "The legal entity is located in the GB, see <a href=\"https://www.wikidata.org/wiki/Q25338539\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">RDA on wikidata</a>."
+      "support_url": "https://www.rd-alliance.org/membership/"
     },
     "static_icon": "rda_icon.png",
     "static_logo": "rda_logo.png"
@@ -359,8 +342,7 @@
       "website": "https://reseau-mirabel.info/"
     },
     "infrastructure": {
-      "support_url": "https://reseau-mirabel.info/site/page/soutenir",
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q25389821\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Mir@bel on wikidata</a>."
+      "support_url": "https://reseau-mirabel.info/site/page/soutenir"
     },
     "static_icon": "mirabel_icon.ico",
     "static_logo": "mirabel_logo.png"
@@ -377,7 +359,6 @@
       "country": "FR"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entity is located in France, see <a href=\"https://www.wikidata.org/wiki/Q28127082\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Software Heritage on wikidata</a>.",
       "support_url": "https://www.softwareheritage.org/soutiens/sponsors/programme-de-soutien/",
       "date_scoss_start": "2023-01-01",
       "date_scoss_end": "2026-01-01"
@@ -400,8 +381,7 @@
       "posi_url": "https://opencitations.hypotheses.org/1260",
       "support_url": "https://opencitations.net/support-opencitations/",
       "date_scoss_start": "2019-01-01",
-      "date_scoss_end": "2022-01-01",
-      "legal_entity_description": "The legal entity is located in Italy, see <a href=\"https://www.wikidata.org/wiki/Q29279836\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenCitations on wikidata</a>."
+      "date_scoss_end": "2022-01-01"
     },
     "static_icon": "opencitations_icon.png",
     "static_logo": "opencitations_logo.png"
@@ -418,7 +398,6 @@
       "country": "ZA"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entity is located in South Africa, see <a href=\"https://www.wikidata.org/wiki/Q4689837\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">AJOL on wikidata</a>.",
       "support_url": "https://www.ajol.info/index.php/ajol/supporters-AJOL"
     },
     "static_icon": "ajol_icon.ico",
@@ -437,8 +416,7 @@
       "is_barcelona": true
     },
     "infrastructure": {
-      "support_url": "https://coar-repositories.org/join-coar/",
-      "legal_entity_description": "The legal entity is located in Germany, see <a href=\"https://www.wikidata.org/wiki/Q48789578\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">COAR on wikidata</a>."
+      "support_url": "https://coar-repositories.org/join-coar/"
     },
     "static_icon": "coar_logo.png",
     "static_logo": "coar_logo.png"
@@ -455,8 +433,7 @@
       "country": "CL"
     },
     "infrastructure": {
-      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/la-referencia",
-      "legal_entity_description": "The legal entity is located in Chile, see <a href=\"https://www.wikidata.org/wiki/Q65557864\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">LA Referencia on wikidata</a>."
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/la-referencia"
     },
     "static_logo": "la_ref_logo.png",
     "static_icon": "la_ref_icon.png"
@@ -474,8 +451,7 @@
     },
     "infrastructure": {
       "posi_url": "https://pkp.sfu.ca/pkp-posi-self-assessment/",
-      "support_url": "https://pkp.sfu.ca/about/sustainability/financial-contributors/",
-      "legal_entity_description": "The legal entity is located in Canada, see <a href=\"https://www.wikidata.org/wiki/Q680086\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">PKP on wikidata</a>."
+      "support_url": "https://pkp.sfu.ca/about/sustainability/financial-contributors/"
     },
     "static_logo": "pkp_logo.png",
     "static_icon": "pkp_icon.png"
@@ -494,8 +470,7 @@
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/datacite",
       "posi_url": "https://datacite.org/blog/our-commitment-to-posi/",
-      "support_url": "https://datacite.org/become-a-member/",
-      "legal_entity_description": "The legal entity is located in Germany, see <a href=\"https://www.wikidata.org/wiki/Q821542\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">DataCite on wikidata</a>."
+      "support_url": "https://datacite.org/become-a-member/"
     },
     "static_icon": "datacite_icon.ico"
   },
@@ -512,8 +487,7 @@
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/openalex",
-      "posi_url": "https://blog.openalex.org/posi/",
-      "legal_entity_description": "The legal entity is located in Canada, see <a href=\"https://www.wikidata.org/wiki/Q107507571\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenAlex on wikidata</a>."
+      "posi_url": "https://blog.openalex.org/posi/"
     },
     "static_icon": "openalex_icon.png"
   },
@@ -527,9 +501,6 @@
       "short_name": "GDCC",
       "country": "US",
       "website": "https://www.gdcc.io"
-    },
-    "infrastructure": {
-      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q138153740\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">GDCC on wikidata</a>."
     },
     "static_icon": "gdcc_icon.png",
     "static_logo": "gdcc_logo.png"
@@ -547,8 +518,7 @@
     },
     "infrastructure": {
       "support_url": "https://www.openaire.eu/expression-of-interest-eoi-to-join-the-openaire-amke",
-      "posi_url": "https://www.openaire.eu/principles-open-scholarly-infrastructure-openaire-assessment-v2",
-      "legal_entity_description": "The legal entity is located in Greece, see <a href=\"https://www.wikidata.org/wiki/Q109497870\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenAIRE AMKE on wikidata</a>."
+      "posi_url": "https://www.openaire.eu/principles-open-scholarly-infrastructure-openaire-assessment-v2"
     },
     "static_icon": "openaire_icon.png",
     "static_logo": "openaire_logo.webp"
@@ -563,9 +533,6 @@
       "country": "US",
       "short_name": "ORCID",
       "website": "https://orcid.org/"
-    },
-    "infrastructure": {
-      "legal_entity_description": "The legal entity is located in US, see <a href=\"https://www.wikidata.org/wiki/Q19861084\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">ORCID on wikidata</a>."
     },
     "static_icon": "orcid_icon.ico"
   },
@@ -582,8 +549,7 @@
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/erudit",
-      "support_url": "https://apropos.erudit.org/partenariat/",
-      "legal_entity_description": "The legal entity is located in CA, see <a href=\"https://www.wikidata.org/wiki/Q3591464\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Érudit on wikidata</a>."
+      "support_url": "https://apropos.erudit.org/partenariat/"
     },
     "static_icon": "erudit_icon.png"
   },
@@ -597,9 +563,6 @@
       "country": "CA",
       "short_name": "Unpaywall",
       "website": "https://unpaywall.org"
-    },
-    "infrastructure": {
-      "legal_entity_description": "The legal entity is located in CA, see <a href=\"https://www.wikidata.org/wiki/Q38352586\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Unpaywall on wikidata</a>."
     },
     "static_icon": "unpaywall_icon.png",
     "static_logo": "unpaywall_logo.png"
@@ -616,7 +579,6 @@
       "website": "https://osf.io"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entity is located in the US, see <a href=\"https://www.wikidata.org/wiki/Q18691678\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Science Framework on wikidata</a>.",
       "support_url": "https://www.cos.io/support-cos",
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/osf-open-science-framework"
     },
@@ -633,9 +595,7 @@
       "short_name": "FOAA",
       "country": "NL"
     },
-    "infrastructure": {
-      "legal_entity_description": "The legal entity is located in the Netherlands, see <a href=\"https://www.wikidata.org/wiki/Q55808315\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">FOAA on wikidata</a>."
-    },
+    "infrastructure": {},
     "static_icon": "foaa_icon.png",
     "static_logo": "foaa_logo.png"
   },
@@ -651,7 +611,6 @@
       "website": "https://openknowledgemaps.org/"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entity is located in Austria, see <a href=\"https://www.wikidata.org/wiki/Q48802126\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Open Knowledge Maps on wikidata</a>.",
       "support_url": "https://openknowledgemaps.org/supporting-membership"
     },
     "static_icon": "okm_icon.png",
@@ -669,7 +628,7 @@
       "is_barcelona": true
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entities are located in South America, see <a href=\"https://www.wikidata.org/wiki/Q7305434\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\"> and <a href=\"https://www.wikidata.org/wiki/Q65163744\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\"> on wikidata</a>.",
+      "legal_entity_wikidata_id": "Q7305434",
       "support_url": "https://openknowledgemaps.org/supporting-membership",
       "date_scoss_start": "2021-01-01",
       "date_scoss_end": "2024-01-01"
@@ -687,9 +646,6 @@
       "website": "http://www.psyarxiv.com",
       "country": "US"
     },
-    "infrastructure": {
-      "legal_entity_description": "The legal entities are located in the US, see <a href=\"https://www.wikidata.org/wiki/Q30640195\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">PsyArXiv on wikidata</a>."
-    },
     "static_icon": "psyarxiv_icon.ico",
     "static_logo": "psyarxiv_logo.png"
   },
@@ -703,9 +659,6 @@
       "website": "https://thoth.pub/",
       "country": "GB"
     },
-    "infrastructure": {
-      "legal_entity_description": "The legal entities are located in the GB, see <a href=\"https://www.wikidata.org/wiki/Q115681745\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Thoth Open Metadata on wikidata</a>."
-    },
     "static_icon": "thoth_icon.png",
     "static_logo": "thoth_logo.png"
   },
@@ -718,9 +671,6 @@
       "name": "Open journals",
       "website": "http://openjournals.nl/",
       "country": "NL"
-    },
-    "infrastructure": {
-      "legal_entity_description": "The legal entities are located in NL, see <a href=\"https://www.wikidata.org/wiki/Q116784455\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">openjournals.nl on wikidata</a>."
     },
     "static_icon": "open_journal_icon.png",
     "static_logo": "openjournals_logo.png"
@@ -736,7 +686,6 @@
       "country": "US"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entities are located in US, see <a href=\"https://www.wikidata.org/wiki/Q139497168\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Make Data Count on wikidata</a>.",
       "date_scoss_start": "2024-01-01",
       "date_scoss_end": "2027-01-01",
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/data-citation-corpus",
@@ -756,7 +705,6 @@
       "country": "US"
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entities are located in US, see <a href=\"https://www.wikidata.org/wiki/Q595786\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">DSpace on wikidata</a>.",
       "date_scoss_start": "2021-01-01",
       "date_scoss_end": "2024-01-01",
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/dspace",
@@ -777,7 +725,6 @@
       "is_barcelona": true
     },
     "infrastructure": {
-      "legal_entity_description": "The legal entities are located in US, see <a href=\"https://www.wikidata.org/wiki/Q5309616\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Dryad on wikidata</a>.",
       "date_scoss_start": "2022-01-01",
       "date_scoss_end": "2025-01-01",
       "posi_url": "https://blog.datadryad.org/2020/12/08/dryads-commitment-to-the-principles-of-open-scholarly-infrastructure/",

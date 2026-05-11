@@ -59,7 +59,7 @@
         "editor.tabSize": 2,
         "editor.formatOnSave": true,
         // "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[typescript]": {
         "editor.tabSize": 2,
