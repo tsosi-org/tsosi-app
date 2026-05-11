@@ -49,7 +49,7 @@ export interface InfrastructureDetails extends ApiData {
   support_url?: string
   date_scoss_start?: Date
   date_scoss_end?: Date
-  legal_entity_description?: string
+  legal_entity_wikidata_id?: string
   hide_amount: boolean
 }
 

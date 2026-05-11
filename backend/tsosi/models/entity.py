@@ -164,7 +164,7 @@ class InfrastructureDetails(TimestampedModel):
     date_scoss_start = models.DateField(null=True)
     date_scoss_end = models.DateField(null=True)
 
-    legal_entity_description = models.TextField(null=True)
+    legal_entity_wikidata_id = models.TextField(null=True)
 
     hide_amount = models.BooleanField(default=False)
 

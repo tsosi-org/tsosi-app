@@ -61,7 +61,7 @@ https://primevue.org/theming/styled/#colors
 
   --p-tooltip-background: var(--color-background);
   --p-tooltip-color: var(--color-text);
-  --p-tooltip-max-width: 30rem;
+  --p-tooltip-max-width: 32rem;
 }
 
 @media (min-width: 1000px) {
