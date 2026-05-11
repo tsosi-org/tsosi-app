@@ -27,7 +27,7 @@ const props = defineProps<{
     <div v-for="(chip, index) of props.chips" :key="index">
       <Chip
         :label="chip.label"
-        v-tooltip.bottom="{value: chip.info, escape: false, autohide: false}"
+        v-tooltip.bottom="{value: chip.info, escape: false, autoHide: false}"
         :dt="{
           gap: '0.8rem',
           fontSize: '0.9rem',
