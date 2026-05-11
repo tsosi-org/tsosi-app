@@ -236,7 +236,7 @@ function isDoab(): boolean {
               as="div"
               v-tooltip.top="{
                 value:
-                  'TSOSI provider. See the <a href=\'https://tsosi.org/pages/faq#data-provider\'>FAQ</a>.',
+                  'TSOSI provider (see the <a href=\'https://tsosi.org/pages/faq#data-provider\'>FAQ</a>)',
                 escape: false,
                 autoHide: false,
               }"
@@ -254,7 +254,7 @@ function isDoab(): boolean {
               label="SCOSS"
               variant="outlined"
               v-tooltip.top="{
-                value: `Selected by <a target=\'_blank\' href=\'https://scoss.org/how-it-works/current-funding-calls\'>SCOSS</a> for the period ${props.entity.infrastructure?.date_scoss_start?.getFullYear()}-${props.entity.infrastructure?.date_scoss_end?.getFullYear()}.`,
+                value: `Selected by <a target=\'_blank\' href=\'https://scoss.org/how-it-works/current-funding-calls\'>SCOSS</a> for the period ${props.entity.infrastructure?.date_scoss_start?.getFullYear()}-${props.entity.infrastructure?.date_scoss_end?.getFullYear()}`,
                 escape: false,
                 autoHide: false,
               }"
@@ -273,7 +273,7 @@ function isDoab(): boolean {
               label="POSI"
               v-tooltip.top="{
                 value:
-                  'Adopter of the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>.',
+                  'Adopter of the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>',
                 escape: false,
                 autoHide: false,
               }"
@@ -292,7 +292,7 @@ function isDoab(): boolean {
               label="Barcelona Declaration"
               v-tooltip.top="{
                 value:
-                  'Signatory of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>.',
+                  'Signatory of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>',
                 escape: false,
                 autoHide: false,
               }"
@@ -314,7 +314,7 @@ function isDoab(): boolean {
               label="Infra Finder"
               v-tooltip.top="{
                 value:
-                  'Included in <a target=\'_blank\' href=\'https://infrafinder.investinopen.org/solutions/\'>Infra Finder</a>.',
+                  'Included in <a target=\'_blank\' href=\'https://infrafinder.investinopen.org/solutions/\'>Infra Finder</a>',
                 escape: false,
                 autoHide: false,
               }"
@@ -325,12 +325,6 @@ function isDoab(): boolean {
             </Button>
           </div>
         </div>
-        <!-- <div v-if="props.entity.is_partner">
-            <img
-              class="tsosi-partner"
-              src="@/assets/img/tsosi_provider.svg"
-            />
-        </div> -->
       </div>
     </section>
 
@@ -345,36 +339,35 @@ function isDoab(): boolean {
         </template>
         <div class="info-box-content">
           <ul>
-            <li
-              v-if="props.entity.is_recipient && !props.entity.is_partner"
-              class="important-info"
-            >
-              The data below comes from TSOSI’s providers; they represent only a
-              subset of this infrastructure's supporters.
-            </li>
-            <li>Each line of the table below shows a financial support.</li>
+            <li>Each line of the table below shows a financial support</li>
             <li>
               TSOSI's data comes from
               <RouterLink to="/pages/faq#data-provider"
                 >its providers</RouterLink
-              >.
+              >
+            </li>
+            <li v-if="!props.entity.is_partner" class="important-info">
+              {{
+                `${props.entity.name} is not yet a TSOSI provider; the data below show only a subset of their support`
+              }}
             </li>
             <li v-if="isDoaj() || isDoab()">
               Most of the support amounts are hidden for DOAJ and DOAB:
-              <RouterLink to="/pages/faq#amounts-hidden">see the FAQ</RouterLink
-              >.
+              <RouterLink to="/pages/faq#amounts-hidden"
+                >see the FAQ</RouterLink
+              >
             </li>
             <li v-if="isDoaj() || isDoab()">
               DOAJ and DOAB data only start from 2021:
               <RouterLink to="/pages/faq#doaj-or-doab-page-missing-institution"
                 >see the FAQ</RouterLink
-              >.
+              >
             </li>
             <li v-if="props.entity.date_data_update">
               Last data update:
               {{
                 formatDateWithPrecision(props.entity.date_data_update, "day")
-              }}.
+              }}
             </li>
           </ul>
         </div>

@@ -3,18 +3,27 @@ import IconField from "primevue/iconfield"
 import InputIcon from "primevue/inputicon"
 import InputText from "primevue/inputtext"
 import Popover from "primevue/popover"
-import { computed, nextTick, ref, useTemplateRef, watch, type Ref } from "vue"
+import {
+  computed,
+  nextTick,
+  onBeforeMount,
+  ref,
+  useTemplateRef,
+  watch,
+  type Ref,
+} from "vue"
 
 import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
 
 import {
   entitySearch,
+  getEntities,
   queryPaginatedApiUrl,
   type ApiPaginatedData,
   type Entity,
 } from "@/singletons/ref-data"
+import { shuffleArray } from "@/utils/data-utils"
 import debounce, { type DebounceStatus } from "@/utils/debounce"
-
 
 interface SearchResult {
   id: string
@@ -49,6 +58,8 @@ const component = useTemplateRef("search-bar")
 const input = useTemplateRef("input")
 const searchResultsEl = useTemplateRef("search-results")
 
+const exampleEntities: Ref<string[]> = ref([])
+
 // Search/query term
 const searchTerm = ref("")
 // The concatenated search results
@@ -73,6 +84,19 @@ const pageSize = 20
 const itemSize = 40
 
 watch(highlightedIndex, updateHighlightedResult)
+
+onBeforeMount(async () => {
+  const loadedEntities = Object.values((await getEntities()) || {}) as Entity[]
+  shuffleArray(loadedEntities)
+  exampleEntities.value = loadedEntities
+    .filter((e) => !e.is_recipient && e.is_partner)
+    .slice(0, 3)
+    .concat(
+      loadedEntities.filter((e) => e.is_recipient && e.is_partner).slice(0, 3),
+    )
+    .map((e) => (Math.random() < 0.5 ? e?.short_name || e.name : e.name))
+    .filter((e) => !!e)
+})
 
 async function remoteOnSearch(event: Event) {
   const query = searchTerm.value.trim().toLowerCase()
@@ -367,8 +391,10 @@ function onPopoverShow() {
             No results for search "{{ searchTerm.trim() }}"<br />
           </span>
           <span>
-            Search for supporters or infrastructures using their short name or
-            full name (e.g., DOAJ, CNRS, Cornell, Couperin).
+            {{
+              `Search for supporters or infrastructures using their short name or
+            full name (e.g., ${exampleEntities.join(", ")}).`
+            }}
           </span>
         </div>
 
