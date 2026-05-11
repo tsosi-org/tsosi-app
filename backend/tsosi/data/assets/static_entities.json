@@ -515,8 +515,7 @@
       "posi_url": "https://blog.openalex.org/posi/",
       "legal_entity_description": "The legal entity is located in Canada, see <a href=\"https://www.wikidata.org/wiki/Q107507571\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">OpenAlex on wikidata</a>."
     },
-    "static_icon": "openalex_icon.png",
-    "static_logo": "openalex_logo.png"
+    "static_icon": "openalex_icon.png"
   },
   {
     "pid": {
@@ -602,7 +601,8 @@
     "infrastructure": {
       "legal_entity_description": "The legal entity is located in CA, see <a href=\"https://www.wikidata.org/wiki/Q38352586\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Unpaywall on wikidata</a>."
     },
-    "static_icon": "unpaywall_icon.png"
+    "static_icon": "unpaywall_icon.png",
+    "static_logo": "unpaywall_logo.png"
   },
   {
     "pid": {
@@ -690,7 +690,8 @@
     "infrastructure": {
       "legal_entity_description": "The legal entities are located in the US, see <a href=\"https://www.wikidata.org/wiki/Q30640195\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">PsyArXiv on wikidata</a>."
     },
-    "static_icon": "psyarxiv_icon.ico"
+    "static_icon": "psyarxiv_icon.ico",
+    "static_logo": "psyarxiv_logo.png"
   },
   {
     "pid": {
@@ -737,7 +738,9 @@
     "infrastructure": {
       "legal_entity_description": "The legal entities are located in US, see <a href=\"https://www.wikidata.org/wiki/Q139497168\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">Make Data Count on wikidata</a>.",
       "date_scoss_start": "2024-01-01",
-      "date_scoss_end": "2027-01-01"
+      "date_scoss_end": "2027-01-01",
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/data-citation-corpus",
+      "support_url": "https://makedatacount.org/support-us/"
     },
     "static_icon": "mdc_icon.png",
     "static_logo": "mdc_logo.png"
