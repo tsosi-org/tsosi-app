@@ -161,7 +161,8 @@
     "entity": {
       "name": "Open Policy Finder",
       "website": "https://openpolicyfinder.jisc.ac.uk/",
-      "country": "GB"
+      "country": "GB",
+      "description": "Online service that aggregates and analyses publisher open access policies from around the world and provides summaries of self-archiving permissions and conditions of rights given to authors on a journal-by-journal basis."
     },
     "infrastructure": {
       "date_scoss_start": "2017-01-01",
@@ -409,11 +410,12 @@
       "value": "Q48789578"
     },
     "entity": {
-      "name": "COAR",
+      "name": "Confederation of Open access Repositories",
       "short_name": "COAR",
       "website": "https://coar-repositories.org/",
       "country": "DE",
-      "is_barcelona": true
+      "is_barcelona": true,
+      "description": "COAR is an international association that brings together individual repositories and repository networks in order to build capacity, align policies and practices, and act as a global voice for the repository community."
     },
     "infrastructure": {
       "support_url": "https://coar-repositories.org/join-coar/"
@@ -782,5 +784,14 @@
       "description": "The Consortium of Swiss Academic Libraries obtains licenses for scientific resources (electronic journals, eBooks and databases). It offers a broad range of services and supports the efforts to establish a national open access strategy. It therefore plays an instrumental role in guaranteeing the quality and competitiveness of Switzerland as a university and research hub."
     },
     "static_logo": "csal_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q117462162"
+    },
+    "entity": {
+      "name": "Réseau des URFIST"
+    }
   }
 ]
