@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def compute_analytics():
+def compute_analytics() -> None:
     """
     Generate analytics table of pre-computed data.
     """
@@ -22,6 +22,7 @@ def compute_analytics():
             merged_into__isnull=True,
             amounts_clc__isnull=False,
             date_clc__isnull=False,
+            is_future=False,
         )
         .values(
             "amounts_clc",
