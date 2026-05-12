@@ -94,7 +94,7 @@ onBeforeMount(async () => {
     .concat(
       loadedEntities.filter((e) => e.is_recipient && e.is_partner).slice(0, 3),
     )
-    .map((e) => (Math.random() < 0.5 ? e?.short_name || e.name : e.name))
+    .map((e) => e?.short_name || e.name)
     .filter((e) => !!e)
 })
 
@@ -392,8 +392,7 @@ function onPopoverShow() {
           </span>
           <span>
             {{
-              `Search for supporters or infrastructures using their short name or
-            full name (e.g., ${exampleEntities.join(", ")}).`
+              `Search for supporters or infrastructures such as ${exampleEntities.slice(0, -1).join(", ")} or ${exampleEntities.at(-1)}`
             }}
           </span>
         </div>
