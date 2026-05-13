@@ -300,9 +300,9 @@ function formatPartners(partners: Entity[]): String {
         title="Why are the support amounts hidden sometimes?"
       >
         <p>
-          Partner infrastructures have the choice to display or not the amount
-          of the financial support. TSOSI is new, its data are new, and
-          therefore some infrastructures have chosen to hide the amount.
+          TSOSI providers have the choice to display or not the amount of the
+          financial support. TSOSI is new, its data are new, and therefore some
+          infrastructures have chosen to hide the amount.
         </p>
       </StaticSectionAtom>
 

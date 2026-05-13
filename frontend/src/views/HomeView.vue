@@ -170,7 +170,7 @@ const citations = [
           </h2>
           <div class="explain-boxes">
             <div class="explain-box" style="--l-pos: 80px">
-              <h3>1. We collect financial data from TSOSI partners</h3>
+              <h3>1. We collect financial data from TSOSI providers</h3>
               <p>
                 We collect financial data from various organization. We started
                 with infrastructures and we have added institutions.
