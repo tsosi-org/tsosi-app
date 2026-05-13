@@ -201,7 +201,7 @@ def post_ingestion_pipeline():
 
 
 @shared_task(base=TsosiLockedTask)
-def update_clc_fields_hourly():
+def update_clc_fields_hourly() -> None:
     """
     Task to be run hourly to update clc fields.
     """

@@ -1,10 +1,10 @@
 import {
+  computed,
+  getCurrentScope,
+  onScopeDispose,
   ref,
   type Ref,
   unref,
-  getCurrentScope,
-  onScopeDispose,
-  computed,
 } from "vue"
 
 /**
@@ -39,7 +39,7 @@ export function useMediaQuery(query: string | Ref<string>, global = false) {
   return matches
 }
 
-export const isDesktop = useMediaQuery("(min-width: 1000px)", true)
+export const isDesktop = useMediaQuery("(min-width: 1100px)", true)
 
 export const isTouchScreen = computed(
   () => !useMediaQuery("(pointer: fine)").value,

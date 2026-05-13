@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { $dt } from "@primevue/themes"
 import { RouterLink } from "vue-router"
 
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
-import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
 import { useContactModal } from "@/composables/useContactModal"
 import { isDesktop } from "@/composables/useMediaQuery"
 const { openContactModal } = useContactModal()
@@ -85,7 +83,25 @@ const { openContactModal } = useContactModal()
       </div>
       <div class="footer-nav">
         <h3>Navigation</h3>
-        <NavigationListAtom :color="$dt('neutral.50').value" />
+        <div class="navigation-list">
+          <ul>
+            <li>
+              <RouterLink to="/entities">Explore</RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/pages/about">About</RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/pages/faq">FAQ</RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/pages/blog">Blog</RouterLink>
+            </li>
+            <li>
+              <a @click="openContactModal">Contact & News</a>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </footer>

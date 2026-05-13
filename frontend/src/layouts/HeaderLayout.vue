@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { $dt } from "@primevue/themes"
 import Drawer from "primevue/drawer"
 import { ref, watch } from "vue"
 
 import Button from "@/components/atoms/ButtonAtom.vue"
-import NavigationListAtom from "@/components/atoms/NavigationListAtom.vue"
 import SearchBar from "@/components/SearchBar.vue"
+import { useContactModal } from "@/composables/useContactModal"
 import { isDesktop } from "@/composables/useMediaQuery"
 import { bigHeader } from "@/singletons/fixedHeaderStore"
-
+const { openContactModal } = useContactModal()
 
 const navMenuVisible = ref(false)
 const searchMenuVisible = ref(false)
@@ -54,21 +53,17 @@ function onDrawerToggle(show: boolean) {
     <!-- Large screen header -->
     <div v-if="isDesktop" class="container">
       <div class="left-container">
-      <div class="logo-container">
-        <RouterLink
-          to="/"
-          @click="closeDrawers"
-          class="logo"
-        >
-          <img class="logo-img" src="@/assets/img/logo_white.svg" />
-        </RouterLink>
-        <RouterLink to="/pages/faq#beta-version" class="beta-badge">
-          beta version
-        </RouterLink>
-      </div>
-      <div class="header-citation">
-        <h2>Transparency to Sustain Open Science Infrastructure</h2>
-      </div>
+        <div class="logo-container">
+          <RouterLink to="/" @click="closeDrawers" class="logo">
+            <img class="logo-img" src="@/assets/img/logo_white.svg" />
+          </RouterLink>
+          <RouterLink to="/pages/faq#beta-version" class="beta-badge">
+            beta version
+          </RouterLink>
+        </div>
+        <div class="header-citation">
+          <h2>Transparency to Sustain Open Science Infrastructure</h2>
+        </div>
       </div>
 
       <div class="right-container">
@@ -80,9 +75,24 @@ function onDrawerToggle(show: boolean) {
             :as-growing-button="false"
           />
 
-          <NavigationListAtom color=""/>
+          <div>
+            <ul>
+              <li>
+                <RouterLink to="/entities">Explore</RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/pages/about">About</RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/pages/faq">FAQ</RouterLink>
+              </li>
+              <li>
+                <a @click="openContactModal">Contact & News</a>
+              </li>
+            </ul>
+          </div>
         </div>
-        </div>
+      </div>
     </div>
 
     <!-- Small screens header -->
@@ -114,25 +124,35 @@ function onDrawerToggle(show: boolean) {
           @hide="onDrawerToggle(false)"
         >
           <template #container>
-            <NavigationListAtom
-              :color="$dt('primary').value"
-              font-size="20px"
-              :header="true"
-              class="nav-standalone d-flex"
-              style="gap: 0"
-              @click="closeDrawers"
-            />
+            <div class="navigation-list d-flex">
+              <ul>
+                <li>
+                  <RouterLink @click="closeDrawers" to="/entities"
+                    >Explore</RouterLink
+                  >
+                </li>
+                <li>
+                  <RouterLink @click="closeDrawers" to="/pages/about"
+                    >About</RouterLink
+                  >
+                </li>
+                <li>
+                  <RouterLink @click="closeDrawers" to="/pages/faq"
+                    >FAQ</RouterLink
+                  >
+                </li>
+                <li>
+                  <a @click="openContactModal">Contact & News</a>
+                </li>
+              </ul>
+            </div>
           </template>
         </Drawer>
       </div>
 
       <div class="main-container">
         <div class="logo-container">
-          <RouterLink
-            to="/"
-            @click="closeDrawers"
-            class="logo"
-          >
+          <RouterLink to="/" @click="closeDrawers" class="logo">
             <img class="logo-img" src="@/assets/img/logo_white.svg" />
           </RouterLink>
           <RouterLink to="/pages/faq#beta-version" class="beta-badge">
@@ -185,7 +205,6 @@ function onDrawerToggle(show: boolean) {
 </template>
 
 <style scoped>
-
 header {
   position: fixed;
   display: flex;
@@ -255,7 +274,6 @@ header.home {
       height: 100%;
     }
   }
-
 }
 
 .home .logo-container {
@@ -285,9 +303,8 @@ header.home {
 }
 
 .home .header-citation {
-    display: inline;
+  display: inline;
 }
-
 
 .header-nav {
   display: flex;
@@ -305,7 +322,8 @@ header.home {
     padding: 0;
     margin-left: 15px;
 
-    :deep(a), :deep(a):hover {
+    :deep(a),
+    :deep(a):hover {
       line-height: 1;
       font-size: 20px;
       display: block;
@@ -325,7 +343,8 @@ header.home {
 }
 
 @media (max-width: 500px) {
-  .home .logo-container, .logo-container {
+  .home .logo-container,
+  .logo-container {
     height: 20px;
   }
 
@@ -337,8 +356,29 @@ header.home {
     border-radius: 2px;
   }
   .home .header-citation {
-      display: none;
+    display: none;
   }
 }
 
+.navigation-list {
+  font-size: 20px;
+  width: 100%;
+  gap: 0;
+  flex-direction: column;
+
+  li {
+    list-style: none;
+  }
+  ul {
+    padding: 0;
+  }
+  a {
+    line-height: 1;
+    font-size: 20px;
+    display: block;
+    text-decoration: none;
+    color: var(--local-color);
+    padding: 15px;
+  }
+}
 </style>
