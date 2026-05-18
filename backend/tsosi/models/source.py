@@ -42,3 +42,11 @@ class DataLoadSource(TimestampedModel):
             "date_data_obtained": self.date_data_obtained,
         }
         return "{ " + ", ".join([f"{k}: {v}" for k, v in d.items()]) + " }"
+
+    def stats(self) -> str:
+        """return stats about the data load source"""
+        transfers = self.transfers
+        merged = self.transfers.filter(merged_into__isnull=False)
+        emitters = transfers.values("emitter").distinct()
+        recipients = transfers.values("recipient").distinct()
+        return f"DataLoadSource {self.id} ({self.data_source_id}):\n- Transfers: {transfers.count()} ({merged.count()} merged)\n- Emitters: {emitters.count()}\n- Recipients: {recipients.count()}"
