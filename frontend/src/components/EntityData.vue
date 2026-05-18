@@ -26,11 +26,10 @@ import {
   getTransfers,
   type Entity,
   type EntityDetails,
-  type Transfer
+  type Transfer,
 } from "@/singletons/ref-data"
 import { fillTransferAmountCurrency } from "@/utils/data-utils"
 import { getTransferBaseUrl } from "@/utils/url-utils"
-
 
 const props = defineProps<{
   entity: EntityDetails
@@ -140,7 +139,7 @@ const baseColumns: TableColumnProps[] = [
     field: "date_clc",
     type: "dateWithPrecision",
     sortable: true,
-    info: "The date field is relative. <a href=\'/pages/faq#what-does-the-date-column-refer-to\'>See our FAQ</a>",
+    info: "The date field is relative. <a href='/pages/faq#what-does-the-date-column-refer-to'>See our FAQ</a>",
     filter: {
       enable: true,
     },
@@ -171,7 +170,14 @@ const baseColumns: TableColumnProps[] = [
     title: "Intermediary",
     field: "agents",
     type: "entityLink",
-    labelGetter: (item: any) => item.agents?.map((agent: any) => `${agent?.name}` + (agent?.short_name ? ` (${agent.short_name})` : "")).join(", ") || "",
+    labelGetter: (item: any) =>
+      item.agents
+        ?.map(
+          (agent: any) =>
+            `${agent?.name}` +
+            (agent?.short_name ? ` (${agent.short_name})` : ""),
+        )
+        .join(", ") || "",
     fieldLabel: "agent.name",
     sortable: true,
     info: "When a transfer is done through another entity like a library consortia, it appears in this column.",
@@ -184,7 +190,9 @@ const baseColumns: TableColumnProps[] = [
     title: "Beneficiary",
     field: "recipient",
     type: "entityLink",
-    labelGetter: (item: any) => `${item.recipient?.name}` + (item.recipient?.short_name ? ` (${item.recipient.short_name})` : ""),
+    labelGetter: (item: any) =>
+      `${item.recipient?.name}` +
+      (item.recipient?.short_name ? ` (${item.recipient.short_name})` : ""),
     sortable: true,
     filter: {
       enable: true,
@@ -197,6 +205,7 @@ const baseColumns: TableColumnProps[] = [
     type: "number",
     sortable: true,
     nullValueTemplate: '<span class="data-label hidden-amount">hidden</span>',
+    info: "The amount of the support may be hidden. See <a href='/pages/faq#amounts-hidden'>the FAQ</a>",
   },
   {
     id: "currency",
@@ -304,10 +313,7 @@ async function updateMapData() {
             <Table v-bind="skeletonTableProps"></Table>
           </div>
           <div v-if="transfers" class="transfer-tables">
-            <Table
-              v-if="tableProps"
-              v-bind="tableProps"
-            ></Table>
+            <Table v-if="tableProps" v-bind="tableProps"></Table>
           </div>
         </TabPanel>
         <TabPanel value="1">
@@ -379,5 +385,4 @@ async function updateMapData() {
   width: 100%;
   overflow-x: auto;
 }
-
 </style>

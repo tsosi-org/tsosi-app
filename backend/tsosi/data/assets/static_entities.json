@@ -114,7 +114,8 @@
       "country": "FR"
     },
     "infrastructure": {
-      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/openedition"
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/openedition",
+      "support_url": "https://www.openedition.org/10830"
     },
     "static_icon": "openedition_icon.png"
   },
@@ -667,6 +668,10 @@
       "website": "https://thoth.pub/",
       "country": "GB"
     },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/thoth-open-metadata",
+      "support_url": "https://openbookcollective.org/packages/20/info/"
+    },
     "static_icon": "thoth_icon.png",
     "static_logo": "thoth_logo.png"
   },
@@ -679,6 +684,9 @@
       "name": "Open journals",
       "website": "http://openjournals.nl/",
       "country": "NL"
+    },
+    "infrastructure": {
+      "support_url": "https://openjournals.nl/en/about-us/"
     },
     "static_icon": "open_journal_icon.png",
     "static_logo": "openjournals_logo.png"

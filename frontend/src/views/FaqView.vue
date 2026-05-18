@@ -100,9 +100,16 @@ function formatPartners(partners: Entity[]): String {
 
       <StaticSectionAtom
         id="data-provider"
-        title="Where does the financial data come from?"
+        title="Who are TSOSI’s data providers?"
       >
-        <p>So far, the providers are: {{ formatPartners(partners) }}.</p>
+        <p>
+          TSOSI’s data providers are the organizations that have shared
+          financial data about support for open infrastructures with TSOSI.
+          These can include, for example, research institutions, open
+          infrastructures, library consortia, research funders, or government
+          bodies. So far, the TSOSI's data providers are:
+          {{ formatPartners(partners) }}.
+        </p>
       </StaticSectionAtom>
 
       <StaticSectionAtom id="join-tsosi" title="How can I join TSOSI?">
@@ -300,9 +307,9 @@ function formatPartners(partners: Entity[]): String {
         title="Why are the support amounts hidden sometimes?"
       >
         <p>
-          TSOSI providers have the choice to display or not the amount of the
-          financial support. TSOSI is new, its data are new, and therefore some
-          infrastructures have chosen to hide the amount.
+          TSOSI is recent (the platform was launched in June 2025); its data are
+          new, and therefore some of TSOSI's data providers have chosen to hide
+          the amounts.
         </p>
       </StaticSectionAtom>
 

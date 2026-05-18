@@ -239,7 +239,7 @@ const filteredEntities = computed(() => {
                 :icon="['fas', 'circle-question']"
                 v-tooltip="{
                   value:
-                    'Those who have shared data with TSOSI (see <a href=\'https://tsosi.org/pages/faq#data-provider\'>the FAQ</a>)',
+                    'Those who have shared data with TSOSI (see <a href=\'/pages/faq#data-provider\'>the FAQ</a>)',
                   escape: false,
                   autoHide: false,
                 }"
