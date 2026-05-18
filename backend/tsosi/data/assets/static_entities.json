@@ -399,7 +399,9 @@
       "country": "ZA"
     },
     "infrastructure": {
-      "support_url": "https://www.ajol.info/index.php/ajol/supporters-AJOL"
+      "support_url": "https://www.ajol.info/index.php/ajol/supporters-AJOL",
+      "date_scoss_start": "2024-01-01",
+      "date_scoss_end": "2027-01-01"
     },
     "static_icon": "ajol_icon.ico",
     "static_logo": "ajol_logo.png"
@@ -435,7 +437,9 @@
       "country": "CL"
     },
     "infrastructure": {
-      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/la-referencia"
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/la-referencia",
+      "date_scoss_start": "2022-01-01",
+      "date_scoss_end": "2025-01-01"
     },
     "static_logo": "la_ref_logo.png",
     "static_icon": "la_ref_icon.png"
@@ -453,7 +457,9 @@
     },
     "infrastructure": {
       "posi_url": "https://pkp.sfu.ca/pkp-posi-self-assessment/",
-      "support_url": "https://pkp.sfu.ca/about/sustainability/financial-contributors/"
+      "support_url": "https://pkp.sfu.ca/about/sustainability/financial-contributors/",
+      "date_scoss_start": "2024-01-01",
+      "date_scoss_end": "2027-01-01"
     },
     "static_logo": "pkp_logo.png",
     "static_icon": "pkp_icon.png"

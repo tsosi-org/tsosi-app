@@ -35,14 +35,13 @@ const { isContactModalOpen, closeContactModal } = useContactModal()
         <!-- Newsletter & Social section -->
         <div class="contact-section">
           <p class="contact-label">
-            📖 Read the latest from our
-            <RouterLink
-              @click="closeContactModal"
-              to="/pages/blog"
+            <font-awesome-icon :icon="['fab', 'linkedin']" class="link-icon" />
+            Follow us on
+            <ExternalLinkAtom
+              :label="'LinkedIn'"
+              :href="'https://www.linkedin.com/company/tsosi/'"
               class="contact-link"
-            >
-              blog</RouterLink
-            >
+            />
           </p>
           <p class="contact-label">
             📣 Sign up for the
@@ -55,13 +54,14 @@ const { isContactModalOpen, closeContactModal } = useContactModal()
             >
           </p>
           <p class="contact-label">
-            <font-awesome-icon :icon="['fab', 'linkedin']" class="link-icon" />
-            Follow us on
-            <ExternalLinkAtom
-              :label="'LinkedIn'"
-              :href="'https://www.linkedin.com/company/tsosi/'"
+            📖 Read the latest from our
+            <RouterLink
+              @click="closeContactModal"
+              to="/pages/blog"
               class="contact-link"
-            />
+            >
+              blog</RouterLink
+            >
           </p>
         </div>
       </div>

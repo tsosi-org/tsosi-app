@@ -28,8 +28,8 @@ type FilterValue = {
 
 const allEntities: Ref<DeepReadonly<Entity[]>> = ref([])
 const roleOptions: Ref<FilterValue[]> = ref([
-  { name: "Infrastructure", code: "recipient" },
-  { name: "Institution", code: "emitter" },
+  { name: "Open infrastructures", code: "recipient" },
+  { name: "Supporters", code: "emitter" },
 ])
 const selectedRole: Ref<string> = ref("recipient")
 const countryOptions: Ref<FilterValue[]> = ref([])
@@ -67,15 +67,7 @@ watch(
 )
 
 watch(
-  [
-    selectedRole,
-    selectedCountries,
-    isPartner,
-    isSCOSS,
-    isPOSI,
-    isBarcelona,
-    currentPage,
-  ],
+  [selectedRole, selectedCountries, isPartner, isSCOSS, isPOSI, isBarcelona],
   () => {
     if (isSyncingFromRoute.value) {
       return
@@ -156,7 +148,7 @@ function syncFiltersToQuery() {
     countries: countryCodes.length > 0 ? countryCodes.join(",") : undefined,
   }
 
-  void router.replace({ query: nextQuery })
+  void router.replace({ query: nextQuery, hash: route.hash })
 }
 
 function onPageChange(event: { page?: number }) {
@@ -221,7 +213,7 @@ const filteredEntities = computed(() => {
   <div class="container">
     <div class="container title-container">
       <h1 class="title">
-        Explore the funding graph of open science infrastructure
+        Explore the funding graph of<br />open science infrastructure
       </h1>
     </div>
     <div class="container select-container">
