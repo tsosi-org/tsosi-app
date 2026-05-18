@@ -231,12 +231,12 @@ function isDoab(): boolean {
           <div v-if="hasButtons" class="entity-header__buttons">
             <Button
               v-if="props.entity.is_partner"
-              label="TSOSI"
+              label="TSOSI provider"
               variant="outlined"
               as="div"
               v-tooltip.top="{
                 value:
-                  'TSOSI provider (see the <a href=\'https://tsosi.org/pages/faq#data-provider\'>FAQ</a>)',
+                  'TSOSI\'s data provider (see the <a href=\'/pages/faq#data-provider\'>FAQ</a>)',
                 escape: false,
                 autoHide: false,
               }"
@@ -348,14 +348,8 @@ function isDoab(): boolean {
             </li>
             <li v-if="!props.entity.is_partner" class="important-info">
               {{
-                `${props.entity.name} is not yet a TSOSI provider; the data below show only a subset of their support`
+                `${props.entity.name} is not yet a TSOSI data provider; the data below show only a subset of their support`
               }}
-            </li>
-            <li v-if="isDoaj() || isDoab()">
-              Most of the support amounts are hidden for DOAJ and DOAB:
-              <RouterLink to="/pages/faq#amounts-hidden"
-                >see the FAQ</RouterLink
-              >
             </li>
             <li v-if="isDoaj() || isDoab()">
               DOAJ and DOAB data only start from 2021:

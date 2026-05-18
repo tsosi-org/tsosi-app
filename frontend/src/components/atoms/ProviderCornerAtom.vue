@@ -1,8 +1,11 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="corner-container" v-tooltip.top="'TSOSI provider'">
-    <img src="@/assets/img/tsosi_provider_simple.svg" alt="TSOSI Provider" />
+  <div class="corner-container" v-tooltip.top="'TSOSI\'s data provider'">
+    <img
+      src="@/assets/img/tsosi_provider_simple.svg"
+      alt="TSOSI\'s data provider"
+    />
   </div>
 </template>
 
@@ -15,7 +18,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  filter: drop-shadow(-2px -2px 3px rgba(0,0,0,0.3));
+  filter: drop-shadow(-2px -2px 3px rgba(0, 0, 0, 0.3));
 }
 
 .corner-container img {
