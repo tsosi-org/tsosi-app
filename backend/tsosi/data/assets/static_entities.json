@@ -16,7 +16,6 @@
       "posi_url": "https://blog.doaj.org/fr/2025/10/20/doaj-recommits-to-the-principles-of-open-scholarly-infrastructure/",
       "date_scoss_start": "2017-01-01",
       "date_scoss_end": "2020-01-01",
-      "hide_amount": true,
       "support_url": "https://doaj.org/support/"
     },
     "static_icon": "doaj_icon.png"
@@ -40,7 +39,6 @@
       "posi_url": "https://www.oapen.org/oapen/posi-self-audit",
       "date_scoss_start": "2019-12-01",
       "date_scoss_end": "2022-12-01",
-      "hide_amount": true,
       "support_url": "https://www.doabooks.org/en/librarians/how-to-become-a-doab-supporter",
       "legal_entity_wikidata_id": "Q21750281"
     },
@@ -617,7 +615,8 @@
       "name": "Open Knowledge Maps",
       "short_name": "OKMaps",
       "country": "AT",
-      "website": "https://openknowledgemaps.org/"
+      "website": "https://openknowledgemaps.org/",
+      "description": "An AI-based visual interface that dramatically increases the visibility of research findings for science and society alike."
     },
     "infrastructure": {
       "support_url": "https://openknowledgemaps.org/supporting-membership"
@@ -653,7 +652,8 @@
     "entity": {
       "name": "PsyArXiv",
       "website": "http://www.psyarxiv.com",
-      "country": "US"
+      "country": "US",
+      "description": "An open preprint archive designed to facilitate rapid dissemination of psychological research. PsyArXiv is a creation of the Society for the Improvement of Psychological Science (SIPS) and is hosted on the Open Science Framework from the Center for Open Science (COS)."
     },
     "static_icon": "psyarxiv_icon.ico",
     "static_logo": "psyarxiv_logo.png"
@@ -666,7 +666,8 @@
     "entity": {
       "name": "Thoth Open Metadata",
       "website": "https://thoth.pub/",
-      "country": "GB"
+      "country": "GB",
+      "description": "Thoth Open Metadata is a non-profit open infrastructure dedicated to supporting the scholarly community by providing the seamless integration of open metadata within the book supply chain, ensuring the long-term sustainability and accessibility of the scholarly record."
     },
     "infrastructure": {
       "infra_finder_url": "https://infrafinder.investinopen.org/solutions/thoth-open-metadata",
@@ -681,9 +682,10 @@
       "value": "Q116784455"
     },
     "entity": {
-      "name": "Open journals",
+      "name": "Openjournals",
       "website": "http://openjournals.nl/",
-      "country": "NL"
+      "country": "NL",
+      "description": "An online platform and support team, for publishing scholarly, peer-reviewed journals according to the diamond open access publishing model. We work with university publishers, research institutes, scientific societies and independent editors to enable scientists to self-publish a journal, based on open science principles."
     },
     "infrastructure": {
       "support_url": "https://openjournals.nl/en/about-us/"
