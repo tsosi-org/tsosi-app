@@ -166,8 +166,6 @@ class InfrastructureDetails(TimestampedModel):
 
     legal_entity_wikidata_id = models.TextField(null=True)
 
-    hide_amount = models.BooleanField(default=False)
-
     class Meta:
         constraints = [
             models.CheckConstraint(
