@@ -57,11 +57,15 @@ def resolve_df_linked_list(
     df_last_entity = df[[id_col, link_id_col]]
 
     link_next_col = "__link_next"
-    base_mapping = df[[id_col, link_id_col]].rename(
-        columns={
-            id_col: link_id_col,
-            link_id_col: link_next_col,
-        }
+    base_mapping = (
+        df[[id_col, link_id_col]]
+        .rename(
+            columns={
+                id_col: link_id_col,
+                link_id_col: link_next_col,
+            }
+        )
+        .drop_duplicates(link_id_col)
     )
 
     count = 1
