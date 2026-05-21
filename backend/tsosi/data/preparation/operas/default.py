@@ -1,17 +1,18 @@
 from datetime import date
+from pathlib import Path
 
 from tsosi.data.preparation import raw_data_config as rdc
-from tsosi.models.date import DATE_PRECISION_YEAR
+from tsosi.models.date import DATE_PRECISION_DAY, DATE_PRECISION_YEAR
 
 
 def get_config(
-    file_path: str, sheet_name: str, year: int, date_data: date
+    file_path: str, sheet_name: str, date_data: date
 ) -> rdc.RawDataConfigFromFile:
     source = rdc.DataLoadSource(
         data_source_id="operas",
-        year=year,
+        entity_id="00rfexj26",
         full_data=True,
-        data_load_name=file_path.split("/")[-1],
+        data_load_name=Path(file_path).name,
         date_data_obtained=date_data,
     )
     return rdc.RawDataConfigFromFile(
@@ -21,17 +22,17 @@ def get_config(
         fields=[
             rdc.FieldRecipientName(constant="OPERAS"),
             rdc.FieldRecipientRorId(constant="00rfexj26"),
-            rdc.FieldEmitterName(field="Emitter"),
-            rdc.FieldEmitterCountry(field="Country"),
-            rdc.FieldEmitterRorId(field="emitter_ror_id"),
-            rdc.FieldEmitterWikidataId(field="emitter_wikidata_id"),
-            rdc.FieldEmitterType(field="Category"),
-            rdc.FieldAmount(field="Value"),
+            rdc.FieldEmitterName(field="emitter/name"),
+            rdc.FieldEmitterCountry(field="country"),
+            rdc.FieldEmitterRorId(field="emitter/ror_id"),
+            rdc.FieldEmitterWikidataId(field="emitter/wikidata_id"),
+            rdc.FieldEmitterCustomId(field="emitter/custom_id"),
+            rdc.FieldEmitterSub(field="emitter/sub"),
+            rdc.FieldSupportType(field="support_type"),
+            rdc.FieldAmount(field="amount"),
             rdc.FieldHideAmount(constant=False),
-            rdc.FieldCurrency(field="Currency"),
-            rdc.FieldDatePaymentRecipient(
-                field="Date", format="%Y", date_precision=DATE_PRECISION_YEAR
-            ),
+            rdc.FieldCurrency(constant="EUR"),
+            rdc.FieldDatePaymentRecipient(field="date_received"),
         ],
         input_file_name=file_path,
         input_sheet_name=sheet_name,
