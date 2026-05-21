@@ -22,6 +22,7 @@ from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 CRITERIA_EMITTER = "emitter"
 CRITERIA_RECIPIENT = "recipient"
 CRITERIA_AMOUNT = "amount"
+CRITERIA_SUB_EMITTER = "emitter_sub"
 CRITERIA_DATE_INVOICE = "date_invoice"
 CRITERIA_DATE_PAYMENT_EMITTER = "date_payment_emitter"
 CRITERIA_DATE_PAYMENT_RECIPIENT = "date_payment_recipient"
@@ -151,6 +152,10 @@ def transfer_is_matching(
                 return False, criteria
             elif getattr(b, date_field) is not None:
                 break
+
+    # Check sub emitter
+    if transfer_left.emitter_sub != transfer_right.emitter_sub:
+        return False, CRITERIA_SUB_EMITTER
 
     # Check amount
     if not transfer_left.currency or not transfer_right.currency:
