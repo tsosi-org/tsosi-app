@@ -278,13 +278,19 @@ const filteredEntities = computed(() => {
             <ToggleButton v-model="isBarcelona">
               <img src="@/assets/img/barcelona_icon.jpg" />
               <span class="p-togglebutton-label" data-pc-section="label"
-                >Barcelona Declaration signatory</span
+                >Barcelona Declaration
+                {{
+                  selectedRole == "recipient" ? "supporter" : "signatory"
+                }}</span
               >
               <font-awesome-icon
                 :icon="['fas', 'circle-question']"
                 v-tooltip="{
                   value:
-                    'Signatories of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>',
+                    (selectedRole == 'recipient'
+                      ? 'Supporters'
+                      : 'Signatories') +
+                    ' of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>',
                   escape: false,
                   autoHide: false,
                 }"

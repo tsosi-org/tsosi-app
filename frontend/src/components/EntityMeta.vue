@@ -292,7 +292,8 @@ function isDoab(): boolean {
               label="Barcelona Declaration"
               v-tooltip.top="{
                 value:
-                  'Signatory of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>',
+                  (props.entity.is_recipient ? 'Supporter' : 'Signatory') +
+                  ' of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>',
                 escape: false,
                 autoHide: false,
               }"
