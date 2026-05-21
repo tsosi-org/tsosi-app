@@ -49,4 +49,5 @@ class DataLoadSource(TimestampedModel):
         merged = self.transfers.filter(merged_into__isnull=False)
         emitters = transfers.values("emitter").distinct()
         recipients = transfers.values("recipient").distinct()
-        return f"DataLoadSource {self.id} ({self.data_source_id}):\n- Transfers: {transfers.count()} ({merged.count()} merged)\n- Emitters: {emitters.count()}\n- Recipients: {recipients.count()}"
+        agents = transfers.values("agents").distinct()
+        return f"DataLoadSource {self.id} ({self.data_source_id}):\n- Transfers: {transfers.count()} ({merged.count()} merged)\n- Emitters: {emitters.count()}\n- Agents: {agents.count()}\n- Recipients: {recipients.count()}"
