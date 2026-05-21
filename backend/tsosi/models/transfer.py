@@ -44,6 +44,10 @@ TRANSFER_ENTITY_MATCH_CRITERIA_CHOICES = {
 }
 
 
+class SupportType(models.Model):
+    name = models.CharField(max_length=256, unique=True)
+
+
 class Transfer(TimestampedModel):
     """
     Represents a money transfer between entities.
@@ -81,6 +85,9 @@ class Transfer(TimestampedModel):
     date_start = DateField(null=True)
     date_end = DateField(null=True)
     description = models.TextField()
+    support_type = models.ForeignKey(
+        SupportType, on_delete=models.SET_NULL, null=True
+    )
     original_id = models.CharField(max_length=256)
     amounts_clc = models.JSONField(null=True)
     hide_amount = models.BooleanField(default=False)

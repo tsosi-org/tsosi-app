@@ -259,6 +259,11 @@ class FieldDateEnd(ConstOrField):
 
 
 @dataclass(kw_only=True)
+class FieldSupportType(ConstOrField):
+    NAME = "support_type"
+
+
+@dataclass(kw_only=True)
 class FieldOriginalId(ConstOrField):
     NAME = "original_id"
 
@@ -311,6 +316,7 @@ ALL_FIELDS: list[Type[ConstOrField]] = [
     FieldDateEnd,
     FieldOriginalId,
     FieldOriginalAmountField,
+    FieldSupportType,
 ]
 
 DATE_FIELDS = [
