@@ -48,16 +48,16 @@ def currency_iso_from_value(val, error: bool = False) -> str | None:
         logger.error(msg)
         return None
 
-    match = re.search(r"[A-Z]{3}", val)
-    if match:
-        value = match.group(0)
-        return value
-
     # We manually map currency symbols (€, $ and £) to occidental currencies..
     # Not very good.
     for symbol, code in CURRENCY_MAPPING.items():
         if symbol in val:
             return code
+
+    match = re.search(r"[A-Z]{3}", val)
+    if match:
+        value = match.group(0)
+        return value
 
     msg = f"Currency ISO code could not be derived from input value `{val}`"
     if error:
