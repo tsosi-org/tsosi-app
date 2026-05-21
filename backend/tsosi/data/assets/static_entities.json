@@ -809,5 +809,15 @@
     "entity": {
       "name": "Réseau des URFIST"
     }
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q2210863"
+    },
+    "entity": {
+      "name": "Dutch University Libraries and National Library",
+      "short_name": "UKB"
+    }
   }
 ]

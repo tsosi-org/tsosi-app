@@ -202,6 +202,7 @@ DATA_SOURCES = [
     "scipost",
     "uga",
     "uminho",
+    "utrecht",
 ]
 
 
