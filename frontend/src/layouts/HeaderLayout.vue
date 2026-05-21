@@ -78,7 +78,7 @@ function onDrawerToggle(show: boolean) {
           <div>
             <ul>
               <li>
-                <RouterLink to="/entities">Explore</RouterLink>
+                <RouterLink to="/explore">Explore</RouterLink>
               </li>
               <li>
                 <RouterLink to="/pages/about">About</RouterLink>
@@ -127,7 +127,7 @@ function onDrawerToggle(show: boolean) {
             <div class="navigation-list d-flex">
               <ul>
                 <li>
-                  <RouterLink @click="closeDrawers" to="/entities"
+                  <RouterLink @click="closeDrawers" to="/explore"
                     >Explore</RouterLink
                   >
                 </li>

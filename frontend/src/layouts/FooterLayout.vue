@@ -86,7 +86,7 @@ const { openContactModal } = useContactModal()
         <div class="navigation-list">
           <ul>
             <li>
-              <RouterLink to="/entities">Explore</RouterLink>
+              <RouterLink to="/explore">Explore</RouterLink>
             </li>
             <li>
               <RouterLink to="/pages/about">About</RouterLink>

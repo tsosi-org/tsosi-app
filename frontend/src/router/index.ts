@@ -23,9 +23,13 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: "/entities",
-      name: "entities",
+      path: "/explore",
+      name: "explore",
       component: EntityListView,
+    },
+    {
+      path: "/entities",
+      redirect: "/explore",
     },
     {
       path: "/entities/:id",
