@@ -190,6 +190,7 @@ DATA_SOURCES = [
     "doaj_library",
     "doaj_publisher",
     "doaj",
+    "inrae",
     "leuven",
     "liege",
     "mersenne",
