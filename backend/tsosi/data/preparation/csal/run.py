@@ -26,7 +26,9 @@ RAW_FOLDER = Path(BASE_DIR) / "_no_git/data/raw" / NAME
 
 
 def main() -> None:
-    raw_path = str(RAW_FOLDER / "Overview_SCOSS_FundingCycles_CSAL_TSOSI.xlsx")
+    raw_path = str(
+        RAW_FOLDER / "Overview_SCOSS_FundingCycles_CSAL_TSOSI_fixed.xlsx"
+    )
     df = pd.read_excel(raw_path)
     mapping = {
         "institution/name": "emitter/name",
@@ -35,6 +37,7 @@ def main() -> None:
         "amount": "amount",
         "currency": "currency",
         "date_invoice": "date_invoice",
+        "date_sent": "date_sent",
         "date_received": "date_received",
     }
     df = df.rename(columns=mapping)[mapping.values()]

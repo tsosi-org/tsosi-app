@@ -34,6 +34,7 @@ def get_config(
             rdc.FieldCurrency(field="currency"),
             rdc.FieldHideAmount(constant=False),
             rdc.FieldDateInvoice(field="date_invoice"),
+            rdc.FieldDatePaymentEmitter(field="date_sent"),
             rdc.FieldDatePaymentRecipient(field="date_received"),
         ],
     )
