@@ -47,7 +47,7 @@ Baylor University;;005781934
 Bibliothek der Pädagogischen Hochschule Freiburg / Pädagogische Hochschule Schwäbisch Gmünd;Q28733472;
 Bibliothek der Pädagogischen Hochschule Freiburg;Q28733472;
 Bibliothek der Pädagogischen Hochschule Zürich;Q111747298;
-Bibliothek der Universität St. Gallen;;05m37v666
+Bibliothek der Universität St. Gallen;;0561a3s31
 Bibliothéque Cantonal et Univérsitaria de Lausanne;;019whta54
 Bibliothèque de l`EPF Lausanne;;02s376052
 Bibliothèque interuniversitaire de la Communauté française de Belgique (BICfB);Q76612327;
@@ -340,7 +340,7 @@ John Wiley and Sons LTD;;02xe89706
 Johns Hopkins University;;00za53h95
 Kalamazoo College;;001qst305
 Kansas State University;;05p1j8758
-Kantons- und Universitätsbibliothek Freiburg;Q29479079;
+Kantons- und Universitätsbibliothek Freiburg;;022fs9h90
 Karl Franzens Universität Graz;;01faaaf77
 Karl-Franzens-Universität Graz;;01faaaf77
 Karlstad University;;05s754026
@@ -357,7 +357,7 @@ King's College London;;0220mzb33
 KIT-Bibliothek Medienbearbeitung;Q1718711;
 Konsortium Baden-Württemberg;Q76612447;
 Konsortium d. Sächsischen Hochschulbibliotheken;Q134580046;
-Konsortium der Sächsischen Hochschulbibliotheken / Sachsenkonsortium c/o SLUB Dresden - Saxon;;01jmqcy63
+Konsortium der Sächsischen Hochschulbibliotheken / Sachsenkonsortium c/o SLUB Dresden - Saxon;Q134580046;
 Konsortium der Sächsischen Hochschulbibliotheken / Sachsenkonsortium c/o SLUB Dresden;Q134580046;
 Korea Institute of Science and Technology Information (KISTI);;01k4yrm29
 Kungliga Tekniska högskolan / Royal Institute of Technology;;026vcq606
@@ -677,7 +677,7 @@ Universität Wien;;03prydq77
 Universität Zürich (UB);;02crff812
 Universitäts- und Landesbibliothek Bonn;Q2496248;
 Universitätsbibliotek Basel;Q683842;
-Universitätsbibliotek Bern;Q15852122;
+Universitätsbibliotek Bern;;02k7v4d05
 Universitätsbibliothek Bamberg;Q23786596;
 Universitätsbibliothek Bayreuth;Q1367678;
 Universitätsbibliothek Bielefeld;Q1770764;
@@ -990,3 +990,4 @@ ZPID - Leibniz-Institut für Psychologie / Leibniz Institute for Psychology;;016
 ZPID - Leibniz-Institut für Psychologie;;0165gz615
 Zürcher Hochschule der Angewandten Wissenschaften;;05pmsvm27
 Zürcher Hochschule der Künste;;05r0ap620
+PH Konsortium;;05m37v666
