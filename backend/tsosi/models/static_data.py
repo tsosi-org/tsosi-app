@@ -185,6 +185,7 @@ def update_static_entities() -> None:
 DATA_SOURCES = [
     "couperin",
     "csal",
+    "doab_oapen",
     "doab_oapen_library",
     "doab_oapen_sponsor",
     "doaj_library",

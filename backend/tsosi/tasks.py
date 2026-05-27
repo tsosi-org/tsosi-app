@@ -233,6 +233,7 @@ def process_identifier_data():
     enrichment.update_entity_from_pid_records()
     enrichment.update_entity_names()
     update_clc_fields_hourly.delay()  # type:ignore
+    update_clc_fields_daily.delay()  # type:ignore
     update_wiki_data.delay()  # type:ignore
 
 

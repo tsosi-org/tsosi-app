@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.db.models import Q
 
 from .currency import Currency
 from .date import DateField
@@ -48,11 +49,36 @@ class SupportType(models.Model):
     name = models.CharField(max_length=256, unique=True)
 
 
+class TransferQuerySet(models.QuerySet):
+    def filter_by_entity(self, entity_or_id):
+        """
+        TODO: Check the perf of doing OR condition with Django ORM.
+        It might be way more efficient to perform separate requests on each
+        condition and then UNION them
+        TODO: Recursive query should be made in raw postgresql
+        """
+        from .entity import Entity
+
+        if isinstance(entity_or_id, Entity):
+            entity = entity_or_id
+        else:
+            entity = Entity.objects.get_by_any_id(entity_or_id)
+        entity_ids = {entity.id} | set(
+            entity.children.values_list("id", flat=True)
+        )
+        return self.filter(
+            Q(emitter_id__in=entity_ids)
+            | Q(recipient_id=entity.id)
+            | Q(agents__id=entity.id)
+        ).distinct()
+
+
 class Transfer(TimestampedModel):
     """
     Represents a money transfer between entities.
     """
 
+    objects = TransferQuerySet.as_manager()
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     raw_data = models.JSONField()
     data_load_sources = models.ManyToManyField(

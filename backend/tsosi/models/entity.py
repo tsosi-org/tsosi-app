@@ -139,6 +139,14 @@ class Entity(TimestampedModel):
         return Entity.objects.filter(id__in=all_children)
 
     @property
+    def transfers(self):
+        from .transfer import Transfer
+
+        return Transfer.objects.filter_by_entity(self).filter(
+            merged_into__isnull=True
+        )
+
+    @property
     def is_scoss(self) -> bool:
         return (
             hasattr(self, "infrastructure_details")
