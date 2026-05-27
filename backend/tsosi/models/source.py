@@ -45,9 +45,21 @@ class DataLoadSource(TimestampedModel):
 
     def stats(self) -> str:
         """return stats about the data load source"""
-        transfers = self.transfers
-        merged = self.transfers.filter(merged_into__isnull=False)
-        emitters = transfers.values("emitter").distinct()
-        recipients = transfers.values("recipient").distinct()
-        agents = transfers.values("agents").distinct()
-        return f"DataLoadSource {self.id} ({self.data_source_id}):\n- Transfers: {transfers.count()} ({merged.count()} merged)\n- Emitters: {emitters.count()}\n- Agents: {agents.count()}\n- Recipients: {recipients.count()}"
+        from tsosi.models import Transfer
+
+        dls_transfers = self.transfers
+        all_transfers = self.entity.transfers.exclude(
+            id__in=dls_transfers.values("id")
+        )
+        merged = dls_transfers.filter(merged_into__isnull=False)
+        emitters = dls_transfers.values("emitter").distinct()
+        recipients = dls_transfers.values("recipient").distinct()
+        agents = dls_transfers.values("agents").distinct()
+        msg = f"DataLoadSource {self.id} ({self.data_source_id}):\n"
+        msg += (
+            f"- Transfers: {dls_transfers.count()} ({merged.count()} merged)\n"
+        )
+        msg += f"- Emitters: {emitters.count()}\n"
+        msg += f"- Agents: {agents.count()}\n"
+        msg += f"- Recipients: {recipients.count()}"
+        return msg

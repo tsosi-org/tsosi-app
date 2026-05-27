@@ -18,7 +18,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/backend/manage.py",
             "python": "${workspaceFolder}/backend/.venv/bin/python",
-            "args": ["shell"],
+            "args": ["dls_stats", "223"],
             "django": true,
         },
         {
