@@ -206,9 +206,7 @@ def process_raw_rates(
         name="TIME_PERIOD",
     )
     df_c = rates.dropna(subset="OBS_VALUE")
-    df_c.loc[:, "TIME_PERIOD"] = pd.to_datetime(
-        df_c["TIME_PERIOD"], format="%Y-%m-%d"
-    )
+    df_c["TIME_PERIOD"] = pd.to_datetime(df_c["TIME_PERIOD"], format="%Y-%m-%d")
     # Keep only 1 value per currency per timestep
     df_c = (
         df_c.groupby(["CURRENCY", "TIME_PERIOD"])
