@@ -11,6 +11,7 @@ import {
 } from "@/utils/data-utils"
 
 
+
 type IdentifierRegistry = "ror" | "wikidata" | "_custom" | "tsosi"
 
 interface ApiData {
@@ -321,11 +322,17 @@ export async function getEntityDetails(
   return null
 }
 
-function processTransferEntities<T extends Transfer>(transfer: T) {
+function processTransferEntities<T extends Transfer>(transfer: T, entity?: EntityDetails): void {
   transfer.emitter = refData.entities[transfer.emitter_id]
   transfer.recipient = refData.entities[transfer.recipient_id]
   transfer.agents = transfer.agent_ids.map((id) => refData.entities[id])
   initDateWithPrecision(transfer.date_clc)
+  if (entity && entity.children && entity.children.some((c: string) => c == transfer.emitter_id)) {
+    transfer.emitter = {
+      ...transfer.emitter,
+      is_child_transfer: true,
+    } as Entity
+  }
 }
 
 /**
@@ -336,19 +343,16 @@ function processTransferEntities<T extends Transfer>(transfer: T) {
  * @returns
  */
 export async function getTransfers(
-  entityId?: string,
+  entity: EntityDetails
 ): Promise<Transfer[] | null> {
-  const queryParams = new URLSearchParams({})
-  if (entityId) {
-    queryParams.set("entity_id", entityId)
-  }
+  const queryParams = new URLSearchParams({entity_id: entity.id})
   const result = await get("transfers/all/", true, queryParams)
   if (result.error || !result.data) {
     return null
   }
   const data = result.data as Transfer[]
   for (const transfer of data) {
-    processTransferEntities(transfer)
+    processTransferEntities(transfer, entity)
   }
   return data
 }
