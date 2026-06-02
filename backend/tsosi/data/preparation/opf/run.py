@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import date
 from pathlib import Path
 
 import django
@@ -20,19 +21,17 @@ django.setup()
 from tsosi.app_settings import app_settings
 from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
+NAME = "opf"
+RAW_FOLDER = Path(BASE_DIR) / "_no_git/data/raw" / NAME
 FIRST_YEAR = 2017
 
 
 def main() -> None:
-    raw_folder = Path(BASE_DIR) / "_no_git/data/raw/opf"
     raw_path = str(
-        raw_folder
-        / f"Sherpa_Romeo - Open Policy Finder - SCOSS Funding - manually fixed.xlsx"
+        RAW_FOLDER
+        / "Sherpa_Romeo - Open Policy Finder - SCOSS Funding - manually fixed.xlsx"
     )
-    export_path = str(raw_folder / f"2026-02-19_opf_full.xlsx")
-
     df = pd.read_excel(raw_path, dtype=str)
-
     mapping = {
         "Funder Full Name": "emitter/name",
         "Funder Acronym": "agent/name",
@@ -55,10 +54,7 @@ def main() -> None:
     df = df[df["to_keep_total_committed"].notna()]
     df = df.drop(columns=["to_keep_total_committed"])
 
-    # Clean string values
-    df.loc[:, ["emitter/name", "agent/name", "emitter/country"]] = df[
-        ["emitter/name", "agent/name", "emitter/country"]
-    ].map(clean_cell_value)
+    df = df.map(clean_cell_value)
 
     s = df.melt(["emitter/name", "agent/name", "emitter/country"])
     s[["year", "type"]] = (
@@ -125,6 +121,9 @@ def main() -> None:
 
     df = df.drop(columns=["year"])
 
+    export_path = str(
+        RAW_FOLDER / f"{date.today().isoformat()}_{NAME}_full.xlsx"
+    )
     df.to_excel(export_path, index=False)
 
 
