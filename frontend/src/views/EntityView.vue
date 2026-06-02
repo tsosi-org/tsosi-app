@@ -48,7 +48,7 @@ async function onEntityChange() {
   if (!entity.value) {
     return
   }
-  transfers.value = await getTransfers(entity.value.id)
+  transfers.value = await getTransfers(entity.value)
   changeMetaTitle(entity.value.name)
   const desc = entity.value.is_recipient
     ? `Explore the funding made to sustain ${entity.value.name}`
