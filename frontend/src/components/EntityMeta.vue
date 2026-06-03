@@ -476,6 +476,7 @@ div.p-button:hover {
 }
 
 .entity-title h1 {
+  text-transform: initial;
   position: relative;
   top: 3px;
   font-size: 3rem;

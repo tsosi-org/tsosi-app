@@ -66,7 +66,7 @@ async function onEntityChange() {
       <Tabs lazy value="0" v-if="devMode">
         <TabList class="tab-list">
           <Tab value="0" as="button">
-            <span class="tab-header" v-if="entity.is_emitter">
+            <span class="tab-header" v-if="!entity.is_recipient">
               <font-awesome-icon class="icon" :icon="['fas', 'house']" />
               <span>Infrastructures</span>
             </span>
@@ -75,7 +75,11 @@ async function onEntityChange() {
               <span>Supporters</span>
             </span>
           </Tab>
-          <Tab value="1" as="button">
+          <Tab
+            value="1"
+            as="button"
+            v-if="entity.is_recipient && entity.is_partner"
+          >
             <span class="tab-header">
               <font-awesome-icon class="icon" :icon="['fas', 'chart-column']" />
               <span>Charts</span>
@@ -96,12 +100,26 @@ async function onEntityChange() {
         </TabList>
         <TabPanels>
           <TabPanel value="0">
+            <p v-if="entity.is_recipient" class="subtitle">
+              Institutions that have financially supported
+              {{ entity?.short_name || entity.name }}.
+            </p>
+            <p v-else class="subtitle">
+              Open science infrastructures that have been financially supported
+              by
+              {{ entity?.short_name || entity.name }}.
+            </p>
             <EntityViz :entity="entity" :transfers="transfers" cards />
           </TabPanel>
           <TabPanel value="1">
             <EntityViz :entity="entity" :transfers="transfers" />
           </TabPanel>
           <TabPanel value="2">
+            <p class="subtitle">
+              Individual transfers
+              {{ entity.is_recipient ? "received" : "sent" }} by
+              {{ entity?.short_name || entity.name }}.
+            </p>
             <EntityData :entity="entity" :transfers="transfers" />
           </TabPanel>
         </TabPanels>
@@ -150,6 +168,15 @@ async function onEntityChange() {
   margin-left: auto;
   color: var(--p-tabs-tab-hover-color);
   align-items: center;
+}
+
+.subtitle {
+  position: relative;
+  font-weight: 400;
+  top: -0.8em;
+  font-style: italic;
+  color: var(--p-tabs-tab-hover-color);
+  margin-bottom: 1.5em;
 }
 
 .data-chart-panel {
