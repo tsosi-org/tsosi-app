@@ -91,10 +91,14 @@ def get_date_clc(transfer: Transfer) -> Date | None:
         "date_payment_recipient",
         "date_payment_emitter",
         "date_invoice",
-        "date_start",
     ]:
         if getattr(transfer, field) is not None:
             return getattr(transfer, field)
+    if getattr(transfer, "date_start") is not None:
+        return {
+            **getattr(transfer, "date_start"),
+            "precision": DATE_PRECISION_YEAR,
+        }
     return None
 
 
@@ -116,8 +120,7 @@ def transfer_is_matching(
         ("date_invoice", CRITERIA_DATE_INVOICE),
         ("date_payment_emitter", CRITERIA_DATE_PAYMENT_EMITTER),
         ("date_payment_recipient", CRITERIA_DATE_PAYMENT_RECIPIENT),
-        ("date_start", CRITERIA_DATE_END),
-        ("date_end", CRITERIA_DATE_START),
+        ("date_start", CRITERIA_DATE_START),
     ]:
         if not date_is_matching(
             getattr(transfer_left, date_field),
@@ -152,10 +155,6 @@ def transfer_is_matching(
                 return False, criteria
             elif getattr(b, date_field) is not None:
                 break
-
-    # Check sub emitter
-    if transfer_left.emitter_sub != transfer_right.emitter_sub:
-        return False, CRITERIA_SUB_EMITTER
 
     # Check amount
     if not transfer_left.currency or not transfer_right.currency:
