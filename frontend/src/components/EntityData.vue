@@ -106,7 +106,7 @@ const baseColumns: TableColumnProps[] = [
 const buttons: Array<ButtonProps> = [
   {
     id: "transferDetails",
-    icon: ["fas", "magnifying-glass"],
+    icon: ["fas", "ellipsis"],
     type: "pageLink",
     linkConfig: {
       base: getTransferBaseUrl(),

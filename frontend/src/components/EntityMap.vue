@@ -116,13 +116,10 @@ async function onInit() {
   await nextTick()
 
   const options: L.MapOptions = {
-    maxBoundsViscosity: 1,
-    // Having max bounds can cause issue with the popups, that may be out of
-    // reach.
-    // maxBounds: [
-    //   [-89, -181],
-    //   [89, 181],
-    // ],
+    maxBounds: [
+      [-89, -181],
+      [89, 181],
+    ],
   }
   const mapObject = L.map(mapElement.value as HTMLElement, options)
   L.tileLayer(tileBaseUrl, {
