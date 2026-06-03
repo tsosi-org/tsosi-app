@@ -156,6 +156,10 @@ def transfer_is_matching(
             elif getattr(b, date_field) is not None:
                 break
 
+    # Check sub-emitter
+    if transfer_left.emitter_sub != transfer_right.emitter_sub:
+        return False, CRITERIA_SUB_EMITTER
+
     # Check amount
     if not transfer_left.currency or not transfer_right.currency:
         return True, None
