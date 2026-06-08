@@ -556,10 +556,6 @@ const legendDt = {
       {{ plottedSupporters.total }} supporters from
       {{ plottedSupporters.countries }} different countries
     </span>
-    <span v-if="plottedSupporters && plottedSupporters.total > 1">
-      {{ plottedSupporters.total }} supporters from
-      {{ plottedSupporters.countries }} different countries
-    </span>
     <Skeleton
       v-if="!plottedSupporters"
       width="10em"
