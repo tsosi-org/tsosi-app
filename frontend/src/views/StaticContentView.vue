@@ -24,6 +24,7 @@ changeMetaTitle(props.title)
   font-size: 2.5rem;
   text-align: center;
   padding: 0;
+  text-transform: none;
 }
 
 .static-content {

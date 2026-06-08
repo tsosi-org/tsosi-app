@@ -213,8 +213,8 @@ function isDoab(): boolean {
             </div>
             <Button
               v-if="props.entity.infrastructure?.support_url"
-              variant="outlined"
               severity="secondary"
+              variant="outlined"
               as="a"
               target="_blank"
               rel="noopener"

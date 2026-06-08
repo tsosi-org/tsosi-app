@@ -579,7 +579,7 @@
       "country": "CA",
       "short_name": "Unpaywall",
       "website": "https://unpaywall.org",
-      "description": "Unpaywall is a browser extension which finds legal free versions of (paywalled) scholarly articles. As of 2024, Unpaywall claims to provide access to 49 million free articles. <a href=\"https://en.wikipedia.org/wiki/OurResearch#Unpaywall\">see wikipedia</a>. Unpaywall, like OpenAlex, is run by OurResearch, a nonprofit organization that creates and distributes tools and services for libraries, institutions, and researchers"
+      "description": "Unpaywall is a browser extension which finds legal free versions of (paywalled) scholarly articles. As of 2024, Unpaywall claims to provide access to 49 million free articles. <a href=\"https://en.wikipedia.org/wiki/OurResearch#Unpaywall\">see wikipedia</a>. Unpaywall, like OpenAlex, is run by OurResearch, a nonprofit organization that creates and distributes tools and services for libraries, institutions, and researchers."
     },
     "static_icon": "unpaywall_icon.png",
     "static_logo": "unpaywall_logo.png"
@@ -644,6 +644,7 @@
       "website": "https://amelica.org/",
       "country": "MX",
       "is_barcelona": true,
+      "date_inception": "2002-01-01",
       "description": "Redalyc is an Open Access journal index and article-hosting platform for scholarly Open Access journals published in Latin America, the Caribbean, Spain, and Portugal. AmeliCA is a multi-institutional community-driven initiative supported by UNESCO.  It fosters collaboration among different stakeholders, such as universities, journal editors, libraries, and the research community."
     },
     "infrastructure": {
@@ -844,6 +845,24 @@
     "entity": {
       "name": "Couperin",
       "is_barcelona": true
+    }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "02rx3b187"
+    },
+    "entity": {
+      "name": "Université Grenoble Alpes"
+    }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "05f950310"
+    },
+    "entity": {
+      "name": "KU Leuven"
     }
   }
 ]
