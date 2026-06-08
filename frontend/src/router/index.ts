@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from "vue-router"
 import { targetElement } from "@/utils/dom-utils"
 import AboutView from "@/views/AboutView.vue"
 import BlogView from "@/views/BlogView.vue"
-import DevModeView from "@/views/DevModeView.vue"
+// import DevModeView from "@/views/DevModeView.vue"
 import EntityListView from "@/views/EntityListView.vue"
 import EntityView from "@/views/EntityView.vue"
 import FaqView from "@/views/FaqView.vue"
@@ -13,6 +13,7 @@ import NewsView from "@/views/NewsView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
 import PrivacyPolicyView from "@/views/PrivacyPolicyView.vue"
 import TransferView from "@/views/TransferView.vue"
+import WhoView from "@/views/WhoView.vue"
 
 
 const router = createRouter({
@@ -88,10 +89,15 @@ const router = createRouter({
       component: NotFoundView,
     },
     {
-      path: "/preview-mode",
-      name: "preview-mode",
-      component: DevModeView,
-    }
+      path: "/who-we-are",
+      name: "who-we-are",
+      component: WhoView,
+    },
+    // {
+    //   path: "/preview-mode",
+    //   name: "preview-mode",
+    //   component: DevModeView,
+    // }
   ],
   scrollBehavior(to, from, savedPosition) {
     if (to.hash === "#contact") {
