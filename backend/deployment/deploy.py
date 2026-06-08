@@ -22,6 +22,7 @@ from .servers import SERVERS, ServerConfig, get_server
 
 TSOSI_REPO_DIR = Path(__file__).resolve().parent.parent.parent
 RELEASES_MAX_NB = 3
+SCP_SOCKET_TIMEOUT_SECONDS = 300
 
 
 def create_ssh_client(server: ServerConfig):
@@ -46,6 +47,7 @@ def scp_execute(
     remote_path: str,
     server: ServerConfig | None = None,
     ssh_client: paramiko.SSHClient | None = None,
+    socket_timeout_seconds: int = SCP_SOCKET_TIMEOUT_SECONDS,
 ):
     """
     Perform a scp command.
@@ -64,11 +66,12 @@ def scp_execute(
         f"{colored("RUNNING: ", "blue")} {colored(f"scp {local_path} {remote_path}", "yellow")}"
     )
     transport = ssh_client.get_transport()
-    transport.set_keepalive(30)
+    transport.set_keepalive(120)
     if transport is None:
         raise Exception("The underlying SSH transport object is None.")
 
-    with SCPClient(transport) as scp:
+    # Default scp timeout is short and can fail on large frontend bundles.
+    with SCPClient(transport, socket_timeout=socket_timeout_seconds) as scp:
         scp.put(
             local_path,
             remote_path,
