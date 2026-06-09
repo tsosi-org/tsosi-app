@@ -168,7 +168,7 @@ function updateChart() {
       continue
     }
     const year: string =
-      item.date_clc.dateObj?.getFullYear().toString() || "Unknown"
+      item.date_clc.dateObj?.getUTCFullYear().toString() || "Unknown"
     let value = 0
     value = item.amounts_clc[selectedCurrency.value.id] || value
     if (item.recipient) {

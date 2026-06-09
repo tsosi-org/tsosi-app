@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue"
 
-
 export interface Post {
   id: string
   date: Date
@@ -13,17 +12,20 @@ interface Props extends Post {
 const props = defineProps<Props>()
 const html_content = ref<string>("")
 const keypoints = ref<string[]>([])
-const title = `${props.date.toLocaleString('default', { month: 'long' })} ${props.date.getFullYear()}`
+const title = `${props.date.toLocaleString("default", { month: "long", timeZone: "UTC" })} ${props.date.getUTCFullYear()}`
 
 onMounted(async () => {
   const res = await fetch(props.download_url)
   const raw_html = await res.text()
-  const dom = document.createElement('html');
-  dom.innerHTML = raw_html;
-  keypoints.value = dom.querySelectorAll('h2,h3').length > 0
-    ? Array.from(dom.querySelectorAll('h2,h3')).map(h2 => h2.textContent?.trim() || "")
-    : [];
-  html_content.value = dom.querySelector('body')?.innerHTML || "";
+  const dom = document.createElement("html")
+  dom.innerHTML = raw_html
+  keypoints.value =
+    dom.querySelectorAll("h2,h3").length > 0
+      ? Array.from(dom.querySelectorAll("h2,h3")).map(
+          (h2) => h2.textContent?.trim() || "",
+        )
+      : []
+  html_content.value = dom.querySelector("body")?.innerHTML || ""
 })
 </script>
 

@@ -298,8 +298,8 @@ async function loadData() {
       }
       if (transfer.date_clc.dateObj) {
         acc[entityId]["since"] = Math.min(
-          acc[entityId]["since"] || new Date().getFullYear(),
-          transfer.date_clc.dateObj.getFullYear(),
+          acc[entityId]["since"] || new Date().getUTCFullYear(),
+          transfer.date_clc.dateObj.getUTCFullYear(),
         )
       }
       return acc

@@ -240,7 +240,7 @@ interface EntityWithTransfers extends Entity {
 }
 
 async function loadData() {
-  const currentYear = new Date().getFullYear()
+  const currentYear = new Date().getUTCFullYear()
   const entitiesById = props.entities.reduce<
     Record<string, EntityWithTransfers>
   >((acc, entity) => {
@@ -265,7 +265,7 @@ async function loadData() {
         },
       )
       const lastTransfer = sortedTransfers[sortedTransfers.length - 1]
-      const lastTransferYear = lastTransfer?.date_clc.dateObj?.getFullYear()
+      const lastTransferYear = lastTransfer?.date_clc.dateObj?.getUTCFullYear()
       const shouldDrawGapToNextYear =
         lastTransferYear !== undefined && lastTransferYear === currentYear - 1
 
@@ -386,8 +386,8 @@ async function loadData() {
           Math.min(
             ...props.transfers.map(
               (transfer) =>
-                transfer.date_clc.dateObj?.getFullYear() ||
-                new Date().getFullYear(),
+                transfer.date_clc.dateObj?.getUTCFullYear() ||
+                new Date().getUTCFullYear(),
             ),
           ) - 1
         ).toString(),
@@ -395,8 +395,8 @@ async function loadData() {
           Math.max(
             ...props.transfers.map(
               (transfer) =>
-                transfer.date_clc.dateObj?.getFullYear() ||
-                new Date().getFullYear(),
+                transfer.date_clc.dateObj?.getUTCFullYear() ||
+                new Date().getUTCFullYear(),
             ),
           ) + 1
         ).toString(),
