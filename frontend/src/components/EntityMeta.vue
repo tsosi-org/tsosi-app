@@ -73,7 +73,7 @@ function loadChips() {
   if (props.entity.date_inception) {
     headerChips.value.push({
       icon: ["fas", "calendar"],
-      label: `Since ${props.entity.date_inception.getFullYear()}`,
+      label: `Since ${props.entity.date_inception.getUTCFullYear()}`,
     })
   }
 }
@@ -255,7 +255,7 @@ function isDoab(): boolean {
               label="SCOSS"
               variant="outlined"
               v-tooltip.top="{
-                value: `Selected by <a target=\'_blank\' href=\'https://scoss.org/how-it-works/current-funding-calls\'>SCOSS</a> for the period ${props.entity.infrastructure?.date_scoss_start?.getFullYear()}-${props.entity.infrastructure?.date_scoss_end?.getFullYear()}`,
+                value: `Selected by <a target=\'_blank\' href=\'https://scoss.org/how-it-works/current-funding-calls\'>SCOSS</a> for the period ${props.entity.infrastructure?.date_scoss_start?.getUTCFullYear()}-${props.entity.infrastructure?.date_scoss_end?.getUTCFullYear()}`,
                 escape: false,
                 autoHide: false,
               }"

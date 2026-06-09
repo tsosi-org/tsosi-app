@@ -234,12 +234,12 @@ export function formatDateWithPrecision(
   let dateFormatted = ""
   switch (precision) {
     case "day":
-      dateFormatted = dateObj!.toLocaleString("default", { day: "2-digit" })
+      dateFormatted = dateObj!.toLocaleString("default", { day: "2-digit", timeZone: "UTC" })
     case "month":
-      const month = dateObj!.toLocaleString("default", { month: "2-digit" })
+      const month = dateObj!.toLocaleString("default", { month: "2-digit", timeZone: "UTC" })
       dateFormatted = dateFormatted ? `${month}-${dateFormatted}` : month
     default:
-      const year = dateObj!.toLocaleString("default", { year: "numeric" })
+      const year = dateObj!.toLocaleString("default", { year: "numeric", timeZone: "UTC" })
       dateFormatted = dateFormatted ? `${year}-${dateFormatted}` : year
   }
   return dateFormatted
