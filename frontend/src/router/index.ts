@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router"
 
-import { targetElement } from "@/utils/dom-utils"
 import AboutView from "@/views/AboutView.vue"
 import BlogView from "@/views/BlogView.vue"
 // import DevModeView from "@/views/DevModeView.vue"
@@ -89,7 +88,7 @@ const router = createRouter({
       component: NotFoundView,
     },
     {
-      path: "/who-we-are",
+      path: "/pages/who-we-are",
       name: "who-we-are",
       component: WhoView,
     },
@@ -116,7 +115,6 @@ const router = createRouter({
       if (scrollMarginTop) {
         scrollData.top = parseInt(scrollMarginTop)
       }
-      targetElement(el)
       return scrollData
     } else if (savedPosition) {
       return savedPosition

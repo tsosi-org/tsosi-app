@@ -86,10 +86,3 @@ export function addClickEventListener(
     callback(event)
   })
 }
-
-export function targetElement(el: Element) {
-  Array.from(document.querySelectorAll(".targeted")).forEach((el) =>
-    el.classList.remove("targeted"),
-  )
-  el.classList.add("targeted")
-}
