@@ -100,4 +100,10 @@ function copyFragmentLink() {
   font-size: 1rem;
   color: var(--p-neutral-500);
 }
+
+.static-section .static-section h2 {
+  margin: 0.35em 0;
+  margin-left: 20px;
+  font-size: 1.1em;
+}
 </style>

@@ -5,7 +5,6 @@ import { onMounted, ref, watch } from "vue"
 import { RouterView, useRoute } from "vue-router"
 
 import SiteInConstructionAtom from "./components/atoms/SiteInConstructionAtom.vue"
-import { targetElement } from "./utils/dom-utils"
 
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import ContactComponent from "@/components/ContactComponent.vue"
@@ -52,7 +51,6 @@ function scrollToHash(retry: boolean) {
   if (hash) {
     const element = document.querySelector(hash)
     if (element) {
-      targetElement(element)
       element.scrollIntoView(true)
     } else if (retry) {
       setTimeout(() => scrollToHash, scrollTimeout, false)
