@@ -213,7 +213,7 @@ const filteredEntities = computed(() => {
   <div class="container">
     <div class="container title-container">
       <h1 class="title">
-        Explore the funding graph of<br />open science infrastructure
+        Explore the funding network of<br />open science infrastructure
       </h1>
     </div>
     <div class="container select-container">
