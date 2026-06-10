@@ -471,7 +471,7 @@ def update_entity_from_pid_records() -> TaskResult:
     # moving to the next if null.
     clc_field_priority = {
         "name": ["tsosi", "ror", "wikidata", "raw"],
-        "country": ["tsosi", "ror", "wikidata", "raw"],
+        "country": ["tsosi", "wikidata", "ror", "raw"],
         "website": ["tsosi", "ror", "wikidata", "raw"],
         "logo_url": ["wikidata", "raw"],
         "wikipedia_url": ["tsosi", "wikidata", "ror"],
