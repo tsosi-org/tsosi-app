@@ -25,6 +25,7 @@ def get_config(
             rdc.FieldRecipientName(constant="Peer Community In"),
             rdc.FieldRecipientRorId(constant="0315saa81"),
             rdc.FieldEmitterName(field="emitter/name"),
+            rdc.FieldEmitterCustomId(field="emitter/custom_id"),
             rdc.FieldEmitterSub(field="emitter/sub"),
             rdc.FieldEmitterCountry(field="emitter/country"),
             rdc.FieldEmitterRorId(field="emitter/ror_id"),
