@@ -17,7 +17,6 @@ import {
 import { type DataFieldProps } from "@/utils/data-utils"
 import { getEntityBaseUrl, getEntityUrl } from "@/utils/url-utils"
 
-
 const route = useRoute()
 const router = useRouter()
 const transfer: Ref<TransferDetails | null> = ref(null)
@@ -160,16 +159,17 @@ const dataConfig: Array<DataFieldProps> = [
 
 const metadataConfig: Array<DataFieldProps> = [
   {
-    id: "source",
-    title: "Source",
-    field: "source",
-    type: "string",
-  },
-  {
-    id: "amountsClc",
-    title: "Converted amounts",
-    field: "amounts_clc",
-    type: "json",
+    id: "sources",
+    title: "Sources",
+    field: "sources",
+    type: "entityLink",
+    fieldLabel: "source.name",
+    fieldLink: {
+      base: getEntityBaseUrl(),
+      suffix: "source.id",
+      suffixType: "field",
+    },
+    info: "Providers of the data about this transfer",
   },
   {
     id: "rawData",

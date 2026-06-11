@@ -168,6 +168,12 @@ class TransferDetailsSerializer(BaseTransferSerializer):
     agent_ids = serializers.PrimaryKeyRelatedField(
         source="agents", many=True, read_only=True
     )
+    source_ids = serializers.SlugRelatedField(
+        source="data_load_sources",
+        many=True,
+        read_only=True,
+        slug_field="entity_id",
+    )
 
     class Meta:
         model = Transfer
@@ -187,6 +193,7 @@ class TransferDetailsSerializer(BaseTransferSerializer):
             "date_end",
             "amounts_clc",
             "raw_data",
+            "source_ids",
         ]
 
 
