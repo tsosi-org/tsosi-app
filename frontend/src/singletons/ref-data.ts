@@ -96,7 +96,8 @@ export interface Transfer extends ApiData {
   amounts_clc?: Record<string, number>
   date_clc: DateWithPrecision
   description: string | null
-  source: string
+  source_ids?: string[]
+  sources?: DeepReadonly<Entity>[]
 }
 
 export interface TransferDetails extends Transfer {
@@ -326,6 +327,9 @@ function processTransferEntities<T extends Transfer>(transfer: T, entity?: Entit
   transfer.emitter = refData.entities[transfer.emitter_id]
   transfer.recipient = refData.entities[transfer.recipient_id]
   transfer.agents = transfer.agent_ids.map((id) => refData.entities[id])
+  if (transfer.source_ids) {
+    transfer.sources = transfer.source_ids.map((id) => refData.entities[id])
+  }
   initDateWithPrecision(transfer.date_clc)
   if (entity && entity.children && entity.children.some((c: string) => c == transfer.emitter_id)) {
     transfer.emitter = {

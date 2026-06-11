@@ -38,7 +38,18 @@ const props = defineProps<SummaryProps>()
       >
         <div class="summary-label">
           {{ field.title
-          }}&nbsp;:
+          }}
+          <span
+            v-if="field.info"
+            v-tooltip.top="{
+              value: 'TSOSI data providers that have declared this transfer',
+              escape: false,
+            }"
+            >
+            <font-awesome-icon
+              :icon="['fas', 'circle-info']"
+            ></font-awesome-icon>
+            </span>&nbsp;:
         </div>
         <div class="summary-value">
           <EntityLinkDataAtom

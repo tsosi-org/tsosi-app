@@ -440,14 +440,14 @@ export function getEntityLinkRows(
   data: Record<string, any>,
   column: any,
 ): Array<Record<string, any>> {
-  if (column.type == "entityLink" && column.field == "agents") {
-    const agents = resolveValueFromPath(data, column.field)
-    if (!Array.isArray(agents)) {
+  if (column.type == "entityLink" && (column.field == "agents" || column.field == "sources") ) {
+    const entities = resolveValueFromPath(data, column.field)
+    if (!Array.isArray(entities)) {
       return [data]
     }
-    return agents.map((agent) => ({
+    return entities.map((entity) => ({
       ...data,
-      [column.field]: agent,
+      [column.field]: entity,
     }))
   }
   return [data]
