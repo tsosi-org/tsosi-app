@@ -50,7 +50,7 @@ class SupportType(models.Model):
 
 
 class TransferQuerySet(models.QuerySet):
-    def filter_by_entity(self, entity_or_id):
+    def filter_by_entity(self, entity_or_id, include_children: bool = True):
         """
         TODO: Check the perf of doing OR condition with Django ORM.
         It might be way more efficient to perform separate requests on each
@@ -63,9 +63,9 @@ class TransferQuerySet(models.QuerySet):
             entity = entity_or_id
         else:
             entity = Entity.objects.get_by_any_id(entity_or_id)
-        entity_ids = {entity.id} | set(
-            entity.children.values_list("id", flat=True)
-        )
+        entity_ids = {entity.id}
+        if include_children:
+            entity_ids |= set(entity.children.values_list("id", flat=True))
         return self.filter(
             Q(emitter_id__in=entity_ids)
             | Q(recipient_id=entity.id)

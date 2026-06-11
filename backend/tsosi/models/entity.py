@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import uuid
 
 from django.core.validators import MaxLengthValidator, MinLengthValidator
@@ -20,11 +21,35 @@ def entity_icon_path(instance: Entity, filename: str) -> str:
     return f"{instance.id}/icon/{filename}"
 
 
+class EntityQuerySet(models.QuerySet):
+    def get_by_any_id(objects, id_value: str) -> Entity:
+        from tsosi.models.static_data import PID_REGEX_OPTIONS
+        from tsosi.models.utils import UUID4_REGEX
+
+        registry_id = None
+        if re.match(UUID4_REGEX, id_value):
+            entity = objects.get(id=id_value)
+        else:
+            for r_id, r_pattern in PID_REGEX_OPTIONS:
+                if re.match(r_pattern, id_value):
+                    registry_id = r_id
+                    break
+            entity = objects.filter(
+                identifiers__registry_id=registry_id,
+                identifiers__value=id_value,
+            )
+            if not entity.exists():
+                raise Entity.DoesNotExist()
+            entity = entity.last()
+        return entity
+
+
 class Entity(TimestampedModel):
     """
     Represents an entity involved in a transfer.
     """
 
+    objects = EntityQuerySet.as_manager()
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
     # The following attributes prefixed with `raw_` corresponds to default
