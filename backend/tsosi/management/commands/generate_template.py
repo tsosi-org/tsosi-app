@@ -11,24 +11,15 @@ from tsosi.models import Entity, Transfer
 
 
 def generate_template_file(entity_id: str) -> None:
-    values = {entity_id} | set(
-        Entity.objects.get(id=entity_id)
-        .get_children()
-        .values_list("id", flat=True)
-    )
-    condition = (
-        Q(emitter_id__in=values)
-        | Q(recipient_id__in=values)
-        | Q(agent_id__in=values)
-    ) & Q(merged_into__isnull=True)
-    transfers = Transfer.objects.filter(condition).select_related(
-        "emitter", "recipient", "agent", "currency"
-    )
+
+    transfers = Transfer.objects.filter_by_entity(
+        entity_id, include_children=False
+    ).select_related("emitter", "recipient", "agents", "currency")
     df = pd.DataFrame(
         list(
             transfers.values(
                 "emitter__name",
-                "agent__name",
+                "agents__name",
                 "recipient__name",
                 "amount",
                 "currency__id",
