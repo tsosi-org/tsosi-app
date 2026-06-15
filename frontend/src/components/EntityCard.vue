@@ -124,6 +124,13 @@ const props = defineProps<{
   overflow: hidden;
 }
 
+@media screen and (max-width: 700px) {
+  .container {
+    width: 150px;
+    height: 150px;
+  }
+}
+
 a.container:hover {
   box-shadow:
     rgba(0, 0, 0, 0.3) 0px 4px 6px -1px,

@@ -229,86 +229,80 @@ const filteredEntities = computed(() => {
       <div class="filter-subcontainer">
         <p class="filter-title">Filter</p>
         <div class="filter-group">
-          <div>
-            <ToggleButton v-model="isPartner">
-              <img src="/img/favicon-192x192.png" />
-              <span class="p-togglebutton-label" data-pc-section="label"
-                >TSOSI provider</span
-              >
-              <font-awesome-icon
-                :icon="['fas', 'circle-question']"
-                v-tooltip="{
-                  value:
-                    'Those who have shared data with TSOSI (see <a href=\'/pages/faq#data-provider\'>the FAQ</a>)',
-                  escape: false,
-                  autoHide: false,
-                }"
-              />
-            </ToggleButton>
-            <ToggleButton v-if="selectedRole == 'recipient'" v-model="isSCOSS">
-              <img src="@/assets/img/scoss_icon.png" />
-              <span class="p-togglebutton-label" data-pc-section="label"
-                >SCOSS selected</span
-              >
-              <font-awesome-icon
-                :icon="['fas', 'circle-question']"
-                v-tooltip="{
-                  value:
-                    'infrastructures that have been selected by <a target=\'_blank\' href=\'https://scoss.org/\'>SCOSS</a>',
-                  escape: false,
-                  autoHide: false,
-                }"
-              />
-            </ToggleButton>
-            <ToggleButton v-if="selectedRole == 'recipient'" v-model="isPOSI">
-              <img src="@/assets/img/posi_icon.ico" />
-              <span class="p-togglebutton-label" data-pc-section="label"
-                >POSI adopter</span
-              >
-              <font-awesome-icon
-                :icon="['fas', 'circle-question']"
-                v-tooltip="{
-                  value:
-                    'Infrastructures that have adopted the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>',
-                  escape: false,
-                  autoHide: false,
-                }"
-              />
-            </ToggleButton>
-            <ToggleButton v-model="isBarcelona">
-              <img src="@/assets/img/barcelona_icon.jpg" />
-              <span class="p-togglebutton-label" data-pc-section="label"
-                >Barcelona Declaration
-                {{
-                  selectedRole == "recipient" ? "supporter" : "signatory"
-                }}</span
-              >
-              <font-awesome-icon
-                :icon="['fas', 'circle-question']"
-                v-tooltip="{
-                  value:
-                    (selectedRole == 'recipient'
-                      ? 'Supporters'
-                      : 'Signatories') +
-                    ' of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>',
-                  escape: false,
-                  autoHide: false,
-                }"
-              />
-            </ToggleButton>
-          </div>
-          <div>
-            <MultiSelect
-              v-if="selectedRole == 'emitter'"
-              v-model="selectedCountries"
-              :options="countryOptions"
-              optionLabel="name"
-              placeholder="Select countries"
-              display="chip"
-              filter
-              :showToggleAll="false"
+          <ToggleButton v-model="isPartner">
+            <img src="/img/favicon-192x192.png" />
+            <span class="p-togglebutton-label" data-pc-section="label"
+              >TSOSI provider</span
+            >
+            <font-awesome-icon
+              :icon="['fas', 'circle-question']"
+              v-tooltip="{
+                value:
+                  'Those who have shared data with TSOSI (see <a href=\'/pages/faq#data-provider\'>the FAQ</a>)',
+                escape: false,
+                autoHide: false,
+              }"
             />
-          </div>
+          </ToggleButton>
+          <ToggleButton v-if="selectedRole == 'recipient'" v-model="isSCOSS">
+            <img src="@/assets/img/scoss_icon.png" />
+            <span class="p-togglebutton-label" data-pc-section="label"
+              >SCOSS selected</span
+            >
+            <font-awesome-icon
+              :icon="['fas', 'circle-question']"
+              v-tooltip="{
+                value:
+                  'infrastructures that have been selected by <a target=\'_blank\' href=\'https://scoss.org/\'>SCOSS</a>',
+                escape: false,
+                autoHide: false,
+              }"
+            />
+          </ToggleButton>
+          <ToggleButton v-if="selectedRole == 'recipient'" v-model="isPOSI">
+            <img src="@/assets/img/posi_icon.ico" />
+            <span class="p-togglebutton-label" data-pc-section="label"
+              >POSI adopter</span
+            >
+            <font-awesome-icon
+              :icon="['fas', 'circle-question']"
+              v-tooltip="{
+                value:
+                  'Infrastructures that have adopted the <a target=\'_blank\' href=\'https://openscholarlyinfrastructure.org/\'>POSI principles</a>',
+                escape: false,
+                autoHide: false,
+              }"
+            />
+          </ToggleButton>
+          <ToggleButton v-model="isBarcelona">
+            <img src="@/assets/img/barcelona_icon.jpg" />
+            <span class="p-togglebutton-label" data-pc-section="label"
+              >Barcelona Declaration
+              {{
+                selectedRole == "recipient" ? "supporter" : "signatory"
+              }}</span
+            >
+            <font-awesome-icon
+              :icon="['fas', 'circle-question']"
+              v-tooltip="{
+                value:
+                  (selectedRole == 'recipient' ? 'Supporters' : 'Signatories') +
+                  ' of the <a target=\'_blank\' href=\'https://barcelona-declaration.org/\'>Barcelona Declaration</a>',
+                escape: false,
+                autoHide: false,
+              }"
+            />
+          </ToggleButton>
+          <MultiSelect
+            v-if="selectedRole == 'emitter'"
+            v-model="selectedCountries"
+            :options="countryOptions"
+            optionLabel="name"
+            placeholder="Select countries"
+            display="chip"
+            filter
+            :showToggleAll="false"
+          />
         </div>
       </div>
       <!-- <div class="filter-subcontainer">
@@ -369,12 +363,21 @@ const filteredEntities = computed(() => {
 
 .select-container {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  margin: 0 15px;
   margin-bottom: 20px;
 }
+
 .select-container:deep(.p-togglebutton-label) {
   font-size: 1.5em;
   font-weight: bold;
+}
+
+@media screen and (max-width: 700px) {
+  .select-container:deep(.p-togglebutton-label) {
+    font-size: 1.1em;
+    font-weight: bold;
+  }
 }
 
 .divider {
@@ -390,6 +393,13 @@ const filteredEntities = computed(() => {
   margin-bottom: 40px;
 }
 
+@media screen and (max-width: 700px) {
+  .filter-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
 .filter-subcontainer {
   display: flex;
   flex-direction: row;
@@ -403,6 +413,7 @@ const filteredEntities = computed(() => {
   justify-content: start;
   align-items: center;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .filter-title {
@@ -418,11 +429,9 @@ const filteredEntities = computed(() => {
 
 .p-multiselect {
   width: 170px;
-  margin: 0 5px;
 }
 
 .p-togglebutton {
-  margin: 0 5px;
   height: 40px;
 }
 

@@ -51,7 +51,6 @@ const props = defineProps<{
   position: absolute;
   bottom: 10px;
   text-align: center;
-  font-style: italic;
   font-size: 0.9em;
 }
 
