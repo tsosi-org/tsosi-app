@@ -12,7 +12,6 @@ import NewsView from "@/views/NewsView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
 import PrivacyPolicyView from "@/views/PrivacyPolicyView.vue"
 import TransferView from "@/views/TransferView.vue"
-import WhoView from "@/views/WhoView.vue"
 
 
 const router = createRouter({
@@ -86,11 +85,6 @@ const router = createRouter({
       path: "/:pathMatch(.*)*",
       name: "NotFound",
       component: NotFoundView,
-    },
-    {
-      path: "/pages/who-we-are",
-      name: "who-we-are",
-      component: WhoView,
     },
     // {
     //   path: "/preview-mode",
