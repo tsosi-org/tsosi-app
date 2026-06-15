@@ -118,7 +118,7 @@ class Transfer(TimestampedModel):
     original_id = models.CharField(max_length=256)
     amounts_clc = models.JSONField(null=True)
     hide_amount = models.BooleanField(default=False)
-    original_amount_field = models.CharField(max_length=128)
+    original_amount_field = models.CharField(max_length=128, null=True)
     scoss = models.BooleanField(default=False)
     is_future = models.BooleanField(default=False)
     merged_into = models.ForeignKey(

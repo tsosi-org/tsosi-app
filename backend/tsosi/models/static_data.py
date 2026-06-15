@@ -205,6 +205,7 @@ DATA_SOURCES = [
     "operas",
     "opf",
     "pci",
+    "pkp",
     "rennes",
     "reperes",
     "scipost",
