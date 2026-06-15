@@ -458,7 +458,8 @@
       "name": "Public Knowledge Project",
       "short_name": "PKP",
       "website": "https://pkp.sfu.ca/",
-      "country": "CA"
+      "country": "CA",
+      "description": "The Public Knowledge Project (PKP) is a research initiative with its home as a Core Facility at Simon Fraser University (SFU), dedicated to the improvement of community-owned scholarly publishing. It achieves its mission through development and maintenance of Open Journal Systems (OJS), the world's most widely used platform for open scholarly publishing, as well as through Open Monograph Press (OMP), and Open Preprint Systems (OPS)."
     },
     "infrastructure": {
       "posi_url": "https://pkp.sfu.ca/pkp-posi-self-assessment/",

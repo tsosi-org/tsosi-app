@@ -617,7 +617,10 @@ class RawDataConfig:
                     continue
                 format = f.format
                 parsed_dates = pd.to_datetime(
-                    df[f.NAME], format="ISO8601", utc=True, errors="raise"
+                    df[f.NAME],
+                    format=format if format else "ISO8601",
+                    utc=True,
+                    errors="raise",
                 ).dt.date
                 date_precision = (
                     pd.Series(f.date_precision)
