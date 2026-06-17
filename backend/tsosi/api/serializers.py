@@ -54,6 +54,7 @@ class EntitySerializer(BaseEntitySerializer):
             "is_scoss",
             "is_posi",
             "is_barcelona",
+            "types",
         ]
         extra_kwargs = {
             "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
