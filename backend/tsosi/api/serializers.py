@@ -36,6 +36,8 @@ class EntitySerializer(BaseEntitySerializer):
     Minified serializer for entities.
     """
 
+    ror_types = serializers.JSONField(source="types")
+
     class Meta:
         model = Entity
         fields = [
@@ -54,7 +56,7 @@ class EntitySerializer(BaseEntitySerializer):
             "is_scoss",
             "is_posi",
             "is_barcelona",
-            "types",
+            "ror_types",
         ]
         extra_kwargs = {
             "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
@@ -67,6 +69,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
     )
     children = serializers.SerializerMethodField(read_only=True)
     date_data_update = serializers.SerializerMethodField(read_only=True)
+    ror_types = serializers.JSONField(source="types")
 
     class Meta:
         model = Entity
@@ -94,6 +97,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "is_posi",
             "is_barcelona",
             "date_data_update",
+            "ror_types",
         ]
 
     def get_children(self, obj) -> list[str]:

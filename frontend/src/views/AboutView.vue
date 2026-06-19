@@ -94,13 +94,13 @@ const { openContactModal } = useContactModal()
             </Member>
             <Member
               name="Suzanne Dumouchel"
-              role="CNRS"
+              role="GRICAD, CNRS, UGA"
               orcid="https://orcid.org/0000-0002-3569-532X"
             >
             </Member>
             <Member
               name="Maxence Larrieu"
-              role="Université Grenoble Alpes"
+              role="GRICAD, CNRS, UGA"
               orcid="https://orcid.org/0000-0002-1834-3007"
             >
             </Member>
@@ -164,7 +164,7 @@ const { openContactModal } = useContactModal()
             <Member name="Baptiste Lefeuvre" role="GRICAD, CNRS, UGA"> </Member>
             <Member
               name="Maxence Larrieu"
-              role="Université Grenoble Alpes"
+              role="GRICAD, CNRS, UGA"
               orcid="https://orcid.org/0000-0002-1834-3007"
             >
             </Member>
