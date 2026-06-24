@@ -615,7 +615,7 @@ class RawDataConfig:
                     df[f.NAME] = df.apply(lambda x: value, axis=1)
                     cols_to_export.append(f.NAME)
                     continue
-                format = f.format if f.format else DATE_FORMAT
+                format = f.format
                 parsed_dates = pd.to_datetime(
                     df[f.NAME], format="ISO8601", utc=True, errors="raise"
                 ).dt.date

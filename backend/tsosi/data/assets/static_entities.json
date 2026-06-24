@@ -767,6 +767,52 @@
   },
   {
     "pid": {
+      "registry_id": "wikidata",
+      "value": "Q139883474"
+    },
+    "entity": {
+      "name": "Knowledge Commons"
+    },
+    "infrastructure": {
+      "posi_url": "https://about.hcommons.org/2026/06/17/knowledge-commons-posi-audit-2026/",
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/knowledge-commons",
+      "support_url": "https://about.hcommons.org/kc-champions/"
+    },
+    "static_icon": "kcommons_icon.png",
+    "static_logo": "kcommons_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "009vb3488"
+    },
+    "entity": {
+      "name": "CLOCKSS"
+    },
+    "infrastructure": {
+      "posi_url": "https://clockss.org/the-alignment-of-posi-principles-and-clockss/",
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/clockss",
+      "support_url": "https://clockss.org/join-clockss/"
+    },
+    "static_icon": "clockss_icon.jpg",
+    "static_logo": "clockss_logo.png"
+  },
+  {
+    "pid": {
+      "registry_id": "wikidata",
+      "value": "Q63364274"
+    },
+    "entity": {
+      "name": "MediArXiv"
+    },
+    "infrastructure": {
+      "support_url": "https://mediarxiv.com/donate/"
+    },
+    "static_icon": "mediarxiv_icon.png",
+    "static_logo": "mediarxiv_logo.png"
+  },
+  {
+    "pid": {
       "registry_id": "ror",
       "value": "00k4n6c32"
     },

@@ -56,7 +56,11 @@ function onDrawerToggle(show: boolean) {
       <div class="left-container">
         <div class="logo-container">
           <RouterLink to="/" @click="closeDrawers" class="logo">
-            <img class="logo-img" src="@/assets/img/logo_white.svg" />
+            <img
+              class="logo-img"
+              src="@/assets/img/logo_white.svg"
+              alt="TSOSI logo"
+            />
           </RouterLink>
           <RouterLink to="/pages/faq#beta-version" class="beta-badge">
             beta version{{ devMode ? " / preview" : "" }}
@@ -154,7 +158,11 @@ function onDrawerToggle(show: boolean) {
       <div class="main-container">
         <div class="logo-container">
           <RouterLink to="/" @click="closeDrawers" class="logo">
-            <img class="logo-img" src="@/assets/img/logo_white.svg" />
+            <img
+              class="logo-img"
+              src="@/assets/img/logo_white.svg"
+              alt="TSOSI logo"
+            />
           </RouterLink>
           <RouterLink to="/pages/faq#beta-version" class="beta-badge">
             beta version{{ devMode ? " / preview" : "" }}

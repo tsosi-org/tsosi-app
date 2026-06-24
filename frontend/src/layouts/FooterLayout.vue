@@ -12,7 +12,7 @@ const { openContactModal } = useContactModal()
     <div class="container footer-wrapper" :class="{ desktop: isDesktop }">
       <div class="footer-data">
         <div class="logo">
-          <img src="@/assets/img/logo_white.svg" />
+          <img src="@/assets/img/logo_white.svg" alt="TSOSI logo" />
         </div>
         <div class="copyright">
           &copy; 2026 TSOSI under a
