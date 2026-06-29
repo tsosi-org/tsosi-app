@@ -269,7 +269,8 @@
       "name": "Repères",
       "short_name": "Repères",
       "website": "https://reseau-reperes.fr/",
-      "country": "FR"
+      "country": "FR",
+      "description": "The Repères network (Network of Open-Access Scientific Journal Incubators) is a network dedicated to collaboration and mutual support. Founded in 2018 out of the need to share and pool resources, Repères aims to work collectively on the challenges facing platforms for the dissemination of open-access scientific journals: training, documentation, technical aspects, and best practices in the publishing and dissemination of diamond open-access journals on these platforms."
     },
     "infrastructure": {
       "support_url": "https://reseau-reperes.fr/reseau/soutien-et-remerciements/"
