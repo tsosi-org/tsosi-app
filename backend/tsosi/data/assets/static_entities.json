@@ -906,6 +906,18 @@
   {
     "pid": {
       "registry_id": "ror",
+      "value": "043be3q74"
+    },
+    "entity": {
+      "name": "Open Book Collective"
+    },
+    "infrastructure": {
+      "infra_finder_url": "https://infrafinder.investinopen.org/solutions/open-book-collective"
+    }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
       "value": "05f950310"
     },
     "entity": {
