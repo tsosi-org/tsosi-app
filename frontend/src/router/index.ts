@@ -73,8 +73,16 @@ const router = createRouter({
     },
     {
       path: "/pages/blog/:id",
+      name: "blog_redirect",
+      redirect: to => {
+        return to.path.replace(/\/$/, "") + "/"
+      },
+    },
+    {
+      path: "/pages/blog/:id/",
       name: "blog",
       component: BlogView,
+      strict: true,
     },
     {
       path: "/pages/privacy-policy",
