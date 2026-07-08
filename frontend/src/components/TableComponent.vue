@@ -128,7 +128,10 @@ function getSortValue(
     // as YYYY-MM-DD.
     // Using the computed dateObj does not work with multisorting.
     return resolveValueFromPath(item, columnProps.field + ".value")
-  } else if (columnProps.type == "entityLink" && columnProps.field == "agents") {
+  } else if (
+    columnProps.type == "entityLink" &&
+    columnProps.field == "agents"
+  ) {
     return item.agents?.map((a: any) => a.name).join(", ") || null
   }
   return getItemLabel(item, columnProps)
@@ -314,7 +317,6 @@ function isColumnFiltered(column: TableColumnProps): boolean {
   const filters = getAppliedFilters()
   return Object.keys(filters).includes(column.id)
 }
-
 </script>
 
 <template>
@@ -396,12 +398,17 @@ function isColumnFiltered(column: TableColumnProps): boolean {
       <!-- Header template -->
       <template #header>
         <span
-          v-tooltip.bottom="{value: column.info, escape: false, autoHide: false, pt: { root: { class: 'left-aligned-tooltip' }}}"
+          v-tooltip="{
+            value: column.info,
+            escape: false,
+            autoHide: false,
+          }"
         >
-        <font-awesome-icon
-          v-if="column.info"
-          :icon="['fas', 'circle-question']"
-        ></font-awesome-icon></span>
+          <font-awesome-icon
+            v-if="column.info"
+            :icon="['fas', 'circle-question']"
+          ></font-awesome-icon
+        ></span>
         <span class="p-datatable-column-title">
           {{ column.title }}
         </span>
@@ -446,19 +453,21 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         <div class="inline-container">
           <div class="info-button-inline">
             <span
-            v-if="
-              column.field == 'emitter' && data.emitter?.is_child_transfer === true
-            "
-            v-tooltip.bottom="{
-              value: 'This support comes from a child entity, based on the ROR hierarchy. <a href=\'/pages/faq/#entities-hierarchies\'>See our FAQ</a>.',
-              escape: false,
-              autoHide: false,
-              pt: { root: { class: 'left-aligned-tooltip' } }
-            }"
+              v-if="
+                column.field == 'emitter' &&
+                data.emitter?.is_child_transfer === true
+              "
+              v-tooltip.bottom="{
+                value:
+                  'This support comes from a child entity, based on the ROR hierarchy. <a href=\'/pages/faq/#entities-hierarchies\'>See our FAQ</a>.',
+                escape: false,
+                autoHide: false,
+                pt: { root: { class: 'left-aligned-tooltip' } },
+              }"
             >
-            <font-awesome-icon
-              :icon="['fas', 'circle-info']"
-            ></font-awesome-icon>
+              <font-awesome-icon
+                :icon="['fas', 'circle-info']"
+              ></font-awesome-icon>
             </span>
           </div>
           <div
@@ -467,9 +476,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
           >
             <EntityLinkDataAtom
               v-for="(entityData, index) of getEntityLinkRows(data, column)"
-              :key="
-                `${column.id}-${entityData[column.field]?.id || entityData[column.field]?.name || index}`
-              "
+              :key="`${column.id}-${entityData[column.field]?.id || entityData[column.field]?.name || index}`"
               :data="entityData"
               :dataField="column"
             />
@@ -619,5 +626,4 @@ function isColumnFiltered(column: TableColumnProps): boolean {
 .entity-links-container.multiple {
   gap: 0.2em;
 }
-
 </style>
