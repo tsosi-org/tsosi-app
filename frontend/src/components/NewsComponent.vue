@@ -62,6 +62,10 @@ onMounted(async () => {
   border-width: 0 0 1px 0;
 }
 
+.post:deep(img) {
+  height: auto !important;
+}
+
 .post:last-child {
   border-bottom: 0;
 }
