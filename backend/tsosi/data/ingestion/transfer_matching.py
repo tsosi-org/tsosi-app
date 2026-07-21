@@ -1,5 +1,4 @@
 import shutil
-from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
@@ -16,8 +15,6 @@ from tsosi.models.date import (
     Date,
     format_date,
 )
-from tsosi.models.transfer import MATCH_CRITERIA_MERGED
-from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 
 CRITERIA_EMITTER = "emitter"
 CRITERIA_RECIPIENT = "recipient"

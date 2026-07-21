@@ -1,13 +1,7 @@
-from datetime import date
-from pathlib import Path
-
 import pandas as pd
 from django.core.management.base import BaseCommand, CommandParser
-from django.db.models import Q, QuerySet
-from django.http import HttpRequest
-from tsosi.api.viewsets import TransferViewSet
 from tsosi.data.ingestion.transfer_matching import format_date
-from tsosi.models import Entity, Transfer
+from tsosi.models import Transfer
 
 
 def generate_template_file(entity_id: str) -> None:

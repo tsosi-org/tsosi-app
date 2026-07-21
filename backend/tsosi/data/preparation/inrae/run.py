@@ -5,8 +5,6 @@ from pathlib import Path
 
 import django
 import pandas as pd
-from IPython.display import display
-from openpyxl import load_workbook
 
 # Add the parent directory to the system path and setup django
 BASE_DIR = str(Path(os.getcwd()).resolve())
@@ -18,7 +16,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend_site.settings")
 
 django.setup()
 
-from tsosi.data.ingestion.core import MAX_AGENTS_PER_TRANSFER
 from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
 NAME = "inrae"
@@ -26,14 +23,14 @@ RAW_FOLDER = Path(BASE_DIR) / "_no_git/data/raw" / NAME
 
 
 def main() -> None:
-    raw_path = str(RAW_FOLDER / f"2026--TSOSI-inrae-corrige.xlsx")
+    raw_path = str(RAW_FOLDER / "2026--TSOSI-inrae-corrige.xlsx")
     df = pd.read_excel(raw_path, dtype=str)
     mapping = {
         "infrastructure/name": "recipient/name",
         "intermediary/name": "intermediary/name",
         "amount": "amount",
         "currency": "currency",
-        "date_received": "date_received",
+        "date_sent": "date_sent",
         "contract/date_start": "date_start",
         "contract/date_end": "date_end",
     }
@@ -60,6 +57,14 @@ def main() -> None:
     #     & df["recipient/wikidata_id"].isna()
     #     & df["recipient/custom_id"].isna()
     # ]["recipient/name"].unique().tolist()
+
+    df = df[
+        ~(
+            df["recipient/ror_id"].isna()
+            & df["recipient/wikidata_id"].isna()
+            & df["recipient/custom_id"].isna()
+        )
+    ]
 
     consortium_path = (
         Path(BASE_DIR)

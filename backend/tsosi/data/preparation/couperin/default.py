@@ -2,7 +2,7 @@ from datetime import date
 from pathlib import Path
 
 from tsosi.data.preparation import raw_data_config as rdc
-from tsosi.models.date import DATE_PRECISION_DAY, DATE_PRECISION_YEAR
+from tsosi.models.date import DATE_PRECISION_YEAR
 
 
 def get_config(
@@ -35,9 +35,6 @@ def get_config(
             rdc.FieldAmount(field="amount"),
             rdc.FieldHideAmount(constant=False),
             rdc.FieldCurrency(constant="EUR"),
-            # rdc.FieldDatePaymentEmitter(
-            #     field="date", date_precision=DATE_PRECISION_YEAR
-            # ),
             rdc.FieldDateStart(
                 field="start_date", date_precision=DATE_PRECISION_YEAR
             ),

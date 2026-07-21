@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.files import File
 from django.db import transaction
 from django.utils import timezone
@@ -20,11 +19,10 @@ from .identifier import (
     MATCH_CRITERIA_FROM_INPUT,
     Identifier,
     IdentifierEntityMatching,
-    IdentifierVersion,
 )
 from .registry import Registry
 from .source import DataSource
-from .utils import MATCH_SOURCE_MANUAL, replace_model_file
+from .utils import MATCH_SOURCE_MANUAL
 
 REGISTRY_ROR = "ror"
 REGISTRY_WIKIDATA = "wikidata"
@@ -191,6 +189,7 @@ DATA_SOURCES = [
     "doaj_library",
     "doaj_publisher",
     "doaj",
+    "edch",
     "gottingen",
     "inrae",
     "leuven",
@@ -201,6 +200,7 @@ DATA_SOURCES = [
     "opf",
     "pci",
     "rennes",
+    "reperes",
     "scipost",
     "uga",
     "uminho",

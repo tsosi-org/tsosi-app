@@ -196,8 +196,8 @@
       "name": "European Diamond Capacity Hub",
       "short_name": "EDCH",
       "website": "https://diamas.org/",
-      "country": "EU",
-      "description": "The European Diamond Capacity Hub (EDCH) is a collective that provides services for Diamond Open Access Publishers, Service Providers, and Tools & Technology Providers. It takes its place alongside other regional Capacity Hubs such as Redalyc-Amelica and AJOL, and thus provides a gateway to the global Diamond Open Access community."
+      "country": "BE",
+      "description": "The European Diamond Capacity Hub (EDCH), an <a href='https://tsosi.org/entities/00rfexj26'>OPERAS</a> programme, provides services for the European Diamond Open Access community. It supports institutional, national, and interdisciplinary scholarly publishing, as well as Diamond OA publishers and service providers, by offering training modules, technical tools, sustainability support, and coordination at the European and national level."
     },
     "infrastructure": {},
     "static_icon": "edch_icon.png",
