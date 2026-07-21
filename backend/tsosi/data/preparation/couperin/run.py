@@ -5,8 +5,6 @@ from pathlib import Path
 
 import django
 import pandas as pd
-from IPython.display import display
-from openpyxl import load_workbook
 
 # Add the parent directory to the system path and setup django
 BASE_DIR = str(Path(os.getcwd()).resolve())
@@ -18,8 +16,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend_site.settings")
 
 django.setup()
 
-from tsosi.app_settings import app_settings
-from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
 NAME = "couperin"
 RAW_FOLDER = Path(BASE_DIR) / "_no_git/data/raw" / NAME
@@ -39,6 +35,7 @@ def main() -> None:
         "date_start",
         "amount",
         "3-year",
+        "date_recipient",
     ]
     df = df[
         [
@@ -49,6 +46,7 @@ def main() -> None:
             "date_start",
             "amount",
             "3-year",
+            "date_recipient",
         ]
     ]
 
