@@ -12,11 +12,6 @@ const { openContactModal } = useContactModal()
 
 const partners = getPartners() as Entity[]
 shuffleArray(partners)
-
-function formatPartners(partners: Entity[]): String {
-  const arr = partners.map((p) => p?.short_name || p.name)
-  return arr.slice(0, -1).join(", ") + " and " + arr.slice(-1)
-}
 </script>
 
 <template>
@@ -28,27 +23,74 @@ function formatPartners(partners: Entity[]): String {
       >
         <ul>
           <li>
-            Data scope: The TSOSI platform includes data solely from
-            <RouterLink to="#data-provider">its providers</RouterLink>. This is
-            already relevant, because it's the first time that one can explore
-            these data, but keep in mind that it's only a small part of the
-            funding landscape for open infrastructures.
+            Data comes from research organizations, open infrastructures,
+            libraries, research funders and other organizations. The web
+            platform was launched in June 2025 and its scope keeps growing.
+            However, keep in mind that TSOSI is not exhaustive.
           </li>
-
           <li>
-            DOAB and DOAJ date range: The data starts from 2021. Therefore, all
-            financial supports made before 2021 will not appear in TSOSI.
-          </li>
-
-          <li>
-            TSOSI’s data are mostly produced manually. The name of supporting
-            organizations received by TSOSI is handwritten, and the identifiers
-            are added semi-manually by the TSOSI operational team. Therefore,
-            the TSOSI data may contain errors. Please
-            <a @click="openContactModal">contact us</a>
-            if you think you have found one.
+            TSOSI's data partly results from manual work such as attribution
+            identifiers to research organizations. Data can therefore contain
+            errors. If you think you have found one, please
+            <a @click="openContactModal">contact us</a>.
           </li>
         </ul>
+      </StaticSectionAtom>
+
+      <StaticSectionAtom
+        id="tsosi-meaning"
+        title="What does TSOSI mean and how is it pronounced?"
+      >
+        <p>
+          TSOSI stands for
+          <b>Transparency to sustain open science infrastructure</b>. It's
+          pronounced like the beginning of the word "society" with a "t" at the
+          beginning: "t-sosci".
+        </p>
+      </StaticSectionAtom>
+
+      <StaticSectionAtom id="who-runs-tsosi" title="Who runs TSOSI?">
+        <p>
+          TSOSI has its own governance, composed of a steering committee, an
+          advisory board, a user group and an operational team. See the people
+          involved in the "<RouterLink to="/pages/about#who-we-are"
+            >Who we are</RouterLink
+          >" section.
+        </p>
+      </StaticSectionAtom>
+
+      <StaticSectionAtom id="data-source" title="Where the data comes from?">
+        <p>
+          TSOSI data are not scrapped from the web, but sent by research
+          organizations and curated mostly manually by TSOSI operational team.
+          Organization that share data with TSOSI are named TSOSI data provider.
+          You can easily find them in the
+          <RouterLink to="/explore">explore page</RouterLink>. Data can come
+          from open infrastructures, universities, libraries consortia, research
+          funders and other type of organizations. A same financial support can
+          therefore be described by more than one data provider. To avoid a
+          support to count twice, a de-duplication process is included in the
+          curation process. The provenance of the data (data source) is
+          explained in the detail view. See for example
+          <span v-for="partner of partners" :key="partner.id">
+            <RouterLink :to="'/entities/' + partner.id"
+              >{{ partner?.short_name || partner.name }} </RouterLink
+            >{{ partner !== partners[partners.length - 1] ? ", " : "." }}
+          </span>
+        </p>
+      </StaticSectionAtom>
+
+      <StaticSectionAtom
+        id="data-provider"
+        title="Who are TSOSI’s data providers?"
+      >
+        <p>
+          TSOSI’s data providers are the organizations that have shared
+          financial data about support for open infrastructures with TSOSI.
+          These can include, for example, research institutions, open
+          infrastructures, library consortia, research funders, or government
+          bodies.
+        </p>
       </StaticSectionAtom>
 
       <StaticSectionAtom
@@ -69,46 +111,6 @@ function formatPartners(partners: Entity[]): String {
           within a research library: if everyone can see which organizations
           have financially supported an open infrastructure, then the decision
           to do the same would become much more evident.
-        </p>
-      </StaticSectionAtom>
-
-      <StaticSectionAtom id="who-runs-tsosi" title="Who runs TSOSI?">
-        <p>
-          Université Grenoble Alpes leads the project, and the French Committee
-          for Open Science is the funder. SCOSS, DOAJ, DOAB, SciPost,
-          PeerCommunityIn, OPERAS, and Couperin are part of the governance of
-          the project.
-        </p>
-      </StaticSectionAtom>
-
-      <StaticSectionAtom id="tsosi-meaning" title="What does TSOSI mean?">
-        <p>
-          TSOSI stands for
-          <b>Transparency to sustain open science infrastructure</b>.
-        </p>
-      </StaticSectionAtom>
-
-      <StaticSectionAtom
-        id="pronounce-tsosi"
-        title="How do you pronounce TSOSI?"
-      >
-        <p>
-          It's like the beginning of the word “society” with a “t” at the
-          beginning: “t-sosci”.
-        </p>
-      </StaticSectionAtom>
-
-      <StaticSectionAtom
-        id="data-provider"
-        title="Who are TSOSI’s data providers?"
-      >
-        <p>
-          TSOSI’s data providers are the organizations that have shared
-          financial data about support for open infrastructures with TSOSI.
-          These can include, for example, research institutions, open
-          infrastructures, library consortia, research funders, or government
-          bodies. So far, the TSOSI's data providers are:
-          {{ formatPartners(partners) }}.
         </p>
       </StaticSectionAtom>
 
@@ -307,9 +309,12 @@ function formatPartners(partners: Entity[]): String {
         title="Why are the support amounts hidden sometimes?"
       >
         <p>
-          TSOSI is recent (the platform was launched in June 2025); its data are
-          new, and therefore some of TSOSI's data providers have chosen to hide
-          the amounts.
+          While using the app, you may notice that some amounts are visible
+          while others are hidden. This is because each infrastructure that
+          shares data with TSOSI can choose whether to display or not the
+          amounts. For example, on the DOAJ page, amounts are hidden by default,
+          but when a university becomes a TSOSI data provider, the amount of its
+          support to DOAJ is shown.
         </p>
       </StaticSectionAtom>
 
@@ -361,14 +366,17 @@ function formatPartners(partners: Entity[]): String {
           TSOSI relies on the
           <ExternalLinkAtom href="https://ror.org/"
             >ROR registry</ExternalLinkAtom
-          >. It includes only the parent-child organizational hierarchies that
-          are recorded in the registry (see the
+          >. If the organization has a ROR identifier, it benefit from its
+          parent-child relations (see the
           <ExternalLinkAtom
             href="https://ror.org/about/faqs/#does-ror-support-relationships-and-hierarchies"
             >ROR FAQ on relationsphips</ExternalLinkAtom
           >). This means that when support is provided by a child entity, it is
-          also displayed under the parent organization. For example, this is the
-          case with the
+          also displayed under all the parent organizations. For example,
+          support from the
+          <RouterLink to="/entities/03hxzy361">Institute of Physics</RouterLink>
+          (a sub-entity of the University of Amsterdam) is also displayed under
+          the
           <RouterLink to="/entities/04dkp9463"
             >University of Amsterdam</RouterLink
           >.
