@@ -5,6 +5,7 @@ from typing import Any
 
 import pandas as pd
 import pycountry
+
 from tsosi.data.exceptions import DataValidationError
 from tsosi.data.pid_registry.ror import ROR_ID_REGEX
 from tsosi.data.pid_registry.wikidata import WIKIDATA_ID_REGEX
@@ -57,6 +58,7 @@ def currency_iso_from_value(val, error: bool = False) -> str | None:
         if symbol in val:
             return code
 
+    val = val.upper()
     match = re.search(r"[A-Z]{3}", val)
     if match and match.group(0) in CURRENCY_MAPPING.values():
         value = match.group(0)
@@ -73,10 +75,8 @@ def country_check_iso(val, error: bool = False) -> None:
     """
     Check that the provided value is a country ISO code.
     """
-    if isinstance(val, str) and val in COUNTRY_ALPHA_2_MAPPING.keys():
+    if isinstance(val, str) and val in COUNTRY_ALPHA_2_MAPPING or pd.isna(val):
         return
-    elif pd.isna(val):
-        return None
     msg = f"The provided country ISO code `{val}` does not exist."
     if error:
         raise DataValidationError(msg)
@@ -115,7 +115,7 @@ def country_name_from_iso[T: Any](code: T) -> T | str:
     """
     if not isinstance(code, str):
         return code
-    if code in COUNTRY_ALPHA_2_MAPPING.keys():
+    if code in COUNTRY_ALPHA_2_MAPPING:
         return COUNTRY_ALPHA_2_MAPPING[code].name  # type: ignore
     logger.warning(f"The provided country ISO code `{code}` does not exist.")
     return code
@@ -239,16 +239,19 @@ def check_wikidata_id(value, error: bool = False) -> bool:
 
 
 def check_bool_value(value, error: bool = False) -> bool:
-    if isinstance(value, bool):
-        return True
-    elif isinstance(value, int) and value in [0, 1]:
-        return True
-    elif isinstance(value, str) and value.lower() in [
-        "true",
-        "false",
-        "1",
-        "0",
-    ]:
+    if (
+        isinstance(value, bool)
+        or isinstance(value, int)
+        and value in [0, 1]
+        or isinstance(value, str)
+        and value.lower()
+        in [
+            "true",
+            "false",
+            "1",
+            "0",
+        ]
+    ):
         return True
     if error:
         raise DataValidationError(f"Wrong boolean value: {value}")
