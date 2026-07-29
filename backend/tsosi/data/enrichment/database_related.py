@@ -320,7 +320,7 @@ def entities_with_identifier_data() -> pd.DataFrame:
             "date_logo_fetched",
             "date_wikipedia_fetched",
             "parents",
-            "types",
+            "ror_types",
         )
     )
     entities = pd.DataFrame.from_records(entities)
