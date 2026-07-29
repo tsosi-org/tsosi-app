@@ -85,7 +85,8 @@ class Entity(TimestampedModel):
     )
     website = models.URLField(max_length=256, null=True)
     date_inception = models.DateField(null=True)
-    types = models.JSONField(null=True)
+    ror_types = models.JSONField(null=True)
+    tsosi_type = models.CharField(null=True, max_length=512)
 
     logo_url = models.CharField(max_length=256, null=True)
     logo = models.ImageField(

@@ -36,8 +36,6 @@ class EntitySerializer(BaseEntitySerializer):
     Minified serializer for entities.
     """
 
-    ror_types = serializers.JSONField(source="types")
-
     class Meta:
         model = Entity
         fields = [
@@ -138,7 +136,7 @@ class BaseTransferSerializer(serializers.ModelSerializer):
             return obj.raw_data
         data: dict = obj.raw_data
         data.pop(obj.original_amount_field, None)
-        for field in data.keys():
+        for field in data:
             if isinstance(data[field], dict):
                 data[field].pop(obj.original_amount_field, None)
         return data

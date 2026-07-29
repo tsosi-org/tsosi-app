@@ -1,5 +1,6 @@
 from django.urls import include, path
 from tsosi.api.router import OptionalSlashRouter
+from tsosi.api.views import stats_view
 from tsosi.api.viewsets import (
     AnalyticViewSet,
     CurrencyViewSet,
@@ -34,4 +35,7 @@ router.register(r"analytics", AnalyticViewSet, basename="analytic")
 # print(router.urls)
 # print("\n\n")
 
-urlpatterns = [path("api/", include(router.urls))]
+urlpatterns = [
+    path("api/", include(router.urls)),
+    path("api/stats", stats_view),
+]
