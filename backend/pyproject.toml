@@ -68,3 +68,6 @@ python_files = [
 
 [tool.coverage.run]
 omit = ["**/tests/*", "tests/**", "**/__init__.py", "tsosi/data/preparation/**"]
+
+[tool.ruff.lint]
+ignore = ["RUF012"]

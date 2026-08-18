@@ -1,7 +1,14 @@
+import logging
+
 from django.db import models
+from django.db.models import Count
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 from .entity import Entity
 from .utils import TimestampedModel
+
+logger = logging.getLogger(__name__)
 
 
 class DataSource(TimestampedModel):
@@ -45,7 +52,6 @@ class DataLoadSource(TimestampedModel):
 
     def stats(self) -> str:
         """return stats about the data load source"""
-        from tsosi.models import Transfer
 
         dls_transfers = self.transfers
         all_transfers = self.entity.transfers.exclude(
@@ -63,3 +69,29 @@ class DataLoadSource(TimestampedModel):
         msg += f"- Agents: {agents.count()}\n"
         msg += f"- Recipients: {recipients.count()}"
         return msg
+
+
+@receiver(pre_delete, sender=DataLoadSource)
+def handle_dls_deletion(sender, instance, using, **kwargs) -> None:
+    """
+    Remove this source's raw payload from merged transfers that still have two other sources.
+    Then remove all other transfers linked to this source.
+    """
+    from .transfer import Transfer
+
+    transfer_ids = instance.transfers.values("pk")
+    transfers = (
+        Transfer.objects.filter(pk__in=transfer_ids)
+        .prefetch_related("data_load_sources")
+        .annotate(dls_count=Count("data_load_sources"))
+    )
+    for transfer in transfers.filter(dls_count__gte=3):
+        raw_data = transfer.raw_data
+        raw_data.pop(instance.data_source_id, None)
+        transfer.raw_data = raw_data
+        transfer.save()
+
+    deleted, _ = transfers.filter(dls_count__lt=3).delete()
+    logger.info(
+        f"Deleted {deleted} transfers linked to DataLoadSource {instance.id}"
+    )

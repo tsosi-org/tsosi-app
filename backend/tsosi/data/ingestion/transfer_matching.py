@@ -6,10 +6,12 @@ import pandas as pd
 from openpyxl import Workbook
 from openpyxl.styles import Border, Side
 from openpyxl.utils.dataframe import dataframe_to_rows
+
 from tsosi.app_settings import app_settings
 from tsosi.data.exceptions import DataException
 from tsosi.models import Currency, DataLoadSource, Transfer
 from tsosi.models.date import (
+    DATE_PRECISION_DAY,
     DATE_PRECISION_MONTH,
     DATE_PRECISION_YEAR,
     Date,
@@ -91,9 +93,9 @@ def get_date_clc(transfer: Transfer) -> Date | None:
     ]:
         if getattr(transfer, field) is not None:
             return getattr(transfer, field)
-    if getattr(transfer, "date_start") is not None:
+    if transfer.date_start is not None:
         return {
-            **getattr(transfer, "date_start"),
+            **transfer.date_start,
             "precision": DATE_PRECISION_YEAR,
         }
     return None
@@ -184,118 +186,104 @@ def get_non_null(*args: list[float | None]) -> float | None:
     Return the first non-null value from args.
     """
     non_null_values = [value for value in args if value is not None]
-    return non_null_values[0] if non_null_values else None
+    if not non_null_values:
+        return None
+    return non_null_values[0]
 
 
 def get_best_amount_and_currency(
-    transfer_left: Transfer, transfer_right: Transfer
+    *transfers: list[Transfer],
 ) -> tuple[float, Currency]:
     """
-    Return the best amount and currency from two transfers.
-    For now, we just return the left transfer's amount and currency.
+    Return the best amount and currency from transfers.
+    For now, we just return the first transfer's amount and currency.
     """
-    return transfer_left.amount, transfer_left.currency
+    if not transfers:
+        return None, None
+    return transfers[0].amount, transfers[0].currency
 
 
-def get_best_date(
-    date_left: Date | None, date_right: Date | None
-) -> Date | None:
+def get_best_date(*dates: list[Date | None]) -> Date | None:
     """
-    Return the best (most precise) date from two dates.
+    Return the best (most precise) date from dates.
     """
-    if date_left is None:
-        return date_right
-    if date_right is None:
-        return date_left
-    return (
-        date_left
-        if date_left["precision"] >= date_right["precision"]
-        else date_right
+    non_null_dates = [date for date in dates if date is not None]
+    if not non_null_dates:
+        return None
+    # Sort by precision (day > month > year)
+    sorted_dates = sorted(
+        non_null_dates,
+        key=lambda d: {
+            DATE_PRECISION_YEAR: 1,
+            DATE_PRECISION_MONTH: 2,
+            DATE_PRECISION_DAY: 3,
+        }[d["precision"]],
+        reverse=True,
     )
+    return sorted_dates[0]
 
 
 def merge_transfers(
     transfer_left: Transfer, transfer_right: Transfer
 ) -> Transfer:
     """
-    Merge two transfers into one.
+    Merge two or more transfers into one.
     Creates a new Transfer object with the best values from both transfers,
     and update parent transfers.
     """
+    parent_transfers = [
+        *Transfer.objects.filter(merged_into=transfer_right).all()
+    ]
+    if parent_transfers:
+        transfers = [transfer_left, *parent_transfers]
+        transfer_right.delete()
+    else:
+        transfers = [transfer_left, transfer_right]
+
     fields = {
-        "emitter": get_non_null(transfer_left.emitter, transfer_right.emitter),
-        "recipient": get_non_null(
-            transfer_left.recipient, transfer_right.recipient
-        ),
-        "date_invoice": get_best_date(
-            transfer_left.date_invoice, transfer_right.date_invoice
-        ),
+        "emitter": get_non_null(*[t.emitter for t in transfers]),
+        "recipient": get_non_null(*[t.recipient for t in transfers]),
+        "date_invoice": get_best_date(*[t.date_invoice for t in transfers]),
         "date_payment_emitter": get_best_date(
-            transfer_left.date_payment_emitter,
-            transfer_right.date_payment_emitter,
+            *[t.date_payment_emitter for t in transfers]
         ),
         "date_payment_recipient": get_best_date(
-            transfer_left.date_payment_recipient,
-            transfer_right.date_payment_recipient,
+            *[t.date_payment_recipient for t in transfers]
         ),
-        "date_start": get_best_date(
-            transfer_left.date_start, transfer_right.date_start
-        ),
-        "date_end": get_best_date(
-            transfer_left.date_end, transfer_right.date_end
-        ),
-        "description": get_non_null(
-            transfer_left.description, transfer_right.description
-        ),
-        "hide_amount": transfer_left.hide_amount and transfer_right.hide_amount,
+        "date_start": get_best_date(*[t.date_start for t in transfers]),
+        "date_end": get_best_date(*[t.date_end for t in transfers]),
+        "description": get_non_null(*[t.description for t in transfers]),
+        "hide_amount": np.all([t.hide_amount for t in transfers]),
         "original_amount_field": get_non_null(
-            transfer_left.original_amount_field,
-            transfer_right.original_amount_field,
+            *[t.original_amount_field for t in transfers]
         ),
-        "original_id": get_non_null(
-            transfer_left.original_id,
-            transfer_right.original_id,
-        ),
+        "original_id": get_non_null(*[t.original_id for t in transfers]),
         "raw_data": {
-            transfer_left.data_load_sources.first().data_source_id: transfer_left.raw_data,
-            transfer_right.data_load_sources.first().data_source_id: transfer_right.raw_data,
+            transfer.data_load_sources.first().data_source_id: transfer.raw_data
+            for transfer in transfers
         },
-        "emitter_sub": get_non_null(
-            transfer_left.emitter_sub, transfer_right.emitter_sub
-        ),
+        "emitter_sub": get_non_null(*[t.emitter_sub for t in transfers]),
     }
     # Merge amount and currency
     fields["amount"], fields["currency"] = get_best_amount_and_currency(
-        transfer_left, transfer_right
+        *transfers
     )
     # Merge raw_data
-    raw_data = {
-        transfer_left.data_load_sources.first().data_source_id: transfer_left.raw_data
+    fields["raw_data"] = {
+        transfer.data_load_sources.first().data_source_id: transfer.raw_data
+        for transfer in transfers
     }
-    if transfer_right.data_load_sources.count() > 1:
-        for dls in transfer_right.data_load_sources.all():
-            raw_data[dls.data_source_id] = transfer_right.raw_data[
-                dls.data_source_id
-            ]
-    else:
-        raw_data[transfer_right.data_load_sources.first().data_source_id] = (
-            transfer_right.raw_data
-        )
-    fields["raw_data"] = raw_data
     # Merge transfers
     child = Transfer(**fields)
-    child.agents.set(
-        transfer_left.agents.all() | transfer_right.agents.all(),
-    )
-    child.data_load_sources.set(
-        transfer_left.data_load_sources.all()
-        | transfer_right.data_load_sources.all(),
-    )
-    transfer_left.merged_into = child
-    transfer_right.merged_into = child
     child.save()
-    transfer_left.save()
-    transfer_right.save()
+    child.agents.set(set().union(*[set(t.agents.all()) for t in transfers]))
+    child.data_load_sources.set(
+        set().union(*[set(t.data_load_sources.all()) for t in transfers])
+    )
+    child.save()
+    for transfer in transfers:
+        transfer.merged_into = child
+        transfer.save()
     return child
 
 

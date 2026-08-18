@@ -10,6 +10,10 @@ export function getTransferBaseUrl(): string {
 }
 
 export function getEntityUrl(entity: Entity): string {
+  const tsosi = entity.identifiers.find((id) => id.registry == "tsosi")
+  if (tsosi) {
+    return getEntityBaseUrl() + tsosi.value
+  }
   const ror = entity.identifiers.find((id) => id.registry == "ror")
   if (ror) {
     return getEntityBaseUrl() + ror.value

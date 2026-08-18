@@ -9,6 +9,7 @@ import pandas as pd
 from django.db import transaction
 from django.db.models import Count, F
 from django.utils import timezone
+
 from tsosi.app_settings import app_settings
 from tsosi.data.db_utils import (
     IDENTIFIER_CREATE_FIELDS,
@@ -42,7 +43,6 @@ from tsosi.models.identifier import (
     MATCH_CRITERIA_FROM_WIKIDATA,
 )
 from tsosi.models.static_data import (
-    REGISTRY_CUSTOM,
     REGISTRY_ROR,
     REGISTRY_TSOSI,
     REGISTRY_WIKIDATA,
@@ -156,16 +156,15 @@ def ingest_entity_identifier_relations(
 
     mask = ~new_relations["relation"].isin(existing_relations["relation"])
     new_relations = new_relations[mask].copy()
+    detached_relation_ids = pd.Index([])
 
     # 2 -   Get duplicated entities between input & existing and
-    #       detach associated identifiers
+    #       deprecate associated identifiers
     mask = existing_relations["entity_id"].isin(new_relations["entity_id"])
     rel_to_detach = existing_relations[mask]
     if not rel_to_detach.empty:
-        logger.info(f"Detaching {len(rel_to_detach)} existing relations.")
-        Identifier.objects.filter(id__in=rel_to_detach.index.to_list()).update(
-            entity=None, date_last_updated=date_update
-        )
+        detached_relation_ids = rel_to_detach.index
+        logger.info(f"Deprecating {len(rel_to_detach)} existing relations.")
         IdentifierEntityMatching.objects.filter(
             identifier__id__in=rel_to_detach.index.to_list(),
             date_end__isnull=True,
@@ -174,12 +173,9 @@ def ingest_entity_identifier_relations(
             date_last_updated=date_update,
             comments=f"New identifier of registry {registry_id} for the entity.",
         )
-        existing_relations.loc[rel_to_detach.index, "entity_id"] = None
 
     # 3 - Handle input relations involving existing detached identifiers
-    detached_relations = existing_relations[
-        existing_relations["entity_id"].isna()
-    ]
+    detached_relations = existing_relations.loc[detached_relation_ids]
     mask = new_relations["identifier_value"].isin(
         detached_relations["identifier_value"]
     )
@@ -216,6 +212,9 @@ def ingest_entity_identifier_relations(
         existing_relations.loc[mask, "entity_id"] = existing_relations.loc[
             mask
         ].index.map(pid_to_update.set_index("identifier_id")["entity_id"])
+        detached_relation_ids = detached_relation_ids.difference(
+            pd.Index(pid_to_update["identifier_id"])
+        )
 
     # 4 -   Create new PIDs not in existing relations.
     mask = ~new_relations["identifier_value"].isin(
@@ -255,7 +254,10 @@ def ingest_entity_identifier_relations(
         logger.info(f"Created {len(pid_to_create)} Identifier records.")
 
     # 5 - Merge remaining entities
-    mask = ~new_relations["entity_id"].isin(existing_relations["entity_id"])
+    attached_entity_ids = existing_relations.loc[
+        ~existing_relations.index.isin(detached_relation_ids), "entity_id"
+    ]
+    mask = ~new_relations["entity_id"].isin(attached_entity_ids)
     to_merge = new_relations[mask].copy()
 
     to_merge["merged_with_id"] = to_merge["identifier_value"].map(
@@ -269,7 +271,7 @@ def ingest_entity_identifier_relations(
     to_merge["match_criteria"] = MATCH_CRITERIA_MERGED
     merge_entities(to_merge, date_update)
 
-    logger.info(f"Finished ingesting new Identifier - Entity relations.")
+    logger.info("Finished ingesting new Identifier - Entity relations.")
 
 
 def active_identifiers() -> pd.DataFrame:
@@ -503,12 +505,12 @@ def update_entity_from_pid_records() -> TaskResult:
         cols.append(f_diff)
 
     # Select entities with new data to be updated
-    entities["diff"] = entities[
-        [f"{f}_diff" for f in clc_field_priority.keys()]
-    ].any(axis=1)
+    entities["diff"] = entities[[f"{f}_diff" for f in clc_field_priority]].any(
+        axis=1
+    )
     entities_to_update = entities[entities["diff"]][cols].copy()
     entities_to_update.rename(
-        columns={f"{f}_clc": f for f in clc_field_priority.keys()}, inplace=True
+        columns={f"{f}_clc": f for f in clc_field_priority}, inplace=True
     )
     # Side effects
     # date_logo_fetched must be set to null when the logo_url changes

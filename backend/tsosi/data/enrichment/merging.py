@@ -3,9 +3,10 @@ from datetime import datetime
 
 import pandas as pd
 from django.db import transaction
-from tsosi.data.db_utils import bulk_create_from_df, bulk_update_from_df
+
+from tsosi.data.db_utils import bulk_update_from_df
 from tsosi.data.exceptions import DataException
-from tsosi.models import Entity, Identifier, IdentifierEntityMatching, Transfer
+from tsosi.models import Entity, IdentifierEntityMatching, Transfer
 from tsosi.models.transfer import MATCH_CRITERIA_MERGED, TRANSFER_ENTITY_TYPES
 
 logger = logging.getLogger(__name__)
@@ -15,14 +16,13 @@ logger = logging.getLogger(__name__)
 def merge_entities(
     entities: pd.DataFrame,
     date_update: datetime,
-    detach_ids: bool = True,
 ):
     """
     Merge the given entities.
 
     1 - Update the entities to me merged info and flag them as inactive.
 
-    2 - Detach all identifiers attached to the merged entities.
+    2 - Update all identifiers attached to the merged entities.
 
     3 - For the merge target entities: concatenate the static fields
         from all the entities that was merged with them.
@@ -41,8 +41,6 @@ def merge_entities(
                         - `match_source` - The match source to input in step 4
 
     :param date_update: The datetime object to use as the update date.
-    :param detach_ids:  Whether to detach the identifiers attached to the
-                        merged entities (step 2). Default `True`.
     """
     # Prepare data
     # Check required columns and remove duplicate rows
@@ -144,14 +142,10 @@ def merge_entities(
     )
     logger.info(f"Updated {len(to_merge)} Entity records.")
 
-    # 2 - Detach all identifiers still attached to the merged entities
-    if detach_ids:
-        Identifier.objects.filter(
-            entity__id__in=e_to_update["id"].to_list()
-        ).update(entity_id=None, date_last_updated=date_update)
-        IdentifierEntityMatching.objects.filter(
-            entity__id__in=e_to_update["id"].to_list(), date_end__isnull=True
-        ).update(date_end=date_update, date_last_updated=date_update)
+    # 2 - Update all identifiers still attached to the merged entities
+    IdentifierEntityMatching.objects.filter(
+        entity__id__in=e_to_update["id"].to_list(), date_end__isnull=True
+    ).update(date_end=date_update, date_last_updated=date_update)
 
     # 3 - Update entities that were merged with other
     m_entities = pd.DataFrame.from_records(

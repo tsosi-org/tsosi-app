@@ -1,15 +1,17 @@
-import re
 from urllib.parse import urlparse
 
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
+from django.http import Http404, HttpResponseRedirect
+from django.urls import resolve as django_resolve
+from django.urls import reverse as django_reverse
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
+
 from tsosi.api.serializers import (
     AnalyticSerializer,
     CurrencySerializer,
@@ -21,21 +23,12 @@ from tsosi.api.serializers import (
 from tsosi.app_settings import app_settings
 from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
 from tsosi.models import Analytic, Currency, Entity, Transfer
-from tsosi.models.static_data import PID_REGEX_OPTIONS
-from tsosi.models.utils import UUID4_REGEX
 
 
-class ReadOnlyViewSet(viewsets.ModelViewSet):
-    http_method_names = ["get", "head", "options"]
-
-    def create(self, request, *args, **kwargs):
-        raise PermissionDenied("Create operation is not allowed.")
-
-    def update(self, request, *args, **kwargs):
-        raise PermissionDenied("Update operation is not allowed.")
-
-    def destroy(self, request, *args, **kwargs):
-        raise PermissionDenied("Destroy operation is not allowed.")
+class RedirectRequired(Exception):
+    def __init__(self, query=None, **kwargs):
+        self.query = query
+        self.kwargs = kwargs
 
 
 class BypassPagination(BasePermission):
@@ -56,7 +49,7 @@ class BypassPagination(BasePermission):
         raise PermissionDenied("You are not allowed to bypass pagination.")
 
 
-class AllActionViewSet(viewsets.ModelViewSet):
+class AllActionViewSet(viewsets.GenericViewSet):
     @action(
         detail=False, methods=["get"], permission_classes=[BypassPagination]
     )
@@ -69,15 +62,32 @@ class AllActionViewSet(viewsets.ModelViewSet):
         return self.list(request, *args, **kwargs)
 
 
-class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
-    queryset = Entity.objects.filter(is_active=True).prefetch_related(
-        "identifiers", "identifiers__registry", "infrastructure_details"
+class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
+    queryset = (
+        Entity.objects.filter(is_active=True)
+        .prefetch_related("identifiers")
+        .select_related("infrastructure_details")
     )
     serializer_class = EntitySerializer
-    filter_backends = [OrderingFilter, SearchFilter]
-    ordering = ["-is_recipient", "name"]
-    ordering_fields = ["name", "is_recipient"]
+    filter_backends = [SearchFilter]
     search_fields = ["name", "short_name", "names__value", "identifiers__value"]
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super().dispatch(request, *args, **kwargs)
+        except RedirectRequired as e:
+            resolved = django_resolve(request.path)
+            return HttpResponseRedirect(
+                django_reverse(
+                    f"{resolved.app_names[0]}:{resolved.url_name}",
+                    kwargs={**e.kwargs},
+                )
+                + (
+                    f"?{request.META.get('QUERY_STRING', '')}"
+                    if request.GET
+                    else ""
+                )
+            )
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -89,40 +99,27 @@ class EntityViewSet(AllActionViewSet, ReadOnlyViewSet):
         We allow multiple way to reference an entity.
         It can be its database ID (default DRF way) or by using an external
         unique identifier.
+        We redirect when the identifier is outdated.
         """
-        queryset = self.filter_queryset(self.get_queryset())
-
-        # Perform the lookup filtering.
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        id_value = self.kwargs[lookup_url_kwarg]
+        try:
+            entity = Entity.objects.get_by_any_id(id_value).sucessor_or_self()
+        except Entity.DoesNotExist:
+            raise Http404
 
-        assert lookup_url_kwarg in self.kwargs, (
-            "Expected view %s to be called with a URL keyword argument "
-            'named "%s". Fix your URL conf, or set the `.lookup_field` '
-            "attribute on the view correctly."
-            % (self.__class__.__name__, lookup_url_kwarg)
-        )
+        if entity.is_active is False:
+            raise Http404
 
-        # Implement the correct lookup according to the parameter value
-        filter_kwargs = {}
-        id_value: str = self.kwargs[lookup_url_kwarg]
-        if re.match(UUID4_REGEX, id_value):
-            filter_kwargs[self.lookup_field] = id_value
-        else:
-            for r_id, r_pattern in PID_REGEX_OPTIONS:
-                if not re.match(r_pattern, id_value):
-                    continue
+        identifier = entity.identifiers.filter(
+            registry_id=REGISTRY_TSOSI
+        ).first()
+        if identifier and identifier.value != id_value:
+            raise RedirectRequired(**{lookup_url_kwarg: identifier.value})
 
-                filter_kwargs["identifiers__registry_id"] = r_id
-                filter_kwargs["identifiers__value"] = id_value
-                break
+        self.kwargs[lookup_url_kwarg] = entity.id
 
-        assert filter_kwargs, "The given ID does not match the expected format."
-
-        obj = get_object_or_404(queryset, **filter_kwargs)
-
-        # May raise a permission denied
-        self.check_object_permissions(self.request, obj)
-        return obj
+        return super().get_object()
 
 
 class TransferFilter(filters.FilterSet):
@@ -135,55 +132,36 @@ class TransferFilter(filters.FilterSet):
     def filter_by_entity(
         self, queryset: QuerySet, name: str, value: str | None
     ) -> QuerySet:
-        """
-        TODO: Check the perf of doing OR condition with Django ORM.
-        It might be way more efficient to perform separate requests on each
-        condition and then UNION them
-        TODO: Recursive query should be made in raw postgresql
-        """
-        if value is None or not value:
-            raise ValidationError(
-                detail=f"Query parameter value for `entity_id` is not accepted: {value}"
-            )
-        value_and_childs = {value} | set(
-            Entity.objects.get(id=value)
-            .get_children()
-            .values_list("id", flat=True)
-        )
-        condition = (
-            Q(emitter_id__in=value_and_childs)
-            | Q(recipient_id=value)
-            | Q(agents__id__contains=value)
-        )
-        return queryset.filter(condition).distinct()
+        try:
+            return queryset.filter_by_entity(value)
+        except Entity.DoesNotExist:
+            raise Http404
 
 
-class TransferViewSet(AllActionViewSet, ReadOnlyViewSet):
+class TransferViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
     queryset = (
         Transfer.objects.filter(merged_into__isnull=True, is_future=False)
         .select_related("emitter", "recipient")
         .prefetch_related("agents")
     )
     serializer_class = TransferSerializer
-    filter_backends = [filters.DjangoFilterBackend, OrderingFilter]
+    filter_backends = [filters.DjangoFilterBackend]
     filterset_class = TransferFilter
-    ordering = ["date_clc"]
-    ordering_fields = ["date_clc"]
 
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = TransferDetailsSerializer
         return super().retrieve(request, *args, **kwargs)
 
 
-class CurrencyViewSet(ReadOnlyViewSet):
+class CurrencyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
     pagination_class = None
 
 
-class AnalyticViewSet(ReadOnlyViewSet):
+class AnalyticViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Analytic.objects.all()
     pagination_class = None
     serializer_class = AnalyticSerializer
-    filter_backends = [filters.DjangoFilterBackend, OrderingFilter]
+    filter_backends = [filters.DjangoFilterBackend]
     filterset_fields = ["recipient_id", "country", "year"]

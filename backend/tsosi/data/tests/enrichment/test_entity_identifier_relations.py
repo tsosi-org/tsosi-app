@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 
 import pandas as pd
 import pytest
+
 from tsosi.data.enrichment.database_related import (
     ingest_entity_identifier_relations,
 )
@@ -105,7 +106,7 @@ def test_rels_ingestion(registries):
     assert i_0.entity == e_0
     assert i_1.entity == e_2
     assert i_2.entity == e_1
-    assert i_3.entity is None
+    assert i_3.entity == e_3
     assert i_4.entity == e_4
 
     assert e_3.merged_with == e_2
