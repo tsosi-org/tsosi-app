@@ -67,7 +67,6 @@ class EntityDetailsSerializer(BaseEntitySerializer):
     )
     children = serializers.SerializerMethodField(read_only=True)
     date_data_update = serializers.SerializerMethodField(read_only=True)
-    ror_types = serializers.JSONField(source="types")
 
     class Meta:
         model = Entity
