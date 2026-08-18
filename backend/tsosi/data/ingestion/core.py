@@ -1,13 +1,14 @@
 import json
 import logging
+from collections.abc import Iterable, Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, Sequence
 
 import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
+
 from tsosi.data.currencies.currency_rates import insert_currencies
 from tsosi.data.db_utils import (
     IDENTIFIER_CREATE_FIELDS,
@@ -15,6 +16,7 @@ from tsosi.data.db_utils import (
     bulk_create_from_df,
 )
 from tsosi.data.exceptions import DataException
+from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI, generate_tsosi_id
 from tsosi.data.preparation import raw_data_config as dc
 from tsosi.data.signals import identifiers_created, transfers_created
 from tsosi.data.utils import drop_duplicates_keep_index
@@ -39,7 +41,7 @@ from tsosi.models.transfer import (
     TRANSFER_ENTITY_TYPE_EMITTER,
     TRANSFER_ENTITY_TYPE_RECIPIENT,
 )
-from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC, MATCH_SOURCE_MANUAL
+from tsosi.models.utils import MATCH_SOURCE_MANUAL
 
 from .entity_matching import match_entities, matchable_entities
 from .transfer_matching import deduplicate_transfers
@@ -51,22 +53,11 @@ ENTITY_TO_CREATE_ID = "entity_to_create_id"
 MAX_AGENTS_PER_TRANSFER = 5
 
 
-def entity_is_matchable(row: pd.Series) -> bool:
-    """
-    Returns whether the given entity can be automatically matched or grouped.
-    TODO: Define the rules of whether an entity is matchable or not.
-    """
-    return True
-
-
 def match_entities_with_db(entities: pd.DataFrame):
     """
     Match the given entities to the existing ones in the database.
 
     This adds the column `entity_id` with the matched Entity record.
-
-    The automatic matching can only be made with entities having
-    `is_matchable=True` (both the new ones and the ones in DB).
 
     :param entities:    The entity data to match.
     """
@@ -74,7 +65,7 @@ def match_entities_with_db(entities: pd.DataFrame):
     for col in match_columns:
         entities.loc[:, col] = None
 
-    to_match = entities[entities["is_matchable"] == True].copy()
+    to_match = entities.copy()
     base_entities = matchable_entities()
 
     if not to_match.empty and not base_entities.empty:
@@ -115,7 +106,7 @@ def entities_to_create(entities: pd.DataFrame) -> pd.DataFrame:
 
     :param entities:    The entity data, as a dataframe. It must contain
                         the columns `name`, `country`, `website`, `ror_id`,
-                        `wikidata_id`, `custom_id`, `is_matchable`
+                        `wikidata_id`, `custom_id`
     :returns:           The grouped entities, as a dataframe.
     """
     df_to_concat = []
@@ -126,7 +117,6 @@ def entities_to_create(entities: pd.DataFrame) -> pd.DataFrame:
         "ror_id",
         "wikidata_id",
         "custom_id",
-        "is_matchable",
     ]
     for c in mandatory_columns:
         if not c in entities.columns:
@@ -134,17 +124,21 @@ def entities_to_create(entities: pd.DataFrame) -> pd.DataFrame:
                 f"The column `{c}` is not present in the given DataFrame."
             )
 
-    # Non-matchable entities must be created.
-    matchable_mask = entities["is_matchable"]
-    no_match = entities[~matchable_mask].copy(deep=True)
+    pid_columns = ["ror_id", "wikidata_id", "custom_id"]
+
+    # Non-matchable entities (no PID and no name) must be created as-is.
+    no_match_mask = (
+        entities[pid_columns].isna().all(axis=1) & entities["name"].isna()
+    )
+    no_match = entities[no_match_mask].copy(deep=True)
     no_match["entity_temp_ids"] = [[i] for i in no_match.index]
-    df_to_concat.append(no_match)
+    if not no_match.empty:
+        df_to_concat.append(no_match)
 
     # Work with remaining entities
-    df = entities[matchable_mask].copy(deep=True)
+    df = entities[~no_match_mask].copy(deep=True)
 
     # Get entity data
-    pid_columns = ["ror_id", "wikidata_id", "custom_id"]
     for c in pid_columns:
         pid_df = drop_duplicates_keep_index(df, c, "entity_temp_ids")
         if pid_df.empty:
@@ -160,6 +154,11 @@ def entities_to_create(entities: pd.DataFrame) -> pd.DataFrame:
     )
     if not remaining_df.empty:
         df_to_concat.append(remaining_df)
+
+    if not df_to_concat:
+        return pd.DataFrame(
+            columns=entities.columns.tolist() + ["entity_temp_ids"]
+        )
 
     result = pd.concat(df_to_concat, ignore_index=True)
 
@@ -330,7 +329,6 @@ def create_entities(entities: pd.DataFrame, date_stamp: datetime):
         "country",
         "raw_website",
         "website",
-        "is_matchable",
         "date_created",
         "date_last_updated",
     ]
@@ -366,8 +364,24 @@ def create_entities(entities: pd.DataFrame, date_stamp: datetime):
     )
     custom_identifiers["registry_id"] = REGISTRY_CUSTOM
 
+    tsosi_identifiers = (
+        entities[["entity_id", "date_created", "date_last_updated"]]
+        .copy()
+        .assign(
+            value=lambda df: df["entity_id"].apply(
+                lambda _: generate_tsosi_id()
+            )
+        )
+    )
+    tsosi_identifiers["registry_id"] = REGISTRY_TSOSI
+
     identifiers = pd.concat(
-        [ror_identifiers, wikidata_identifiers, custom_identifiers],
+        [
+            ror_identifiers,
+            wikidata_identifiers,
+            custom_identifiers,
+            tsosi_identifiers,
+        ],
         ignore_index=True,
     )
     identifiers["match_source"] = MATCH_SOURCE_MANUAL
@@ -553,18 +567,8 @@ def ingest_new_records(
     logger.info(f"Ingesting {len(transfers)} transfer records.")
     now = timezone.now()
 
-    fill_static_data()
-
-    # Set the data load source
-    source.date_created = now
-    source.date_last_updated = now
-    source.save()
-
     # Extract entities
     transfer_entities = extract_entities(transfers)
-    transfer_entities["is_matchable"] = transfer_entities.apply(
-        entity_is_matchable, axis=1
-    )
 
     # Match the input entities to the existing ones
     match_entities_with_db(transfer_entities)
@@ -572,17 +576,18 @@ def ingest_new_records(
 
     # Create non-existing entities
     entities_new = transfer_entities[entity_null_mask].copy()
-    e_to_create = entities_to_create(entities_new)
-    create_entities(e_to_create, now)
+    if not entities_new.empty:
+        e_to_create = entities_to_create(entities_new)
+        create_entities(e_to_create, now)
 
-    # Map back the entity data to the transfer dataframe.
-    # First complete the entites DF with the created Entity's ID.
-    transfer_entities.loc[entities_new.index, "entity_id"] = entities_new[
-        ENTITY_TO_CREATE_ID
-    ].map(e_to_create["entity_id"])
-    transfer_entities.loc[entities_new.index, "match_criteria"] = (
-        MATCH_CRITERIA_NEW_ENTITY
-    )
+        # Map back the entity data to the transfer dataframe.
+        # First complete the entites DF with the created Entity's ID.
+        transfer_entities.loc[entities_new.index, "entity_id"] = entities_new[
+            ENTITY_TO_CREATE_ID
+        ].map(e_to_create["entity_id"])
+        transfer_entities.loc[entities_new.index, "match_criteria"] = (
+            MATCH_CRITERIA_NEW_ENTITY
+        )
 
     # Map back emitter and recipient IDs to transfer rows
     for e_type in [
@@ -645,7 +650,9 @@ def ingest(
 
     :returns:                   Whether the ingestion was performed.
     """
+    now = timezone.now()
     logger.info(f"Ingesting data load: {ingestion_config.source.serialize()}")
+    fill_static_data()
     valid, oldies = validate_data_load_source(ingestion_config.source)
     if not valid:
         logger.info(
@@ -660,30 +667,16 @@ def ingest(
             "Removing the following old data loads: "
             f"{'\t'.join([d.serialize() for d in oldies])}"
         )
-        transfers = Transfer.objects.filter(data_load_sources__in=oldies)
-        connected_sources = list(
-            Transfer.objects.filter(merged_into__in=transfers)
-            .values_list("data_load_sources", flat=True)
-            .distinct()
-        )
-        connected_sources = DataLoadSource.objects.filter(
-            pk__in=connected_sources
-        ).all()
-        transfers.delete()
         DataLoadSource.objects.filter(pk__in=[o.pk for o in oldies]).delete()
-        nb_merged = 0
-        for source in connected_sources:
-            nb_merged += deduplicate_transfers(source)
-        if nb_merged > 0:
-            logger.info(
-                f"Merged {nb_merged} transfers from connected data load sources."
-            )
 
     df = pd.DataFrame.from_records(ingestion_config.data)
     dc.create_missing_fields(df)
     dls_config = ingestion_config.source.serialize()
     dls_entity_id = dls_config.pop("entity_id", None)
-    source = DataLoadSource(**dls_config)
+    source = DataLoadSource(
+        **{**dls_config, "date_created": now, "date_last_updated": now}
+    )
+    source.save()
 
     ingest_new_records(df, source, send_signals)
 

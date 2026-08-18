@@ -5,9 +5,8 @@ from django.db.models import Q
 
 from .currency import Currency
 from .date import DateField
-from .entity import Entity
 from .source import DataLoadSource
-from .utils import MATCH_SOURCE_CHOICES, TimestampedModel
+from .utils import TimestampedModel
 
 # WARNING: those must be the names of the foreign keys in the Transfer model
 TRANSFER_ENTITY_TYPE_EMITTER = "emitter"
@@ -60,9 +59,11 @@ class TransferQuerySet(models.QuerySet):
         from .entity import Entity
 
         if isinstance(entity_or_id, Entity):
-            entity = entity_or_id
+            entity = entity_or_id.sucessor_or_self()
         else:
-            entity = Entity.objects.get_by_any_id(entity_or_id)
+            entity = Entity.objects.get_by_any_id(
+                entity_or_id
+            ).sucessor_or_self()
         entity_ids = {entity.id}
         if include_children:
             entity_ids |= set(entity.children.values_list("id", flat=True))
@@ -85,20 +86,20 @@ class Transfer(TimestampedModel):
         DataLoadSource, related_name="transfers"
     )
     emitter = models.ForeignKey(
-        Entity,
+        "Entity",
         on_delete=models.RESTRICT,
         related_name="transfer_as_emitters",
         related_query_name="transfer_as_emitter",
     )
     emitter_sub = models.CharField(max_length=256, null=True)
     recipient = models.ForeignKey(
-        Entity,
+        "Entity",
         on_delete=models.RESTRICT,
         related_name="transfer_as_recipients",
         related_query_name="transfer_as_recipient",
     )
     agents = models.ManyToManyField(
-        Entity,
+        "Entity",
         related_name="transfer_as_agents",
         related_query_name="transfer_as_agent",
     )

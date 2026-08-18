@@ -207,24 +207,22 @@ shuffleArray(partners)
         title="How does TSOSI manage its URLs?"
       >
         <p>
-          All entities of TSOSI have a unique URL. If an entity has a ROR
-          identifier, it is included in its URL, <i>e.g.</i>
-
+          Every entity in TSOSI has a persistent unique identifier that consists
+          of the letter T followed by six random digits, such as
           <CodeBlockAtom
-            :content="'https://tsosi.org/entities/02rx3b187'"
+            :content="'T361809'"
             :inline="true"
             :background="true"
-          />. If not, an internal identifier is generated instead, <i>e.g.</i>
+          />. This identifier is then used in the URL:
           <CodeBlockAtom
-            :content="'https://tsosi.org/entities/e5f5f1d5-cd16-48c5-94d9-f73ce7968195'"
+            :content="'https://tsosi.org/T361809'"
             :inline="true"
             :background="true"
-          />.<br />
-
-          Note that <b>only the URLs with the ROR identifier are persistent</b>.
-          The others may change each time TSOSI ingests new data. If you find a
-          missing ROR for an institution, please
-          <a @click="openContactModal">contact us</a>.
+          />. These identifiers and URLs are persistent. You can safely copy and
+          share an entity URL to link to your organization within TSOSI. When
+          entities are merged, the deprecated entity's URL automatically
+          redirects to the retained one, ensuring that existing links remain
+          valid.
         </p>
       </StaticSectionAtom>
 

@@ -1,5 +1,7 @@
 import pandas as pd
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.management.base import BaseCommand, CommandParser
+
 from tsosi.data.ingestion.transfer_matching import format_date
 from tsosi.models import Transfer
 
@@ -23,7 +25,7 @@ def generate_template_file(entity_id: str) -> None:
                 "date_start",
                 "date_end",
                 "description",
-            )
+            ).annotate(agents=ArrayAgg("agents__short_name", distinct=True))
         )
     )
     for field in [

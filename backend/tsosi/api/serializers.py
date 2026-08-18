@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from tsosi.models import (
     Analytic,
     Currency,
@@ -24,7 +25,14 @@ class IdentifierSerializer(serializers.ModelSerializer):
 class InfrastructureDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = InfrastructureDetails
-        fields = "__all__"
+        fields = [
+            "infra_finder_url",
+            "posi_url",
+            "support_url",
+            "date_scoss_start",
+            "date_scoss_end",
+            "legal_entity_wikidata_id",
+        ]
 
 
 class BaseEntitySerializer(serializers.ModelSerializer):
@@ -56,16 +64,12 @@ class EntitySerializer(BaseEntitySerializer):
             "is_barcelona",
             "ror_types",
         ]
-        extra_kwargs = {
-            "url": {"view_name": "tsosi:entity-detail"},  # Use namespaced URL
-        }
 
 
 class EntityDetailsSerializer(BaseEntitySerializer):
     infrastructure = InfrastructureDetailsSerializer(
         source="infrastructure_details", required=False
     )
-    children = serializers.SerializerMethodField(read_only=True)
     date_data_update = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -75,30 +79,27 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "name",
             "short_name",
             "country",
-            "website",
-            "date_inception",
-            "description",
+            "identifiers",
+            "coordinates",
             "logo",
             "icon",
-            "wikipedia_url",
-            "wikipedia_extract",
-            "identifiers",
-            "children",
-            "coordinates",
-            "is_emitter",
-            "is_recipient",
-            "is_agent",
-            "infrastructure",
             "is_partner",
+            "is_emitter",
+            "is_agent",
+            "is_recipient",
             "is_scoss",
             "is_posi",
             "is_barcelona",
+            "date_inception",
+            "description",
+            "website",
+            "wikipedia_url",
+            "wikipedia_extract",
+            "infrastructure",
             "date_data_update",
             "ror_types",
+            "children",
         ]
-
-    def get_children(self, obj) -> list[str]:
-        return [e.id for e in Entity.objects.get(id=obj.id).get_children()]
 
     def get_date_data_update(self, obj):
         dls = (
@@ -133,7 +134,7 @@ class BaseTransferSerializer(serializers.ModelSerializer):
     def get_raw_data(self, obj: Transfer):
         if not obj.hide_amount:
             return obj.raw_data
-        data: dict = obj.raw_data
+        data = obj.raw_data
         data.pop(obj.original_amount_field, None)
         for field in data:
             if isinstance(data[field], dict):
@@ -155,9 +156,9 @@ class TransferSerializer(BaseTransferSerializer):
             "agent_ids",
             "amount",
             "currency",
+            "amounts_clc",
             "date_clc",
             "description",
-            "amounts_clc",
         ]
 
 

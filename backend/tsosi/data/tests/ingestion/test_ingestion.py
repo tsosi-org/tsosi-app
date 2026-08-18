@@ -1,14 +1,15 @@
 import datetime
 
 import pytest
-import tsosi.data.preparation.raw_data_config as dc
 from django.core.exceptions import ObjectDoesNotExist
+
+import tsosi.data.preparation.raw_data_config as dc
 from tsosi.data.ingestion import core
 from tsosi.data.ingestion.core import ingest
-from tsosi.models import DataLoadSource, Transfer
+from tsosi.models import DataLoadSource, Entity, Transfer
 from tsosi.tasks import ingest_test
 
-from ..factories import DataLoadSourceFactory, TransferFactory
+from ..factories import DataLoadSourceFactory, EntityFactory, TransferFactory
 
 
 @pytest.mark.django_db
@@ -99,76 +100,36 @@ def test_old_data_load_deletion(datasources):
 
 
 @pytest.mark.django_db
-def test_ingest_replaced_loads_deduplicate_connected_sources_only(
+def test_ingest_existing_entities_does_not_create_new_entities(
     datasources, monkeypatch
 ):
-    print(
-        "Testing deduplication call on connected sources when replacing loads."
-    )
+    print("Testing ingestion when all entities already exist.")
 
-    kwargs_base = {
-        "data_source_id": "pci",
-        "date_data_obtained": datetime.date.today(),
-        "full_data": True,
-    }
-    old_1 = DataLoadSourceFactory.create(**kwargs_base, year=2020)
-    old_2 = DataLoadSourceFactory.create(**kwargs_base, year=2021)
+    monkeypatch.setattr(core, "fill_static_data", lambda: None)
 
-    t_old_1 = TransferFactory.create(data_load_sources=(old_1,))
-    t_old_2 = TransferFactory.create(data_load_sources=(old_2,))
+    emitter = EntityFactory.create(name="E_1")
+    recipient = EntityFactory.create(name="R_1")
+    initial_entity_count = Entity.objects.count()
+    initial_transfer_count = Transfer.objects.count()
 
-    connected_1 = DataLoadSourceFactory.create(
-        data_source_id="scipost",
-        date_data_obtained=datetime.date.today(),
-        full_data=False,
-    )
-    connected_2 = DataLoadSourceFactory.create(
-        data_source_id="operas",
-        date_data_obtained=datetime.date.today(),
-        full_data=False,
-    )
-
-    TransferFactory.create(
-        merged_into=t_old_1,
-        data_load_sources=(connected_1,),
-    )
-    TransferFactory.create(
-        merged_into=t_old_1,
-        data_load_sources=(connected_1,),
-    )
-    TransferFactory.create(
-        merged_into=t_old_2,
-        data_load_sources=(connected_2,),
-    )
-
-    monkeypatch.setattr(
-        core, "ingest_new_records", lambda *args, **kwargs: None
-    )
-
-    dedup_called_for = []
-
-    def mock_deduplicate(source):
-        dedup_called_for.append(source.pk)
-        return 0
-
-    monkeypatch.setattr(core, "deduplicate_transfers", mock_deduplicate)
-
-    new_source = dc.DataLoadSource(
+    source = dc.DataLoadSource(
         data_source_id="pci",
-        data_load_name="replacement_full",
+        data_load_name="existing_entities",
         date_data_obtained=datetime.date.today(),
-        full_data=True,
+        full_data=False,
     )
     config = dc.DataIngestionConfig(
         date_generated=datetime.datetime.now(datetime.UTC).isoformat(
             timespec="seconds"
         ),
-        source=new_source,
+        source=source,
         count=1,
         data=[
             {
-                "emitter_name": "E_1",
-                "recipient_name": "R_1",
+                "emitter_name": emitter.name,
+                "emitter_country": emitter.country,
+                "recipient_name": recipient.name,
+                "recipient_country": recipient.country,
                 "date_payment_recipient": "2025-01-01",
                 "original_id": "1",
                 "amount": 50,
@@ -183,8 +144,11 @@ def test_ingest_replaced_loads_deduplicate_connected_sources_only(
     result = ingest(config, send_signals=False)
 
     assert result is True
-    assert set(dedup_called_for) == {connected_1.pk, connected_2.pk}
-    assert len(dedup_called_for) == 2
+    assert Entity.objects.count() == initial_entity_count
+    assert Transfer.objects.count() == initial_transfer_count + 1
+    transfer = Transfer.objects.latest("date_created")
+    assert transfer.emitter_id == emitter.id
+    assert transfer.recipient_id == recipient.id
 
 
 @pytest.mark.django_db

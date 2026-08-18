@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import { onBeforeMount, ref, shallowRef, type ShallowRef } from "vue"
+import { useRoute, useRouter } from "vue-router"
+
 import Loader from "@/components/atoms/LoaderAtom.vue"
+import NotFound from "@/components/atoms/NotFound.vue"
 import EntityData from "@/components/EntityData.vue"
 import EntityMeta from "@/components/EntityMeta.vue"
 import EntityViz from "@/components/EntityViz.vue"
@@ -23,23 +27,27 @@ import TabList from "primevue/tablist"
 import TabPanel from "primevue/tabpanel"
 import TabPanels from "primevue/tabpanels"
 import Tabs from "primevue/tabs"
-import { onBeforeMount, shallowRef, watch, type ShallowRef } from "vue"
-import { useRoute, useRouter } from "vue-router"
+import { watch } from "vue"
 
+const route = useRoute()
+const router = useRouter()
 const entity: ShallowRef<EntityDetails | null> = shallowRef(null)
 const transfers: ShallowRef<Transfer[] | null> = shallowRef(null)
+const loading = ref(true)
 
 onBeforeMount(async () => {
-  const route = useRoute()
-  const router = useRouter()
   const entityId = resolveEntityRoute(route.params.id as string)
-
   const result = entityId ? getEntitySummary(entityId) : undefined
+  const tsosiId = result?.identifiers.find((i) => i.registry === "tsosi")?.value
+  if (tsosiId && tsosiId !== route.params.id) {
+    router.push({ name: "entity", params: { id: tsosiId } })
+  }
   if (result == null) {
-    router.replace({ name: "NotFound", query: { target: route.path } })
+    loading.value = false
     return
   }
   entity.value = (await getEntityDetails(result.id)) as EntityDetails
+  loading.value = false
 })
 
 watch(entity, onEntityChange)
@@ -48,19 +56,20 @@ async function onEntityChange() {
   if (!entity.value) {
     return
   }
-  transfers.value = await getTransfers(entity.value)
   changeMetaTitle(entity.value.name)
   const desc = entity.value.is_recipient
     ? `Explore the funding made to sustain ${entity.value.name}`
     : `Explore the funding performed by ${entity.value.name}`
   changeMetaDescripion(desc)
   changeMetaUrl(true)
+  transfers.value = await getTransfers(entity.value)
 }
 </script>
 
 <template>
-  <Loader v-show="!entity" width="150px"></Loader>
-  <div class="container" v-if="entity">
+  <Loader v-if="loading" width="150px"></Loader>
+  <NotFound v-else-if="!entity"></NotFound>
+  <div class="container" v-else>
     <div class="regular-content">
       <EntityMeta :entity="entity as EntityDetails" />
       <Tabs lazy value="0" v-if="devMode">

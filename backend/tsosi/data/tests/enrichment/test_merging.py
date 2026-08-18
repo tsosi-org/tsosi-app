@@ -2,14 +2,10 @@ from datetime import UTC, datetime
 
 import pandas as pd
 import pytest
+
 from tsosi.data.enrichment.merging import merge_entities
 from tsosi.data.exceptions import DataException
-from tsosi.models.transfer import (
-    MATCH_CRITERIA_MERGED,
-    TRANSFER_ENTITY_TYPE_AGENT,
-    TRANSFER_ENTITY_TYPE_EMITTER,
-    TRANSFER_ENTITY_TYPE_RECIPIENT,
-)
+from tsosi.models.transfer import MATCH_CRITERIA_MERGED
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 
 from ..factories import (
@@ -129,7 +125,7 @@ def test_multi_merging():
 @pytest.mark.django_db
 def test_detach_ids_true(registries):
     """Test the update of identifiers of merged entities"""
-    print("Testing merging entities with `detach_ids=True`")
+    print("Testing merging entities")
     e_1 = EntityFactory.create()
     e_2 = EntityFactory.create()
     i_1 = IdentifierFactory.create(entity=e_1)
@@ -157,40 +153,4 @@ def test_detach_ids_true(registries):
 
     assert e_1.merged_with == e_2
     assert not e_1.is_active
-    assert i_1.entity is None
     assert i_e_1.date_end == date_update
-
-
-@pytest.mark.django_db
-def test_detach_ids_false(registries):
-    """Test the update of identifiers of merged entities"""
-    print("Testing merging entities with `detach_ids=False`")
-    e_1 = EntityFactory.create()
-    e_2 = EntityFactory.create()
-    i_1 = IdentifierFactory.create(entity=e_1)
-    i_e_1 = IdentifierEntityMatchingFactory.create(
-        entity=i_1.entity, identifier=i_1
-    )
-
-    merge_data = pd.DataFrame(
-        [
-            {
-                "entity_id": e_1.id,
-                "merged_with_id": e_2.id,
-                "merged_criteria": "Test merge",
-                "match_criteria": MATCH_CRITERIA_MERGED,
-                "match_source": MATCH_SOURCE_AUTOMATIC,
-            },
-        ]
-    )
-    date_update = datetime.now(UTC)
-    merge_entities(merge_data, date_update, detach_ids=False)
-
-    e_1.refresh_from_db()
-    i_1.refresh_from_db()
-    i_e_1.refresh_from_db()
-
-    assert e_1.merged_with == e_2
-    assert not e_1.is_active
-    assert i_1.entity == e_1
-    assert i_e_1.date_end is None

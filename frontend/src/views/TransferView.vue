@@ -4,6 +4,7 @@ import { onBeforeMount, ref, type Ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
 import Loader from "@/components/atoms/LoaderAtom.vue"
+import NotFound from "@/components/atoms/NotFound.vue"
 import Breadcrumb, {
   type BreadcrumbItem,
 } from "@/components/BreadcrumbComponent.vue"
@@ -27,7 +28,7 @@ const breadcrumb: Ref<Array<BreadcrumbItem> | null> = ref(null)
 onBeforeMount(async () => {
   const result = await getTransferDetails(route.params.id as string)
   if (result == null) {
-    router.replace({ name: "NotFound", query: { target: route.path } })
+    loading.value = false
     return
   }
   transfer.value = result
@@ -181,8 +182,9 @@ const metadataConfig: Array<DataFieldProps> = [
 </script>
 
 <template>
-  <Loader v-if="loading" width="150px" />
-  <div v-if="transfer" class="container">
+  <Loader v-if="loading" width="150px"></Loader>
+  <NotFound v-else-if="!transfer"></NotFound>
+  <div v-else class="container">
     <div class="regular-content">
       <Breadcrumb v-if="breadcrumb" :items="breadcrumb" />
       <h1 style="margin: 1.5rem 0.5rem">Transfer details</h1>

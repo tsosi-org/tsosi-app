@@ -75,6 +75,10 @@ export async function fetchUrl(
   return fetch(url, {
     headers: headers,
   })
+    .then((response) => {
+      if (!response.ok) throw Error()
+      return response
+    })
     .then((response) => response.json())
     .then((data) => {
       return {

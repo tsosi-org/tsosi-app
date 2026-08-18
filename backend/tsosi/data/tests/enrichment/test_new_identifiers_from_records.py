@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from django.core.exceptions import ObjectDoesNotExist
+
 from tsosi.data.enrichment import new_identifiers_from_records
 from tsosi.models import Identifier
 from tsosi.models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
@@ -115,7 +116,7 @@ def test_new_identifier_from_record_override(registries, mocker):
     assert new_id.registry.id == REGISTRY_WIKIDATA
 
     i_wikidata = Identifier.objects.get(pk=i_wikidata.pk)
-    assert i_wikidata.entity is None
+    assert i_wikidata.entity == e
 
 
 @pytest.mark.django_db

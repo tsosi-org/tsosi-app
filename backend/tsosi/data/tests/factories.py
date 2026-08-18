@@ -3,6 +3,7 @@ from typing import Generic, TypeVar
 from factory import Dict, Faker, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice
+
 from tsosi.data.preparation.raw_data_config import DATA_SOURCES
 from tsosi.models import (
     Currency,
@@ -18,12 +19,6 @@ from tsosi.models import (
 from tsosi.models.date import DATE_PRECISION_CHOICES
 from tsosi.models.identifier import MATCH_CRITERIA_FROM_INPUT
 from tsosi.models.static_data import MATCH_SOURCE_MANUAL, REGISTRY_ROR
-from tsosi.models.transfer import (
-    MATCH_CRITERIA_AUTO_MATCHED,
-    TRANSFER_ENTITY_TYPE_AGENT,
-    TRANSFER_ENTITY_TYPE_EMITTER,
-    TRANSFER_ENTITY_TYPE_RECIPIENT,
-)
 
 T = TypeVar("T")
 
@@ -155,10 +150,6 @@ class TransferFactory(BaseTypingFactory[Transfer]):
         else:
             self.data_load_sources.add(DataLoadSourceFactory.create())
 
-        self.raw_data = {
-            dls.data_source_id: self.raw_data
-            for dls in self.data_load_sources.all()
-        }
         self.save()
 
     @post_generation

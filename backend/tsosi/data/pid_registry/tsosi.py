@@ -3,7 +3,7 @@ import string
 
 from tsosi.models import Identifier
 
-TSOSI_ID_REGEX = r"^T[0-9]{6+}$"
+TSOSI_ID_REGEX = r"^T[0-9]{6,}$"
 REGISTRY_TSOSI = "tsosi"
 
 

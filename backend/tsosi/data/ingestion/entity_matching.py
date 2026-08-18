@@ -1,5 +1,6 @@
 import pandas as pd
 from django.db.models import F
+
 from tsosi.models import Entity
 from tsosi.models.static_data import (
     REGISTRY_CUSTOM,
@@ -105,7 +106,6 @@ def matchable_entities() -> pd.DataFrame:
         "country",
         "website",
         "merged_with_id",
-        "is_matchable",
         "is_agent",
         identifier_value=F("identifiers__value"),
         identifier_registry=F("identifiers__registry_id"),
@@ -115,7 +115,6 @@ def matchable_entities() -> pd.DataFrame:
         return data
 
     resolve_df_linked_list(data, "id", "merged_with_id", "merged_with_id")
-    data = data[data["is_matchable"] == True].drop(columns=["is_matchable"])
 
     # Rename identifier columns to ror_id & wikidata_id
     mapping = {

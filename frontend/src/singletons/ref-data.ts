@@ -62,10 +62,10 @@ export interface Entity extends ApiData {
   coordinates?: string
   logo?: string
   icon?: string
-  is_recipient: boolean
   is_partner: boolean
   is_emitter: boolean
   is_agent: boolean
+  is_recipient: boolean
   is_scoss: boolean
   is_posi: boolean
   is_barcelona: boolean
@@ -102,7 +102,6 @@ export interface Transfer extends ApiData {
 
 export interface TransferDetails extends Transfer {
   emitter_sub: string | null
-  date_agreement: DateWithPrecision | null
   date_invoice: DateWithPrecision | null
   date_payment_recipient: DateWithPrecision | null
   date_payment_emitter: DateWithPrecision | null
@@ -151,10 +150,10 @@ const refData: RefData = {
   countries: {},
   entities: {},
   identifiers: {
+    tsosi: {},
     ror: {},
     wikidata: {},
     _custom: {},
-    tsosi: {},
   },
   currencies: {},
   initialized: false,
@@ -274,6 +273,7 @@ export function getEntitySummary(id: string): DeepReadonly<Entity> | null {
   return refData.entities[id]
 }
 
+const tsosiIdRegex = new RegExp("^T[0-9]{6,}$")
 const rorIdRegex = new RegExp("^0[a-z|0-9]{6}[0-9]{2}$")
 const wikidataIdRegex = new RegExp("^Q[0-9]+$")
 const uuid4Regex = new RegExp(
@@ -286,7 +286,9 @@ const uuid4Regex = new RegExp(
  * @param id
  */
 export function entityFromIdentifierId(id: string): string | undefined {
-  if (rorIdRegex.test(id)) {
+  if (tsosiIdRegex.test(id)) {
+    return refData.identifiers.tsosi[id]
+  } else if (rorIdRegex.test(id)) {
     return refData.identifiers.ror[id]
   } else if (wikidataIdRegex.test(id)) {
     return refData.identifiers.wikidata[id]

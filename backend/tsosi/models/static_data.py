@@ -4,6 +4,7 @@ from pathlib import Path
 from django.core.files import File
 from django.db import transaction
 from django.utils import timezone
+
 from tsosi.app_settings import app_settings
 from tsosi.data.pid_registry.ror import ROR_ID_REGEX
 from tsosi.data.pid_registry.tsosi import (
@@ -61,10 +62,10 @@ PID_REGISTRIES = [
 ]
 
 PID_REGEX_OPTIONS = [
+    (REGISTRY_TSOSI, TSOSI_ID_REGEX),
     (REGISTRY_ROR, ROR_ID_REGEX),
     (REGISTRY_WIKIDATA, WIKIDATA_ID_REGEX),
     (REGISTRY_CUSTOM, CUSTOM_ID_REGEX),
-    (REGISTRY_TSOSI, TSOSI_ID_REGEX),
 ]
 
 
@@ -100,22 +101,28 @@ def update_static_entities() -> None:
         for k, v in row.get("infrastructure", {}).items():
             row["infrastructure"][k] = clean_cell_value(v)
 
-        identifier, _ = Identifier.objects.get_or_create(
-            **row["pid"],
-            defaults={
-                "date_created": now,
-                "date_last_updated": now,
-            },
-        )
-        if identifier.entity_id is None:
-            # Create entity
+        try:
+            identifier = Identifier.objects.get(**row["pid"])
+        except Identifier.DoesNotExist:
+            identifier = None
+
+        if identifier is None or identifier.entity_id is None:
+            # Create entity first, then identifier
             entity = Entity.objects.create(
                 **row.get("entity", {}),
                 date_created=now,
                 date_last_updated=now,
             )
-            identifier.entity = entity
-            identifier.save()
+            if identifier is None:
+                identifier = Identifier.objects.create(
+                    **row["pid"],
+                    entity=entity,
+                    date_created=now,
+                    date_last_updated=now,
+                )
+            else:
+                identifier.entity = entity
+                identifier.save()
             id_entity_matching = IdentifierEntityMatching(
                 entity=entity,
                 identifier=identifier,
@@ -126,40 +133,38 @@ def update_static_entities() -> None:
             )
             id_entity_matching.save()
         else:
-            # Update entity
             entity = identifier.entity
-            static_logo: str | None = row.get("static_logo")
-            if static_logo:
-                entity.logo = File(
-                    open(
-                        str(
-                            app_settings.TSOSI_APP_DATA_DIR
-                            / "assets"
-                            / static_logo
-                        ),
-                        "rb",
-                    )
-                )
-                entity.manual_logo = True
-            else:
-                entity.manual_logo = False
-            static_icon: str | None = row.get("static_icon")
-            if static_icon:
-                entity.icon = File(
-                    open(
-                        str(
-                            app_settings.TSOSI_APP_DATA_DIR
-                            / "assets"
-                            / static_icon
-                        ),
-                        "rb",
-                    ),
-                    name=static_icon,
-                )
-            else:
-                entity.icon = None
-            entity.save()
             Entity.objects.filter(id=entity.id).update(**row.get("entity", {}))
+            entity.refresh_from_db()
+
+        # Apply logo/icon regardless of whether the entity was created or updated
+        static_logo: str | None = row.get("static_logo")
+        if static_logo:
+            entity.logo = File(
+                open(
+                    str(
+                        app_settings.TSOSI_APP_DATA_DIR / "assets" / static_logo
+                    ),
+                    "rb",
+                )
+            )
+            entity.manual_logo = True
+        else:
+            entity.manual_logo = False
+        static_icon: str | None = row.get("static_icon")
+        if static_icon:
+            entity.icon = File(
+                open(
+                    str(
+                        app_settings.TSOSI_APP_DATA_DIR / "assets" / static_icon
+                    ),
+                    "rb",
+                ),
+                name=static_icon,
+            )
+        else:
+            entity.icon = None
+        entity.save()
 
         if row.get("infrastructure"):
             InfrastructureDetails.objects.update_or_create(

@@ -51,7 +51,7 @@ class Identifier(TimestampedModel):
     registry = models.ForeignKey(Registry, on_delete=models.CASCADE)
     value = models.CharField(max_length=128)
     entity = models.ForeignKey(
-        Entity, related_name="identifiers", on_delete=models.SET_NULL, null=True
+        Entity, related_name="identifiers", on_delete=models.CASCADE
     )
     current_version = models.ForeignKey(
         "IdentifierVersion",
@@ -65,10 +65,6 @@ class Identifier(TimestampedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["registry", "value"], name="unique_value_per_registry"
-            ),
-            models.UniqueConstraint(
-                fields=["registry", "entity"],
-                name="unique_identifier_per_registry_and_entity",
             ),
         ]
 

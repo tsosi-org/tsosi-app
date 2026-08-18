@@ -51,7 +51,6 @@ class Entity(TimestampedModel):
 
     objects = EntityQuerySet.as_manager()
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-
     # The following attributes prefixed with `raw_` corresponds to default
     # values to be used for the CLC values without the prefixes.
     # We might consider renaming them with the prefix `default_` ..
@@ -113,7 +112,6 @@ class Entity(TimestampedModel):
 
     ## Clc fields about whether the entity is active and its merging status
     is_active = models.BooleanField(default=True)
-    is_matchable = models.BooleanField(default=True)
     merged_with = models.ForeignKey(
         "self", on_delete=models.RESTRICT, null=True
     )
@@ -146,7 +144,8 @@ class Entity(TimestampedModel):
             ),
         ]
 
-    def get_children(self) -> list[Entity]:
+    @property
+    def children(self) -> list[Entity]:
         """
         Get all child entity IDs for a given entity ID, recursively.
         """
@@ -160,7 +159,6 @@ class Entity(TimestampedModel):
             for child_id in direct_children:
                 if child_id not in all_children:
                     all_children.add(child_id)
-                    print(child_id)
                     children_to_process.add(child_id)
         return Entity.objects.filter(id__in=all_children)
 
@@ -168,9 +166,9 @@ class Entity(TimestampedModel):
     def transfers(self):
         from .transfer import Transfer
 
-        return Transfer.objects.filter_by_entity(self).filter(
+        return Transfer.objects.filter(
             merged_into__isnull=True
-        )
+        ).filter_by_entity(self)
 
     @property
     def is_scoss(self) -> bool:
@@ -185,6 +183,15 @@ class Entity(TimestampedModel):
             hasattr(self, "infrastructure_details")
             and self.infrastructure_details.posi_url is not None
         )
+
+    def sucessor_or_self(self) -> Entity:
+        """
+        Return the entity itself if it is active, or its sucessor if it has been merged.
+        """
+        entity = self
+        while entity.merged_with is not None:
+            entity = entity.merged_with
+        return entity
 
 
 class InfrastructureDetails(TimestampedModel):
