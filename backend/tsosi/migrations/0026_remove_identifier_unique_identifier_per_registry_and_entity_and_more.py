@@ -34,6 +34,8 @@ class Migration(migrations.Migration):
         ("tsosi", "0025_rename_types_entity_ror_types_entity_tsosi_type"),
     ]
 
+    atomic = False
+
     operations = [
         migrations.RemoveConstraint(
             model_name="identifier",
