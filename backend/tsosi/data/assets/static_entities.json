@@ -924,5 +924,15 @@
     "entity": {
       "name": "KU Leuven"
     }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "05q3vnk25"
+    },
+    "entity": {
+      "name": "Institut de Recherche pour le Développement",
+      "description": "The French National Research Institute for Sustainable Development, or Institut de Recherche pour le Développement (IRD), is a French science and technology establishment under the joint supervision of the French Ministries of Higher Education and Research and Foreign Affairs. It operates internationally from its headquarters in Marseille."
+    }
   }
 ]

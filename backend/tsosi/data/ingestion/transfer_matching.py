@@ -15,7 +15,6 @@ from tsosi.models.date import (
     DATE_PRECISION_MONTH,
     DATE_PRECISION_YEAR,
     Date,
-    format_date,
 )
 
 CRITERIA_EMITTER = "emitter"
@@ -163,7 +162,7 @@ def transfer_is_matching(
     if not transfer_left.currency or not transfer_right.currency:
         return True, None
     elif transfer_left.currency.id == transfer_right.currency.id:
-        if not np.isclose(transfer_left.amount, transfer_right.amount):
+        if not np.isclose(transfer_left.amount, transfer_right.amount, atol=1):
             return False, CRITERIA_AMOUNT
     elif (
         transfer_right.amounts_clc
@@ -172,7 +171,7 @@ def transfer_is_matching(
         if not np.isclose(
             transfer_left.amount,
             transfer_right.amounts_clc[transfer_left.currency.id],
-            atol=0.1,
+            atol=1,
         ):
             return False, CRITERIA_AMOUNT
     else:
