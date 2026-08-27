@@ -18,64 +18,50 @@ django.setup()
 
 from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
-NAME = "olh"
+NAME = "episciences"
 RAW_FOLDER = Path(BASE_DIR) / "_no_git/data/raw" / NAME
 
 
 def main() -> None:
-    raw_path = str(RAW_FOLDER / "TSOSI-data-schema-infra-template-olh.xlsx")
+    raw_path = str(RAW_FOLDER / "2025--TSOSI-data-schema-EPISCIENCES.xlsx")
     df = pd.read_excel(raw_path, dtype=str)
     mapping = {
         "institution/name": "emitter/name",
+        "institution/ror_id": "emitter/ror_id",
+        "institution/wikidata_id": "emitter/wikidata_id",
+        "institution/country": "emitter/country",
         "intermediary/name": "intermediary/name",
+        "intermediary/ror_id": "intermediary/ror_id",
+        "intermediary/wikidata_id": "intermediary/wikidata_id",
+        "intermediary/country": "intermediary/country",
         "amount": "amount",
         "currency": "currency",
         "date_invoice": "date_invoice",
-        "date_sent": "date_sent",
+        "date_emitted": "date_sent",
         "date_received": "date_received",
         "contract/date_start": "date_start",
         "contract/date_end": "date_end",
-        "support_type": "support_type",
     }
     df = df.rename(columns=mapping)[mapping.values()]
     df = df[df["amount"].notna() & (df["emitter/name"].notna())]
     df = df.map(clean_cell_value)
-
-    # Add institution identifiers
-    institution_path = (
-        Path(BASE_DIR)
-        / "tsosi/data/preparation"
-        / NAME
-        / "institution_lookup.csv"
+    df["emitter/ror_id"] = df["emitter/ror_id"].replace(
+        r"^https://ror.org/", "", regex=True
     )
-    institution_lookup = pd.read_csv(institution_path, delimiter=";", dtype=str)
-    df = df.merge(
-        institution_lookup,
-        how="left",
-    )
-    mask = (
-        df["emitter/ror_id"].isna()
-        & df["emitter/wikidata_id"].isna()
-        & df["emitter/custom_id"].isna()
+    df["intermediary/ror_id"] = df["intermediary/ror_id"].replace(
+        r"^https://ror.org/", "", regex=True
     )
 
-    consortium_path = (
-        Path(BASE_DIR)
-        / "tsosi/data/preparation"
-        / NAME
-        / "consortium_lookup.csv"
-    )
-    consortium_lookup = pd.read_csv(consortium_path, delimiter=";", dtype=str)
-    df = df.merge(
-        consortium_lookup,
-        how="left",
-    )
+    mask = df["emitter/ror_id"].isna() & df["emitter/wikidata_id"].isna()
+    df[mask]["emitter/name"].unique()
+
     mask = (
         df["intermediary/name"].notna()
         & df["intermediary/ror_id"].isna()
         & df["intermediary/wikidata_id"].isna()
         & df["intermediary/name"].notna()
     )
+    df[mask]["intermediary/name"].unique()
 
     export_path = str(
         RAW_FOLDER / f"{date.today().isoformat()}_{NAME}_full.xlsx"
