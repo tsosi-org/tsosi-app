@@ -52,8 +52,10 @@ export interface EntityMapProps {
 const props = defineProps<EntityMapProps>()
 // const tileBaseUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 // TODO: Check that it's actually OK to use carto basemaps
+const basemapsApiKey = "cb1_2c3e_1_b8870261c80cbec10d6313ea"
 const tileBaseUrl =
-  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key=" +
+  basemapsApiKey
 
 const loading = ref(true)
 const mapElement = useTemplateRef("tsosi-map")
