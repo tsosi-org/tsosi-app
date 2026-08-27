@@ -186,6 +186,7 @@ def update_static_entities() -> None:
 # These are the same IDs as the supported infrastructures.
 # We keep it separated because the project could grow with other data sources.
 DATA_SOURCES = [
+    "basel",
     "couperin",
     "csal",
     "doab_oapen_library",

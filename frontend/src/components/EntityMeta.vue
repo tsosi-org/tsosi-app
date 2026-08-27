@@ -348,10 +348,10 @@ function isDoab(): boolean {
                 >its providers</RouterLink
               >
             </li>
-            <li v-if="!props.entity.is_partner" class="important-info">
-              {{
-                `${props.entity.name} is not yet a TSOSI data provider; the data below show only a subset of their support`
-              }}
+            <li v-if="!props.entity.is_partner">
+              {{ props.entity.name }} is
+              <strong>not yet a TSOSI data provider</strong>, the data below
+              might not cover all of their supports
             </li>
             <li v-if="isDoaj() || isDoab()">
               DOAJ and DOAB data only start from 2021:
