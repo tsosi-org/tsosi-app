@@ -196,6 +196,7 @@ DATA_SOURCES = [
     "doaj_publisher",
     "doaj",
     "edch",
+    "episciences",
     "gottingen",
     "inrae",
     "ird",
