@@ -7,7 +7,7 @@ from datetime import UTC, date, datetime
 
 import pandas as pd
 from django.db import transaction
-from django.db.models import Count, F
+from django.db.models import Count, F, Q
 from django.utils import timezone
 
 from tsosi.app_settings import app_settings
@@ -806,6 +806,35 @@ def update_entity_roles_clc():
     bulk_update_from_df(Entity, e_to_update, cols_for_update)
 
     logger.info(f"Updated {len(e_to_update)} Entity's role.")
+
+
+def update_entity_hide_amount(entity: Entity) -> None:
+    """
+    Update the given entity's `hide_amount` flag: set it to True if it has
+    at least one transfer (merged or not, as emitter/recipient/agent) whose
+    data load sources all belong to this same entity and which has
+    `hide_amount=True`. Otherwise it's set to False.
+    """
+    transfers = Transfer.objects.filter(
+        Q(emitter_id=entity.id)
+        | Q(recipient_id=entity.id)
+        | Q(agents__id=entity.id)
+    ).distinct()
+
+    hide_amount = False
+    for transfer in transfers:
+        if not transfer.hide_amount:
+            continue
+        source_entity_ids = set(
+            transfer.data_load_sources.values_list("entity_id", flat=True)
+        )
+        if source_entity_ids == {entity.id}:
+            hide_amount = True
+            break
+
+    if entity.hide_amount != hide_amount:
+        entity.hide_amount = hide_amount
+        entity.save()
 
 
 def update_transfer_status_clc():
