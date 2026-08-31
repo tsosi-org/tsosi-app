@@ -29,7 +29,7 @@ def test_currency_iso_from_value():
         BaseTestData(args=["USDPOI"], result="USD"),
         BaseTestData(args=[None], result=None),
         BaseTestData(args=[12], result=None),
-        BaseTestData(args=["UUU"], result="UUU"),
+        BaseTestData(args=["UUU"], result=None),
         BaseTestData(
             args=["bad input"],
             kwargs={"error": True},

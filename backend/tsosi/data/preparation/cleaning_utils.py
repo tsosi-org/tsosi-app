@@ -21,6 +21,9 @@ COUNTRY_NAME_MAPPING = {c.name: c for c in pycountry.countries}  # type:ignore
 COUNTRY_ALPHA_2_MAPPING = {
     c.alpha_2: c for c in pycountry.countries  # type:ignore
 }
+COUNTRY_ALPHA_3_MAPPING = {
+    c.alpha_3: c for c in pycountry.countries  # type:ignore
+}
 
 
 # Field names for the output dataframe
@@ -55,7 +58,7 @@ def currency_iso_from_value(val, error: bool = False) -> str | None:
             return code
 
     match = re.search(r"[A-Z]{3}", val)
-    if match:
+    if match and match.group(0) in CURRENCY_MAPPING.values():
         value = match.group(0)
         return value
 
