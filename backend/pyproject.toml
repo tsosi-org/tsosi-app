@@ -59,6 +59,8 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "backend_site.settings"
 # django_find_project = false
+testpaths = ["tsosi"]
+norecursedirs = ["_no_git", "static", "backend_site", "deployment", "node_modules", ".*", "build", "dist", "*.egg"]
 python_files = [
   "*_test.py",
   "*_tests.py",

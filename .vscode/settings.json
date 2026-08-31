@@ -46,7 +46,7 @@
     "python.poetryPath": "poetry",
     "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
     "python.testing.pytestArgs": [
-        "backend"
+        "backend/tsosi"
     ],
     
     
