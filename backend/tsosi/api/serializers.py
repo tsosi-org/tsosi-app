@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from tsosi.models import (
     Analytic,
     Currency,
@@ -122,17 +121,29 @@ class BaseTransferSerializer(serializers.ModelSerializer):
     currency = serializers.SerializerMethodField()
     raw_data = serializers.SerializerMethodField()
 
+    def _amount_hidden(self, obj: Transfer) -> bool:
+        """
+        A transfer's amount is hidden unless the transfer itself allows it,
+        or one of its entities is a partner who opted into showing amounts.
+        """
+        if not obj.hide_amount:
+            return False
+        entities = [obj.emitter, obj.recipient, *obj.agents.all()]
+        return not any(a.is_partner and not a.hide_amount for a in entities)
+
     def get_amount(self, obj: Transfer):
-        return None if obj.hide_amount else obj.amount
+        return None if self._amount_hidden(obj) else obj.amount
 
     def get_amounts_clc(self, obj: Transfer):
-        return None if obj.hide_amount else obj.amounts_clc
+        return None if self._amount_hidden(obj) else obj.amounts_clc
 
     def get_currency(self, obj: Transfer):
-        return None if obj.hide_amount else obj.currency_id  # type:ignore
+        return (
+            None if self._amount_hidden(obj) else obj.currency_id
+        )  # type:ignore
 
     def get_raw_data(self, obj: Transfer):
-        if not obj.hide_amount:
+        if not self._amount_hidden(obj):
             return obj.raw_data
         data = obj.raw_data
         data.pop(obj.original_amount_field, None)

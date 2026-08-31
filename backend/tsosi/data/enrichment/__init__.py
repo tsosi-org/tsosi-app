@@ -11,6 +11,7 @@ from .database_related import (
     new_identifiers_from_records,
     update_entity_active_status,
     update_entity_from_pid_records,
+    update_entity_hide_amount,
     update_entity_names,
     update_entity_roles_clc,
     update_transfer_date_clc,

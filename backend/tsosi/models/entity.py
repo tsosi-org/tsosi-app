@@ -99,6 +99,9 @@ class Entity(TimestampedModel):
 
     is_partner = models.BooleanField(default=False)
     is_barcelona = models.BooleanField(default=False)
+    # Whether transfer amounts should be hidden for this partner, overridable
+    # per-transfer visibility (see `Transfer.hide_amount`)
+    hide_amount = models.BooleanField(default=False)
     # Coordinates according to WGS84 coordinates system in form `POINT(LNG LAT)`
     # TODO: Use two distinct fields, `lon` & `lat` for coordinates as we will
     # never use something else than point coordinates.

@@ -15,6 +15,7 @@ from tsosi.data.db_utils import (
     IDENTIFIER_MATCHING_CREATE_FIELDS,
     bulk_create_from_df,
 )
+from tsosi.data.enrichment.database_related import update_entity_hide_amount
 from tsosi.data.exceptions import DataException
 from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI, generate_tsosi_id
 from tsosi.data.preparation import raw_data_config as dc
@@ -684,6 +685,7 @@ def ingest(
         entity = Identifier.objects.get(value=dls_entity_id).entity
         source.entity = entity
         source.save()
+        update_entity_hide_amount(entity)
 
     return True
 
