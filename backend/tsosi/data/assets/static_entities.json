@@ -934,5 +934,45 @@
       "name": "Institut de Recherche pour le Développement",
       "description": "The French National Research Institute for Sustainable Development, or Institut de Recherche pour le Développement (IRD), is a French science and technology establishment under the joint supervision of the French Ministries of Higher Education and Research and Foreign Affairs. It operates internationally from its headquarters in Marseille."
     }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "03zee5r16"
+    },
+    "entity": {
+      "name": "Sikt – Norwegian Agency for Shared Services in Education and Research",
+      "short_name": "Sikt"
+    }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "00aa7w613"
+    },
+    "entity": {
+      "name": "Council of Australasian University Librarians",
+      "short_name": "CAUL"
+    }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "027xymc69"
+    },
+    "entity": {
+      "name": "Agence Bibliographique de l'Enseignement Supérieur",
+      "short_name": "ABES"
+    }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "00680hx61"
+    },
+    "entity": {
+      "name": "Centre pour la Communication Scientifique Directe",
+      "short_name": "CCSD"
+    }
   }
 ]

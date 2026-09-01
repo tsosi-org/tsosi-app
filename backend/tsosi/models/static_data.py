@@ -189,7 +189,6 @@ DATA_SOURCES = [
     "basel",
     "couperin",
     "csal",
-    "rotterdam",
     "doab_oapen_library",
     "doab_oapen_sponsor",
     "doab_oapen",
