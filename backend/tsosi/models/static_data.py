@@ -199,7 +199,6 @@ DATA_SOURCES = [
     "gottingen",
     "inrae",
     "ird",
-    "unil",
     "leuven",
     "liege",
     "mersenne",

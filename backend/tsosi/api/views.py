@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from django.db.models import Count
 from django.http import JsonResponse
+
 from tsosi.models import Entity
 
 
@@ -11,7 +12,8 @@ def stats_view(request):
     """
 
     stats = list(
-        Entity.objects.values("tsosi_type")
+        Entity.objects.filter(is_active=True)
+        .values("tsosi_type")
         .annotate(count=Count("tsosi_type"))
         .order_by("tsosi_type")
     )
