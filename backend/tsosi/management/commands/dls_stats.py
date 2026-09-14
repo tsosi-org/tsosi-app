@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandParser
-from tsosi.models import DataLoadSource
+from tsosi.models import DataLoadSource, Entity
 
 
 class Command(BaseCommand):
@@ -7,9 +7,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            "dls",
+            "entity_id",
             help="DataLoadSource id",
         )
 
     def handle(self, *args, **options):
-        print(DataLoadSource.objects.get(id=options["dls"]).stats())
+        entity = Entity.objects.get_by_any_id(options["entity_id"])
+        print(DataLoadSource.objects.get(entity=entity).stats())

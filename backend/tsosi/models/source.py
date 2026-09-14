@@ -53,21 +53,44 @@ class DataLoadSource(TimestampedModel):
     def stats(self) -> str:
         """return stats about the data load source"""
 
+        from .transfer import Transfer
+
         dls_transfers = self.transfers
-        all_transfers = self.entity.transfers.exclude(
-            id__in=dls_transfers.values("id")
-        )
+        all_transfers = self.entity.transfers
+
+        def new_participants(field: str):
+            """
+            Distinct ``field`` entities whose support is exclusive to this
+            data load: any entity that also appears (in that role) on a
+            transfer not linked to this source is excluded.
+            """
+            with_other_support = (
+                Transfer.objects.filter(
+                    **{f"{field}__in": dls_transfers.values(field)}
+                )
+                .exclude(pk__in=dls_transfers.values("pk"))
+                .values(field)
+            )
+            return (
+                dls_transfers.exclude(**{f"{field}__in": with_other_support})
+                .values(field)
+                .distinct()
+            )
+
         merged = dls_transfers.filter(merged_into__isnull=False)
-        emitters = dls_transfers.values("emitter").distinct()
-        recipients = dls_transfers.values("recipient").distinct()
-        agents = dls_transfers.values("agents").distinct()
+        new_emitters = new_participants("emitter")
+        total_emitters = all_transfers.values("emitter").distinct()
+        new_recipients = new_participants("recipient")
+        total_recipients = all_transfers.values("recipient").distinct()
+        new_agents = new_participants("agents")
+        total_agents = all_transfers.values("agents").distinct()
         msg = f"DataLoadSource {self.id} ({self.data_source_id}):\n"
         msg += (
-            f"- Transfers: {dls_transfers.count()} ({merged.count()} merged)\n"
+            f"Transfers: {dls_transfers.count() - merged.count()} new (out of {all_transfers.count()})\n"
         )
-        msg += f"- Emitters: {emitters.count()}\n"
-        msg += f"- Agents: {agents.count()}\n"
-        msg += f"- Recipients: {recipients.count()}"
+        msg += f"Emitters: {new_emitters.count()} new (out of {total_emitters.count()})\n"
+        msg += f"Agents: {new_agents.count() - 1} new (out of {total_agents.count() - 1})\n"
+        msg += f"Recipients: {new_recipients.count()} new (out of {total_recipients.count()})"
         return msg
 
 
