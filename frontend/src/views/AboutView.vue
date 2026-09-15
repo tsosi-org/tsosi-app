@@ -75,6 +75,21 @@ const { openContactModal } = useContactModal()
 
       <StaticSectionAtom id="who-we-are" title="Who we are">
         <StaticSectionAtom
+          id="operational-team"
+          title="Operational team"
+          :noLink="true"
+        >
+          <div class="member-container">
+            <Member
+              name="Maxence Larrieu"
+              role="GRICAD, CNRS, UGA"
+              orcid="https://orcid.org/0000-0002-1834-3007"
+            >
+            </Member>
+            <Member name="Baptiste Lefeuvre" role="GRICAD, CNRS, UGA"> </Member>
+          </div>
+        </StaticSectionAtom>
+        <StaticSectionAtom
           id="steering-comittee"
           title="Steering Committee"
           :noLink="true"
@@ -140,7 +155,7 @@ const { openContactModal } = useContactModal()
               orcid="https://orcid.org/0000-0002-2109-5323"
             >
             </Member>
-            <Member name="Thomas Guillemaud" role="PeerCommunityIn"> </Member>
+            <Member name="Thomas Guillemaud" role="PeerCommunityIn" orcid="https://orcid.org/0000-0003-0451-1644"> </Member>
             <Member
               name="Jean-Sebastien Caux"
               role="SciPost"
@@ -148,24 +163,9 @@ const { openContactModal } = useContactModal()
             >
             </Member>
             <Member
-              name="Marlène Delhaye"
+              name="Jacqueline Gillet"
               role="Couperin"
-              orcid="https://orcid.org/0000-0001-6306-5774"
-            >
-            </Member>
-          </div>
-        </StaticSectionAtom>
-        <StaticSectionAtom
-          id="operational-team"
-          title="Operational team"
-          :noLink="true"
-        >
-          <div class="member-container">
-            <Member name="Baptiste Lefeuvre" role="GRICAD, CNRS, UGA"> </Member>
-            <Member
-              name="Maxence Larrieu"
-              role="GRICAD, CNRS, UGA"
-              orcid="https://orcid.org/0000-0002-1834-3007"
+              orcid="https://orcid.org/0000-0002-9850-3786"
             >
             </Member>
           </div>

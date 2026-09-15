@@ -984,5 +984,15 @@
     "entity": {
       "name": "Big Ten Academic Alliance"
     }
+  },
+  {
+    "pid": {
+      "registry_id": "ror",
+      "value": "01ggx4157"
+    },
+    "entity": {
+      "name": "European Organization for Nuclear Research",
+      "country": "CH"
+    }
   }
 ]
