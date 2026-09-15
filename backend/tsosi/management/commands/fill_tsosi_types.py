@@ -31,11 +31,14 @@ def fill_types(filepath: str) -> None:
         wiki_mask = df["wiki_id"].notnull()
         ror_ids = df.loc[ror_mask & mask, "ror_id"].tolist()
         wikidata_ids = df.loc[wiki_mask & mask, "wiki_id"].tolist()
-        Entity.objects.filter(identifiers__value__in=ror_ids).update(
+        count = Entity.objects.filter(identifiers__value__in=ror_ids).update(
             tsosi_type=tsosi_type
         )
-        Entity.objects.filter(identifiers__value__in=wikidata_ids).update(
+        count += Entity.objects.filter(identifiers__value__in=wikidata_ids).update(
             tsosi_type=tsosi_type
         )
+        print(f"Updated {count} entities to tsosi_type '{tsosi_type}'")
     # Update all remaining to "other"
-    Entity.objects.filter(tsosi_type__isnull=True).update(tsosi_type="other")
+    count = Entity.objects.filter(tsosi_type__isnull=True).update(tsosi_type="other")
+    print(f"Updated {count} entities to tsosi_type 'other'")
+    
