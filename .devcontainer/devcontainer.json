@@ -1,30 +1,32 @@
 {
-    "name": "TSOSI Dev env 0.1.1",
-    "dockerComposeFile": "docker-compose.yml",
-    "service": "app",
-    "workspaceFolder": "/workspaces/tsosi-app/",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                // Python extensions
-                "ms-python.python",
-                "ms-python.black-formatter",
-                "ms-python.isort",
-                "ms-toolsai.jupyter",
-                // Front-end extensions
-                "vue.volar",
-                "esbenp.prettier-vscode",
-                "dbaeumer.vscode-eslint",
-                "vitest.explorer"
-            ]
-        }
-    },
-    "forwardPorts": [
-        8000,   // Django default dev server
-        5173    // Vue.js default dev server 
-    ],
-    // Use 'postCreateCommand' to run commands after the container is created.
-    // It's executed within the above `workspaceFolder`
-    // We execute init scripts (basically deps installation)
-    "postCreateCommand": "bash init.sh"
+  "name": "TSOSI Dev env 0.1.1",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/tsosi-app/",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-toolsai.jupyter",
+        "vue.volar",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "vitest.explorer",
+        "batisteo.vscode-django",
+        "monosans.djlint",
+        "charliermarsh.ruff",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  },
+  "forwardPorts": [
+    8000, // Django default dev server
+    5173 // Vue.js default dev server
+  ],
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // It's executed within the above `workspaceFolder`
+  // We execute init scripts (basically deps installation)
+  "postCreateCommand": "bash init.sh"
 }
