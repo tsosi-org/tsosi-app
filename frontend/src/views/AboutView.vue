@@ -113,12 +113,6 @@ const { openContactModal } = useContactModal()
               orcid="https://orcid.org/0000-0002-3569-532X"
             >
             </Member>
-            <Member
-              name="Maxence Larrieu"
-              role="GRICAD, CNRS, UGA"
-              orcid="https://orcid.org/0000-0002-1834-3007"
-            >
-            </Member>
           </div>
         </StaticSectionAtom>
         <StaticSectionAtom
@@ -141,7 +135,7 @@ const { openContactModal } = useContactModal()
             </Member>
             <Member
               name="Vanessa Proudman"
-              role="SparcEurope"
+              role="Sparc Europe"
               orcid="https://orcid.org/0000-0001-5623-9051"
             >
             </Member>
@@ -150,12 +144,11 @@ const { openContactModal } = useContactModal()
         <StaticSectionAtom id="user-group" title="User Group" :noLink="true">
           <div class="member-container">
             <Member
-              name="Denis Bourguet"
-              role="PeerCommunityIn"
-              orcid="https://orcid.org/0000-0002-2109-5323"
+              name="Thomas Guillemaud"
+              role="Peer Community In"
+              orcid="https://orcid.org/0000-0003-0451-1644"
             >
             </Member>
-            <Member name="Thomas Guillemaud" role="PeerCommunityIn" orcid="https://orcid.org/0000-0003-0451-1644"> </Member>
             <Member
               name="Jean-Sebastien Caux"
               role="SciPost"
