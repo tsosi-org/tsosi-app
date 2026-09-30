@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router"
 
+import { extractEditKey } from "@/singletons/edit-access"
+
 import AboutView from "@/views/AboutView.vue"
 import BlogView from "@/views/BlogView.vue"
 // import DevModeView from "@/views/DevModeView.vue"
@@ -127,5 +129,7 @@ const router = createRouter({
     return defaultScroll
   },
 })
+
+router.beforeEach(extractEditKey)
 
 export default router

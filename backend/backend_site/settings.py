@@ -53,6 +53,9 @@ TSOSI_OPTIONAL_SETTINGS = [
     # API Rate limiting
     "TSOSI_API_RATE",
     "TSOSI_API_WHITELIST_IPS",
+    # Entity edit accesses
+    "TSOSI_FRONTEND_URL",
+    "TSOSI_EDIT_ACCESS_DAYS",
 ]
 
 settings_local_module = importlib.import_module("backend_site.settings_local")

@@ -172,6 +172,19 @@ class AppSettings:
         return self._setting("API_RATE", "100/m")
 
     @property
+    def FRONTEND_URL(self) -> str:
+        """
+        Base URL of the frontend application, used to build the entity edit
+        links.
+        """
+        return self._setting("FRONTEND_URL", "https://tsosi.org").rstrip("/")
+
+    @property
+    def EDIT_ACCESS_DAYS(self) -> int:
+        """Default validity duration, in days, of entity edit accesses."""
+        return self._setting("EDIT_ACCESS_DAYS", 7)
+
+    @property
     def ERROR_OUTPUT_FOLDER(self) -> str:
         """
         A directory outside of git management for temporary files.

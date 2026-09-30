@@ -8,6 +8,7 @@ import EntityData from "@/components/EntityData.vue"
 import EntityMeta from "@/components/EntityMeta.vue"
 import EntityViz from "@/components/EntityViz.vue"
 import { devMode } from "@/singletons/devMode"
+import { checkEditAccess, type EditAccess } from "@/singletons/edit-access"
 import {
   getEntityDetails,
   getEntitySummary,
@@ -34,6 +35,7 @@ const router = useRouter()
 const entity: ShallowRef<EntityDetails | null> = shallowRef(null)
 const transfers: ShallowRef<Transfer[] | null> = shallowRef(null)
 const loading = ref(true)
+const editAccess: ShallowRef<EditAccess | null> = shallowRef(null)
 
 onBeforeMount(async () => {
   const entityId = resolveEntityRoute(route.params.id as string)
@@ -48,7 +50,12 @@ onBeforeMount(async () => {
   }
   entity.value = (await getEntityDetails(result.id)) as EntityDetails
   loading.value = false
+  editAccess.value = await checkEditAccess(result.id)
 })
+
+async function onEditSaved() {
+  entity.value = (await getEntityDetails(entity.value!.id)) as EntityDetails
+}
 
 watch(entity, onEntityChange)
 
@@ -71,7 +78,11 @@ async function onEntityChange() {
   <NotFound v-else-if="!entity"></NotFound>
   <div class="container" v-else>
     <div class="regular-content">
-      <EntityMeta :entity="entity as EntityDetails" />
+      <EntityMeta
+        :entity="entity as EntityDetails"
+        :editable="editAccess != null"
+        @saved="onEditSaved"
+      />
       <Tabs lazy value="0" v-if="devMode">
         <TabList class="tab-list">
           <Tab value="0" as="button">

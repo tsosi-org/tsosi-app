@@ -12,6 +12,7 @@ MEDIA_ROOT = f"{NO_GIT_DIR}/media/"
 MEDIA_URL = "media/"
 STATIC_URL = "static/"
 ALLOWED_HOSTS = ["127.0.0.1", "172.17.0.1", "localhost"]
+TSOSI_FRONTEND_URL = "http://localhost:5173"
 TSOSI_MAIN_LOG_FILE = f"{NO_GIT_DIR}/logs/tsosi_app.log"
 TSOSI_DATA_LOG_FILE = f"{NO_GIT_DIR}/logs/tsosi_data.log"
 TSOSI_DJANGO_LOG_FILE = f"{NO_GIT_DIR}/logs/django.log"
@@ -35,7 +36,9 @@ TSOSI_SCIPOST_AUTH = {
     "client_secret": "",
 }
 
-CACHES = {}
+CACHES = {
+    "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+}
 DRF_NUM_PROXIES = 0
 TSOSI_FRONTEND_CUSTOM_HEADER = "X-Frontend-Origin"
 TSOSI_PUBLIC_RELPATH = "../frontend/public/"
