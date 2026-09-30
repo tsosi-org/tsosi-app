@@ -42,8 +42,6 @@ export async function get(
   url.searchParams.forEach((value, key) => queryParams.append(key, value))
   url.search = "?" + queryParams.toString()
 
-  console.log(`querying URL: "${url.toString()}"`)
-
   return fetchUrl(url.toString(), api)
 }
 

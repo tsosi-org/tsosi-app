@@ -25,3 +25,6 @@ npm-debug.log*
 
 # Blog
 frontend/public/pages/blog
+
+# VSCODe
+.vscode

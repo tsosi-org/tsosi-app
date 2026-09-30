@@ -69,6 +69,30 @@ See [here](./deployment/README.md) to know more on our deployment process.
 Poetry is used to manage the python dependencies of the project and related commands.
 See [poetry doc](https://python-poetry.org/).
 
+## Editor setup (VSCode)
+
+The repo ships no `.vscode/settings.json`. All tooling is configured through
+standard files:
+
+- Formatting/imports: `[tool.black]` and `[tool.isort]` in
+  [pyproject.toml](./pyproject.toml) (line length 80). Run them with
+  `poetry run black .` and `poetry run isort .`, or let the
+  `ms-python.black-formatter` / `ms-python.isort` extensions pick the config up
+  automatically.
+- Indentation / newlines: [.editorconfig](../.editorconfig) at the repo root.
+- Test config: `[tool.pytest.ini_options]` in `pyproject.toml`.
+
+One manual step per machine: point VSCode at the Poetry virtualenv with
+**Command Palette → "Python: Select Interpreter" → `./backend/.venv/bin/python`**
+(this choice is stored in VSCode's workspace state, not in the repo). To enable
+format-on-save and the Test Explorer, add to your **user** settings:
+
+```jsonc
+"[python]": { "editor.formatOnSave": true },
+"python.testing.pytestEnabled": true,
+"python.testing.cwd": "${workspaceFolder}/backend"
+```
+
 ## Django
 
 You can run the Django dev server by running:
@@ -105,12 +129,13 @@ poetry run python manage.py ingest_test
 
 ## Tests
 
-Tests should be automatically discovered and run within VSCode when the Python extension is installed.
-
-Alternatively, they can be run using the pytest command:
+Run the test suite from the `backend/` directory:
 ```bash
 poetry run pytest
 ```
+
+They are also discovered by the VSCode Test Explorer once `python.testing.pytestEnabled`
+is set in your user settings (see [Editor setup](#editor-setup-vscode)).
 
 
 ## TSOSI App
