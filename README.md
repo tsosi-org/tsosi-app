@@ -49,8 +49,8 @@ The easiest is to copy the default one:
 cp .devcontainer/postgres.example.env .devcontainer/postgres.env
 ```
 
-**OPTIONNAL** If you change the default values, you will need to
-manually create your Django settings file ([`settings_local.py`](./backend/backend_site/settings_local.py)) and edit the `DATABASE` setting with the secrets you used for your database:
+**OPTIONAL** If you change the default values, you will need to
+manually create your Django settings file `backend/backend_site/settings_local.py` (not versioned) from [`settings_local.dev.py`](./backend/backend_site/settings_local.dev.py) and edit the `DATABASES` setting with the secrets you used for your database:
 
 ```bash
 cp backend/backend_site/settings_local.dev.py backend/backend_site/settings_local.py
@@ -91,4 +91,4 @@ poetry run celery -A backend_site worker --concurrency=1 --loglevel=INFO
 
 ## Local dev with manual installation (NOT RECOMMENDED)
 
-Follow the instructions in the dedicated [frontend]((./frontend/README.md)) and [backend](./backend/README.md) **README.md** files. 
+Follow the instructions in the dedicated [frontend](./frontend/README.md) and [backend](./backend/README.md) **README.md** files. 

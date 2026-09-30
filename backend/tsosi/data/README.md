@@ -28,7 +28,7 @@ flowchart LR
 
 ## Raw data source
 
-All our partners provide data in the form of .xlsx spreadsheets except for SciPost where we use a dedicated API with private credentials, see `get_scipost_raw_data` in [get_data.py](./preparation/scipost/get_data.py).
+All our partners provide data in the form of .xlsx spreadsheets except for SciPost where we use a dedicated API with private credentials, see `get_scipost_raw_data` in [data.py](./preparation/scipost/data.py).
 
 All the data files at different stages are stored on the UGA cloud, with private access.
 
@@ -72,9 +72,9 @@ flowchart LR
    If the spreadsheet has intermediary data, it should also be pre-matched.
    I usually put the supporter matching results directly in the original dataset in a spreadsheet named `Transfers`, and the intermediary matching result in a separate sheet called `Consortiums`.
 
-2. Export and upload the resulting results to a google sheet. We continue the enrichment there to use our custom [google_sheet_script.gs](./manual_review/google_sheet_script.js).
+2. Export and upload the resulting results to a google sheet. We continue the enrichment there to use our custom [google_sheet_script.js](./manual_review/google_sheet_script.js).
 
-   This step consists in verifying untrusted affiliation results and adding Wikidata IDs when nor ROR record exists.
+   This step consists in verifying untrusted affiliation results and adding Wikidata IDs when no ROR record exists.
 
 3. Download the enriched data and process it using [pid_matching.process_enriched_data](./pid_matching.py).
 
@@ -92,7 +92,7 @@ The fields to be mapped are the ones resulting from the above processing steps.
 
 This also requires extra arguments:
 
-- A valid source name and an an optional year (when the data is for a given year), to attach a data load source (see next section).
+- A valid source name and an optional year (when the data is for a given year), to attach a data load source (see next section).
 
 - The path to the "raw" (or prepared) dataset.
 
@@ -100,7 +100,7 @@ The class exposes methods to clean and import the data.
 
 ### The [DataLoadSource](/backend/tsosi/models/source.py) model
 
-This is our stepping stone to identifiy the various datasets and where the transfer data comes from.
+This is our stepping stone to identify the various datasets and where the transfer data comes from.
 
 This works well in our current scenario where the data is single-sourced and where we don't need to de-duplicate similar transfers from different sources (we only get data from the infrastructures).
 
@@ -108,7 +108,7 @@ A prepared dataset must be identified with the following fields:
 
 - `source` - It must be one of the static defined sources in [static_data.py](/backend/tsosi/models/static_data.py).
 
-- `year` - Optionnal, when the data is split by year.
+- `year` - Optional, when the data is split by year.
 
 - `full_data` - Whether the dataset is full for the corresponding source and year.
 
@@ -155,8 +155,8 @@ I propose the following as improvements.
   1. Upload a dataset
   2. Configure the field mapping, basically the underlying `RawDataConfig` object
   3. Check the input data against the input config is valid - Required to go further.
-  4. OPTIONNAL - Request data enrichment via a button or smthg
-  5. OPTIONNAL - Perform manual review
+  4. OPTIONAL - Request data enrichment via a button or smthg
+  5. OPTIONAL - Perform manual review
   6. Request ingestion of the prepared and verified dataset
 
 **Single file per year per source constraint**
@@ -236,7 +236,8 @@ This contains the code to enrich our dataset with external sources.
 This is wrapped by defined [Celery tasks](/backend/tsosi/tasks.py) and scheduled using Celery Beat.
 Some tasks are directly invoked when relevant signals are sent. See [signals.py](./signals.py) or the chart below.
 
-The scheduled tasks are defined in the `TSOSI_CELERY_BEAT_SCHEDULE` setting.
+The scheduled tasks are defined in the `TSOSI_CELERY_BEAT_SCHEDULE` setting in [settings.py](/backend/backend_site/settings.py).
+They are loaded by the custom [DatabaseSchedulerWithCleanup](/backend/tsosi/scheduler.py), which also deletes periodic tasks that are no longer in the schedule.
 
 Here is the tasks and signals workflow:
 
@@ -251,6 +252,7 @@ flowchart LR
 
     Ta("post_ingestion_pipeline")
     Tb("update_clc_fields_hourly")
+    Tb2("update_clc_fields_daily")
     Tc("currency_rates_workflow")
 
     Td("fetch_empty_ror_records")
@@ -267,6 +269,7 @@ flowchart LR
     Tl("new_wikidata_identifers_from_records")
 
     Tu1("refresh_scipost_data")
+    Tu2("refresh_barcelona_data")
 
 
     Tz("identifier_update")
@@ -310,6 +313,8 @@ flowchart LR
     TRIGGER_2 a10@==> Th
     TRIGGER_2 a11@==> Tz
     TRIGGER_2 a20@==> Tu1
+    TRIGGER_2 a21@==> Tb2
+    TRIGGER_2 a22@==> Tu2
 
     Tu1 -- send --> A
     Tu1 -- send --> B
@@ -322,18 +327,18 @@ flowchart LR
     class TRIGGER_1,TRIGGER_2 scheduled
 
     classDef task font\-style:italic;
-    class Ta,Tb,Tc,Td,Te,Tf,Tg,Th,Ti,Tj,Tk,Tl,Tm,Tn,To,Tp,Tq,Tr,Ts,Tt,Tu,Tv,Tw,Tx,Ty,Tz,Tu1 task;
+    class Ta,Tb,Tb2,Tc,Td,Te,Tf,Tg,Th,Ti,Tj,Tk,Tl,Tz,Tu1,Tu2 task;
 
     classDef databaseTask color:#6d859d;
-    class Ta,Tb,Tf,Tk,Tl databaseTask;
+    class Ta,Tb,Tb2,Tf,Tk,Tl databaseTask;
 
 
     classDef apiTask color:#954949;
-    class Tc,Td,Te,Th,Ti,Tj,Tz,Tu1 apiTask;
+    class Tc,Td,Te,Th,Ti,Tj,Tz,Tu1,Tu2 apiTask;
 
 
     classDef animate stroke-dasharray: 9\,5,stroke-dashoffset: 900,animation: dash 25s linear infinite;
-    class a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20 animate;
+    class a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22 animate;
 ```
 
 The enrichment consists in:
@@ -348,14 +353,14 @@ The code is split in 2 files:
 
 - [api_related.py](./enrichment/api_related.py) - Methods relying on external data fetching. They're in red in the above chart.
 
-Ideally, one should split each task realated code into one file and create a template "task core" class (the core of the task, separately of Celery tasks), given that everything does quite the same: select data to work with, perform method-specific stuff, log things, ...
+Ideally, one should split each task related code into one file and create a template "task core" class (the core of the task, separately of Celery tasks), given that everything does quite the same: select data to work with, perform method-specific stuff, log things, ...
 
 ## PID records fetching
 
 The requests made to the registries are throttled using the token bucket algorithm implemented in [TokenBucket](./token_bucket.py).
-The tasks are automatically re-scheduled when they're throttled, see [TsosiTask](./tasks.py).
+The tasks are automatically re-scheduled when they're throttled, see [TsosiTask](../tasks.py).
 
-## [Currencies](data/currencies/currency_rates.py)
+## [Currencies](./currencies/currency_rates.py)
 
 This contains the code to fetch the rates of the supported currencies and to convert the transfer amounts in those currencies.
 

@@ -174,7 +174,8 @@ def deploy(
     :param server_name:         The name of the server to deploy. Ex: `prod`.
                                 The name is the key of the `SERVERS` mapping,
                                 cf. servers.py.
-    :param branch:              The branch name to deploy. Default to `main`.
+    :param branch:              The branch name to deploy. Default to the
+                                server's `default_branch`.
     :param skip_front_build:    Whether to skip the build of fresh frontend
                                 files. If `True`, it will copy existing files
                                 in frontend/dist.
@@ -399,7 +400,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--branch",
         nargs="?",
-        help="The branch used to pull the code. Default to `main`",
+        help="The branch used to pull the code. Default to the server's `default_branch`.",
     )
     parser.add_argument(
         "--skip-front-build",
@@ -408,7 +409,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--celery-no-restart",
-        help="If passed, restart tsosi_celery and tsosi_celery_beat services.",
+        help="If passed, do not restart tsosi_celery and tsosi_celery_beat services.",
         action="store_true",
     )
     args = parser.parse_args()

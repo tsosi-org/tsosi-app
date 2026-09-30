@@ -9,7 +9,7 @@ See [here](./deployment/README.md) to know more on our deployment process.
 
 # Manual setup
 
-**ONLY WHEN NOT USING THE DEVCONTAIENR**
+**ONLY WHEN NOT USING THE DEVCONTAINER**
 
 ## Install python & deps
 
@@ -28,7 +28,7 @@ See [here](./deployment/README.md) to know more on our deployment process.
 * Install python dependencies:
     ```bash
     # You need to execute this in backend/ directory where pyproject.toml is located
-    poetry install
+    poetry install --no-root
     ```
 
 * Create a `settings_local.py` file for env. dependent Django settings:
@@ -103,8 +103,6 @@ poetry run python manage.py runserver
 
 You should then be able to navigate to the API at [http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
 
-The app can be run with the built-in debugger using the configurated VSCode "run and debug" task (shortcut `F5`).
-
 ## Celery
 
 We use [celery](https://docs.celeryq.dev/en/stable/) to run automated background tasks.
@@ -120,11 +118,13 @@ poetry run celery -A backend_site worker --concurrency=1 --loglevel=INFO
 
 ## Run the app with minimal data
 
-You can load example data located in [tsosi/data/fixtures/prepared_files](./tsosi/data/fixtures/prepared_files/) by running the management command `ingest_test`:
+The management command `ingest_test` loads example data from the `tsosi/data/fixtures/prepared_files/` folder:
 
 ```bash
 poetry run python manage.py ingest_test
 ```
+
+**WARNING**: this folder is currently not versioned in the repository, so the command ingests nothing out of the box.
 
 
 ## Tests
