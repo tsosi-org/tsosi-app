@@ -11,6 +11,7 @@ import LegalNotices from "@/views/LegalNotices.vue"
 import NewsView from "@/views/NewsView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
 import PrivacyPolicyView from "@/views/PrivacyPolicyView.vue"
+import ProvideView from "@/views/ProvideView.vue"
 import TransferView from "@/views/TransferView.vue"
 
 
@@ -94,11 +95,11 @@ const router = createRouter({
       name: "NotFound",
       component: NotFoundView,
     },
-    // {
-    //   path: "/preview-mode",
-    //   name: "preview-mode",
-    //   component: DevModeView,
-    // }
+    {
+      path: "/provide",
+      name: "provide",
+      component: ProvideView,
+    }
   ],
   scrollBehavior(to, from, savedPosition) {
     if (to.hash === "#contact") {

@@ -22,6 +22,7 @@
 .page-content {
   min-height: var(--page-min-height);
   margin-top: var(--regular-header-height);
+  background-color: white;
 
   .regular-content {
     width: 100%;
