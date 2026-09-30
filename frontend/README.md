@@ -6,7 +6,7 @@ We additionally use:
 
 # Install Dev dependencies
 
-**ONLY WHEN NOT USING THE DEVCONTAIENR**
+**ONLY WHEN NOT USING THE DEVCONTAINER**
 
 - Install Node.js & NPM, using NVM:
 
@@ -36,17 +36,22 @@ npm run dev
 
 ## [Views](./src/views/)
 
-The different routes are defined [here](./src/router/index.ts).
-We have only 4 pages as of 2025-07-07:
+The different routes are defined [here](./src/router/index.ts):
 
-- [Home page](./src/views/HomeView.vue)
-- [Static pages](./src/views/StaticContentView.vue) - If more static pages appear, we should think of migrating to Nuxt.js to handle that properly (built-in feature).
-- [Entity pages](./src/views/EntityView.vue) - The core of the application, individual entity page showing metadata and listing transfers.
-- [Transfer pages](./src/views/TransferView.vue) - Individual transfer page.
+- `/` - [Home page](./src/views/HomeView.vue)
+- `/explore` - [Entity list](./src/views/EntityListView.vue) - Browse and filter all entities (`/entities` redirects here).
+- `/entities/:id` - [Entity pages](./src/views/EntityView.vue) - The core of the application, individual entity page showing metadata and listing transfers.
+- `/transfers/:id` - [Transfer pages](./src/views/TransferView.vue) - Individual transfer page.
+- `/provide` - [Provide data](./src/views/ProvideView.vue) - Embeds a Grist form for data providers, prefilled with the `name` and `ror_url` query parameters.
+- `/pages/*` - Static pages: [FAQ](./src/views/FaqView.vue), [About](./src/views/AboutView.vue), [Legal notice](./src/views/LegalNotices.vue), [Privacy policy](./src/views/PrivacyPolicyView.vue), [Newsletter](./src/views/NewsView.vue) and [Blog](./src/views/BlogView.vue) (list and individual posts).
+- Any other path - [Not found page](./src/views/NotFoundView.vue).
+
+Static pages wrap their content in the [StaticContentView](./src/views/StaticContentView.vue) layout component (it is not a route itself).
+[DevModeView](./src/views/DevModeView.vue) enables the dev mode flag, but its route is currently disabled.
 
 ## [Ref-data](./src/singletons/ref-data.ts)
 
-As of now (2025-07-07), we fetch the referential data on the application startup, that is then used throughout the app.
+We fetch the referential data on the application startup, that is then used throughout the app.
 This includes:
 
 - Currency data - All the currencies referenced in TSOSI transfers.
@@ -55,12 +60,14 @@ This includes:
 
   **TODO**: This must be watched when the entity dataset grows as it might slow down the app.
 
+Other app-wide state lives in [singletons](./src/singletons/): the selected display currency (`currencyStore.ts`), the dev mode flag (`devMode.ts`) and the home page big-header state (`fixedHeaderStore.ts`).
+
 ## [Components](./src/components/)
 
-I tried a bit to follow a bit the atomic design pattern to create and order components:
+Components loosely follow the atomic design pattern:
 
 - [Atoms](./src/components/atoms/) - Contains low-level components, such as button, image or link
-- Everythin else is not structured and can use any atoms or other non-atomic components :)
+- Everything else is not structured and can use any atoms or other non-atomic components :)
 
 ## Styling
 
@@ -74,12 +81,12 @@ Shared styles are put in [base.css](./src/assets/css/base.css) or [main.css](./s
 ## Data handling
 
 As much as possible, data components are abstracted to work with any data type (example: [TableComponent](./src/components/TableComponent.vue) or [SummaryComponent](./src/components/SummaryComponent.vue)).
-The goal is to pass a "config" object to the component that indicates how to retrive the data and how to process it, mainly according to the data type.
-See [data.utils.ts](./src/utils/data-utils.ts).
+The goal is to pass a "config" object to the component that indicates how to retrieve the data and how to process it, mainly according to the data type.
+See [data-utils.ts](./src/utils/data-utils.ts).
 
 ## Icons - Font Awesome
 
-We use icons from [Font Awesome free icons](https://fontawesome.com/search?ic=free), installed with dedicated vue libraries (`@fortawersome` something in [package.json](./package.json)).
+We use icons from [Font Awesome free icons](https://fontawesome.com/search?ic=free), installed with dedicated vue libraries (the `@fortawesome/*` packages in [package.json](./package.json)).
 
 To use a "new" icon, it must be imported in [main.ts](./src/main.ts) and registered in `usedIcons`.
 Then you can use it in templates with the default array syntax:

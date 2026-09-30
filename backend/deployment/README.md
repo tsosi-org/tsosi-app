@@ -64,7 +64,7 @@ The default places them in the `/etc/systemd/system/`. One could try to put them
     # Create server configuration - See example below
     sudo nano /etc/nginx/sites-available/tsosi-app
     # Enable configuration
-    sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled/
+    sudo ln -s /etc/nginx/sites-available/tsosi-app /etc/nginx/sites-enabled/
     # Check nginx for syntax errors:
     sudo nginx -t
     # Restart service
@@ -80,6 +80,12 @@ The default places them in the `/etc/systemd/system/`. One could try to put them
     ```bash
     sudo systemctl daemon-reload
     sudo systemctl enable tsosi_celery.service
+    ```
+
+* Create a `tsosi_celery_beat` service to run the Celery Beat scheduler (periodic tasks, see `TSOSI_CELERY_BEAT_SCHEDULE`). Copy the file [tsosi_celery_beat.service](./tsosi_celery_beat.service) in `/etc/systemd/system/` and enable the service:
+    ```bash
+    sudo systemctl daemon-reload
+    sudo systemctl enable tsosi_celery_beat.service
     ```
 
 * Prepare a media repository to store fetched logos. It can be a local folder or a dedicated volume. Ex:
@@ -103,7 +109,7 @@ The default places them in the `/etc/systemd/system/`. One could try to put them
     You can copy-paste the [settings_local.prod.py](/backend/backend_site/settings_local.prod.py) and modify the secrets you set (database password, media folder, ...).
     The deploy script expects it to be located at `/home/deployer/config/settings_local.py`.
 
-* Prepare log rotation, cd **Log rotation** section below.
+* Prepare log rotation, cf. **Log rotation** section below.
 
 
 ## Deployment
@@ -114,16 +120,16 @@ cd backend/
 poetry run python -m deployment.deploy <SERVER_NAME>
 ```
 Options:
-* `--branch` - The branch used to pull the code from (only for back-end, front-end is built locally).
+* `--branch` - The branch used to pull the code from (only for back-end, front-end is built locally). Defaults to the server's `default_branch` in [servers.py](./servers.py). The local checked-out branch must match it.
 * `--skip-front-build` - If passed, the script will deploy already built front-end files in `frontend/dist` instead of building new ones. Useful when deploying several times in a row without changes on the frontend.
-* `--celery-no-restart` - If passed, the script will not restart celery services on the server. Not recommended.
+* `--celery-no-restart` - If passed, the script will not restart the `tsosi_celery` and `tsosi_celery_beat` services on the server. Not recommended.
 
 ## SSL certificates
 
 We use certbot to automatically get certificates from letsencrypt.
 Just follow the tutorial on certbot page: https://certbot.eff.org/instructions?ws=nginx&os=snap.
 
-Certifiate data is stored in `/etc/letsencrypt/live/{{ server_name }}/`
+Certificate data is stored in `/etc/letsencrypt/live/{{ server_name }}/`
 
 ## Log rotation
 
