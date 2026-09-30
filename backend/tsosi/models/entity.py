@@ -61,7 +61,6 @@ class Entity(TimestampedModel):
         validators=[MinLengthValidator(2), MaxLengthValidator(2)],
     )
     raw_website = models.URLField(max_length=256, null=True)
-    raw_logo_url = models.CharField(max_length=256, null=True)
 
     # Description text taking is prioritized over the Wikipedia extract.
     # It corresponds to a manual input, only for the infrastructures for now.
