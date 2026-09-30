@@ -29,6 +29,7 @@ ALLOWED_HOSTS = [
     # External IP
     "129.88.178.178",
 ]
+TSOSI_FRONTEND_URL = "https://tsosi.org"
 # Log config
 TSOSI_MAIN_LOG_FILE = "/var/log/tsosi_app.log"
 TSOSI_DATA_LOG_FILE = "/var/log/tsosi_data.log"

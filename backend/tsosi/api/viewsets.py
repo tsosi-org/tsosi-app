@@ -1,5 +1,8 @@
+import json
 from urllib.parse import urlparse
 
+from django import forms
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import QuerySet
 from django.http import Http404, HttpResponseRedirect
 from django.urls import resolve as django_resolve
@@ -7,22 +10,29 @@ from django.urls import reverse as django_reverse
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.filters import SearchFilter
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
+from rest_framework.response import Response
 
 from tsosi.api.serializers import (
     AnalyticSerializer,
     CurrencySerializer,
     EntityDetailsSerializer,
+    EntityEditAccessSerializer,
+    EntityEditSerializer,
     EntitySerializer,
     TransferDetailsSerializer,
     TransferSerializer,
 )
 from tsosi.app_settings import app_settings
+from tsosi.data.entity_edit import apply_entity_edit
 from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
-from tsosi.models import Analytic, Currency, Entity, Transfer
+from tsosi.models import Analytic, Currency, Entity, EntityEditAccess, Transfer
+
+IMAGE_MAX_SIZE = 2 * 1024 * 1024
 
 
 class RedirectRequired(Exception):
@@ -120,6 +130,86 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
         self.kwargs[lookup_url_kwarg] = entity.id
 
         return super().get_object()
+
+    def get_edit_access(
+        self, request: Request
+    ) -> tuple[EntityEditAccess, Entity]:
+        """
+        Return the edit access matching the key given in the request's
+        `Authorization: Bearer <key>` header, and the entity of the URL.
+        """
+        auth = request.headers.get("Authorization", "")
+        key = auth.removeprefix("Bearer ").strip()
+        if not auth.startswith("Bearer ") or not key:
+            raise PermissionDenied("Missing edit access key.")
+        try:
+            entity = Entity.objects.get_by_any_id(
+                self.kwargs[self.lookup_url_kwarg or self.lookup_field]
+            ).sucessor_or_self()
+        except Entity.DoesNotExist:
+            raise Http404
+        try:
+            access = EntityEditAccess.objects.get_by_key(key)
+        except EntityEditAccess.DoesNotExist:
+            raise PermissionDenied("Invalid or expired edit access key.")
+        if not access.grants(entity) or not entity.is_active:
+            raise PermissionDenied("Invalid or expired edit access key.")
+        return access, entity
+
+    @staticmethod
+    def validate_image(request: Request, field: str):
+        """Return the valid image uploaded in the given field, if any."""
+        image = request.FILES.get(field)
+        if image is None:
+            return None
+        if image.size > IMAGE_MAX_SIZE:
+            raise ValidationError({field: "The image must be under 2 MB."})
+        try:
+            forms.ImageField().clean(image)
+        except DjangoValidationError as e:
+            raise ValidationError({field: e.messages})
+        image.seek(0)
+        return image
+
+    @action(
+        detail=True,
+        methods=["get", "patch"],
+        parser_classes=[JSONParser, MultiPartParser],
+    )
+    def edit(self, request: Request, *args, **kwargs):
+        """
+        GET:    Check the validity of the edit access key.
+        PATCH:  Edit the entity. The body is either the JSON edit data, or
+                a multipart form with the JSON edit data in the `data` field
+                and the optional image files in the `logo` & `icon` fields.
+        """
+        access, entity = self.get_edit_access(request)
+        if request.method == "GET":
+            return Response(EntityEditAccessSerializer(access).data)
+
+        logo, icon = None, None
+        if request.content_type.startswith("multipart/"):
+            try:
+                data = json.loads(request.data.get("data") or "{}")
+            except json.JSONDecodeError:
+                raise ValidationError({"data": "Invalid JSON."})
+            logo = self.validate_image(request, "logo")
+            icon = self.validate_image(request, "icon")
+        else:
+            data = request.data
+
+        serializer = EntityEditSerializer(
+            data=data, context={"entity": entity}
+        )
+        serializer.is_valid(raise_exception=True)
+        apply_entity_edit(
+            entity, access, serializer.validated_data, logo=logo, icon=icon
+        )
+
+        entity = self.get_queryset().get(id=entity.id)
+        return Response(
+            EntityDetailsSerializer(entity, context={"request": request}).data
+        )
 
 
 class TransferFilter(filters.FilterSet):

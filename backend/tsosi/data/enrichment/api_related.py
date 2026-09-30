@@ -576,7 +576,9 @@ def entities_for_logo_update(
     """
     Gets the entities for which the logo must be updated.
     """
-    queryset = Entity.objects.filter(logo_url__isnull=False, is_active=True)
+    queryset = Entity.objects.filter(
+        logo_url__isnull=False, is_active=True, manual_logo=False
+    )
 
     # Last fetch condition
     date_value = timezone.now() - timezone.timedelta(

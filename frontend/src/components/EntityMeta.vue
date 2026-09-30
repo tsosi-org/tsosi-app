@@ -1,21 +1,82 @@
 <script setup lang="ts">
 import { devMode } from "@/singletons/devMode"
 import Button from "primevue/button"
+import Checkbox from "primevue/checkbox"
+import InputNumber from "primevue/inputnumber"
+import InputText from "primevue/inputtext"
+import Message from "primevue/message"
 import Panel from "primevue/panel"
+import Select from "primevue/select"
+import Textarea from "primevue/textarea"
 import { computed, onMounted, ref, watch, type Ref } from "vue"
 
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 import Image from "./atoms/ImageAtom.vue"
 
 import ChipList, { type ChipConfig } from "@/components/atoms/ChipListAtom.vue"
+import { useEntityEdit } from "@/composables/useEntityEdit"
 import { isDesktop } from "@/composables/useMediaQuery"
-import { type EntityDetails } from "@/singletons/ref-data"
+import { getCountries, type EntityDetails } from "@/singletons/ref-data"
 import { formatDateWithPrecision, getCountryLabel } from "@/utils/data-utils"
 import { getRorUrl, getWikidataUrl } from "@/utils/url-utils"
 
 const props = defineProps<{
   entity: EntityDetails
+  // Whether the user is allowed to edit the entity
+  editable?: boolean
 }>()
+
+const emit = defineEmits<{
+  saved: []
+}>()
+
+const editing = ref(false)
+const editSaved = ref(false)
+const {
+  form,
+  logoPreview,
+  iconPreview,
+  saving,
+  globalError,
+  showInfrastructure,
+  reset: resetEdit,
+  setLogo,
+  setIcon,
+  fieldError,
+  save,
+} = useEntityEdit(() => props.entity)
+
+const lockedIdentifierInfo = "Existing identifiers can't be changed."
+
+const countryOptions: Ref<Array<{ code: string; name: string }>> = ref([])
+
+async function startEdit() {
+  resetEdit()
+  editSaved.value = false
+  editing.value = true
+  if (!countryOptions.value.length) {
+    const countries = await getCountries()
+    countryOptions.value = Object.values(countries ?? {})
+      .map((c) => ({ code: c.code.toUpperCase(), name: c.name }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }
+}
+
+async function saveEdit() {
+  if (await save()) {
+    editing.value = false
+    editSaved.value = true
+    emit("saved")
+  }
+}
+
+function onLogoChange(event: Event) {
+  setLogo((event.target as HTMLInputElement).files?.[0] ?? null)
+}
+
+function onIconChange(event: Event) {
+  setIcon((event.target as HTMLInputElement).files?.[0] ?? null)
+}
 
 const logoWidth = computed(() => (isDesktop.value ? "225px" : "125px"))
 const logoHeight = computed(() => (isDesktop.value ? "125px" : "125px"))
@@ -52,6 +113,7 @@ const hasButtons = computed(() => {
 })
 
 function loadChips() {
+  headerChips.value = []
   if (props.entity.country) {
     const countryName = getCountryLabel(props.entity.country)
     const countryChip: ChipConfig = {
@@ -92,23 +154,185 @@ function isDoab(): boolean {
 </script>
 
 <template>
-  <div class="entity-meta" :class="{ desktop: isDesktop }">
-    <section class="entity-header">
+  <div
+    class="entity-meta"
+    :class="{ desktop: isDesktop, editable: props.editable }"
+  >
+    <div v-if="props.editable" class="edit-bar">
+      <div class="edit-bar__buttons">
+        <Button
+          v-if="!editing"
+          label="Edit"
+          severity="secondary"
+          @click="startEdit"
+        >
+          <template #icon>
+            <font-awesome-icon :icon="['fas', 'pen']" />
+          </template>
+        </Button>
+        <template v-else>
+          <Button
+            label="Cancel"
+            severity="secondary"
+            variant="outlined"
+            :disabled="saving"
+            @click="editing = false"
+          />
+          <Button label="Save" :loading="saving" @click="saveEdit" />
+        </template>
+      </div>
+      <Message
+        v-if="editSaved"
+        severity="success"
+        closable
+        @close="editSaved = false"
+      >
+        Your changes have been saved. Some data may take a few minutes to be
+        fully updated.
+      </Message>
+      <Message v-if="editing && globalError" severity="error">
+        {{ globalError }}
+      </Message>
+    </div>
+
+    <section class="entity-header" :class="{ editing }">
       <div class="entity-header__title">
         <div class="entity-title">
-          <h1>
+          <h1 v-if="!editing">
             {{ props.entity.name }}
           </h1>
+          <div v-else class="edit-title">
+            <h1>
+              <InputText
+                v-model="form.name"
+                class="title-input"
+                aria-label="Name"
+                placeholder="Name"
+                maxlength="512"
+                required
+              />
+            </h1>
+            <small class="edit-error" v-if="fieldError('name')">
+              {{ fieldError("name") }}
+            </small>
+            <InputText
+              v-model="form.short_name"
+              class="short-name-input"
+              size="small"
+              aria-label="Short name"
+              placeholder="Short name"
+              maxlength="128"
+            />
+            <small class="edit-error" v-if="fieldError('short_name')">
+              {{ fieldError("short_name") }}
+            </small>
+          </div>
         </div>
         <ChipList
+          v-if="!editing"
           :chips="headerChips"
           :center="!isDesktop"
           :style="{ justifyContent: 'center', marginTop: '1rem' }"
         />
+        <div v-else class="edit-chips">
+          <div class="edit-chip">
+            <font-awesome-icon :icon="['fas', 'location-dot']" />
+            <Select
+              v-model="form.country"
+              :options="countryOptions"
+              option-label="name"
+              option-value="code"
+              filter
+              size="small"
+              aria-label="Country"
+              placeholder="Country"
+            />
+          </div>
+          <div class="edit-chip">
+            <font-awesome-icon :icon="['fas', 'calendar']" />
+            <span>Since</span>
+            <InputNumber
+              v-model="form.date_inception"
+              :use-grouping="false"
+              :min="1000"
+              :max="2100"
+              size="small"
+              class="year-input"
+              aria-label="Creation year"
+              placeholder="Year"
+            />
+          </div>
+          <small
+            class="edit-error"
+            v-if="fieldError('country') || fieldError('date_inception')"
+          >
+            {{ fieldError("country") }} {{ fieldError("date_inception") }}
+          </small>
+        </div>
       </div>
 
       <div class="entity-header__grid">
-        <div class="entity-header__logo">
+        <div class="entity-header__logo" v-if="editing">
+          <label
+            class="logo-edit"
+            :class="{ empty: !logoPreview }"
+            :style="{ width: logoWidth, height: logoHeight }"
+          >
+            <Image
+              :key="logoPreview"
+              style="display: inline-block"
+              :src="logoPreview"
+              :width="logoWidth"
+              :height="logoHeight"
+              :center="true"
+              :container-padding="'5px'"
+            />
+            <span class="logo-overlay">
+              <font-awesome-icon :icon="['fas', 'pen']" />
+              {{ logoPreview ? "Change logo" : "Add a logo" }}
+            </span>
+            <input
+              type="file"
+              class="visually-hidden"
+              accept="image/png,image/jpeg,image/webp"
+              aria-label="Logo"
+              @change="onLogoChange"
+            />
+          </label>
+          <small class="edit-error logo-error" v-if="fieldError('logo')">
+            {{ fieldError("logo") }}
+          </small>
+          <div class="icon-edit-row">
+            <label
+              class="logo-edit icon-edit"
+              :class="{ empty: !iconPreview }"
+              title="Icon"
+            >
+              <Image
+                :key="iconPreview"
+                :src="iconPreview"
+                width="48px"
+                height="48px"
+                :center="true"
+                :container-padding="'3px'"
+              />
+              <span class="logo-overlay">
+                <font-awesome-icon :icon="['fas', 'pen']" />
+              </span>
+              <input
+                type="file"
+                class="visually-hidden"
+                accept="image/png,image/jpeg,image/webp,image/x-icon"
+                aria-label="Icon"
+                @change="onIconChange"
+              />
+            </label>
+          </div>
+          <small class="edit-error logo-error" v-if="fieldError('icon')">
+            {{ fieldError("icon") }}
+          </small>
+        </div>
+        <div class="entity-header__logo" v-else>
           <Image
             style="display: inline-block"
             :src="props.entity?.logo"
@@ -129,8 +353,21 @@ function isDoab(): boolean {
         </div>
 
         <div class="entiy-header__desc">
+          <div v-if="editing" class="edit-description">
+            <Textarea
+              v-model="form.description"
+              auto-resize
+              rows="4"
+              maxlength="5000"
+              aria-label="Description"
+              placeholder="Description (leave empty to use the Wikipedia extract)"
+            />
+            <small class="edit-error" v-if="fieldError('description')">
+              {{ fieldError("description") }}
+            </small>
+          </div>
           <div
-            v-if="props.entity.description"
+            v-else-if="props.entity.description"
             v-html="props.entity.description"
           ></div>
           <div v-else-if="props.entity.wikipedia_extract">
@@ -160,7 +397,7 @@ function isDoab(): boolean {
           <div class="entity-header__links">
             <div class="entity-header__links_circles">
               <Button
-                v-if="props.entity.website"
+                v-if="!editing && props.entity.website"
                 :href="props.entity.website"
                 rounded
                 variant="outlined"
@@ -173,7 +410,7 @@ function isDoab(): boolean {
                 </template>
               </Button>
               <Button
-                v-if="props.entity.wikipedia_url"
+                v-if="!editing && props.entity.wikipedia_url"
                 :href="props.entity.wikipedia_url"
                 rounded
                 variant="outlined"
@@ -186,8 +423,89 @@ function isDoab(): boolean {
                   src="@/assets/img/wikipedia_icon.ico"
                 />
               </Button>
+              <template v-if="editing">
+                <div class="link-edit url">
+                  <span class="link-edit__icon">
+                    <font-awesome-icon
+                      class="fa-icon"
+                      :icon="['fas', 'globe']"
+                    />
+                  </span>
+                  <InputText
+                    v-model="form.website"
+                    type="url"
+                    size="small"
+                    aria-label="Website URL"
+                    placeholder="Website URL"
+                  />
+                  <small class="edit-error" v-if="fieldError('website')">
+                    {{ fieldError("website") }}
+                  </small>
+                </div>
+                <div class="link-edit url">
+                  <span class="link-edit__icon">
+                    <img
+                      alt="Wikipedia logo"
+                      src="@/assets/img/wikipedia_icon.ico"
+                    />
+                  </span>
+                  <InputText
+                    v-model="form.wikipedia_url"
+                    type="url"
+                    size="small"
+                    aria-label="Wikipedia page URL"
+                    placeholder="Wikipedia page URL"
+                  />
+                  <small class="edit-error" v-if="fieldError('wikipedia_url')">
+                    {{ fieldError("wikipedia_url") }}
+                  </small>
+                </div>
+                <div class="link-edit">
+                  <span class="link-edit__icon">
+                    <img alt="ROR logo" src="@/assets/img/ror_icon_rgb.svg" />
+                  </span>
+                  <InputText
+                    v-model="form.ror"
+                    size="small"
+                    aria-label="ROR ID"
+                    placeholder="ROR ID"
+                    :disabled="rorIdentifier != null"
+                    :title="rorIdentifier ? lockedIdentifierInfo : undefined"
+                  />
+                  <small
+                    class="edit-error"
+                    v-if="fieldError('identifiers.ror')"
+                  >
+                    {{ fieldError("identifiers.ror") }}
+                  </small>
+                </div>
+                <div class="link-edit">
+                  <span class="link-edit__icon">
+                    <img
+                      alt="Wikidata logo"
+                      src="@/assets/img/wikidata_icon.ico"
+                    />
+                  </span>
+                  <InputText
+                    v-model="form.wikidata"
+                    size="small"
+                    aria-label="Wikidata ID"
+                    placeholder="Wikidata ID"
+                    :disabled="wikidataIdentifier != null"
+                    :title="
+                      wikidataIdentifier ? lockedIdentifierInfo : undefined
+                    "
+                  />
+                  <small
+                    class="edit-error"
+                    v-if="fieldError('identifiers.wikidata')"
+                  >
+                    {{ fieldError("identifiers.wikidata") }}
+                  </small>
+                </div>
+              </template>
               <Button
-                v-if="rorIdentifier"
+                v-if="!editing && rorIdentifier"
                 :href="getRorUrl(rorIdentifier)"
                 rounded
                 variant="outlined"
@@ -200,7 +518,7 @@ function isDoab(): boolean {
                 </template>
               </Button>
               <Button
-                v-if="wikidataIdentifier"
+                v-if="!editing && wikidataIdentifier"
                 :href="getWikidataUrl(wikidataIdentifier)"
                 rounded
                 variant="outlined"
@@ -211,8 +529,27 @@ function isDoab(): boolean {
                 <img alt="Wikidata logo" src="@/assets/img/wikidata_icon.ico" />
               </Button>
             </div>
+            <div v-if="editing && showInfrastructure" class="badge-edit">
+              <span>Find out how to support</span>
+              <font-awesome-icon
+                :icon="['fas', 'arrow-up-right-from-square']"
+              />
+              <InputText
+                v-model="form.support_url"
+                type="url"
+                size="small"
+                aria-label="Support page URL"
+                placeholder="https://..."
+              />
+              <small
+                class="edit-error"
+                v-if="fieldError('infrastructure.support_url')"
+              >
+                {{ fieldError("infrastructure.support_url") }}
+              </small>
+            </div>
             <Button
-              v-if="props.entity.infrastructure?.support_url"
+              v-else-if="!editing && props.entity.infrastructure?.support_url"
               severity="secondary"
               variant="outlined"
               as="a"
@@ -229,7 +566,98 @@ function isDoab(): boolean {
               </template>
             </Button>
           </div>
-          <div v-if="hasButtons" class="entity-header__buttons">
+          <div v-if="editing" class="entity-header__buttons">
+            <div v-if="props.entity.is_partner" class="badge-edit">
+              <img src="/img/favicon-192x192.png" />
+              <span>TSOSI provider</span>
+            </div>
+            <div
+              v-if="showInfrastructure"
+              class="badge-edit"
+              :class="{ inactive: !form.date_scoss_start }"
+            >
+              <img src="@/assets/img/scoss_icon.png" />
+              <span>SCOSS</span>
+              <InputNumber
+                v-model="form.date_scoss_start"
+                :use-grouping="false"
+                :min="1000"
+                :max="2100"
+                size="small"
+                class="year-input"
+                aria-label="SCOSS selection start year"
+                placeholder="Year"
+              />
+              <span>to</span>
+              <InputNumber
+                v-model="form.date_scoss_end"
+                :use-grouping="false"
+                :min="1000"
+                :max="2100"
+                size="small"
+                class="year-input"
+                aria-label="SCOSS selection end year"
+                placeholder="Year"
+              />
+              <small
+                class="edit-error"
+                v-if="fieldError('infrastructure.non_field_errors')"
+              >
+                {{ fieldError("infrastructure.non_field_errors") }}
+              </small>
+            </div>
+            <div
+              v-if="showInfrastructure"
+              class="badge-edit"
+              :class="{ inactive: !form.posi_url }"
+            >
+              <img src="@/assets/img/posi_icon.ico" />
+              <span>POSI</span>
+              <InputText
+                v-model="form.posi_url"
+                type="url"
+                size="small"
+                aria-label="POSI statement URL"
+                placeholder="https://..."
+              />
+              <small
+                class="edit-error"
+                v-if="fieldError('infrastructure.posi_url')"
+              >
+                {{ fieldError("infrastructure.posi_url") }}
+              </small>
+            </div>
+            <label class="badge-edit" :class="{ inactive: !form.is_barcelona }">
+              <Checkbox v-model="form.is_barcelona" binary />
+              <img
+                class="barcelona_icon"
+                src="@/assets/img/barcelona_icon.jpg"
+              />
+              <span>Barcelona Declaration</span>
+            </label>
+            <div
+              v-if="showInfrastructure"
+              class="badge-edit"
+              :class="{ inactive: !form.infra_finder_url }"
+            >
+              <img src="@/assets/img/ioi_icon.ico" />
+              <span>Infra Finder</span>
+              <InputText
+                v-model="form.infra_finder_url"
+                type="url"
+                size="small"
+                aria-label="Infra Finder URL"
+                placeholder="https://..."
+              />
+              <small
+                class="edit-error"
+                v-if="fieldError('infrastructure.infra_finder_url')"
+              >
+                {{ fieldError("infrastructure.infra_finder_url") }}
+              </small>
+            </div>
+          </div>
+          <div v-else-if="hasButtons" class="entity-header__buttons">
             <Button
               v-if="props.entity.is_partner"
               label="TSOSI provider"
@@ -373,6 +801,259 @@ function isDoab(): boolean {
 </template>
 
 <style scoped>
+/* The edit bar floats over the header so that the content doesn't move */
+.entity-meta.editable {
+  position: relative;
+}
+
+.edit-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5em;
+  margin-top: 1em;
+}
+
+.entity-meta.desktop .edit-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  z-index: 3;
+}
+
+.edit-bar__buttons {
+  display: flex;
+  gap: 0.5em;
+}
+
+.edit-bar .p-message {
+  max-width: 24rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Keep the centered title clear from the edit bar */
+.entity-meta.desktop.editable .entity-header__title {
+  padding-inline: 10rem;
+}
+
+.year-input :deep(input) {
+  width: 5.5rem;
+}
+
+.edit-error {
+  color: var(--p-red-600);
+  flex-basis: 100%;
+}
+
+.edit-help {
+  color: var(--p-gray-500);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.edit-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.edit-title h1 {
+  width: 100%;
+}
+
+/* Same style as the other inputs, with the size of the title */
+.title-input {
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  width: 100%;
+  padding: 0 0.3em;
+  border-radius: 8px;
+}
+
+.short-name-input {
+  text-align: center;
+}
+
+.edit-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  column-gap: 2rem;
+  row-gap: 1rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.edit-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.5rem 0.25rem 1rem;
+  border-radius: var(--p-chip-border-radius);
+  background: var(--p-chip-background);
+  color: var(--p-chip-color);
+}
+
+.edit-chip .p-select {
+  min-width: 14rem;
+  text-align: left;
+}
+
+.logo-edit {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  border-radius: 8px;
+
+  /* Always visible border, drawn over the image without changing its size */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px dashed var(--p-primary-color);
+    border-radius: 8px;
+    pointer-events: none;
+  }
+}
+
+.logo-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--p-primary-color);
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+
+.logo-edit:hover .logo-overlay,
+.logo-edit:focus-within .logo-overlay,
+.logo-edit.empty .logo-overlay {
+  opacity: 1;
+}
+
+.icon-edit-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  margin-top: 0.8em;
+  color: var(--p-gray-500);
+}
+
+.icon-edit {
+  width: 48px;
+  height: 48px;
+}
+
+.icon-edit::after {
+  border-width: 1px;
+}
+
+.logo-error {
+  display: block;
+  max-width: v-bind(logoWidth);
+}
+
+.edit-description {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+
+  & textarea {
+    width: 100%;
+  }
+}
+
+.link-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 13rem;
+
+  &.url {
+    max-width: 17rem;
+  }
+}
+
+.link-edit__icon {
+  display: inline-flex;
+  padding: 0.5rem;
+  border: 1px solid var(--p-button-outlined-primary-border-color);
+  border-radius: 50%;
+
+  & img {
+    height: 1.5em;
+    width: 1.5em;
+  }
+}
+
+.link-edit .p-inputtext {
+  width: 8rem;
+}
+
+.link-edit.url .p-inputtext {
+  width: 12rem;
+}
+
+.badge-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border: 2px solid var(--p-button-outlined-primary-border-color);
+  border-radius: var(--p-button-border-radius);
+
+  & img {
+    height: 1.5em;
+    width: 1.5em;
+  }
+
+  & .barcelona_icon {
+    border-radius: 2px;
+    height: 1.4em;
+  }
+
+  &.inactive > img,
+  &.inactive > span {
+    opacity: 0.5;
+  }
+}
+
+label.badge-edit {
+  cursor: pointer;
+}
+
+.entity-header.editing .entity-header__links {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.entity-header.editing .entity-header__links_circles {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .entity-meta > * {
   margin-bottom: min(2em, 4vh);
 }

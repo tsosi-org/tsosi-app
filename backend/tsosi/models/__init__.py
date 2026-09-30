@@ -1,5 +1,6 @@
 from .analytics import Analytic
 from .currency import Currency, CurrencyRate
+from .edit_access import EntityEditAccess, EntityEditLog
 from .entity import (
     Entity,
     EntityName,
