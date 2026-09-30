@@ -1,29 +1,12 @@
-import json
-from pathlib import Path
-
-from django.core.files import File
-from django.db import transaction
 from django.utils import timezone
 
-from tsosi.app_settings import app_settings
 from tsosi.data.pid_registry.ror import ROR_ID_REGEX
-from tsosi.data.pid_registry.tsosi import (
-    REGISTRY_TSOSI,
-    TSOSI_ID_REGEX,
-    generate_tsosi_id,
-)
+from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI, TSOSI_ID_REGEX
 from tsosi.data.pid_registry.wikidata import WIKIDATA_ID_REGEX
-from tsosi.data.preparation.cleaning_utils import clean_cell_value
 
-from .entity import Entity, InfrastructureDetails
-from .identifier import (
-    MATCH_CRITERIA_FROM_INPUT,
-    Identifier,
-    IdentifierEntityMatching,
-)
 from .registry import Registry
 from .source import DataSource
-from .utils import MATCH_SOURCE_MANUAL
+from .utils import MATCH_SOURCE_MANUAL  # noqa: F401 (re-exported)
 
 REGISTRY_ROR = "ror"
 REGISTRY_WIKIDATA = "wikidata"
@@ -81,106 +64,6 @@ def create_pid_registries():
             r.save(force_update=True)
             continue
         r.save()
-
-
-@transaction.atomic
-def update_static_entities() -> None:
-    """
-    Create or update Entity data from local static file. These will overwrite data from others registries.
-    """
-    now = timezone.now()
-    file_path = (
-        Path(__file__).resolve().parent.parent
-        / "data/assets/static_entities.json"
-    )
-    with open(file_path, "r") as f:
-        static_entities = json.load(f)
-    for row in static_entities:
-        for k, v in row.get("entity", {}).items():
-            row["entity"][k] = clean_cell_value(v)
-        for k, v in row.get("infrastructure", {}).items():
-            row["infrastructure"][k] = clean_cell_value(v)
-
-        try:
-            identifier = Identifier.objects.get(**row["pid"])
-        except Identifier.DoesNotExist:
-            identifier = None
-
-        if identifier is None or identifier.entity_id is None:
-            # Create entity first, then identifier
-            entity = Entity.objects.create(
-                **row.get("entity", {}),
-                date_created=now,
-                date_last_updated=now,
-            )
-            if identifier is None:
-                identifier = Identifier.objects.create(
-                    **row["pid"],
-                    entity=entity,
-                    date_created=now,
-                    date_last_updated=now,
-                )
-            else:
-                identifier.entity = entity
-                identifier.save()
-            id_entity_matching = IdentifierEntityMatching(
-                entity=entity,
-                identifier=identifier,
-                date_created=now,
-                date_last_updated=now,
-                match_source=MATCH_SOURCE_MANUAL,
-                match_criteria=MATCH_CRITERIA_FROM_INPUT,
-            )
-            id_entity_matching.save()
-        else:
-            entity = identifier.entity
-            Entity.objects.filter(id=entity.id).update(**row.get("entity", {}))
-            entity.refresh_from_db()
-
-        # Apply logo/icon regardless of whether the entity was created or updated
-        static_logo: str | None = row.get("static_logo")
-        if static_logo:
-            entity.logo = File(
-                open(
-                    str(
-                        app_settings.TSOSI_APP_DATA_DIR / "assets" / static_logo
-                    ),
-                    "rb",
-                )
-            )
-            entity.manual_logo = True
-        else:
-            entity.manual_logo = False
-        static_icon: str | None = row.get("static_icon")
-        if static_icon:
-            entity.icon = File(
-                open(
-                    str(
-                        app_settings.TSOSI_APP_DATA_DIR / "assets" / static_icon
-                    ),
-                    "rb",
-                ),
-                name=static_icon,
-            )
-        else:
-            entity.icon = None
-        entity.save()
-
-        if row.get("infrastructure"):
-            InfrastructureDetails.objects.update_or_create(
-                entity=entity,
-                defaults={**row["infrastructure"], "entity": entity},
-            )
-        ## Create tsosi version if needed
-        if row.get("entity"):
-            tsosi_identifier, _ = Identifier.objects.get_or_create(
-                registry_id=REGISTRY_TSOSI,
-                entity=entity,
-                defaults={"value": generate_tsosi_id()},
-            )
-            row["entity"].pop("logo", None)
-            row["entity"].pop("icon", None)
-            tsosi_identifier.get_or_create_version(row["entity"])
 
 
 # These are the same IDs as the supported infrastructures.
@@ -241,8 +124,7 @@ def create_sources():
 
 def fill_static_data():
     """
-    Fill static data in the database.
+    Fill static data in the database: PID registries and data sources.
     """
     create_pid_registries()
-    update_static_entities()
     create_sources()
