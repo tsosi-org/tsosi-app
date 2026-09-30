@@ -13,7 +13,6 @@
         "vue.volar",
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
-        "vitest.explorer",
         "batisteo.vscode-django",
         "monosans.djlint",
         "charliermarsh.ruff",
