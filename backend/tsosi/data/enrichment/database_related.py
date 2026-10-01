@@ -320,7 +320,9 @@ def entities_with_identifier_data() -> pd.DataFrame:
             "date_logo_fetched",
             "date_wikipedia_fetched",
             "parents",
-            "ror_types",
+            # Aliased to avoid a clash with the `ror_types` column extracted
+            # from ROR records.
+            types=F("ror_types"),
         )
     )
     entities = pd.DataFrame.from_records(entities)
@@ -528,6 +530,8 @@ def update_entity_from_pid_records() -> TaskResult:
     clc_field_priority.pop("parents")
 
     entities_to_update["date_last_updated"] = timezone.now()
+    entities_to_update.rename(columns={"types": "ror_types"}, inplace=True)
+    clc_field_priority["ror_types"] = clc_field_priority.pop("types")
     cols = ["id", *clc_field_priority.keys(), "date_last_updated"]
 
     bulk_update_from_df(Entity, entities_to_update, cols)
