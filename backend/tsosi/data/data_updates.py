@@ -1,7 +1,4 @@
-import re
-
-import pandas as pd
-from tsosi.data.pid_registry.ror import ROR_ID_REGEX
+from tsosi.data.infra_lists import fetch_barcelona_declaration
 from tsosi.models import Entity
 
 from .ingestion.core import ingest
@@ -18,14 +15,7 @@ def refresh_barcelona_data():
     """
     Update the Barcelona Declaration status for all entities in the database.
     """
-    barcelone_declaration_url = "https://barcelona-declaration.org/downloads/barcelonadeclaration_signatories_supporters.csv"
-    df = pd.read_csv(barcelone_declaration_url, encoding="utf-8")
-    ror_ids = [
-        *filter(
-            lambda x: isinstance(x, str) and re.match(ROR_ID_REGEX, x),
-            df["ror"].str.replace("https://ror.org/", "").unique().tolist(),
-        )
-    ]
+    ror_ids = [e.ror_id for e in fetch_barcelona_declaration() if e.ror_id]
     Entity.objects.filter(identifiers__value__in=ror_ids).update(
         is_barcelona=True
     )
