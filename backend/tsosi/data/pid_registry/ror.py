@@ -142,6 +142,7 @@ async def match_ror_record(
         search_term = search_term.replace(i, "\\" + i)
 
     params = {"query": search_term, "filter": "status:inactive"}
+    request_url = f"{ROR_API_ENDPOINT}?{urlencode(params)}"
     try:
         async with session.get(request_url) as response:
             ror_result.http_status = response.status

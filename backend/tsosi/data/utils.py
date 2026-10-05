@@ -1,5 +1,8 @@
 import re
-from typing import Any, Iterable, Sequence
+import unicodedata
+from collections.abc import Iterable, Sequence
+from typing import Any
+from urllib.parse import urlparse
 
 import numpy as np
 import pandas as pd
@@ -35,7 +38,7 @@ def drop_keys(d: dict[str, Any], patterns: Iterable[str]):
     """
     keys_to_pop = []
     compiled_patterns = [re.compile(p) for p in patterns]
-    for key in d.keys():
+    for key in d:
         if any(p.match(key) for p in compiled_patterns):
             keys_to_pop.append(key)
     for key in keys_to_pop:
@@ -68,3 +71,55 @@ def drop_duplicates_keep_index(
         .merge(duplicates, on=group_by, how="left")
     )
     return df
+
+
+
+def normalize_name(name: str | None) -> str:
+    """
+    Normalize an organization name for comparison: lowercase, without
+    accents, parenthesized parts and punctuation.
+    """
+    if not name:
+        return ""
+    name = unicodedata.normalize("NFKD", name)
+    name = "".join(c for c in name if not unicodedata.combining(c))
+    name = re.sub(r"\(.*?\)", " ", name.casefold())
+    name = re.sub(r"[^\w+]+", " ", name)
+    return " ".join(name.split())
+
+
+def url_host(url: str | None) -> str | None:
+    """
+    Return the host of the URL, without the `www.` prefix.
+    The scheme is optional.
+    """
+    if not url:
+        return None
+    url = url.strip()
+    if "://" not in url:
+        url = f"https://{url}"
+    host = urlparse(url).hostname
+    return host.removeprefix("www.") if host else None
+
+SHARED_HOSTS = [
+    "doi.org",
+    "github.com",
+    "gitlab.com",
+    "zenodo.org",
+    "sites.google.com",
+    "wordpress.com",
+    "hypotheses.org",
+    "medium.com",
+]
+
+
+def same_site(url: str | None, website: str | None) -> bool:
+    """
+    Whether the URL belongs to the website domain or one of its subdomains.
+    """
+    host, site = url_host(url), url_host(website)
+    if not host or not site:
+        return False
+    if any(site == h or site.endswith(f".{h}") for h in SHARED_HOSTS):
+        return False
+    return host == site or host.endswith(f".{site}")
