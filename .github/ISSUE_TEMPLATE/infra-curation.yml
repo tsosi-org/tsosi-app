@@ -1,0 +1,28 @@
+name: Infrastructure curation
+description: Request the curation of an infrastructure. A bot comments the issue with the metadata found about it.
+title: "[Infra curation] "
+projects: ["tsosi-org/7"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write the infrastructure name in the title, after `[Infra curation]`.
+        The [infra curation bot](https://github.com/tsosi-org/tsosi-app/blob/main/backend/tsosi/data/infra_curation/README.md) uses the identifier below to find the infrastructure metadata. It updates its comment whenever the issue is edited.
+  - type: input
+    id: asked-by
+    attributes:
+      label: Asked by
+      description: The institution asking for the curation.
+      placeholder: Erasmus University Rotterdam
+    validations:
+      required: true
+  - type: input
+    id: identifier
+    attributes:
+      label: Identifier
+      description: >-
+        The ROR, Wikidata or TSOSI ID or URL of the infrastructure, in order
+        of preference.
+      placeholder: https://ror.org/05amyt365
+    validations:
+      required: true

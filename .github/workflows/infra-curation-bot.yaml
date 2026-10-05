@@ -1,0 +1,60 @@
+name: Infrastructure curation bot
+
+# Comment the "[Infra curation]" issues with the metadata found about the
+# infrastructure. See backend/tsosi/data/infra_curation/README.md
+on:
+  issues:
+    types: [opened, edited, reopened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue to process. Leave empty to process all the open [Infra curation] issues."
+        required: false
+      force:
+        description: "When processing all the issues, also update the ones already commented by the bot."
+        type: boolean
+        default: false
+
+# The latest edit of an issue wins
+concurrency:
+  group: infra-curation-bot-${{ github.event.issue.number || inputs.issue_number || 'all' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  curate:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.issue.title, '[Infra curation]')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      # Same setup as the backend tests, see backend-test.yaml
+      - name: Install Poetry
+        run: pipx install poetry==2.4.2
+      - name: Set up Python with the cached dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: poetry
+          cache-dependency-path: backend/poetry.lock
+      - name: Install Python dependencies
+        run: poetry install --no-root
+      # Without issue number, all the open [Infra curation] issues are processed
+      - name: Comment the issues
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+          FORCE: ${{ inputs.force && '--force' || '' }}
+        run: poetry run python -m tsosi.data.infra_curation $ISSUE_NUMBER $FORCE
