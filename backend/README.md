@@ -143,33 +143,6 @@ is set in your user settings (see [Editor setup](#editor-setup-vscode)).
 All the code is placed in the TSOSI application, cf [README.md](./tsosi/README.md) for a thorough description of our data workflow.
 
 
-## Test docker image
-
-A basic docker image is used to run the tests on GitHub actions.
-Perform the following steps to update image on the Github container registry (used by the workflow).
-
-Ideally, the image should be updated whenever a python dependency is added or modified.
-
-
-- You need a github token to be able to update the packages (including images) cf [GitHub docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry)
-
-- Login against ghcr.io as mentioned in the doc:
-
-```bash
-export GITHUB_REGISTRY_TOKEN=<YOUR_TOKEN>
-echo $GITHUB_REGISTRY_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
-```
-
-- Build the updated image, tag it accordingly and push it to the registry:
-
-```bash
-cd backend
-docker build -t tsosi-app-backend-test-env -f test.Dockerfile .
-docker images # Copy the build image's ID
-docker tag <IMAGE_ID> ghcr.io/tsosi-org/tsosi-app-backend-test-env:latest
-docker push ghcr.io/tsosi-org/tsosi-app-backend-test-env:latest
-```
-
 
 ## postgreSQL commands
 
