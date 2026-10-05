@@ -52,4 +52,4 @@ for path_name in [
     ERROR_LOG_FILE,
 ]:
     path = Path(path_name)
-    path.parent.mkdir(mode=775, parents=True, exist_ok=True)
+    path.parent.mkdir(mode=0o775, parents=True, exist_ok=True)
