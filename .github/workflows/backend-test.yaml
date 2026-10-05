@@ -29,9 +29,6 @@ defaults:
 jobs:
   backend-test:
     runs-on: ubuntu-latest
-    container:
-      # The image should be linked to the repo, so no credentials required
-      image: ghcr.io/tsosi-org/tsosi-app-backend-test-env:latest
     defaults:
       run:
         working-directory: ./backend
@@ -39,14 +36,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # Poetry must be installed before setup-python to cache its virtualenv.
+      # Keep its version in line with the one generating poetry.lock
+      - name: Install Poetry
+        run: pipx install poetry==2.4.2
+      - name: Set up Python with the cached dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: poetry
+          cache-dependency-path: backend/poetry.lock
+      - name: Install Python dependencies
+        run: poetry install --no-root
       - name: Create settings file
         run: cp backend_site/settings_local.test.py backend_site/settings_local.py
-      # Disable virtualenvs so that poetry uses everything in the main
-      # pre-congifureg Python
-      - name: Poetry config
-        run: poetry config virtualenvs.create false
-      - name: Install missing Python dependecies in case the container is out-of-date
-        run: poetry install --no-root
       - name: Run the Python tests
         run: poetry run pytest --cov=tsosi/data --cov-report term
-        
