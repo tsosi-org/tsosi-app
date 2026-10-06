@@ -1,9 +1,5 @@
 from tsosi.data.infra_curation import sources
-from tsosi.data.infra_curation.curation import (
-    Curation,
-    identify,
-    render,
-)
+from tsosi.data.infra_curation.curation import Curation, identify, render
 from tsosi.data.infra_curation.ticket import (
     Ticket,
     is_curation_issue,

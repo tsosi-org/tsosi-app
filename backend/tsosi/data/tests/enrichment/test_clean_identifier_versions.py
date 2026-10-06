@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 import pytest
+
 from tsosi.data.enrichment.database_related import (
     clean_identifier_versions,
     identifier_versions_for_cleaning,

@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from django.conf import settings
 from rest_framework.request import Request
 from rest_framework.throttling import AnonRateThrottle
+
 from tsosi.app_settings import app_settings
 
 

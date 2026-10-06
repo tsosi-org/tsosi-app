@@ -115,13 +115,11 @@ def ingest_entity_identifier_relations(
     )
     duplicates = grouped_by_entity[grouped_by_entity["number"] > 1]
     if not duplicates.empty:
-        raise DataException(
-            f"""
+        raise DataException(f"""
             Error while ingesting entity - identifier relations.
             The following entities have different associated identifiers:
             {duplicates.set_index("entity_id")["pids"].to_dict()}
-            """
-        )
+            """)
 
     logger.info(
         f"Ingesting {len(new_relations)} Identifier <-> Entity relations."
@@ -541,7 +539,7 @@ def update_entity_from_pid_records() -> TaskResult:
 
 
 def update_entities_relationships(
-    entity_id_to_parents_ror_ids: dict[str, list[str]]
+    entity_id_to_parents_ror_ids: dict[str, list[str]],
 ):
     """
     Update the parent relationships of entities based on ROR parents IDs.

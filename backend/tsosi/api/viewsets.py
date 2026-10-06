@@ -198,9 +198,7 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
         else:
             data = request.data
 
-        serializer = EntityEditSerializer(
-            data=data, context={"entity": entity}
-        )
+        serializer = EntityEditSerializer(data=data, context={"entity": entity})
         serializer.is_valid(raise_exception=True)
         apply_entity_edit(
             entity, access, serializer.validated_data, logo=logo, icon=icon

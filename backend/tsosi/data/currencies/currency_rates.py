@@ -14,6 +14,7 @@ from urllib.parse import urlencode
 import pandas as pd
 from django.db import transaction
 from requests.exceptions import RequestException
+
 from tsosi.data.db_utils import (
     DateExtremas,
     bulk_create_from_df,

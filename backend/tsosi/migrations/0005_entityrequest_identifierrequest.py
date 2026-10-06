@@ -52,15 +52,22 @@ class Migration(migrations.Migration):
                 "constraints": [
                     models.CheckConstraint(
                         condition=models.Q(
-                            models.Q(("error", False), ("error_msg__isnull", True)),
-                            models.Q(("error", True), ("error_msg__isnull", False)),
+                            models.Q(
+                                ("error", False), ("error_msg__isnull", True)
+                            ),
+                            models.Q(
+                                ("error", True), ("error_msg__isnull", False)
+                            ),
                             _connector="OR",
                         ),
                         name="tsosi_entityrequest_request_error_msg_when_failed",
                     ),
                     models.CheckConstraint(
                         condition=models.Q(
-                            ("type__in", ["wikipedia_extract", "wikimedia_logo"])
+                            (
+                                "type__in",
+                                ["wikipedia_extract", "wikimedia_logo"],
+                            )
                         ),
                         name="valid_entity_request_type_choice",
                     ),
@@ -98,8 +105,12 @@ class Migration(migrations.Migration):
                 "constraints": [
                     models.CheckConstraint(
                         condition=models.Q(
-                            models.Q(("error", False), ("error_msg__isnull", True)),
-                            models.Q(("error", True), ("error_msg__isnull", False)),
+                            models.Q(
+                                ("error", False), ("error_msg__isnull", True)
+                            ),
+                            models.Q(
+                                ("error", True), ("error_msg__isnull", False)
+                            ),
                             _connector="OR",
                         ),
                         name="tsosi_identifierrequest_request_error_msg_when_failed",

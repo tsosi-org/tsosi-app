@@ -2,6 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 import pandas as pd
 import pytest
+
 from tsosi.data.enrichment.api_related import (
     empty_identifiers,
     fetch_empty_identifier_records,

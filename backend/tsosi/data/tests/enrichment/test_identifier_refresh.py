@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
+
 from tsosi.data.enrichment.api_related import (
     identifiers_for_refresh,
     refresh_identifier_records,

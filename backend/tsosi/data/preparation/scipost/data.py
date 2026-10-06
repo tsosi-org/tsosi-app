@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 import pandas as pd
 import requests
 from django.core.exceptions import ImproperlyConfigured
+
 from tsosi.app_settings import app_settings
 
 from .entity_mapping import ENTITY_MAPPING

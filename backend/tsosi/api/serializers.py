@@ -144,7 +144,7 @@ class BaseTransferSerializer(serializers.ModelSerializer):
     def get_currency(self, obj: Transfer):
         return (
             None if self._amount_hidden(obj) else obj.currency_id
-        )  # type:ignore
+        )  # type: ignore
 
     def get_raw_data(self, obj: Transfer):
         if not self._amount_hidden(obj):

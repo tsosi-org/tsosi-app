@@ -22,9 +22,7 @@ class ApiResult:
     error_msg: str | None = None
 
 
-async def perform_http_func_batch[
-    T, P
-](
+async def perform_http_func_batch[T, P](
     data: Sequence[T],
     func: Callable[[aiohttp.ClientSession, T], P],
     max_conns: int = 30,

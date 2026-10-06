@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+
 import tsosi.data.preparation.raw_data_config as dc
 from tsosi.data.ingestion.core import validate_data_load_source
 from tsosi.models import DataLoadSource

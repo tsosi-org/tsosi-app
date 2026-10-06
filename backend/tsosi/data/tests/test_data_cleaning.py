@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
 import pandas as pd
+
 from tsosi.data.exceptions import DataValidationError
 from tsosi.data.preparation.cleaning_utils import (
     clean_cell_value,
@@ -91,12 +92,10 @@ def test_clean_cell_value():
     test_data = [
         BaseTestData(args=["perfect string"], result="perfect string"),
         BaseTestData(
-            args=[
-                """
+            args=["""
                        so many  
                        spaces   everywhere
-                       """
-            ],
+                       """],
             result="so many spaces everywhere",
         ),
         BaseTestData(args=[None], result=None),
