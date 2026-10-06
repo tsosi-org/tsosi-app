@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass, field
 
 from tsosi.data import infra_lists
-from tsosi.data.infra_lists import Infra, Match
+from tsosi.data.infra_lists import Infra
 from tsosi.data.pid_registry.ror import (
     get_ror_country,
     get_ror_id,
@@ -50,11 +50,9 @@ FIELDS = [
 class Curation:
     ticket: Ticket
     values: dict[str, str] = field(default_factory=dict)
-    sources: dict[str, str] = field(default_factory=dict)
-    notes: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
-    def set(self, key: str, value, source: str):
+    def set(self, key: str, value):
         """
         Set the field value, unless it is empty or the field is already set:
         the calling order defines the priority of the sources.
@@ -62,7 +60,6 @@ class Curation:
         if value is None or value == "" or self.values.get(key):
             return
         self.values[key] = str(value)
-        self.sources[key] = source
 
     def safe_call(self, description: str, func, *args):
         """
@@ -125,8 +122,6 @@ def identify(curation: Curation) -> Records:
         warn_tsosi_homonyms(curation)
         return records
 
-    labels = ", ".join(f"{label} ID `{value}`" for label, value in given_ids)
-    curation.notes.append(f"Identified with the ticket {labels}.")
     if ticket.tsosi_id:
         records.tsosi = curation.safe_call(
             "fetch the TSOSI entity",
@@ -211,70 +206,47 @@ def warn_tsosi_homonyms(curation: Curation):
             )
 
 
-def match_source(list_name: str, match: Match) -> str:
-    """
-    Describe the match of the infrastructure in a list.
-    """
-    entry = match.entry
-    source = f"[{list_name}]({entry.url})" if entry.url else list_name
-    source += f", matched on {match.matched_on}"
-    if entry.names:
-        source += f" ({entry.names[0]})"
-    if match.matched_on == "name":
-        source += " ⚠️"
-    return source
-
-
 def fill_values(curation: Curation, records: Records):
     c = curation
     ror, tsosi = records.ror, records.tsosi
     wd = records.wikidata or {}
     infra_details = (tsosi or {}).get("infrastructure") or {}
-    ror_url = f"{ROR_URL}/{get_ror_id(ror)}" if ror else None
-    wikidata_url = f"{WIKIDATA_URL}/{wd["id"]}" if wd else None
-    tsosi_url = sources.tsosi_entity_url(tsosi) if tsosi else None
-    ror_source = f"[ROR]({ror_url})"
-    wd_source = f"[Wikidata]({wikidata_url})"
-    tsosi_source = f"[TSOSI]({tsosi_url})"
 
-    c.set("Name", ror and get_ror_name(ror), ror_source)
-    c.set("Name", wd.get("name"), wd_source)
-    c.set("Name", tsosi and tsosi["name"], tsosi_source)
-    c.set("Name", c.ticket.name, "Ticket")
+    c.set("Name", ror and get_ror_name(ror))
+    c.set("Name", wd.get("name"))
+    c.set("Name", tsosi and tsosi["name"])
+    c.set("Name", c.ticket.name)
 
     acronyms = [
         n["value"] for n in get_ror_names(ror or {}) if n["type"] == "acronym"
     ]
-    c.set("Short name", tsosi and tsosi.get("short_name"), tsosi_source)
-    c.set("Short name", acronyms[0] if acronyms else None, ror_source)
+    c.set("Short name", tsosi and tsosi.get("short_name"))
+    c.set("Short name", acronyms[0] if acronyms else None)
 
-    c.set("Description", tsosi and tsosi.get("description"), tsosi_source)
+    c.set("Description", tsosi and tsosi.get("description"))
 
-    c.set("Country", ror and get_ror_country(ror), ror_source)
-    c.set("Country", wd.get("country"), wd_source)
-    c.set("Country", tsosi and tsosi.get("country"), tsosi_source)
+    c.set("Country", ror and get_ror_country(ror))
+    c.set("Country", wd.get("country"))
+    c.set("Country", tsosi and tsosi.get("country"))
 
     inception = ror and get_ror_inception_date(ror)
-    c.set("Creation Date", (wd.get("date_inception") or "")[:10], wd_source)
-    c.set("Creation Date", inception and inception.year, ror_source)
-    c.set("Creation Date", tsosi and tsosi.get("date_inception"), tsosi_source)
+    c.set("Creation Date", (wd.get("date_inception") or "")[:10])
+    c.set("Creation Date", inception and inception.year)
+    c.set("Creation Date", tsosi and tsosi.get("date_inception"))
 
-    c.set("Website", ror and get_ror_website(ror), ror_source)
-    c.set("Website", wd.get("website"), wd_source)
-    c.set("Website", tsosi and tsosi.get("website"), tsosi_source)
+    c.set("Website", ror and get_ror_website(ror))
+    c.set("Website", wd.get("website"))
+    c.set("Website", tsosi and tsosi.get("website"))
 
-    c.set("Wikipedia URL", ror and get_ror_wikipedia_url(ror), ror_source)
-    c.set("Wikipedia URL", wd.get("wikipedia_url"), wd_source)
-    c.set("Wikipedia URL", tsosi and tsosi.get("wikipedia_url"), tsosi_source)
+    c.set("Wikipedia URL", ror and get_ror_wikipedia_url(ror))
+    c.set("Wikipedia URL", wd.get("wikipedia_url"))
+    c.set("Wikipedia URL", tsosi and tsosi.get("wikipedia_url"))
 
-    c.set("ROR URL", ror_url, ror_source)
-    c.set("Wikidata URL", wikidata_url, wd_source)
-    c.set("How to support", infra_details.get("support_url"), tsosi_source)
-    c.set("TSOSI URL", tsosi_url, tsosi_source)
-
-    if tsosi:
-        c.set("TSOSI provider", str(tsosi["is_partner"]).lower(), tsosi_source)
-    c.set("TSOSI provider", "false", "Not in TSOSI")
+    c.set("ROR URL", ror and f"{ROR_URL}/{get_ror_id(ror)}")
+    c.set("Wikidata URL", f"{WIKIDATA_URL}/{wd["id"]}" if wd else None)
+    c.set("How to support", infra_details.get("support_url"))
+    c.set("TSOSI URL", tsosi and sources.tsosi_entity_url(tsosi))
+    c.set("TSOSI provider", str(bool(tsosi and tsosi["is_partner"])).lower())
 
     ## Lists of infrastructures
     names = [
@@ -291,35 +263,32 @@ def fill_values(curation: Curation, records: Records):
     )
 
     if tsosi and tsosi.get("is_scoss"):
-        c.set("SCOSS", "true", tsosi_source)
+        c.set("SCOSS", "true")
     scoss = c.safe_call("fetch the SCOSS Family", sources.scoss_family)
     match = infra_lists.find_entry(infra, scoss or [])
     if match:
-        c.set("SCOSS", "true", match_source("SCOSS Family", match))
+        c.set("SCOSS", "true")
     if scoss is not None:
-        c.set("SCOSS", "false", "Not in the SCOSS Family")
+        c.set("SCOSS", "false")
 
-    c.set("POSI", infra_details.get("posi_url"), tsosi_source)
+    c.set("POSI", infra_details.get("posi_url"))
     posi = c.safe_call("fetch the POSI adopters", sources.posi_adopters)
     match = infra_lists.find_entry(infra, posi or [])
     if match:
-        c.set("POSI", match.entry.url, match_source("POSI adopters", match))
-    if posi is not None:
-        c.sources.setdefault("POSI", "Not a POSI adopter")
+        c.set("POSI", match.entry.url)
 
     if tsosi and tsosi.get("is_barcelona"):
-        c.set("Barcelona Declaration", "true", tsosi_source)
+        c.set("Barcelona Declaration", "true")
     barcelona = c.safe_call(
         "fetch the Barcelona Declaration", sources.barcelona_declaration
     )
     match = infra_lists.find_entry(infra, barcelona or [])
     if match:
-        source = match_source("Barcelona Declaration", match)
-        c.set("Barcelona Declaration", "true", source)
+        c.set("Barcelona Declaration", "true")
     if barcelona is not None:
-        c.set("Barcelona Declaration", "false", "Not a signatory")
+        c.set("Barcelona Declaration", "false")
 
-    c.set("Infrafinder", infra_details.get("infra_finder_url"), tsosi_source)
+    c.set("Infrafinder", infra_details.get("infra_finder_url"))
     solutions = c.safe_call(
         "fetch the Infra Finder solutions", sources.infra_finder_solutions
     )
@@ -330,11 +299,7 @@ def fill_values(curation: Curation, records: Records):
         solutions or [],
     )
     if match:
-        c.set(
-            "Infrafinder", match.entry.url, match_source("Infra Finder", match)
-        )
-    if solutions is not None:
-        c.sources.setdefault("Infrafinder", "Not in Infra Finder")
+        c.set("Infrafinder", match.entry.url)
 
 
 def table_cell(value: str) -> str:
@@ -343,24 +308,14 @@ def table_cell(value: str) -> str:
 
 def render(curation: Curation) -> str:
     lines = [BOT_MARKER, "### Infrastructure metadata", ""]
-    if curation.notes:
-        lines += [*(f"- {n}" for n in curation.notes), ""]
-    lines += ["| Key | Value | Source |", "| -- | -- | -- |"]
+    lines += ["| Key | Value |", "| -- | -- |"]
     lines += [
-        f"| {key} | {table_cell(curation.values.get(key, ''))} "
-        f"| {table_cell(curation.sources.get(key, ''))} |"
+        f"| {key} | {table_cell(curation.values.get(key, ''))} |"
         for key in FIELDS
     ]
     if curation.warnings:
         lines += ["", "> [!WARNING]"]
         lines += [f"> - {w}" for w in curation.warnings]
-    lines += [
-        "",
-        f"<sub>Generated by the [infra curation bot]({BOT_DOC_URL}). "
-        "Values matched on name only are marked with ⚠️. "
-        "Edit the ticket identifier to fix the identification: this comment "
-        "is updated when the ticket is edited.</sub>",
-    ]
     return "\n".join(lines) + "\n"
 
 

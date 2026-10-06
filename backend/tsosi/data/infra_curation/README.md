@@ -19,8 +19,7 @@ The bot (`curation.py`):
 2. Completes the ROR, Wikidata and TSOSI records from each other's links.
 3. Looks the infrastructure up in the SCOSS Family, the POSI adopters, the
    Barcelona Declaration signatories and Infra Finder (see
-   `tsosi/data/infra_lists.py`), by ROR ID, website domain or name. Matches
-   on name only are flagged with ⚠️.
+   `tsosi/data/infra_lists.py`), by ROR ID, website domain or name.
 4. Posts the metadata table as a comment, and updates that comment on the
    next runs (it is identified by a hidden marker).
 

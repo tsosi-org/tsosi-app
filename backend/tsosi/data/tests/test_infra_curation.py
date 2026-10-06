@@ -1,5 +1,9 @@
 from tsosi.data.infra_curation import sources
-from tsosi.data.infra_curation.curation import Curation, identify, render
+from tsosi.data.infra_curation.curation import (
+    Curation,
+    identify,
+    render,
+)
 from tsosi.data.infra_curation.ticket import (
     Ticket,
     is_curation_issue,
@@ -175,7 +179,6 @@ def test_identify_without_id(monkeypatch):
     curation = Curation(form_ticket("https://doaj.org"))
     records = identify(curation)
     assert (records.ror, records.wikidata, records.tsosi) == (None, None, None)
-    assert curation.notes == []
     assert len(curation.warnings) == 2
     assert "No ROR, Wikidata or TSOSI ID" in curation.warnings[0]
     assert "https://tsosi.org/entities/x" in curation.warnings[1]
@@ -183,9 +186,9 @@ def test_identify_without_id(monkeypatch):
 
 def test_render():
     curation = Curation(form_ticket("https://doaj.org"))
-    curation.set("Name", "A | B", "Ticket")
-    curation.set("Name", "Ignored", "ROR")
+    curation.set("Name", "A | B")
+    curation.set("Name", "Ignored")
     comment = render(curation)
     assert comment.startswith("<!-- tsosi-infra-curation-bot -->")
-    assert "| Name | A \\| B | Ticket |" in comment
-    assert "| Infrafinder |  |  |" in comment
+    assert "| Name | A \\| B |" in comment
+    assert "| Infrafinder |  |" in comment
