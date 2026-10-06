@@ -26,11 +26,8 @@ services:
   redis:
     image: redis:8
     restart: unless-stopped
-    # Redis does not need to be exposed to the outside. If it changes,
-    # this implies security issue (mainly setting up authentication to access it)
-    # because the docker default listens to any requesting host.  
-    # ports:
-    #   - "6380:6379" # Don't use 6379 bc it might already be used by host
+    ports:
+      - "127.0.0.1:6380:6379" # Don't use 6379 bc it might already be used by host
 
 volumes:
   postgres-data:
