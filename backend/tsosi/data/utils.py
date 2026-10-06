@@ -73,7 +73,6 @@ def drop_duplicates_keep_index(
     return df
 
 
-
 def normalize_name(name: str | None) -> str:
     """
     Normalize an organization name for comparison: lowercase, without
@@ -100,6 +99,7 @@ def url_host(url: str | None) -> str | None:
         url = f"https://{url}"
     host = urlparse(url).hostname
     return host.removeprefix("www.") if host else None
+
 
 SHARED_HOSTS = [
     "doi.org",

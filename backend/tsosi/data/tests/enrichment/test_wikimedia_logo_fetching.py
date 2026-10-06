@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
+
 from tsosi.data.enrichment.api_related import (
     entities_for_logo_update,
     update_logos,

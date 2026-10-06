@@ -14,6 +14,7 @@ from urllib.parse import quote, urlencode
 
 import aiohttp
 import pandas as pd
+
 from tsosi.data.utils import chunk_sequence, clean_null_values
 
 from .common import ApiResult, HTTPStatusError, perform_http_func_batch

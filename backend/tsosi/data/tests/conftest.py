@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from tsosi.models.static_data import create_pid_registries, create_sources
 
 

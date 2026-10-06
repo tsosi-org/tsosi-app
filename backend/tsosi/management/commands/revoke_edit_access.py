@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.utils import timezone
+
 from tsosi.models import Entity, EntityEditAccess
 
 

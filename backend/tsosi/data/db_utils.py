@@ -106,9 +106,9 @@ def get_model_class_pk_field(model_class: Type[models.Model]) -> str:
     return model_class._meta.pk.attname
 
 
-def model_instance_from_row[
-    T: models.Model
-](model_class: Type[T], row: pd.Series, fields: Iterable[str]) -> T:
+def model_instance_from_row[T: models.Model](
+    model_class: Type[T], row: pd.Series, fields: Iterable[str]
+) -> T:
     kwargs = {f: row[f] for f in fields}
     return model_class(**kwargs)
 

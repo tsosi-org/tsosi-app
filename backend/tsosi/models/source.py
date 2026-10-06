@@ -90,9 +90,7 @@ class DataLoadSource(TimestampedModel):
             .distinct()
         )
         msg = f"DataLoadSource {self.id} ({self.data_source_id}):\n"
-        msg += (
-            f"Transfers: {dls_transfers.count() - merged.count()} new (out of {all_transfers.count()})\n"
-        )
+        msg += f"Transfers: {dls_transfers.count() - merged.count()} new (out of {all_transfers.count()})\n"
         msg += f"Emitters: {new_emitters.count()} new (out of {total_emitters.count()}, {total_emitter_countries.count()} countries)\n"
         msg += f"Agents: {new_agents.count() - 1} new (out of {total_agents.count() - 1})\n"
         msg += f"Recipients: {new_recipients.count()} new (out of {total_recipients.count()})"

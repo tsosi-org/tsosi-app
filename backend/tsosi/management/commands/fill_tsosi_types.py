@@ -1,5 +1,6 @@
 import pandas as pd
 from django.core.management.base import BaseCommand, CommandParser
+
 from tsosi.models import Entity
 
 
@@ -34,11 +35,12 @@ def fill_types(filepath: str) -> None:
         count = Entity.objects.filter(identifiers__value__in=ror_ids).update(
             tsosi_type=tsosi_type
         )
-        count += Entity.objects.filter(identifiers__value__in=wikidata_ids).update(
-            tsosi_type=tsosi_type
-        )
+        count += Entity.objects.filter(
+            identifiers__value__in=wikidata_ids
+        ).update(tsosi_type=tsosi_type)
         print(f"Updated {count} entities to tsosi_type '{tsosi_type}'")
     # Update all remaining to "other"
-    count = Entity.objects.filter(tsosi_type__isnull=True).update(tsosi_type="other")
+    count = Entity.objects.filter(tsosi_type__isnull=True).update(
+        tsosi_type="other"
+    )
     print(f"Updated {count} entities to tsosi_type 'other'")
-    

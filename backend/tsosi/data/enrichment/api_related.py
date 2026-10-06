@@ -13,6 +13,7 @@ from django.core.files.images import ImageFile
 from django.db import transaction
 from django.db.models import Count, F, Q, QuerySet
 from django.utils import timezone
+
 from tsosi.app_settings import app_settings
 from tsosi.data.db_utils import bulk_create_from_df, bulk_update_from_df
 from tsosi.data.pid_registry.ror import fetch_ror_records

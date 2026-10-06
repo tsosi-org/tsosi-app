@@ -22,10 +22,6 @@ def grant_edit_access(
     grantee email.
     """
     if days is None:
-        days = (
-            1
-            if entity is None
-            else app_settings.EDIT_ACCESS_DAYS
-        )
+        days = 1 if entity is None else app_settings.EDIT_ACCESS_DAYS
     access, key = EntityEditAccess.create_with_key(entity, email, days)
     return access, entity_edit_url(entity, key)

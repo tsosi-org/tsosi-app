@@ -18,12 +18,12 @@ CUSTOM_COUNTRY_MAPPING = {
     "Russia": "Russian Federation",
     "Turkey": "Türkiye",
 }
-COUNTRY_NAME_MAPPING = {c.name: c for c in pycountry.countries}  # type:ignore
+COUNTRY_NAME_MAPPING = {c.name: c for c in pycountry.countries}  # type: ignore
 COUNTRY_ALPHA_2_MAPPING = {
-    c.alpha_2: c for c in pycountry.countries  # type:ignore
+    c.alpha_2: c for c in pycountry.countries  # type: ignore
 }
 COUNTRY_ALPHA_3_MAPPING = {
-    c.alpha_3: c for c in pycountry.countries  # type:ignore
+    c.alpha_3: c for c in pycountry.countries  # type: ignore
 }
 
 
@@ -146,9 +146,9 @@ def clean_cell_value[T: Any](s: T) -> T | str:
     return re.sub(r"\s+", " ", s).strip()
 
 
-def clean_number_value[
-    T: Any
-](value: T, comma_decimal=False, error=False) -> T | float:
+def clean_number_value[T: Any](
+    value: T, comma_decimal=False, error=False
+) -> T | float:
     """
     Clean a number value by casting in to a number type.
     If `comma_decimal` is true, replace commas by the "." character,

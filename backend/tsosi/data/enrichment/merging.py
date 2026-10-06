@@ -91,14 +91,12 @@ def merge_entities(
     )
     duplicates = grouped_by_entity[grouped_by_entity["number"] > 1]
     if len(duplicates) > 0:
-        raise DataException(
-            f"""
+        raise DataException(f"""
             Error while merging entities.
             The following entities appear several times with different entities
             to be merged with:
             {duplicates.set_index("entity_id")["ids"].to_dict()}
-            """
-        )
+            """)
 
     logger.info(f"Merging {len(to_merge)} entities.")
 

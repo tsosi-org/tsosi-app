@@ -56,7 +56,5 @@ class Migration(migrations.Migration):
             name="hide_amount",
             field=models.BooleanField(default=False),
         ),
-        migrations.RunPython(
-            set_entity_hide_amount, migrations.RunPython.noop
-        ),
+        migrations.RunPython(set_entity_hide_amount, migrations.RunPython.noop),
     ]

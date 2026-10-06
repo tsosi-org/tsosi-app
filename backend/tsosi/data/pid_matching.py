@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import pandas as pd
+
 from tsosi.data.pid_registry.ror import match_ror_records
 from tsosi.models import Entity
 from tsosi.models.static_data import REGISTRY_ROR

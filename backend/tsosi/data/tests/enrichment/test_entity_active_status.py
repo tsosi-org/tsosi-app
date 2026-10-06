@@ -1,4 +1,5 @@
 import pytest
+
 from tsosi.data.enrichment.database_related import update_entity_active_status
 from tsosi.models import Entity
 

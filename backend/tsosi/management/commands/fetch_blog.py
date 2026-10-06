@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
+
 from tsosi.models import empty_db
 
 BLOG_PKG_URL = "https://github.com/tsosi-org/tsosi-org.github.io/releases/latest/download/public.tar"

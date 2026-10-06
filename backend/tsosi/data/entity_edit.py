@@ -115,9 +115,10 @@ def update_identifiers(
     changes = {}
     created_registries = []
     for registry_id, new_value in identifiers.items():
-        if not new_value or entity.identifiers.filter(
-            registry_id=registry_id
-        ).exists():
+        if (
+            not new_value
+            or entity.identifiers.filter(registry_id=registry_id).exists()
+        ):
             continue
         identifier = Identifier.objects.create(
             registry_id=registry_id, value=new_value, entity=entity

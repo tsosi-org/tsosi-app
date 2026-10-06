@@ -1,4 +1,5 @@
 from django.urls import include, path
+
 from tsosi.api.router import OptionalSlashRouter
 from tsosi.api.views import stats_view
 from tsosi.api.viewsets import (

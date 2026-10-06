@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 import pytest
+
 from tsosi.data.enrichment.database_related import update_transfer_status_clc
 
 from ..factories import TransferFactory

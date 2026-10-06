@@ -4,6 +4,7 @@ import time
 import pandas as pd
 import redis
 import redis.exceptions
+
 from tsosi.app_settings import app_settings
 
 logger = logging.getLogger(__name__)

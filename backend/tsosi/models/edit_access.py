@@ -28,8 +28,10 @@ class EntityEditAccessQuerySet(models.QuerySet):
         Return the valid access matching the given raw key.
         Raise `EntityEditAccess.DoesNotExist` if there's none.
         """
-        return self.valid().select_related("entity").get(
-            key_hash=hash_access_key(key)
+        return (
+            self.valid()
+            .select_related("entity")
+            .get(key_hash=hash_access_key(key))
         )
 
 

@@ -6,6 +6,7 @@ from datetime import UTC, date, datetime
 from typing import Any, ClassVar, Type
 
 import pandas as pd
+
 from tsosi.app_settings import app_settings
 from tsosi.data.currencies.currency_rates import check_currency
 from tsosi.data.utils import clean_null_values
@@ -703,7 +704,7 @@ class RawDataConfig:
         # Compute the `original_id` field for custom tracking.
         # The ulterior generated transfer ID is a random UUID..
         origin = re.sub(r"\s+", "_", self.origin.strip())
-        df.loc[:, FieldOriginalId.NAME] = (  # type:ignore
+        df.loc[:, FieldOriginalId.NAME] = (  # type: ignore
             f"{origin}_" + df.index.astype(str)
         )
 

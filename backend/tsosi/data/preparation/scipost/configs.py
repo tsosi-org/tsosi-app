@@ -1,6 +1,7 @@
 from datetime import date
 
 import pandas as pd
+
 from tsosi.data.preparation import raw_data_config as rdc
 from tsosi.models.date import DATE_PRECISION_DAY
 

@@ -7,6 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from PIL import Image
 from rest_framework.test import APIClient
+
 from tsosi.data.edit_access import grant_edit_access
 from tsosi.data.entity_edit import sanitize_description
 from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
@@ -75,13 +76,9 @@ def test_edit_access_check(registries):
     assert client_with_key(key).get(edit_url(entity)).status_code == 200
     assert APIClient().get(edit_url(entity)).status_code == 403
     assert client_with_key("wrong").get(edit_url(entity)).status_code == 403
-    assert (
-        client_with_key(expired_key).get(edit_url(entity)).status_code == 403
-    )
+    assert client_with_key(expired_key).get(edit_url(entity)).status_code == 403
     # The key is only valid for its entity
-    assert (
-        client_with_key(key).get(edit_url(other_entity)).status_code == 403
-    )
+    assert client_with_key(key).get(edit_url(other_entity)).status_code == 403
     # An admin key is valid for all entities
     _, admin_key = EntityEditAccess.create_with_key(None, "c@example.org", 1)
     for e in [entity, other_entity]:
