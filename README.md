@@ -89,6 +89,34 @@ cd backend
 poetry run celery -A backend_site worker --concurrency=1 --loglevel=INFO
 ```
 
+## Local dev on the host, with services in docker
+
+Alternative to the DevContainer: run Python & Node directly on your machine and only use docker for PostgreSQL and Redis.
+
+Requirements: docker, Python 3.12, [Poetry](https://python-poetry.org/) and Node 24 installed on your machine.
+
+1. Create the `postgres.env` file (see [above](#setup-env--settings-files)), then start the services:
+    ```bash
+    docker compose -f .devcontainer/docker-compose.yml up -d db redis
+    ```
+    PostgreSQL is published on host port `5433` and Redis on `127.0.0.1:6380`.
+
+2. Create your Django settings file and point it to the host-published services:
+    ```bash
+    cp backend/backend_site/settings_local.dev.py backend/backend_site/settings_local.py
+    ```
+    In `settings_local.py`, set `DATABASES["default"]` `HOST`/`PORT` to `"localhost"`/`5433` and `TSOSI_REDIS_HOST`/`TSOSI_REDIS_PORT` to `"localhost"`/`6380`.
+
+3. Run the repository [init script](./init.sh) (installs deps, migrates the database, fills static data):
+    ```bash
+    bash init.sh
+    ```
+
+Then, run the [dev script](./dev.sh): it starts the docker services, then the backend & frontend dev servers and the celery worker.
+```bash
+./dev.sh
+```
+
 ## Local dev with manual installation (NOT RECOMMENDED)
 
 Follow the instructions in the dedicated [frontend](./frontend/README.md) and [backend](./backend/README.md) **README.md** files. 
