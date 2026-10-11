@@ -29,7 +29,7 @@ shuffleArray(partners)
             However, keep in mind that TSOSI is not exhaustive.
           </li>
           <li>
-            TSOSI's data partly results from manual work such as attribution
+            TSOSI's data partly results from manual work such as attributing
             identifiers to research organizations. Data can therefore contain
             errors. If you think you have found one, please
             <a @click="openContactModal">contact us</a>.
@@ -59,22 +59,26 @@ shuffleArray(partners)
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom id="data-source" title="Where the data comes from?">
+      <StaticSectionAtom
+        id="data-source"
+        title="Where does the data come from?"
+      >
         <p>
-          TSOSI data are not scrapped from the web, but sent by research
-          organizations and curated mostly manually by TSOSI operational team.
-          Organization that share data with TSOSI are named TSOSI data provider.
-          You can easily find them in the
+          TSOSI data are not scraped from the web, but sent by research
+          organizations and curated mostly manually by the TSOSI operational
+          team. Organizations that share data with TSOSI are called TSOSI data
+          providers. You can easily find them on the
           <RouterLink to="/explore">explore page</RouterLink>. Data can come
-          from open infrastructures, universities, libraries consortia, research
-          funders and other type of organizations. A same financial support can
-          therefore be described by more than one data provider. To avoid a
-          support to count twice, a de-duplication process is included in the
+          from open infrastructures, universities, library consortia, research
+          funders and other types of organizations. The same financial support
+          can therefore be described by more than one data provider. To avoid
+          counting a support twice, a de-duplication process is included in the
           curation process. The provenance of the data (data source) is
           explained in the detail view. See for example
           <span v-for="partner of partners" :key="partner.id">
-            <RouterLink :to="'/entities/' + partner.id"
-              >{{ partner?.short_name || partner.name }} </RouterLink
+            <RouterLink :to="'/entities/' + partner.id">{{
+              partner?.short_name || partner.name
+            }}</RouterLink
             >{{ partner !== partners[partners.length - 1] ? ", " : "." }}
           </span>
         </p>
@@ -116,7 +120,7 @@ shuffleArray(partners)
 
       <StaticSectionAtom id="join-tsosi" title="How can I join TSOSI?">
         <p>
-          We are eager to welcome your institution or infrastructure within
+          We are eager to welcome your institution or infrastructure to
           TSOSI.org. We believe that the more data we have about financial
           support for open infrastructures, the more supporters we will attract.
           Please see our
@@ -153,7 +157,7 @@ shuffleArray(partners)
           2021. This is indicated on the TSOSI platform, in the middle of their
           webpage. Secondly, and only for the DOAJ, note that for 2021, TSOSI
           did not have the breakdown data, but only intermediary entities, such
-          as library consortium. These two factors can explain why you don't see
+          as library consortia. These two factors can explain why you don't see
           your institution's contribution.
         </p>
       </StaticSectionAtom>
@@ -166,7 +170,7 @@ shuffleArray(partners)
       >
         <p>
           Open Science combines various movements and practices aiming to make
-          multilingual science knowledge openly available. Open science
+          multilingual scientific knowledge openly available. Open science
           infrastructure encompasses software, standards, protocols, services,
           platforms, and organizations that allow scholarly stakeholders to
           practise, develop, think about, and observe open science.
@@ -179,9 +183,9 @@ shuffleArray(partners)
       >
         <p>
           No. In its launch year, TSOSI has worked with infrastructures more
-          focused on publications, but all infrastructures, like the one
-          dedicated to software, data, monitoring, or identifiers, are, of
-          course, in the scope of TSOSI.
+          focused on publications, but all infrastructures, like those dedicated
+          to software, data, monitoring, or identifiers, are, of course, in the
+          scope of TSOSI.
         </p>
       </StaticSectionAtom>
 
@@ -228,17 +232,17 @@ shuffleArray(partners)
 
       <StaticSectionAtom
         id="data-update-frequency"
-        title="With which frequency is the data updated?"
+        title="How often is the data updated?"
       >
         <p>
           It depends on the source of data. The lowest frequency at which the
           data are updated is once a year; the maximum frequency could be once a
           day. For example, the SciPost financial data are updated once a week
-          thanks to its software, which includes an API, see the
+          thanks to its software, which includes an API (see the
           <ExternalLinkAtom
             :label="'subsidies page on scipost.org'"
             :href="'https://scipost.org/finances/subsidies/'"
-          />.
+          />).
         </p>
       </StaticSectionAtom>
 
@@ -252,7 +256,7 @@ shuffleArray(partners)
           />, which allows you to get the data. Moreover, we have an open API:
           see how to use it in this
           <ExternalLinkAtom
-            :label="'API use-case'"
+            :label="'API use cases'"
             :href="'https://github.com/tsosi-org/api-use-cases'"
           />
           repository.
@@ -264,13 +268,13 @@ shuffleArray(partners)
         title="What license is applied to the data?"
       >
         <p>
-          Re-use of TSOSI's data is highly encouraged! Data is shared under a
-          CC-BY-SA license. Just cite tsosi.org and apply the same license — see
+          Re-use of TSOSI's data is highly encouraged! Data is shared under a CC
+          BY-SA license. Just cite tsosi.org and apply the same license — see
           our
           <RouterLink :label="''" :to="'/pages/legal-notice'"
             >Legal notice page</RouterLink
           >
-          fore more details. We'd love to hear about how you're using the data,
+          for more details. We'd love to hear about how you're using the data,
           so feel free to
           <a @click="openContactModal">let us know</a>!
         </p>
@@ -309,7 +313,7 @@ shuffleArray(partners)
         <p>
           While using the app, you may notice that some amounts are visible
           while others are hidden. This is because each infrastructure that
-          shares data with TSOSI can choose whether to display or not the
+          shares data with TSOSI can choose whether or not to display the
           amounts. For example, on the DOAJ page, amounts are hidden by default,
           but when a university becomes a TSOSI data provider, the amount of its
           support to DOAJ is shown.
@@ -318,7 +322,7 @@ shuffleArray(partners)
 
       <StaticSectionAtom
         id="currency-change"
-        title="How is the currency change managed?"
+        title="How is the currency conversion managed?"
       >
         <p>
           We provide converted amounts for the currencies involved in one of our
@@ -333,7 +337,7 @@ shuffleArray(partners)
         <ul>
           <li>Daily accuracy: exact daily rate</li>
           <li>
-            Monthly or Yearly accuracy: average rate over the given month or
+            Monthly or yearly accuracy: average rate over the given month or
             year
           </li>
         </ul>
@@ -364,11 +368,11 @@ shuffleArray(partners)
           TSOSI relies on the
           <ExternalLinkAtom href="https://ror.org/"
             >ROR registry</ExternalLinkAtom
-          >. If the organization has a ROR identifier, it benefit from its
+          >. If the organization has a ROR identifier, it benefits from its
           parent-child relations (see the
           <ExternalLinkAtom
             href="https://ror.org/about/faqs/#does-ror-support-relationships-and-hierarchies"
-            >ROR FAQ on relationsphips</ExternalLinkAtom
+            >ROR FAQ on relationships</ExternalLinkAtom
           >). This means that when support is provided by a child entity, it is
           also displayed under all the parent organizations. For example,
           support from the
@@ -408,7 +412,7 @@ shuffleArray(partners)
 
           <li>
             In the new field, copy-paste the title of the file you have uploaded
-            inside Wikimedia Commons, <i>e.g.</i>
+            to Wikimedia Commons, <i>e.g.</i>
             <CodeBlockAtom
               :content="'File:Logo_Université_Grenoble-Alpes_(2020).jpg'"
               :inline="true"
@@ -436,7 +440,7 @@ shuffleArray(partners)
 
           <li>
             At the very bottom of the Wikidata record of your organization, add
-            the latter Wikipedia entry inside the Wikipedia box, <i>e.g.</i>
+            this Wikipedia entry in the Wikipedia box, <i>e.g.</i>
             <ExternalLinkAtom
               :label="'https://www.wikidata.org/wiki/Q945876'"
               :href="'https://www.wikidata.org/wiki/Q945876'"
