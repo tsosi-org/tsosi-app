@@ -30,7 +30,7 @@ def get_config(
             rdc.FieldRecipientName(constant="Episciences"),
             rdc.FieldRecipientWikidataId(constant="Q23688650"),
             rdc.FieldAmount(field="amount"),
-            rdc.FieldHideAmount(constant=True),
+            rdc.FieldHideAmount(constant=False),
             rdc.FieldCurrency(field="currency"),
             rdc.FieldDatePaymentRecipient(field="date_received"),
             rdc.FieldDatePaymentEmitter(field="date_sent"),

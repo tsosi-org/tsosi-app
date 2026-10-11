@@ -52,6 +52,25 @@ def main() -> None:
         r"^https://ror.org/", "", regex=True
     )
 
+    # Couperin supports are ingested from Couperin's own data
+    df = df[df["intermediary/ror_id"] != "035c9qf67"]
+
+    # Only keep supports actually received: at least one date, none in the
+    # future
+    date_cols = ["date_invoice", "date_sent", "date_received"]
+    dates = df[date_cols].apply(pd.to_datetime)
+    df = df[
+        dates.notna().any(axis=1) & (dates.max(axis=1) <= pd.Timestamp.today())
+    ]
+
+    # ETH Zürich paid its 3 years at once, while CSAL declares 3 yearly
+    # transfers: split it the same way so that they merge
+    eth = df["emitter/ror_id"] == "05a28rw58"
+    eth_rows = pd.concat([df[eth]] * 3, ignore_index=True)
+    eth_rows["amount"] = (eth_rows["amount"].astype(float) / 3).astype(str)
+    eth_rows["date_received"] = ["2025", "2026", "2027"]
+    df = pd.concat([df[~eth], eth_rows], ignore_index=True)
+
     mask = df["emitter/ror_id"].isna() & df["emitter/wikidata_id"].isna()
     df[mask]["emitter/name"].unique()
 
