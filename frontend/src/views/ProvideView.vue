@@ -24,6 +24,8 @@ const query = ["name", "ror_url"]
   .join("&")
 
 const gristFormUrl = `https://tsosi.getgrist.com/forms/3nGNWU5Pisa2byXGKbVdRq/32?style=singlePage&themeSyncWithOs=false&${query}`
+
+const calendarUrl = "https://cal.com/blefeuvr/tsosi"
 </script>
 
 <template>
