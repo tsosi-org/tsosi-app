@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { devMode } from "@/singletons/devMode"
 import Drawer from "primevue/drawer"
 import { ref, watch } from "vue"
+import { RouterLink, useRouter } from "vue-router"
 
+import { devMode } from "@/singletons/devMode"
 import Button from "@/components/atoms/ButtonAtom.vue"
 import SearchBar from "@/components/SearchBar.vue"
 import { useContactModal } from "@/composables/useContactModal"
 import { isDesktop } from "@/composables/useMediaQuery"
 import { bigHeader } from "@/singletons/fixedHeaderStore"
+
 const { openContactModal } = useContactModal()
 
 const navMenuVisible = ref(false)
 const searchMenuVisible = ref(false)
 
-import { RouterLink, useRouter } from "vue-router"
 const router = useRouter()
 watch(router.currentRoute, closeDrawers)
 
@@ -336,9 +337,10 @@ header.home {
       line-height: 1;
       font-size: 20px;
       display: block;
+      white-space: nowrap;
       text-decoration: none;
       color: var(--p-neutral-50);
-      padding: 15px;
+      padding: 15px 12px;
     }
   }
 }

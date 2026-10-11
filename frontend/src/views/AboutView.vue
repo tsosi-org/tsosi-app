@@ -30,9 +30,8 @@ const { openContactModal } = useContactModal()
         organizations financially support which open infrastructures. By making
         this visible, TSOSI helps turn support for open infrastructure into
         common practice. Institutions, infrastructures, consortia, and others
-        <RouterLink to="/pages/faq#join-tsosi"
-          >are really welcome to join TSOSI</RouterLink
-        >: let’s make support for open infrastructure the norm!
+        are really welcome to join TSOSI: let’s make support for open
+        infrastructure the norm!
       </p>
 
       <StaticSectionAtom id="how-it-started" title="How it started">

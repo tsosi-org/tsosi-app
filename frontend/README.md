@@ -42,7 +42,7 @@ The different routes are defined [here](./src/router/index.ts):
 - `/explore` - [Entity list](./src/views/EntityListView.vue) - Browse and filter all entities (`/entities` redirects here).
 - `/entities/:id` - [Entity pages](./src/views/EntityView.vue) - The core of the application, individual entity page showing metadata and listing transfers.
 - `/transfers/:id` - [Transfer pages](./src/views/TransferView.vue) - Individual transfer page.
-- `/provide` - [Provide data](./src/views/ProvideView.vue) - Embeds a Grist form for data providers, prefilled with the `name` and `ror_url` query parameters.
+- `/new-provider` - [Become a data provider](./src/views/ProvideView.vue) - Explains how to become a data provider and embeds a Grist form, prefilled with the `name` and `ror_url` query parameters.
 - `/pages/*` - Static pages: [FAQ](./src/views/FaqView.vue), [About](./src/views/AboutView.vue), [Legal notice](./src/views/LegalNotices.vue), [Privacy policy](./src/views/PrivacyPolicyView.vue), [Newsletter](./src/views/NewsView.vue) and [Blog](./src/views/BlogView.vue) (list and individual posts).
 - Any other path - [Not found page](./src/views/NotFoundView.vue).
 

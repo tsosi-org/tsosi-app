@@ -98,10 +98,10 @@ const router = createRouter({
       component: NotFoundView,
     },
     {
-      path: "/provide",
-      name: "provide",
+      path: "/new-provider",
+      name: "new-provider",
       component: ProvideView,
-    }
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (to.hash === "#contact") {
