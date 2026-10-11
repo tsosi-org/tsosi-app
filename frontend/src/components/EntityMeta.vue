@@ -779,7 +779,7 @@ function isDoab(): boolean {
             <li v-if="!props.entity.is_partner">
               {{ props.entity.name }} is
               <strong>not yet a TSOSI data provider</strong>, the data below
-              might not cover all of their supports
+              might not cover all of their supports.
             </li>
             <li v-if="isDoaj() || isDoab()">
               DOAJ and DOAB data only start from 2021:
