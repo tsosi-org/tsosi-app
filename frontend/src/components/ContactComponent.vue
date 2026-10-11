@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import ObfuscatedMail from "@/components/atoms/ObfuscatedMail.vue"
-import { useContactModal } from "@/composables/useContactModal"
-
 import Dialog from "primevue/dialog"
 import { RouterLink } from "vue-router"
+
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
+
+import { useContactModal } from "@/composables/useContactModal"
+import ObfuscatedMail from "@/components/atoms/ObfuscatedMail.vue"
 
 const { isContactModalOpen, closeContactModal } = useContactModal()
 </script>
@@ -28,6 +29,15 @@ const { isContactModalOpen, closeContactModal } = useContactModal()
         <div class="contact-section">
           <p class="contact-label">We look forward to hearing from you at</p>
           <ObfuscatedMail mail="pbagnpg@gfbfv.bet" class="contact-email" />
+          <p class="contact-label">
+            <font-awesome-icon :icon="['fas', 'calendar']" class="link-icon" />
+            Book
+            <ExternalLinkAtom
+              :label="'a call with us'"
+              :href="'https://cal.com/blefeuvr/tsosi'"
+              class="contact-link"
+            />
+          </p>
         </div>
 
         <hr class="divider" />
