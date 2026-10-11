@@ -122,7 +122,7 @@ function loadChips() {
     }
     const legalEntityDesc =
       props.entity.is_recipient &&
-      (wikidataIdentifier ||
+      (wikidataIdentifier.value ||
         props.entity.infrastructure?.legal_entity_wikidata_id)
         ? `The legal entity is located in ${getCountryLabel(props.entity.country)}, see<a href=\"https://www.wikidata.org/wiki/${wikidataIdentifier.value || props.entity.infrastructure?.legal_entity_wikidata_id}\" rel=\"noopener noreferrer\" target=\"_blank\" class=\"wikidata-inline-link\">wikidata</a>`
         : null
