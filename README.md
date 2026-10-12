@@ -117,6 +117,17 @@ Then, run the [dev script](./dev.sh): it starts the docker services, then the ba
 ./dev.sh
 ```
 
+## Copy the production database locally
+
+The [pull_prod_db script](./scripts/pull_prod_db.sh) replaces the local database (the `db` docker service, used by both setups above) with a copy of the production one. Run it from the host, it needs docker and an SSH access to the prod server:
+```bash
+scripts/pull_prod_db.sh            # database only
+scripts/pull_prod_db.sh --media    # also copy the prod media files into backend/_no_git/media/
+```
+- It connects to the `tsosi` SSH host: add a `Host tsosi` entry with `HostName tsosi.u-ga.fr` and your user in `~/.ssh/config`, or set `PROD_SSH`. The other defaults match the prod settings, see the script header to override them.
+- It asks for the prod database password, dumps the prod database on the server, backs up the local database, then restores the prod dump in a single transaction (on error, the local database is left untouched).
+- Dumps are kept in `backend/_no_git/db_dumps/`.
+
 ## Local dev with manual installation (NOT RECOMMENDED)
 
 Follow the instructions in the dedicated [frontend](./frontend/README.md) and [backend](./backend/README.md) **README.md** files. 
