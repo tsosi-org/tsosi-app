@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue";
 import { useContactModal } from "@/composables/useContactModal";
-import { changeMetaTitle } from "@/utils/dom-utils";
+import { changeMetaTitle, setNoIndex } from "@/utils/seo";
 import { useRoute } from "vue-router";
 const { openContactModal } = useContactModal()
 
 const route = useRoute()
 
 changeMetaTitle("404 Not found")
+setNoIndex(true)
 const query = route.query
 const queriedUrl = query.target || route.path
 const params = {

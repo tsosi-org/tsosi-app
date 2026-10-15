@@ -459,7 +459,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
               "
               v-tooltip.bottom="{
                 value:
-                  'This support comes from a child entity, based on the ROR hierarchy. <a href=\'/pages/faq/#entities-hierarchies\'>See our FAQ</a>.',
+                  'This support comes from a child entity, based on the ROR hierarchy. <a href=\'/pages/faq#entities-hierarchies\'>See our FAQ</a>.',
                 escape: false,
                 autoHide: false,
                 pt: { root: { class: 'left-aligned-tooltip' } },
@@ -565,7 +565,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
     <div>
       <span>
         Data shared under a
-        <RouterLink to="/pages/legal-notice/">CC-BY-SA license</RouterLink>.
+        <RouterLink to="/pages/legal-notice">CC-BY-SA license</RouterLink>.
       </span>
     </div>
   </div>

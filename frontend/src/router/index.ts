@@ -1,20 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router"
 
 import { extractEditKey } from "@/singletons/edit-access"
-
-import AboutView from "@/views/AboutView.vue"
-import BlogView from "@/views/BlogView.vue"
-// import DevModeView from "@/views/DevModeView.vue"
-import EntityListView from "@/views/EntityListView.vue"
-import EntityView from "@/views/EntityView.vue"
-import FaqView from "@/views/FaqView.vue"
-import HomeView from "@/views/HomeView.vue"
-import LegalNotices from "@/views/LegalNotices.vue"
-import NewsView from "@/views/NewsView.vue"
-import NotFoundView from "@/views/NotFoundView.vue"
-import PrivacyPolicyView from "@/views/PrivacyPolicyView.vue"
-import ProvideView from "@/views/ProvideView.vue"
-import TransferView from "@/views/TransferView.vue"
+import { applyRouteMeta, removeTrailingSlash } from "@/utils/seo"
 
 
 const router = createRouter({
@@ -23,12 +10,17 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: HomeView,
+      component: () => import("@/views/HomeView.vue"),
     },
     {
       path: "/explore",
       name: "explore",
-      component: EntityListView,
+      component: () => import("@/views/EntityListView.vue"),
+      meta: {
+        title: "Explore the funding network",
+        description:
+          "Browse the open science infrastructures in TSOSI and the institutions, consortia and funders that support them.",
+      },
     },
     {
       path: "/entities",
@@ -37,42 +29,71 @@ const router = createRouter({
     {
       path: "/entities/:id",
       name: "entity",
-      component: EntityView,
+      component: () => import("@/views/EntityView.vue"),
     },
     {
       path: "/transfers/:id",
       name: "transfer",
-      component: TransferView,
+      component: () => import("@/views/TransferView.vue"),
+      meta: {
+        title: "Transfer details",
+        description:
+          "Details and data source of a financial support to an open science infrastructure.",
+      },
     },
     {
       path: "/pages/faq",
       name: "faq",
-      component: FaqView,
+      component: () => import("@/views/FaqView.vue"),
+      meta: {
+        description:
+          "Answers to common questions about TSOSI: where the data comes from, who runs the project and how to join as a data provider.",
+      },
     },
     {
       path: "/pages/about",
       name: "about",
-      component: AboutView,
+      component: () => import("@/views/AboutView.vue"),
+      meta: {
+        description:
+          "How TSOSI started, its approach, the team behind it and the related initiatives that make support for open infrastructure visible.",
+      },
     },
     {
       path: "/pages/legal-notice",
       name: "legal-notice",
-      component: LegalNotices,
+      component: () => import("@/views/LegalNotices.vue"),
+      meta: {
+        description:
+          "Legal notice of the TSOSI website: data and content policy, copyright, publication director and hosting.",
+      },
     },
     {
       path: "/pages/newsletter",
       name: "newsletter-list",
-      component: NewsView,
+      component: () => import("@/views/NewsView.vue"),
+      meta: {
+        description:
+          "The TSOSI newsletters: news about the project, its data providers and the open science infrastructures it covers.",
+      },
     },
     {
       path: "/pages/newsletter/:id",
       name: "newsletter",
-      component: NewsView,
+      component: () => import("@/views/NewsView.vue"),
+      meta: {
+        description:
+          "The TSOSI newsletters: news about the project, its data providers and the open science infrastructures it covers.",
+      },
     },
     {
       path: "/pages/blog",
       name: "blog-list",
-      component: BlogView,
+      component: () => import("@/views/BlogView.vue"),
+      meta: {
+        description:
+          "Posts from the TSOSI team about the project, its data and the funding of open science infrastructure.",
+      },
     },
     {
       path: "/pages/blog/:id",
@@ -84,23 +105,31 @@ const router = createRouter({
     {
       path: "/pages/blog/:id/",
       name: "blog",
-      component: BlogView,
+      component: () => import("@/views/BlogView.vue"),
       strict: true,
     },
     {
       path: "/pages/privacy-policy",
       name: "privacy-policy",
-      component: PrivacyPolicyView,
+      component: () => import("@/views/PrivacyPolicyView.vue"),
+      meta: {
+        description:
+          "How the TSOSI website collects and handles personal data, and your rights over it.",
+      },
     },
     {
       path: "/:pathMatch(.*)*",
       name: "NotFound",
-      component: NotFoundView,
+      component: () => import("@/views/NotFoundView.vue"),
     },
     {
       path: "/new-provider",
       name: "new-provider",
-      component: ProvideView,
+      component: () => import("@/views/ProvideView.vue"),
+      meta: {
+        description:
+          "Become a TSOSI data provider and make your financial support to open infrastructures visible.",
+      },
     },
   ],
   scrollBehavior(to, from, savedPosition) {
@@ -131,5 +160,35 @@ const router = createRouter({
 })
 
 router.beforeEach(extractEditKey)
+router.beforeEach(removeTrailingSlash)
+router.afterEach(applyRouteMeta)
+
+// After a deploy, the chunks of the previous build no longer exist: load the
+// target page in full to get the new ones. The session flag prevents a reload
+// loop if the chunk is missing from the new build too.
+const chunkErrorRegex =
+  /dynamically imported module|Importing a module script failed/
+const chunkReloadKey = "chunk-reload"
+router.onError((error, to) => {
+  if (!(error instanceof TypeError) || !chunkErrorRegex.test(error.message)) {
+    return
+  }
+  try {
+    if (sessionStorage.getItem(chunkReloadKey) === to.fullPath) {
+      return
+    }
+    sessionStorage.setItem(chunkReloadKey, to.fullPath)
+  } catch {
+    // Without storage, reload anyway
+  }
+  window.location.assign(to.fullPath)
+})
+router.afterEach(() => {
+  try {
+    sessionStorage.removeItem(chunkReloadKey)
+  } catch {
+    // Storage unavailable
+  }
+})
 
 export default router

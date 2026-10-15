@@ -5,14 +5,9 @@ import { RouterLink, useRoute } from "vue-router"
 
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
-import { changeMetaDescripion } from "@/utils/dom-utils"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 
 const route = useRoute()
-
-changeMetaDescripion(
-  "Become a TSOSI data provider and make your financial support to open infrastructures visible.",
-)
 
 // Pre-fill the Grist form with the organization name and ROR URL when given
 // as query parameters, e.g. from an entity page.

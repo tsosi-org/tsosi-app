@@ -14,18 +14,7 @@ import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery"
 import { setBigHeader, togglePageNoHeader } from "@/singletons/fixedHeaderStore"
 import { getEmitters, getPartners, type Entity } from "@/singletons/ref-data"
 import { shuffleArray } from "@/utils/data-utils"
-import {
-  changeMetaDescripion,
-  changeMetaTitle,
-  changeMetaUrl,
-} from "@/utils/dom-utils"
 import { getEntityUrl } from "@/utils/url-utils"
-
-changeMetaUrl(true)
-changeMetaDescripion(
-  "A data-driven platform to broaden funding for open science infrastructure..",
-)
-changeMetaTitle("Transparency to Sustain Open Science Infrastructure")
 
 const partners = getPartners() as Entity[]
 shuffleArray(partners)

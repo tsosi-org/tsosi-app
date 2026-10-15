@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router"
 
 import type { Post } from "@/components/BlogComponent.vue"
 import BlogComponentVue from "@/components/BlogComponent.vue"
+import { changeMetaDescription, changeMetaTitle } from "@/utils/seo"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 
 
@@ -49,22 +50,39 @@ const loading = ref<boolean>(true)
 const router = useRouter()
 const route = useRoute()
 
+/**
+ * Plain-text excerpt of an HTML content, to use as the meta description.
+ */
+function htmlExcerpt(html: string, maxLength = 160): string {
+  const text = (
+    new DOMParser().parseFromString(html, "text/html").body.textContent || ""
+  )
+    .replace(/\s+/g, " ")
+    .trim()
+  if (text.length <= maxLength) {
+    return text
+  }
+  return text.slice(0, text.lastIndexOf(" ", maxLength - 1)) + "…"
+}
+
 onBeforeMount(async () => {
   // Fetch posts
   // Retrieve specific post if id param is present
   if (route.params.id) {
     const res = await fetch("/pages/blog/" + route.params.id + "/index.json")
     if (!res.ok) {
-      router.push("/pages/blog/")
+      router.replace("/pages/blog")
       return
     }
     const data: BlogApiDetail = await res.json().catch(() => {
       return undefined
     })
     if (!data) {
-      router.push("/pages/blog/")
+      router.replace("/pages/blog")
       return
     }
+    changeMetaTitle(data.title)
+    changeMetaDescription(htmlExcerpt(data.content))
     post.value = {
       id: route.params.id as string,
       title: data.title,
