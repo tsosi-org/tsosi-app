@@ -88,6 +88,17 @@ def main() -> None:
     df.loc[mask, "intermediary/name"]
     df = df[~mask]
 
+    # Drop transfers already declared by the infrastructure with the amount
+    # excluding VAT (Göttingen amounts include the 19% German VAT)
+    duplicates = [
+        ("Open Library of Humanities", "3061.87"),
+        ("SciPost", "3570"),
+    ]
+    mask = pd.Series(
+        list(zip(df["recipient/name"], df["amount"])), index=df.index
+    ).isin(duplicates)
+    df = df[~mask]
+
     export_path = str(
         RAW_FOLDER / f"{date.today().isoformat()}_{NAME}_full.xlsx"
     )
