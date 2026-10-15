@@ -16,7 +16,7 @@ function manualChunks(id: string): string | undefined {
   if (id.includes("leaflet")) {
     return "leaflet"
   }
-  if (id.includes("chart.js")) {
+  if (id.includes("chart.js") || id.includes("chartjs")) {
     return "chart-js"
   }
   if (id.includes("primevue/datatable")) {

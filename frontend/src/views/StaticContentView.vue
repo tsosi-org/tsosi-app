@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { changeMetaTitle } from "@/utils/dom-utils"
+import { changeMetaTitle } from "@/utils/seo"
 
 export interface StaticContentComponentProps {
   title: string

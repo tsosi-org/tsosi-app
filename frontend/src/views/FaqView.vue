@@ -7,6 +7,7 @@ import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
 import { useContactModal } from "@/composables/useContactModal"
 import { getPartners, type Entity } from "@/singletons/ref-data"
 import { shuffleArray } from "@/utils/data-utils"
+import { getEntityUrl } from "@/utils/url-utils"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 const { openContactModal } = useContactModal()
 
@@ -76,7 +77,7 @@ shuffleArray(partners)
           curation process. The provenance of the data (data source) is
           explained in the detail view. See for example
           <span v-for="partner of partners" :key="partner.id">
-            <RouterLink :to="'/entities/' + partner.id">{{
+            <RouterLink :to="getEntityUrl(partner)">{{
               partner?.short_name || partner.name
             }}</RouterLink
             >{{ partner !== partners[partners.length - 1] ? ", " : "." }}

@@ -68,7 +68,7 @@ const { openContactModal } = useContactModal()
         <p>
           Information on personal data protection for this site is available on
           the
-          <RouterLink to="/pages/privacy-policy/"
+          <RouterLink to="/pages/privacy-policy"
             >Privacy policy page</RouterLink
           >.
         </p>

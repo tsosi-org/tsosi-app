@@ -19,10 +19,11 @@ import {
 } from "@/singletons/ref-data"
 import { formatDateWithPrecision } from "@/utils/data-utils"
 import {
-  changeMetaDescripion,
+  changeCanonicalUrl,
+  changeMetaDescription,
   changeMetaTitle,
-  changeMetaUrl,
-} from "@/utils/dom-utils"
+} from "@/utils/seo"
+import { getEntityUrl } from "@/utils/url-utils"
 import Tab from "primevue/tab"
 import TabList from "primevue/tablist"
 import TabPanel from "primevue/tabpanel"
@@ -42,7 +43,12 @@ onBeforeMount(async () => {
   const result = entityId ? getEntitySummary(entityId) : undefined
   const tsosiId = result?.identifiers.find((i) => i.registry === "tsosi")?.value
   if (tsosiId && tsosiId !== route.params.id) {
-    router.push({ name: "entity", params: { id: tsosiId } })
+    router.replace({
+      name: "entity",
+      params: { id: tsosiId },
+      hash: route.hash,
+    })
+    return
   }
   if (result == null) {
     loading.value = false
@@ -67,8 +73,8 @@ async function onEntityChange() {
   const desc = entity.value.is_recipient
     ? `Explore the funding made to sustain ${entity.value.name}`
     : `Explore the funding performed by ${entity.value.name}`
-  changeMetaDescripion(desc)
-  changeMetaUrl(true)
+  changeMetaDescription(desc)
+  changeCanonicalUrl(getEntityUrl(entity.value))
   transfers.value = await getTransfers(entity.value)
 }
 </script>
