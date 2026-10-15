@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # 'django.contrib.messages',
     "django.contrib.staticfiles",
+    "django.contrib.sitemaps",
     ## Additional apps
     "django_celery_beat",
     "rest_framework",

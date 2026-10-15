@@ -1,3 +1,4 @@
+from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 
 from tsosi.api.router import OptionalSlashRouter
@@ -8,6 +9,7 @@ from tsosi.api.viewsets import (
     EntityViewSet,
     TransferViewSet,
 )
+from tsosi.sitemaps import SITEMAPS
 
 app_name = "tsosi"
 
@@ -38,4 +40,5 @@ router.register(r"analytics", AnalyticViewSet, basename="analytic")
 urlpatterns = [
     path("api/", include(router.urls)),
     path("api/stats", stats_view),
+    path("sitemap.xml", sitemap, {"sitemaps": SITEMAPS}),
 ]
