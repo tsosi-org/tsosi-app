@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, shallowRef, type ShallowRef } from "vue"
 import { useRoute, useRouter } from "vue-router"
+import Tab from "primevue/tab"
+import TabList from "primevue/tablist"
+import TabPanel from "primevue/tabpanel"
+import TabPanels from "primevue/tabpanels"
+import Tabs from "primevue/tabs"
+import { watch } from "vue"
 
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import NotFound from "@/components/atoms/NotFound.vue"
@@ -24,12 +30,6 @@ import {
   changeMetaTitle,
 } from "@/utils/seo"
 import { getEntityUrl } from "@/utils/url-utils"
-import Tab from "primevue/tab"
-import TabList from "primevue/tablist"
-import TabPanel from "primevue/tabpanel"
-import TabPanels from "primevue/tabpanels"
-import Tabs from "primevue/tabs"
-import { watch } from "vue"
 
 const route = useRoute()
 const router = useRouter()

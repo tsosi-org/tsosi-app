@@ -3,8 +3,9 @@
  * The key is sent by e-mail in a link like `/entities/<id>#edit=<key>`.
  * It's stored in the session storage and removed from the URL.
  */
-import { apiRequest } from "@/services/api"
 import type { RouteLocationNormalized } from "vue-router"
+
+import { apiRequest } from "@/services/api"
 
 const STORAGE_KEY = "tsosi-edit-key"
 const HASH_PREFIX = "#edit="

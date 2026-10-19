@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { devMode } from "@/singletons/devMode"
 import { onBeforeMount } from "vue"
-
 import { useRouter } from "vue-router"
+
+import { devMode } from "@/singletons/devMode"
 
 onBeforeMount(() => {
   devMode.value = true
@@ -11,6 +11,6 @@ onBeforeMount(() => {
 })
 </script>
 
-<template></template>
+<template><div></div></template>
 
 <style scoped></style>

@@ -122,7 +122,7 @@ const tableProps = computed(() => {
   if (!props.transfers) {
     return null
   }
-  let toRemoveCols: string[] = []
+  const toRemoveCols: string[] = []
   if (props.transfers.every((t) => t.amount == null)) {
     toRemoveCols.push("currency")
     if (props.entity.is_recipient) {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ExternalLinkAtom from "./ExternalLinkAtom.vue"
 import ImageAtom from "./ImageAtom.vue"
+
 const props = defineProps<{
   name: string
   role?: string

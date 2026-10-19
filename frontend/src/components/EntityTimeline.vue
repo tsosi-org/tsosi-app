@@ -14,7 +14,6 @@ import {
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import { selectedCurrency } from "@/singletons/currencyStore"
 import { type Entity, type Transfer } from "@/singletons/ref-data"
-import { exportPNG } from "@/utils/data-utils"
 
 interface ChartSerie {
   type: string
@@ -368,10 +367,6 @@ async function loadData() {
     }),
   }
 
-  const maxLabelLength = getOrderedEntities().reduce(
-    (max, entity) => Math.max(max, getEntityLabel(entity).length),
-    0,
-  )
   chartOptions.value = {
     scales: {
       x: {
@@ -440,43 +435,6 @@ async function loadData() {
   void nextTick(() => {
     refreshChartWhenVisible()
   })
-}
-
-const exportItems = [
-  {
-    label: "Export CSV",
-    icon: ["fas", "download"],
-    command: () => downloadData("csv"),
-  },
-  {
-    label: "Export JSON",
-    icon: ["fas", "download"],
-    command: () => downloadData("json"),
-  },
-  {
-    label: "Export PNG",
-    icon: ["fas", "download"],
-    command: () => downloadPNG(),
-  },
-]
-
-function getFileName(): string {
-  const baseName = props.entity.name.replace(/\s+/g, "_")
-  const chartTitleClean = chartTitle.replace(/\s+/g, "_")
-  return `TSOSI_${baseName}_${chartTitleClean}`
-}
-
-async function downloadPNG() {
-  const innerChart = chartComponent.value?.getChart()
-  if (!innerChart) {
-    return
-  }
-  const image = innerChart.toBase64Image()
-  exportPNG(image, getFileName())
-}
-
-async function downloadData(format: "json" | "csv") {
-  alert("Not implemented yet!")
 }
 </script>
 

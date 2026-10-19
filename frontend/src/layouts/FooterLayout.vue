@@ -4,6 +4,7 @@ import { RouterLink } from "vue-router"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import { useContactModal } from "@/composables/useContactModal"
 import { isDesktop } from "@/composables/useMediaQuery"
+
 const { openContactModal } = useContactModal()
 </script>
 

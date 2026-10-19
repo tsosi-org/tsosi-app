@@ -5,6 +5,7 @@ import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
 import { useContactModal } from "@/composables/useContactModal"
 import StaticContentComponent from "@/views/StaticContentView.vue"
+
 const { openContactModal } = useContactModal()
 
 const matomoCheckboxValue = ref(false)
