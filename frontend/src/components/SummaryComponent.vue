@@ -52,13 +52,17 @@ const props = defineProps<SummaryProps>()
             </span>&nbsp;:
         </div>
         <div class="summary-value">
-          <EntityLinkDataAtom
-            v-if="field.type == 'entityLink'"
-            v-for="(entityData, index) of getEntityLinkRows(props.data, field)"
-            :key="index"
-            :data="entityData"
-            :dataField="field"
-          />
+          <template v-if="field.type == 'entityLink'">
+            <EntityLinkDataAtom
+              v-for="(entityData, index) of getEntityLinkRows(
+                props.data,
+                field,
+              )"
+              :key="index"
+              :data="entityData"
+              :dataField="field"
+            />
+          </template>
           <RouterLink
             v-else-if="field.type == 'pageLink'"
             :to="getItemLink(props.data, field.fieldLink)"

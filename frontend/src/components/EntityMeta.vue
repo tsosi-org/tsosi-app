@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { devMode } from "@/singletons/devMode"
 import Button from "primevue/button"
 import Checkbox from "primevue/checkbox"
 import InputNumber from "primevue/inputnumber"
@@ -13,6 +12,7 @@ import { computed, onMounted, ref, watch, type Ref } from "vue"
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 import Image from "./atoms/ImageAtom.vue"
 
+import { devMode } from "@/singletons/devMode"
 import ChipList, { type ChipConfig } from "@/components/atoms/ChipListAtom.vue"
 import { useEntityEdit } from "@/composables/useEntityEdit"
 import { isDesktop } from "@/composables/useMediaQuery"
@@ -80,7 +80,6 @@ function onIconChange(event: Event) {
 
 const logoWidth = computed(() => (isDesktop.value ? "225px" : "125px"))
 const logoHeight = computed(() => (isDesktop.value ? "125px" : "125px"))
-const isInfrastructure = computed(() => props.entity.infrastructure != null)
 const rorIdentifier = computed(() => {
   const ids = props.entity.identifiers.filter((id) => id.registry == "ror")
   if (ids.length > 0) {
@@ -97,7 +96,6 @@ const wikidataIdentifier = computed(() => {
 })
 
 const headerChips: Ref<Array<ChipConfig>> = ref([])
-const bottomButtons: Ref<Array<any>> = ref([])
 
 watch(() => props.entity, loadChips)
 onMounted(() => loadChips())

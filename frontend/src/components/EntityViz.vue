@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch, type Ref } from "vue"
+import Divider from "primevue/divider"
 
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import EntityCards from "@/components/EntityCards.vue"
@@ -14,7 +15,6 @@ import {
   type EntityDetails,
   type Transfer,
 } from "@/singletons/ref-data"
-import Divider from "primevue/divider"
 
 const props = defineProps<{
   entity: EntityDetails

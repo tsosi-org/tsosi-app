@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { useRoute } from "vue-router";
+
 import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue";
 import { useContactModal } from "@/composables/useContactModal";
 import { changeMetaTitle, setNoIndex } from "@/utils/seo";
-import { useRoute } from "vue-router";
+
 const { openContactModal } = useContactModal()
 
 const route = useRoute()

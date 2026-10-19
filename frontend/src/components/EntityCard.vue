@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { type Entity } from "@/singletons/ref-data"
-import { getEntityUrl } from "@/utils/url-utils"
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 import ProviderCorner from "./atoms/ProviderCornerAtom.vue"
+
+import { type Entity } from "@/singletons/ref-data"
+import { getEntityUrl } from "@/utils/url-utils"
 
 const props = defineProps<{
   entity: Entity

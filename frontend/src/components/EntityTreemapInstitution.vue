@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import type { ChartOptions, Plugin } from "chart.js"
+import Color from "colorjs.io"
+import { onMounted, ref, type Ref } from "vue"
+
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import TreemapChart from "@/components/atoms/TreemapChartAtom.vue"
 import { selectedCurrency } from "@/singletons/currencyStore"
 import { type Entity, type Transfer } from "@/singletons/ref-data"
-import type { ChartOptions, Plugin } from "chart.js"
-import Color from "colorjs.io"
-import { onMounted, ref, useTemplateRef, type Ref } from "vue"
 
 const props = defineProps<{
   role: "emitter" | "recipient"
@@ -21,7 +22,6 @@ const loading = ref(true)
 const chartPlugins: Plugin[] = []
 // const chartTitle = `Distribution of supports by infrastructure - ${props.entity.short_name || props.entity.name}`
 const chartTitle = `Distribution of supports by infrastructure`
-const chartComponent = useTemplateRef("chart")
 const iconCache = new Map<string, HTMLImageElement>()
 const TILE_ICON_SIZE = 18
 const TILE_ICON_MARGIN = 10
@@ -192,8 +192,6 @@ const treemapHoverGrowPlugin: Plugin = {
     const since = amounts.value?.[data.id]?.since || "N/A"
     const hoverWidth = Math.max(width, TILE_HOVER_FIXED_WIDTH)
     const hoverHeight = Math.max(height, TILE_HOVER_FIXED_HEIGHT)
-    const hoverX = x + width - hoverWidth
-    const hoverY = y + height - hoverHeight
 
     const fillColor =
       (element?.options as { backgroundColor?: string })?.backgroundColor ||
@@ -331,7 +329,6 @@ function updateChart() {
           if (ctx.type !== "data") {
             return "transparent"
           }
-          const value = ctx.raw.v
           const color = refColors()[ctx.dataIndex % ref.length]
           if (ctx.active) {
             return Color.darken(color, 0.1).toString()
@@ -394,38 +391,6 @@ function refColors(): string[] {
   }
   return colors
 }
-
-function getFileName(): string {
-  const baseName = props.entity.name.replace(/\s+/g, "_")
-  const chartTitleClean = chartTitle.replace(/\s+/g, "_")
-  return `TSOSI_${baseName}_${chartTitleClean}`
-}
-
-async function downloadPNG() {
-  alert("Not implemented yet!")
-}
-
-async function downloadData(format: "json" | "csv") {
-  alert("Not implemented yet!")
-}
-
-const exportItems = [
-  {
-    label: "Export CSV",
-    icon: ["fas", "download"],
-    command: () => downloadData("csv"),
-  },
-  {
-    label: "Export JSON",
-    icon: ["fas", "download"],
-    command: () => downloadData("json"),
-  },
-  {
-    label: "Export PNG",
-    icon: ["fas", "download"],
-    command: () => downloadPNG(),
-  },
-]
 </script>
 
 <template>
@@ -434,7 +399,6 @@ const exportItems = [
       <Loader v-if="loading" width="200px" />
       <TreemapChart
         v-else
-        ref="chart"
         :data="chartData"
         :options="chartOptions"
         :plugins="chartPlugins"

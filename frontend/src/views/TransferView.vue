@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Divider from "primevue/divider"
 import { onBeforeMount, ref, type Ref } from "vue"
-import { useRoute, useRouter } from "vue-router"
+import { useRoute } from "vue-router"
 
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import NotFound from "@/components/atoms/NotFound.vue"
@@ -19,7 +19,6 @@ import { type DataFieldProps } from "@/utils/data-utils"
 import { getEntityBaseUrl, getEntityUrl } from "@/utils/url-utils"
 
 const route = useRoute()
-const router = useRouter()
 const transfer: Ref<TransferDetails | null> = ref(null)
 const loading = ref(true)
 

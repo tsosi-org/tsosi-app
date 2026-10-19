@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import DataView from "primevue/dataview"
+import { computed, onMounted, ref, type Ref } from "vue"
+
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import EntityCard from "@/components/EntityCard.vue"
 import { type Entity, type Transfer } from "@/singletons/ref-data"
-import DataView from "primevue/dataview"
-import { onMounted, ref, type Ref } from "vue"
 
 const props = defineProps<{
   role: "emitter" | "recipient"
@@ -14,7 +15,6 @@ const props = defineProps<{
 }>()
 const amounts: Ref<Record<string, Record<string, number>> | null> = ref(null)
 const loading = ref(true)
-const chartTitle = `${props.role == "emitter" ? "Supported infrastructures" : "Supporters"} - ${props.entity?.short_name || props.entity.name}`
 
 onMounted(async () => {
   await loadData()
@@ -53,45 +53,16 @@ async function loadData() {
       }
       return acc
     }, {})
-  props.entities.sort((a, b) => {
+}
+
+const sortedEntities = computed(() =>
+  [...props.entities].sort((a, b) => {
     // Sort by is_partner, has logo, and name
     const scoreA = (a.is_partner ? 3 : 0) + (a.logo ? 2 : 0)
     const scoreB = (b.is_partner ? 3 : 0) + (b.logo ? 2 : 0)
     return scoreB - scoreA + a.name.localeCompare(b.name)
-  })
-}
-
-function getFileName(): string {
-  const baseName = props.entity.name.replace(/\s+/g, "_")
-  const chartTitleClean = chartTitle.replace(/\s+/g, "_")
-  return `TSOSI_${baseName}_${chartTitleClean}`
-}
-
-async function downloadPNG() {
-  alert("Not implemented yet!")
-}
-
-async function downloadData(format: "json" | "csv") {
-  alert("Not implemented yet!")
-}
-
-const exportItems = [
-  {
-    label: "Export CSV",
-    icon: ["fas", "download"],
-    command: () => downloadData("csv"),
-  },
-  {
-    label: "Export JSON",
-    icon: ["fas", "download"],
-    command: () => downloadData("json"),
-  },
-  {
-    label: "Export PNG",
-    icon: ["fas", "download"],
-    command: () => downloadPNG(),
-  },
-]
+  }),
+)
 </script>
 
 <template>
@@ -100,7 +71,7 @@ const exportItems = [
       <Loader v-if="loading" width="200px" />
       <DataView
         v-else
-        :value="entities"
+        :value="sortedEntities"
         layout="grid"
         dataKey="id"
         paginator

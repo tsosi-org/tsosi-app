@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import EntityCard from "@/components/EntityCard.vue"
 import DataView from "primevue/dataview"
 import Divider from "primevue/divider"
 import MultiSelect from "primevue/multiselect"
@@ -15,6 +14,7 @@ import {
 } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
+import EntityCard from "@/components/EntityCard.vue"
 import { getCountries, getEntities, type Entity } from "@/singletons/ref-data"
 
 const rowsPerPage = 64

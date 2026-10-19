@@ -9,6 +9,7 @@ import { getPartners, type Entity } from "@/singletons/ref-data"
 import { shuffleArray } from "@/utils/data-utils"
 import { getEntityUrl } from "@/utils/url-utils"
 import StaticContentComponent from "@/views/StaticContentView.vue"
+
 const { openContactModal } = useContactModal()
 
 const partners = getPartners() as Entity[]

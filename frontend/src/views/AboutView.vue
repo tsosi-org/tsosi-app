@@ -1,11 +1,10 @@
 <script setup lang="ts">
+import Divider from "primevue/divider"
+
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import Member from "@/components/atoms/MemberAtom.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
-import { useContactModal } from "@/composables/useContactModal"
 import StaticContentComponent from "@/views/StaticContentView.vue"
-import Divider from "primevue/divider"
-const { openContactModal } = useContactModal()
 </script>
 
 <template>
