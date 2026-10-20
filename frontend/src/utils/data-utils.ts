@@ -34,7 +34,7 @@ export interface DataFieldProps {
   type: DataType
   fieldLabel?: string
   fieldLink?: LinkConfig
-  labelGetter?: (data: Record<string, any>) => string
+  labelGetter?: (data: Record<string, any>) => any
   info?: string
 }
 
@@ -246,29 +246,24 @@ export function formatDateWithPrecision(
 }
 
 /**
- * Fill the given transfer's amount & currency properties with the
- * desired currency.
+ * The given transfer's amount & currency in the desired currency.
  * It fallbacks to the original currency if the given currency is unavailable
  * for this transfer.
  * @param transfer
  * @param currencyCode
- * @param amountPropName
- * @param currencyPropName
  * @returns
  */
-export function fillTransferAmountCurrency(
+export function getTransferAmountCurrency(
   transfer: Transfer,
   currencyCode: string,
-  amountPropName: string,
-  currencyPropName: string,
-) {
+): { amount: number | null; currency: string | null } {
   if (transfer.amounts_clc?.hasOwnProperty(currencyCode)) {
-    transfer[currencyPropName] = currencyCode
-    transfer[amountPropName] = transfer.amounts_clc[currencyCode]
-    return
+    return {
+      amount: transfer.amounts_clc[currencyCode],
+      currency: currencyCode,
+    }
   }
-  transfer[currencyPropName] = transfer.currency
-  transfer[amountPropName] = transfer.amount
+  return { amount: transfer.amount, currency: transfer.currency }
 }
 
 export function formatItemLabel(
