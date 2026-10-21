@@ -32,6 +32,16 @@ npm ci
 npm run dev
 ```
 
+- Run the unit and component tests (Vitest in jsdom, in `__tests__/*.spec.ts` folders next to the code they test):
+
+```bash
+npm run test           # once, as the CI
+npm run test:watch     # again on each change
+npm run test:coverage
+```
+
+The API is mocked at the `fetch` level with `mockApi` (`src/__tests__/api-mock.ts`): no request leaves the tests. The component tests mount the components with the app's globals (PrimeVue, tooltips, a router in memory) through `mountComponent` (`src/__tests__/mount.ts`); those of the Hub run against a fake Hub backend in memory (`hubBackend`, `src/__tests__/hub-backend.ts`), with the data of `src/__tests__/hub-fixtures.ts`.
+
 # Vue.js app - Intro
 
 ## [Views](./src/views/)

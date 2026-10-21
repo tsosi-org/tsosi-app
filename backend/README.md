@@ -143,6 +143,13 @@ poetry run pytest
 They are also discovered by the VSCode Test Explorer once `python.testing.pytestEnabled`
 is set in your user settings (see [Editor setup](#editor-setup-vscode)).
 
+`settings_local.py` runs them on SQLite. To run them on PostgreSQL, as the CI does: Django creates its own `test_tsosi_db` database next to yours.
+```bash
+poetry run pytest --ds=backend_site.settings_test_postgres
+# From the host, with the DevContainer database
+TSOSI_TEST_DB_HOST=localhost TSOSI_TEST_DB_PORT=5433 poetry run pytest --ds=backend_site.settings_test_postgres
+```
+
 
 ## TSOSI App
 
