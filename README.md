@@ -93,7 +93,7 @@ poetry run celery -A backend_site worker --concurrency=1 --loglevel=INFO
 
 Alternative to the DevContainer: run Python & Node directly on your machine and only use docker for PostgreSQL and Redis.
 
-Requirements: docker, Python 3.12, [Poetry](https://python-poetry.org/) and Node 24 installed on your machine.
+Requirements: docker, Python 3.12, [Poetry](https://python-poetry.org/), Node 24 (24.15 or later, for jsdom) and [graphviz](https://graphviz.org/) (`sudo apt install graphviz`, for the models' diagram) installed on your machine.
 
 1. Create the `postgres.env` file (see [above](#setup-env--settings-files)), then start the services:
     ```bash
@@ -115,6 +115,13 @@ Requirements: docker, Python 3.12, [Poetry](https://python-poetry.org/) and Node
 Then, run the [dev script](./dev.sh): it starts the docker services, then the backend & frontend dev servers and the celery worker.
 ```bash
 ./dev.sh
+```
+
+## Git hooks
+
+The repository versions its git hooks in [`.githooks/`](./.githooks/): the pre-commit hook regenerates the models' ER diagram when a commit changes the models or migrations (see [the models README](./backend/tsosi/models/README.md)). The [init script](./init.sh) enables them, in both setups above. Otherwise, enable them by hand from the repository root:
+```bash
+git config core.hooksPath .githooks
 ```
 
 ## Copy the production database locally

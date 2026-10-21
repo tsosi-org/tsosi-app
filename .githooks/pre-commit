@@ -1,0 +1,53 @@
+#!/bin/sh
+# Regenerates the ER diagram of the tsosi models (backend/tsosi/models/
+# tsosi_database.png) when the commit changes the models or the migrations, and
+# adds it to the commit. Enable the repository hooks with:
+#   git config core.hooksPath .githooks
+# The diagram is generated from the working tree (not only the staged changes).
+# It never blocks a commit: without poetry, graphviz or the backend deps, it
+# only prints a warning.
+
+if ! git diff --cached --name-only --diff-filter=ACDMR \
+    | grep -Eq '^backend/tsosi/(models|migrations)/.*\.py$'; then
+    exit 0
+fi
+
+ROOT="$(git rev-parse --show-toplevel)" || exit 0
+PNG="tsosi/models/tsosi_database.png"
+
+warn() {
+    echo "pre-commit: $1, the models' ER diagram ($PNG) was not" \
+        "regenerated." >&2
+}
+
+if ! command -v poetry >/dev/null 2>&1; then
+    warn "poetry not found"
+    exit 0
+fi
+if ! command -v dot >/dev/null 2>&1; then
+    warn "graphviz not found (sudo apt install graphviz)"
+    exit 0
+fi
+
+TMP_DIR="$(mktemp -d)" || exit 0
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+echo "pre-commit: regenerating the models' ER diagram" >&2
+cd "$ROOT/backend" || exit 0
+# Same command as in backend/tsosi/models/README.md
+if ! poetry run python manage.py graph_models tsosi \
+    --disable-abstract-fields -o "$TMP_DIR/tsosi_database.png" \
+    -X TimestampedModel >"$TMP_DIR/log" 2>&1 \
+    || ! [ -s "$TMP_DIR/tsosi_database.png" ]; then
+    tail -n 5 "$TMP_DIR/log" >&2
+    warn "graph_models failed"
+    exit 0
+fi
+
+if ! cmp -s "$TMP_DIR/tsosi_database.png" "$PNG"; then
+    cp "$TMP_DIR/tsosi_database.png" "$PNG"
+    echo "pre-commit: updated $PNG" >&2
+fi
+# Stages the diagram even when unchanged, in case it was edited unstaged
+git add "$PNG" || echo "pre-commit: could not stage $PNG" >&2
+exit 0

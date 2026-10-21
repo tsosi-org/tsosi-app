@@ -3,10 +3,12 @@ FROM mcr.microsoft.com/devcontainers/python:3.12
 # Real time output from python (stdout and stderr) without buffer
 ENV PYTHONUNBUFFERED=1
 
-# [Optional] Uncomment this section to install additional OS packages.
+# Additional OS packages. graphviz renders the models' ER diagram
+# (graph_models, run by .githooks/pre-commit)
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends curl \
-    git
+    git \
+    graphviz
 
 # Python deps (managed via Poetry)
 # Install poetry container-wide
@@ -22,7 +24,8 @@ RUN poetry config virtualenvs.in-project true
 # FRONT-END deps - Install node & npm using nvm
 RUN mkdir /usr/local/nvm
 ENV NVM_DIR=/usr/local/nvm
-ENV NODE_VERSION=24.2.0
+# jsdom (frontend tests) requires node ^22.22.2 || ^24.15.0 || >=26
+ENV NODE_VERSION=24.22.0
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 RUN \. "$NVM_DIR/nvm.sh" \
     && nvm install $NODE_VERSION
