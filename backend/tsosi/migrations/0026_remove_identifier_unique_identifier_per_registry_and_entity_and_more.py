@@ -13,10 +13,67 @@ def noop_reverse(apps, schema_editor):
     pass
 
 
-def flatten_merged_transfers(apps, schema_editor):
-    from tsosi.data.ingestion.transfer_matching import merge_transfers
-    from tsosi.models import Transfer
+def merge_transfers(Transfer, transfer_left, transfer_right):
+    """
+    Frozen copy of `merge_transfers` as it was when this migration was
+    written: it creates a new merged transfer instead of updating
+    `transfer_right` in place. It no longer sets `raw_data` and
+    `original_amount_field`, removed from `Transfer` since.
+    `Transfer` is the model of this migration's state: the current one has
+    columns added since.
+    """
+    import numpy as np
 
+    from tsosi.data.ingestion.transfer_matching import (
+        get_best_amount_and_currency,
+        get_best_date,
+        get_non_null,
+    )
+
+    parent_transfers = [
+        *Transfer.objects.filter(merged_into=transfer_right).all()
+    ]
+    if parent_transfers:
+        transfers = [transfer_left, *parent_transfers]
+        transfer_right.delete()
+    else:
+        transfers = [transfer_left, transfer_right]
+
+    fields = {
+        "emitter": get_non_null(*[t.emitter for t in transfers]),
+        "recipient": get_non_null(*[t.recipient for t in transfers]),
+        "date_invoice": get_best_date(*[t.date_invoice for t in transfers]),
+        "date_payment_emitter": get_best_date(
+            *[t.date_payment_emitter for t in transfers]
+        ),
+        "date_payment_recipient": get_best_date(
+            *[t.date_payment_recipient for t in transfers]
+        ),
+        "date_start": get_best_date(*[t.date_start for t in transfers]),
+        "date_end": get_best_date(*[t.date_end for t in transfers]),
+        "description": get_non_null(*[t.description for t in transfers]),
+        "hide_amount": np.all([t.hide_amount for t in transfers]),
+        "original_id": get_non_null(*[t.original_id for t in transfers]),
+        "emitter_sub": get_non_null(*[t.emitter_sub for t in transfers]),
+    }
+    fields["amount"], fields["currency"] = get_best_amount_and_currency(
+        *transfers
+    )
+    child = Transfer(**fields)
+    child.save()
+    child.agents.set(set().union(*[set(t.agents.all()) for t in transfers]))
+    child.data_load_sources.set(
+        set().union(*[set(t.data_load_sources.all()) for t in transfers])
+    )
+    child.save()
+    for transfer in transfers:
+        transfer.merged_into = child
+        transfer.save()
+    return child
+
+
+def flatten_merged_transfers(apps, schema_editor):
+    Transfer = apps.get_model("tsosi", "Transfer")
     transfers = Transfer.objects.filter(merged_into_id__isnull=False).exclude(
         merged_transfers=None
     )
@@ -25,7 +82,7 @@ def flatten_merged_transfers(apps, schema_editor):
             id=transfer.id
         ).first()
         transfer.merged_into.delete()
-        merge_transfers(other_transfer, transfer)
+        merge_transfers(Transfer, other_transfer, transfer)
 
 
 class Migration(migrations.Migration):

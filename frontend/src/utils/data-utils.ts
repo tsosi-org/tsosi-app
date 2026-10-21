@@ -18,7 +18,6 @@ export type DataType =
   | "externalLink"
   | "country"
   | "constant"
-  | "json"
   | "boolean"
 
 export interface LinkConfig {

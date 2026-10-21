@@ -42,7 +42,7 @@ def png_file() -> SimpleUploadedFile:
 
 @pytest.mark.django_db
 def test_grant_edit_access(registries):
-    entity = EntityFactory.create()
+    entity = EntityFactory.create(is_recipient=True)
     access, url = grant_edit_access(entity, "someone@example.org", days=3)
 
     assert url.startswith(f"http://localhost:5173/entities/{entity.id}#edit=")
@@ -64,8 +64,8 @@ def test_grant_edit_access(registries):
 
 @pytest.mark.django_db
 def test_edit_access_check(registries):
-    entity = EntityFactory.create()
-    other_entity = EntityFactory.create()
+    entity = EntityFactory.create(is_recipient=True)
+    other_entity = EntityFactory.create(is_recipient=True)
     _, key = EntityEditAccess.create_with_key(entity, "a@example.org", 1)
     expired, expired_key = EntityEditAccess.create_with_key(
         entity, "b@example.org", 1
@@ -88,6 +88,7 @@ def test_edit_access_check(registries):
 @pytest.mark.django_db
 def test_edit_entity(registries):
     entity = EntityFactory.create(
+        is_recipient=True,
         name="Old name",
         country="FR",
         wikipedia_url="https://en.wikipedia.org/wiki/Old",
@@ -171,8 +172,8 @@ def test_edit_entity(registries):
 
 @pytest.mark.django_db
 def test_edit_entity_validation(registries):
-    entity = EntityFactory.create()
-    other_entity = EntityFactory.create()
+    entity = EntityFactory.create(is_recipient=True)
+    other_entity = EntityFactory.create(is_recipient=True)
     IdentifierFactory.create(
         entity=other_entity, registry_id=REGISTRY_ROR, value="02rx3b187"
     )
@@ -216,7 +217,7 @@ def test_edit_entity_validation(registries):
 
 @pytest.mark.django_db
 def test_edit_entity_logo(registries, storage):
-    entity = EntityFactory.create()
+    entity = EntityFactory.create(is_recipient=True)
     _, key = EntityEditAccess.create_with_key(entity, "a@example.org", 1)
     client = client_with_key(key)
 

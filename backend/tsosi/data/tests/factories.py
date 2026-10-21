@@ -116,12 +116,7 @@ class TransferFactory(BaseTypingFactory[Transfer]):
     amount = Faker("pyfloat", min_value=100, max_value=10000, right_digits=2)
     currency_id = FuzzyChoice(["USD", "EUR", "GBP"])
     date_invoice = date_faker
-    raw_data = Faker(
-        "json",
-        data_columns={"amount": "pyint", "emitter": "company", "url": "url"},
-    )
     original_id = Faker("pyint")
-    original_amount_field = "amount"
 
     @post_generation
     def amounts_clc(self, create, extracted, **kwargs):

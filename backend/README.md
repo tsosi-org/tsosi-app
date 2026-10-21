@@ -103,6 +103,12 @@ poetry run python manage.py runserver
 
 You should then be able to navigate to the API at [http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
 
+The Django admin is at [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin). Create an account for it with:
+
+```bash
+poetry run python manage.py createsuperuser
+```
+
 ## Celery
 
 We use [celery](https://docs.celeryq.dev/en/stable/) to run automated background tasks.
