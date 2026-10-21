@@ -6,19 +6,22 @@ on:
       - main
     paths:
       - 'frontend/**'
+      - '.github/workflows/frontend-test.yaml'
+  # Pull requests to main: the job only runs for the ones from dev (see `if`)
   pull_request:
     branches:
       - main
     paths:
       - 'frontend/**'
+      - '.github/workflows/frontend-test.yaml'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# One run per branch or pull request: a new push cancels the PR run in progress
 concurrency:
-  group: "frontend-test"
-  cancel-in-progress: false
+  group: frontend-test-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Default to bash
 defaults:
@@ -27,6 +30,8 @@ defaults:
 
 jobs:
   frontend-test:
+    # CI runs on pushes to main and on pull requests from dev to main
+    if: github.event_name != 'pull_request' || github.head_ref == 'dev'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     defaults:
@@ -46,5 +51,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
+      - name: Run the unit tests
+        run: npm run test
+
       - name: Build app
         run: npm run build

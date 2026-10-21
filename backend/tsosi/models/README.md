@@ -10,6 +10,14 @@ Regenerate it whenever models are modified, from the `backend/` directory:
 poetry run python manage.py graph_models tsosi --disable-abstract-fields -o tsosi/models/tsosi_database.png -X TimestampedModel
 ```
 
+The versioned pre-commit hook [`.githooks/pre-commit`](../../../.githooks/pre-commit) runs this command and adds the PNG to the commit whenever the commit changes a file of `tsosi/models/` or `tsosi/migrations/`. It's enabled by `backend/init.sh`, or by hand from the repository root:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Without `poetry` or `graphviz` (installed in the DevContainer), the hook only prints a warning and the commit goes on: regenerate the diagram by hand then.
+
 # Core
 
 The base models of our data schema are the following:
