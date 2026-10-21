@@ -88,12 +88,12 @@ CORS_ALLOW_HEADERS = (
 
 INSTALLED_APPS = [
     ## Default apps
-    # 'django.contrib.admin',
+    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "corsheaders",
-    # 'django.contrib.messages',
+    "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
     ## Additional apps
@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "django_extensions",
+    "simple_history",
     ## Custom code
     "tsosi",
 ]
@@ -108,12 +109,14 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     # 'django.middleware.security.SecurityMiddleware',
-    # 'django.contrib.sessions.middleware.SessionMiddleware',
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # 'django.middleware.csrf.CsrfViewMiddleware',
-    # 'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # 'django.contrib.messages.middleware.MessageMiddleware',
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Records the user making the changes in the history (Django admin)
+    "simple_history.middleware.HistoryRequestMiddleware",
 ]
 
 ROOT_URLCONF = "backend_site.urls"
@@ -257,6 +260,12 @@ STATIC_URL = "static/"
 
 STATIC_ROOT = BASE_DIR / "static"
 
+# Django admin sessions. In production, the app is served over HTTPS behind
+# nginx, which sets the `X-Forwarded-Proto` header.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -266,6 +275,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_THROTTLE_CLASSES": ["tsosi.api.throttle.TsosiThrottle"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
     "NUM_PROXIES": DRF_NUM_PROXIES,
 }
 

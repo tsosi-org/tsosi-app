@@ -2,9 +2,11 @@ import uuid
 
 from django.db import models
 from django.db.models import Q
+from simple_history.models import HistoricalRecords
 
 from .currency import Currency
 from .date import DateField
+from .entity import ENTITY_SCOPE_IN
 from .source import DataLoadSource
 from .utils import TimestampedModel
 
@@ -49,6 +51,15 @@ class SupportType(models.Model):
 
 
 class TransferQuerySet(models.QuerySet):
+    def public(self):
+        """
+        Return the transfers shown on the public site: the merged transfers,
+        not their source transfers, to a beneficiary in TSOSI's scope.
+        """
+        return self.filter(
+            merged_into__isnull=True, recipient__scope=ENTITY_SCOPE_IN
+        )
+
     def filter_by_entity(self, entity_or_id, include_children: bool = True):
         """
         TODO: Check the perf of doing OR condition with Django ORM.
@@ -80,8 +91,8 @@ class Transfer(TimestampedModel):
     """
 
     objects = TransferQuerySet.as_manager()
+    history = HistoricalRecords()
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    raw_data = models.JSONField()
     data_load_sources = models.ManyToManyField(
         DataLoadSource, related_name="transfers"
     )
@@ -118,7 +129,6 @@ class Transfer(TimestampedModel):
     original_id = models.CharField(max_length=256)
     amounts_clc = models.JSONField(null=True)
     hide_amount = models.BooleanField(default=False)
-    original_amount_field = models.CharField(max_length=128)
     scoss = models.BooleanField(default=False)
     is_future = models.BooleanField(default=False)
     merged_into = models.ForeignKey(

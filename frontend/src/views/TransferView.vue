@@ -172,12 +172,6 @@ const metadataConfig: Array<DataFieldProps> = [
     },
     info: "TSOSI data providers that have declared this transfer",
   },
-  {
-    id: "rawData",
-    title: "Raw data",
-    field: "raw_data",
-    type: "json",
-  },
 ]
 </script>
 

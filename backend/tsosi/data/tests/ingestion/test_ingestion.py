@@ -7,6 +7,7 @@ import tsosi.data.preparation.raw_data_config as dc
 from tsosi.data.ingestion import core
 from tsosi.data.ingestion.core import ingest
 from tsosi.models import DataLoadSource, Entity, Transfer
+from tsosi.models.entity import ENTITY_SCOPE_IN, ENTITY_SCOPE_TO_CHECK
 from tsosi.tasks import ingest_test
 
 from ..factories import DataLoadSourceFactory, EntityFactory, TransferFactory
@@ -47,9 +48,7 @@ def test_old_data_load_deletion(datasources):
             "original_id": "1",
             "amount": 50,
             "currency": "EUR",
-            "original_amount_field": "amount",
             "hide_amount": False,
-            "raw_data": {},
         },
         {
             "emitter_name": "E_2",
@@ -58,9 +57,7 @@ def test_old_data_load_deletion(datasources):
             "original_id": "2",
             "amount": 50,
             "currency": "EUR",
-            "original_amount_field": "amount",
             "hide_amount": False,
-            "raw_data": {},
         },
     ]
     data_ingestion_config = dc.DataIngestionConfig(
@@ -134,9 +131,7 @@ def test_ingest_existing_entities_does_not_create_new_entities(
                 "original_id": "1",
                 "amount": 50,
                 "currency": "EUR",
-                "original_amount_field": "amount",
                 "hide_amount": False,
-                "raw_data": {},
             }
         ],
     )
@@ -149,6 +144,55 @@ def test_ingest_existing_entities_does_not_create_new_entities(
     transfer = Transfer.objects.latest("date_created")
     assert transfer.emitter_id == emitter.id
     assert transfer.recipient_id == recipient.id
+
+
+@pytest.mark.django_db
+def test_ingest_scope_and_history(registries, datasources, monkeypatch):
+    print("Testing the scope and history of ingested data.")
+
+    monkeypatch.setattr(core, "fill_static_data", lambda: None)
+
+    to_check = EntityFactory.create(name="R_2", scope=ENTITY_SCOPE_TO_CHECK)
+    source = dc.DataLoadSource(
+        data_source_id="pci",
+        data_load_name="scope",
+        date_data_obtained=datetime.date.today(),
+        full_data=False,
+    )
+    data = [
+        {
+            "emitter_name": "E_1",
+            "recipient_name": recipient_name,
+            "date_payment_recipient": "2025-01-01",
+            "original_id": str(i),
+            "amount": 50,
+            "currency": "EUR",
+            "hide_amount": False,
+        }
+        for i, recipient_name in enumerate(["R_1", to_check.name])
+    ]
+    config = dc.DataIngestionConfig(
+        date_generated=datetime.datetime.now(datetime.UTC).isoformat(
+            timespec="seconds"
+        ),
+        source=source,
+        count=len(data),
+        data=data,
+    )
+
+    ingest(config, send_signals=False)
+
+    # New beneficiaries are in scope, the curation board's decisions are kept
+    assert Entity.objects.get(name="R_1").scope == ENTITY_SCOPE_IN
+    assert Entity.objects.get(name="E_1").scope is None
+    to_check.refresh_from_db()
+    assert to_check.scope == ENTITY_SCOPE_TO_CHECK
+
+    # The bulk created records are in the history
+    for transfer in Transfer.objects.all():
+        assert transfer.history.filter(history_type="+").exists()
+    for entity in Entity.objects.filter(name__in=["E_1", "R_1"]):
+        assert entity.history.filter(history_type="+").exists()
 
 
 @pytest.mark.django_db
@@ -199,9 +243,7 @@ def test_ingest_replaced_loads_without_connected_sources(
                 "original_id": "1",
                 "amount": 50,
                 "currency": "EUR",
-                "original_amount_field": "amount",
                 "hide_amount": False,
-                "raw_data": {},
             }
         ],
     )

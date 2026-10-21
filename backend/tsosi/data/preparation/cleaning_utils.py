@@ -27,9 +27,6 @@ COUNTRY_ALPHA_3_MAPPING = {
 }
 
 
-# Field names for the output dataframe
-FIELD_RAW_DATA = "raw_data"
-
 CURRENCY_MAPPING = {
     "€": "EUR",
     "£": "GBP",

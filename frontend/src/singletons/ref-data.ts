@@ -107,7 +107,6 @@ export interface TransferDetails extends Transfer {
   date_payment_emitter: DateWithPrecision | null
   date_start: DateWithPrecision | null
   date_end: DateWithPrecision | null
-  raw_data: Record<string, any>
 }
 
 export interface Currency {

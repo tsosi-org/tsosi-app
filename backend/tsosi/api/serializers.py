@@ -123,7 +123,6 @@ class BaseTransferSerializer(serializers.ModelSerializer):
     amount = serializers.SerializerMethodField()
     amounts_clc = serializers.SerializerMethodField()
     currency = serializers.SerializerMethodField()
-    raw_data = serializers.SerializerMethodField()
 
     def _amount_hidden(self, obj: Transfer) -> bool:
         """
@@ -145,16 +144,6 @@ class BaseTransferSerializer(serializers.ModelSerializer):
         return (
             None if self._amount_hidden(obj) else obj.currency_id
         )  # type: ignore
-
-    def get_raw_data(self, obj: Transfer):
-        if not self._amount_hidden(obj):
-            return obj.raw_data
-        data = obj.raw_data
-        data.pop(obj.original_amount_field, None)
-        for field in data:
-            if isinstance(data[field], dict):
-                data[field].pop(obj.original_amount_field, None)
-        return data
 
 
 class TransferSerializer(BaseTransferSerializer):
@@ -205,7 +194,6 @@ class TransferDetailsSerializer(BaseTransferSerializer):
             "date_start",
             "date_end",
             "amounts_clc",
-            "raw_data",
             "source_ids",
         ]
 

@@ -100,23 +100,15 @@ class DataLoadSource(TimestampedModel):
 @receiver(pre_delete, sender=DataLoadSource)
 def handle_dls_deletion(sender, instance, using, **kwargs) -> None:
     """
-    Remove this source's raw payload from merged transfers that still have two other sources.
-    Then remove all other transfers linked to this source.
+    Remove the transfers linked to this source, except the merged transfers
+    that still have two other sources.
     """
     from .transfer import Transfer
 
     transfer_ids = instance.transfers.values("pk")
-    transfers = (
-        Transfer.objects.filter(pk__in=transfer_ids)
-        .prefetch_related("data_load_sources")
-        .annotate(dls_count=Count("data_load_sources"))
+    transfers = Transfer.objects.filter(pk__in=transfer_ids).annotate(
+        dls_count=Count("data_load_sources")
     )
-    for transfer in transfers.filter(dls_count__gte=3):
-        raw_data = transfer.raw_data
-        raw_data.pop(instance.data_source_id, None)
-        transfer.raw_data = raw_data
-        transfer.save()
-
     deleted, _ = transfers.filter(dls_count__lt=3).delete()
     logger.info(
         f"Deleted {deleted} transfers linked to DataLoadSource {instance.id}"

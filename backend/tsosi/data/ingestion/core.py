@@ -29,6 +29,7 @@ from tsosi.models import (
     IdentifierEntityMatching,
     Transfer,
 )
+from tsosi.models.entity import ENTITY_SCOPE_IN
 from tsosi.models.identifier import MATCH_CRITERIA_FROM_INPUT
 from tsosi.models.static_data import (
     REGISTRY_CUSTOM,
@@ -423,7 +424,6 @@ def create_transfers(
     transfers["date_last_updated"] = date_stamp
 
     fields = [
-        "raw_data",
         "emitter_id",
         "emitter_sub",
         "recipient_id",
@@ -438,12 +438,20 @@ def create_transfers(
         "date_last_updated",
         "original_id",
         "hide_amount",
-        "original_amount_field",
     ]
     bulk_create_from_df(Transfer, transfers, fields, "transfer_id")
     data_load_source.transfers.add(*transfers["transfer_id"].to_list())
     data_load_source.save()
     logger.info(f"Created {len(transfers)} Transfer records")
+
+    # Ingested data is curated by the TSOSI team: its beneficiaries without
+    # a scope yet are in scope.
+    recipients = Entity.objects.filter(
+        id__in=transfers["recipient_id"].unique(), scope__isnull=True
+    )
+    for entity in recipients:
+        entity.scope = ENTITY_SCOPE_IN
+        entity.save()
 
 
 def create_transfer_agents(transfers: pd.DataFrame):

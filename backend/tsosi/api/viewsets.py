@@ -74,7 +74,7 @@ class AllActionViewSet(viewsets.GenericViewSet):
 
 class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
     queryset = (
-        Entity.objects.filter(is_active=True)
+        Entity.objects.public()
         .prefetch_related("identifiers")
         .select_related("infrastructure_details")
     )
@@ -118,7 +118,7 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
         except Entity.DoesNotExist:
             raise Http404
 
-        if entity.is_active is False:
+        if not self.queryset.filter(id=entity.id).exists():
             raise Http404
 
         identifier = entity.identifiers.filter(
@@ -152,7 +152,10 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
             access = EntityEditAccess.objects.get_by_key(key)
         except EntityEditAccess.DoesNotExist:
             raise PermissionDenied("Invalid or expired edit access key.")
-        if not access.grants(entity) or not entity.is_active:
+        if (
+            not access.grants(entity)
+            or not self.queryset.filter(id=entity.id).exists()
+        ):
             raise PermissionDenied("Invalid or expired edit access key.")
         return access, entity
 
@@ -228,7 +231,8 @@ class TransferFilter(filters.FilterSet):
 
 class TransferViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
     queryset = (
-        Transfer.objects.filter(merged_into__isnull=True, is_future=False)
+        Transfer.objects.public()
+        .filter(is_future=False)
         .select_related("emitter", "recipient")
         .prefetch_related("agents")
     )

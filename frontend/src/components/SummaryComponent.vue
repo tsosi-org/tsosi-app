@@ -81,10 +81,6 @@ const props = defineProps<SummaryProps>()
             :code="getItemLabel(props.data, field)"
           />
 
-          <div v-else-if="field.type == 'json'" class="data-json">
-            {{ JSON.stringify(getItemLabel(props.data, field), null, 4) }}
-          </div>
-
           <div v-else-if="props.explicit && field.type == 'dateWithPrecision'">
             {{ formatValue(getItemLabel(props.data, field).value, "date") }}
             <span class="date-precision">{{
@@ -144,10 +140,5 @@ const props = defineProps<SummaryProps>()
   font-style: italic;
   color: var(--p-neutral-600);
   font-weight: 500;
-}
-
-.data-json {
-  white-space: pre-wrap;
-  word-wrap: break-word;
 }
 </style>

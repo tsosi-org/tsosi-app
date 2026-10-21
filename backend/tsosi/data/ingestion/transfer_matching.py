@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from django.db import transaction
 from openpyxl import Workbook
 from openpyxl.styles import Border, Side
 from openpyxl.utils.dataframe import dataframe_to_rows
@@ -222,68 +223,103 @@ def get_best_date(*dates: list[Date | None]) -> Date | None:
     return sorted_dates[0]
 
 
+MERGE_DATE_FIELDS = [
+    "date_invoice",
+    "date_payment_emitter",
+    "date_payment_recipient",
+    "date_start",
+    "date_end",
+]
+# Transfer fields that are never reset when merging into an existing transfer.
+MERGE_KEPT_FIELDS = ["id", "date_created", "date_last_updated", "merged_into"]
+
+
+def get_source_transfers(transfer: Transfer) -> list[Transfer]:
+    """
+    Return the source transfers of a transfer: the transfers merged into it,
+    or the transfer itself if it's not a merged transfer.
+    """
+    sources = list(transfer.merged_transfers.all())
+    return sources or [transfer]
+
+
+def copy_transfer(transfer: Transfer) -> Transfer:
+    """
+    Save a copy of the transfer, with a new ID.
+    """
+    copy = Transfer.objects.get(pk=transfer.pk)
+    copy.pk = None
+    copy._state.adding = True
+    copy.save()
+    copy.agents.set(transfer.agents.all())
+    copy.data_load_sources.set(transfer.data_load_sources.all())
+    return copy
+
+
+def get_merged_fields(transfers: list[Transfer]) -> dict:
+    """
+    Compute the fields of the transfer merging the given source transfers.
+    """
+    fields = {
+        "emitter": get_non_null(*[t.emitter for t in transfers]),
+        "recipient": get_non_null(*[t.recipient for t in transfers]),
+        **{
+            field: get_best_date(*[getattr(t, field) for t in transfers])
+            for field in MERGE_DATE_FIELDS
+        },
+        "description": get_non_null(*[t.description for t in transfers]),
+        "hide_amount": bool(np.all([t.hide_amount for t in transfers])),
+        "original_id": get_non_null(*[t.original_id for t in transfers]),
+        "emitter_sub": get_non_null(*[t.emitter_sub for t in transfers]),
+    }
+    fields["amount"], fields["currency"] = get_best_amount_and_currency(
+        *transfers
+    )
+    return fields
+
+
+@transaction.atomic
 def merge_transfers(
     transfer_left: Transfer, transfer_right: Transfer
 ) -> Transfer:
     """
-    Merge two or more transfers into one.
-    Creates a new Transfer object with the best values from both transfers,
-    and update parent transfers.
-    """
-    parent_transfers = [
-        *Transfer.objects.filter(merged_into=transfer_right).all()
-    ]
-    if parent_transfers:
-        transfers = [transfer_left, *parent_transfers]
-        transfer_right.delete()
-    else:
-        transfers = [transfer_left, transfer_right]
+    Merge two transfers into one, with the best values of their source
+    transfers. Each transfer is either a source transfer or a merged transfer.
 
-    fields = {
-        "emitter": get_non_null(*[t.emitter for t in transfers]),
-        "recipient": get_non_null(*[t.recipient for t in transfers]),
-        "date_invoice": get_best_date(*[t.date_invoice for t in transfers]),
-        "date_payment_emitter": get_best_date(
-            *[t.date_payment_emitter for t in transfers]
-        ),
-        "date_payment_recipient": get_best_date(
-            *[t.date_payment_recipient for t in transfers]
-        ),
-        "date_start": get_best_date(*[t.date_start for t in transfers]),
-        "date_end": get_best_date(*[t.date_end for t in transfers]),
-        "description": get_non_null(*[t.description for t in transfers]),
-        "hide_amount": np.all([t.hide_amount for t in transfers]),
-        "original_amount_field": get_non_null(
-            *[t.original_amount_field for t in transfers]
-        ),
-        "original_id": get_non_null(*[t.original_id for t in transfers]),
-        "raw_data": {
-            transfer.data_load_sources.first().data_source_id: transfer.raw_data
-            for transfer in transfers
-        },
-        "emitter_sub": get_non_null(*[t.emitter_sub for t in transfers]),
-    }
-    # Merge amount and currency
-    fields["amount"], fields["currency"] = get_best_amount_and_currency(
-        *transfers
-    )
-    # Merge raw_data
-    fields["raw_data"] = {
-        transfer.data_load_sources.first().data_source_id: transfer.raw_data
-        for transfer in transfers
-    }
-    # Merge transfers
-    child = Transfer(**fields)
-    child.save()
-    child.agents.set(set().union(*[set(t.agents.all()) for t in transfers]))
-    child.data_load_sources.set(
+    The merged transfer keeps the ID of `transfer_right`, so that the public
+    ID of an existing transfer is stable. When `transfer_right` is a source
+    transfer, its own data is moved to a copy that becomes one of the sources.
+    When `transfer_left` is a merged transfer, its sources are moved to the
+    result and it is deleted.
+    """
+    left_sources = get_source_transfers(transfer_left)
+    right_sources = get_source_transfers(transfer_right)
+    left_is_merged = left_sources != [transfer_left]
+    if right_sources == [transfer_right]:
+        right_sources = [copy_transfer(transfer_right)]
+    transfers = [*left_sources, *right_sources]
+
+    fields = get_merged_fields(transfers)
+    merged = transfer_right
+    # Reset the other fields, computed later by the enrichment tasks,
+    # as for a new transfer.
+    for field in Transfer._meta.concrete_fields:
+        if field.name in fields or field.name in MERGE_KEPT_FIELDS:
+            continue
+        setattr(merged, field.attname, field.get_default())
+    for name, value in fields.items():
+        setattr(merged, name, value)
+    merged.save()
+    merged.agents.set(set().union(*[set(t.agents.all()) for t in transfers]))
+    merged.data_load_sources.set(
         set().union(*[set(t.data_load_sources.all()) for t in transfers])
     )
-    child.save()
     for transfer in transfers:
-        transfer.merged_into = child
+        transfer.merged_into = merged
         transfer.save()
-    return child
+    if left_is_merged:
+        transfer_left.delete()
+    return merged
 
 
 def save_matches(
