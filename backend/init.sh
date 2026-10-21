@@ -13,6 +13,16 @@ poetry config virtualenvs.in-project true
 echo -e "\nInstalling Python dependencies"
 poetry install --no-root
 
+# Enable the versioned git hooks (.githooks/), unless hooks are already
+# configured for this repository. The pre-commit hook regenerates the models'
+# ER diagram (see tsosi/models/README.md)
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+    && ! git config --local --get core.hooksPath >/dev/null; then
+    echo -e "\nEnabling the git hooks of .githooks/"
+    git config --local core.hooksPath .githooks \
+        || echo "Could not set core.hooksPath, run: git config core.hooksPath .githooks"
+fi
+
 # Create settings_local.py file
 if ! [ -f "backend_site/settings_local.py" ]; then
     echo -e "\nNo define settings_local.py file. Using default dev one"

@@ -6,20 +6,23 @@ on:
       - main
     paths:
     - 'backend/**'
+    - '.github/workflows/backend-test.yaml'
+  # Pull requests to main: the job only runs for the ones from dev (see `if`)
   pull_request:
     branches:
       - main
     paths:
       - 'backend/**'
+      - '.github/workflows/backend-test.yaml'
 
     
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# One run per branch or pull request: a new push cancels the PR run in progress
 concurrency:
-  group: "backend-test"
-  cancel-in-progress: false
+  group: backend-test-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Default to bash
 defaults:
@@ -28,10 +31,29 @@ defaults:
 
 jobs:
   backend-test:
+    # CI runs on pushes to main and on pull requests from dev to main
+    if: github.event_name != 'pull_request' || github.head_ref == 'dev'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./backend
+    # The tests run on PostgreSQL, as in production
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: tsosi_user
+          POSTGRES_PASSWORD: tsosi_password
+          POSTGRES_DB: tsosi_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TSOSI_TEST_DB_HOST: localhost
 
     steps:
       - name: Checkout
@@ -51,4 +73,6 @@ jobs:
       - name: Create settings file
         run: cp backend_site/settings_local.test.py backend_site/settings_local.py
       - name: Run the Python tests
-        run: poetry run pytest --cov=tsosi/data --cov-report term
+        run: >-
+          poetry run pytest --ds=backend_site.settings_test_postgres
+          --cov=tsosi --cov-report term
