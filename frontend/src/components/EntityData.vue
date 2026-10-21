@@ -5,6 +5,7 @@ import type { ButtonProps } from "@/components/atoms/ButtonAtom.vue"
 import Table, { type TableColumnProps } from "@/components/TableComponent.vue"
 import { selectedCurrency } from "@/singletons/currencyStore"
 import { type EntityDetails, type Transfer } from "@/singletons/ref-data"
+import { getTransferAmountCurrency } from "@/utils/data-utils"
 import { getTransferBaseUrl } from "@/utils/url-utils"
 
 const props = defineProps<{
@@ -87,7 +88,9 @@ const baseColumns: TableColumnProps[] = [
   {
     id: "amount",
     title: "Amount",
-    labelGetter: (row) => row.amounts_clc?.[selectedCurrency.value.id] ?? null,
+    labelGetter: (row) =>
+      getTransferAmountCurrency(row as Transfer, selectedCurrency.value.id)
+        .amount,
     field: amountColumn,
     type: "number",
     sortable: true,
@@ -97,6 +100,9 @@ const baseColumns: TableColumnProps[] = [
   {
     id: "currency",
     title: "Currency",
+    labelGetter: (row) =>
+      getTransferAmountCurrency(row as Transfer, selectedCurrency.value.id)
+        .currency,
     field: currencyColumn,
     type: "string",
     currencySelector: true,

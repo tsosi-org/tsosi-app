@@ -425,6 +425,29 @@ def update_currency_rates():
         )
 
 
+# Converted amounts are stored as integers: those out of the int64 range,
+# e.g. a huge amount in a currency with a high rate, aren't computed
+INT64_LIMIT = 2.0**63
+
+
+def to_int_amounts(
+    amounts: pd.Series, transfer_ids: pd.Series, currency: str
+) -> pd.Series:
+    """
+    The amounts rounded to integers, NA for those that don't fit in int64 (a
+    warning is logged), instead of failing the conversion of all transfers.
+    """
+    amounts = amounts.round()
+    too_large = amounts.abs() >= INT64_LIMIT
+    if too_large.any():
+        logger.warning(
+            f"Amounts too large in {currency}, not computed for the "
+            f"transfers {transfer_ids[too_large].astype(str).to_list()}."
+        )
+        amounts = amounts.mask(too_large)
+    return amounts.astype("Int64")
+
+
 def compute_transfer_amounts():
     """
     Compute transfer amounts for all available currencies.
@@ -525,15 +548,19 @@ def compute_transfer_amounts():
     for c in currencies:
         col_name = f"amount_{c}"
         currency_cols.append(col_name)
-        transfers[col_name] = (
-            (transfers["amount_USD"] * transfers[c]).round().astype("Int64")
+        transfers[col_name] = to_int_amounts(
+            transfers["amount_USD"] * transfers[c], transfers["id"], c
         )
 
     # Dump results to the database
     transfers = transfers[["id", *currency_cols]].set_index("id")
     cols_rename = {c: c[-3:] for c in currency_cols}
     transfers.rename(columns=cols_rename, inplace=True)
-    transfers["amounts_clc"] = transfers.to_dict(orient="index").values()
+    # The amounts not computed are left out
+    transfers["amounts_clc"] = [
+        {c: v for c, v in amounts.items() if not pd.isna(v)} or None
+        for amounts in transfers.to_dict(orient="index").values()
+    ]
     transfers.reset_index(inplace=True)
     bulk_update_from_df(Transfer, transfers, ["id", "amounts_clc"])
     logger.info(

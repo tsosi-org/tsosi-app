@@ -12,7 +12,7 @@ def stats_view(request):
     """
 
     stats = list(
-        Entity.objects.filter(is_active=True)
+        Entity.objects.public()
         .values("tsosi_type")
         .annotate(count=Count("tsosi_type"))
         .order_by("tsosi_type")

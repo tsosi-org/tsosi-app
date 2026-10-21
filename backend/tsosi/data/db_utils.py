@@ -6,6 +6,8 @@ import pandas as pd
 from django.db import models
 from django.db.models.fields.json import KT
 from django.db.models.functions import Cast
+from simple_history.models import registered_models
+from simple_history.utils import bulk_create_with_history
 
 from .utils import chunk_df, clean_null_values, drop_keys
 
@@ -133,13 +135,17 @@ def bulk_create_from_df(
     :params track_id_col:   The optional dataframe column where to write
                             the inserted instance primary key.
 
+    The creation is recorded in the model's history, if it has one.
     """
     clean_null_values(data)
     for chunk in chunk_df(data, INSERT_CHUNK_SIZE):
         instances: pd.Series = chunk.apply(
             lambda x: model_instance_from_row(model_class, x, fields), axis=1
         )
-        results = model_class.objects.bulk_create(instances.to_list())
+        if model_class in registered_models.values():
+            results = bulk_create_with_history(instances.to_list(), model_class)
+        else:
+            results = model_class.objects.bulk_create(instances.to_list())
         if track_id_col:
             data.loc[chunk.index, track_id_col] = [r.pk for r in results]
 

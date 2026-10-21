@@ -327,6 +327,13 @@ def deploy(
         f"&& {poetry_bin} run python manage.py fill_static_data",
         ssh_client=ssh_client,
     )
+    # Initial history records of the existing rows, for the models without
+    # any history yet.
+    ssh_execute(
+        f"cd {release_dir}/{django_folder}/ "
+        f"&& {poetry_bin} run python manage.py populate_history --auto",
+        ssh_client=ssh_client,
+    )
 
     # Copy front files in release folder
     ssh_execute(f"mkdir -p {release_dir}/public", ssh_client=ssh_client)

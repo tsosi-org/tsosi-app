@@ -20,6 +20,7 @@ djangorestframework = "~3.17.2"
 django-filter = "~24.3"
 django-cors-headers = "~4.6.0"
 psycopg = "~3.2.3"
+django-simple-history = "^3.13.0"
 # Backend jobs deps
 pandas = "^3.0.3"
 aiohttp = "~3.14.4"
@@ -84,3 +85,8 @@ omit = ["**/tests/*", "tests/**", "**/__init__.py", "tsosi/data/preparation/**"]
 
 [tool.ruff.lint]
 ignore = ["RUF012"]
+
+[tool.ruff.lint.per-file-ignores]
+# The settings imported from settings_local.py look unused, but Django reads
+# them: don't let a fix on save remove them.
+"backend_site/settings*.py" = ["F401"]

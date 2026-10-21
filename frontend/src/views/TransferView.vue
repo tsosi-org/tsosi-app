@@ -171,12 +171,6 @@ const metadataConfig: Array<DataFieldProps> = [
     },
     info: "Providers of the data about this transfer",
   },
-  {
-    id: "rawData",
-    title: "Raw data",
-    field: "raw_data",
-    type: "json",
-  },
 ]
 </script>
 

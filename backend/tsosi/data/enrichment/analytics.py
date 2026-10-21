@@ -17,10 +17,10 @@ def compute_analytics() -> None:
     """
     logger.info("Computing analytics.")
     transfers = (
-        Transfer.objects.select_related("emitter", "recipient")
+        Transfer.objects.public()
+        .select_related("emitter", "recipient")
         .prefetch_related("agents")
         .filter(
-            merged_into__isnull=True,
             amounts_clc__isnull=False,
             date_clc__isnull=False,
             is_future=False,
