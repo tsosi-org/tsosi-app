@@ -7,85 +7,123 @@ import {
   computed,
   nextTick,
   onBeforeMount,
+  onMounted,
   ref,
   useTemplateRef,
-  watch,
-  type Ref,
 } from "vue"
+import { RouterLink, useRouter } from "vue-router"
 
-import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
-
+import EntityLinkDataAtom from "@/components/atoms/EntityLinkDataAtom.vue"
+import {
+  searchOrganizations,
+  type RegistryRecord,
+} from "@/singletons/hub-organizations"
 import {
   entitySearch,
   getEntities,
   queryPaginatedApiUrl,
   type ApiPaginatedData,
+  type DeepReadonly,
   type Entity,
 } from "@/singletons/ref-data"
 import { shuffleArray } from "@/utils/data-utils"
 import debounce, { type DebounceStatus } from "@/utils/debounce"
+import { getEntityUrl } from "@/utils/url-utils"
 
-interface SearchResult {
-  id: string
-  entity: Entity
-  highlighted?: boolean
-}
-
-interface SearchResults {
-  total: number
-  count: number
-  next: string | null
-  items: {
-    [categoryId: string]: {
-      title: string
-      data: SearchResult[]
-    }
-  }
-  categoryOrder: string[]
-}
-
+/**
+ * The search over the organizations, their results shown with their name
+ * and icon, by role. On the site (header), it searches the public ones, its
+ * results opening their page. In the Hub (`hub`), it picks an organization,
+ * public or not; a ROR or Wikidata ID missing from TSOSI gives its record,
+ * to add the organization, and the last option adds one from its name.
+ */
 export interface SearchBarProps {
-  fixed: boolean
+  fixed?: boolean
   width?: string
   placeHolder?: string
-  asGrowingButton?: boolean // Make the search bar smaller and growing on focus.
+  // Make the search bar smaller and growing on focus
+  asGrowingButton?: boolean
+  // Pick an organization of the Hub instead of opening its page
+  hub?: boolean
+  invalid?: boolean
+  autofocus?: boolean
 }
 
 const props = defineProps<SearchBarProps>()
+const emit = defineEmits<{
+  select: [entity: DeepReadonly<Entity>]
+  // Add the organization of a ROR or Wikidata record
+  addRecord: [record: RegistryRecord]
+  // Add an organization from its name, the one searched
+  add: [name: string]
+}>()
 
-const op = useTemplateRef("op")
+const router = useRouter()
+const popover = useTemplateRef("popover")
 const component = useTemplateRef("search-bar")
 const input = useTemplateRef("input")
-const searchResultsEl = useTemplateRef("search-results")
+const resultsElement = useTemplateRef("results")
 
-const exampleEntities: Ref<string[]> = ref([])
+// A result: an organization, the record of an ID, adding an organization
+// from the name searched, or an error
+interface Option {
+  id: string
+  category: string
+  entity?: DeepReadonly<Entity>
+  record?: RegistryRecord
+  action?: "add" | "error"
+  text?: string
+}
 
-// Search/query term
+// The results are grouped by role, then the Hub's other options
+const categories: { id: string; title?: string }[] = [
+  { id: "infra", title: "Infrastructures" },
+  { id: "supporter", title: "Supporters" },
+  { id: "actions" },
+]
+
+function roleCategory(entity: DeepReadonly<Entity>): string {
+  return entity.is_recipient ? "infra" : "supporter"
+}
+
 const searchTerm = ref("")
-// The concatenated search results
-const filteredResults: Ref<SearchResults> = ref(newEmptyResults())
-// The currently selected item index
-const highlightedIndex: Ref<number | undefined> = ref(undefined)
-// The search status
-const searchStatus: Ref<DebounceStatus> = ref("idle")
+const options = ref<Option[]>([])
+// The site's results are paginated
+const total = ref(0)
+const next = ref<string | null>(null)
+const highlightedIndex = ref<number | null>(null)
+const searchStatus = ref<DebounceStatus>("idle")
+// Only the last search's results are shown
+let searchCount = 0
 
-// Layout related refs
 const isFocused = ref(false)
-const isOpen = computed(() => {
-  return (
-    !props.asGrowingButton || searchTerm.value.length > 0 || isFocused.value
-  )
-})
-const elementWidth = computed(() => `min(${props.width || "350px"}, 85vw)`)
-const computedWidth = computed(() =>
-  isOpen.value ? elementWidth.value : "100px",
+const isOpen = computed(
+  () =>
+    !props.asGrowingButton || searchTerm.value.length > 0 || isFocused.value,
 )
-const pageSize = 20
-const itemSize = 40
+const elementWidth = computed(() =>
+  props.hub ? "100%" : `min(${props.width || "350px"}, 85vw)`,
+)
+const inputWidth = computed(() => (isOpen.value ? elementWidth.value : "100px"))
+// The Hub's search is in a table cell: its results can be wider
+const overlayWidth = ref(elementWidth.value)
+const minimumQueryLength = props.hub ? 2 : 1
 
-watch(highlightedIndex, updateHighlightedResult)
+const groups = computed(() =>
+  categories
+    .map((category) => ({
+      ...category,
+      options: options.value.filter((o) => o.category == category.id),
+    }))
+    .filter((group) => group.options.length),
+)
+
+const exampleEntities = ref<string[]>([])
 
 onBeforeMount(async () => {
+  if (props.hub) {
+    return
+  }
   const loadedEntities = Object.values((await getEntities()) || {}) as Entity[]
   shuffleArray(loadedEntities)
   exampleEntities.value = loadedEntities
@@ -98,259 +136,243 @@ onBeforeMount(async () => {
     .filter((e) => !!e)
 })
 
-async function remoteOnSearch(event: Event) {
-  const query = searchTerm.value.trim().toLowerCase()
-  const results = await entitySearch(query)
-  processResults(event, results, true)
+onMounted(async () => {
+  if (props.autofocus) {
+    // Once the popover's portal is rendered: shown before, its transition
+    // starts visible, without positioning it (the results end up at the
+    // bottom of the page)
+    await nextTick()
+    inputElement()?.focus()
+  }
+})
+
+function inputElement(): HTMLInputElement | undefined {
+  // @ts-expect-error PrimeVue's component type omits `$el`
+  return input.value?.$el
 }
 
-const debouncedOnSearch = debounce(remoteOnSearch, 250, searchStatus)
+// The options in their groups' order, which is the display's
+function sortOptions(list: Option[]): Option[] {
+  const order = categories.map((c) => c.id)
+  return [...list].sort(
+    (a, b) => order.indexOf(a.category) - order.indexOf(b.category),
+  )
+}
 
-/**
- * Query the next results page from the initial search query.
- * @param event
- */
-async function queryNextResults(event: Event) {
-  if (!filteredResults.value.next || searchStatus.value != "idle") {
+function siteOptions(results: ApiPaginatedData<Entity>): Option[] {
+  return results.results.map((entity) => ({
+    id: entity.id,
+    category: roleCategory(entity),
+    entity,
+  }))
+}
+
+async function hubOptions(query: string): Promise<Option[]> {
+  const result = await searchOrganizations(query)
+  const list: Option[] = []
+  if (!result) {
+    list.push({
+      id: "__error",
+      category: "actions",
+      action: "error",
+      text: "The search failed. Please try again.",
+    })
+  } else {
+    list.push(
+      ...result.results.map((entity) => ({
+        id: entity.id,
+        category: roleCategory(entity),
+        entity,
+      })),
+    )
+    if (result.lookup?.record) {
+      list.push({
+        id: "__record",
+        category: "actions",
+        record: result.lookup.record,
+      })
+    } else if (result.lookup?.error) {
+      list.push({
+        id: "__error",
+        category: "actions",
+        action: "error",
+        text: result.lookup.error,
+      })
+    }
+  }
+  list.push({ id: "__add", category: "actions", action: "add", text: query })
+  return list
+}
+
+async function search() {
+  const query = searchTerm.value.trim()
+  const current = ++searchCount
+  if (query.length < minimumQueryLength) {
+    options.value = []
+    next.value = null
+    return
+  }
+  let list: Option[]
+  if (props.hub) {
+    list = await hubOptions(query)
+  } else {
+    const results = await entitySearch(query.toLowerCase())
+    if (current != searchCount) {
+      return
+    }
+    list = results ? siteOptions(results) : []
+    total.value = results?.count ?? 0
+    next.value = results?.next ?? null
+  }
+  if (current != searchCount) {
+    return
+  }
+  options.value = sortOptions(list)
+  highlightedIndex.value = null
+  resultsElement.value?.scrollTo(0, 0)
+  show()
+}
+
+const debouncedSearch = debounce(search, 250, searchStatus)
+
+// The site's next results, once its results are scrolled to their end
+async function onScroll() {
+  const element = resultsElement.value
+  if (
+    !next.value ||
+    searchStatus.value != "idle" ||
+    !element ||
+    element.scrollTop + element.clientHeight < element.scrollHeight - 200
+  ) {
     return
   }
   searchStatus.value = "running"
-  const nextResults = (await queryPaginatedApiUrl(
-    filteredResults.value.next,
-  )) as ApiPaginatedData<Entity>
-  processResults(event, nextResults, false)
+  const current = searchCount
+  const results = await queryPaginatedApiUrl<Entity>(next.value)
   searchStatus.value = "idle"
-}
-
-function getItemCategory(e: Entity): string {
-  return e.is_recipient ? "infra" : "supporter"
-}
-
-/**
- * Process the API results
- * @param event The event that triggered the search
- * @param results The API results
- * @param newSearch Whether it's a search with a new query or the fetching
- *                  of the next results page.
- */
-function processResults(
-  event: Event,
-  results: ApiPaginatedData<Entity> | null,
-  newSearch = false,
-) {
-  if (newSearch) {
-    filteredResults.value = newEmptyResults()
-    if (searchResultsEl.value) {
-      searchResultsEl.value.scrollTo(0, 0)
-    }
-  }
-  if (!results) {
+  if (!results || current != searchCount) {
     return
   }
-  const categorizedResults: SearchResults = {
-    ...filteredResults.value,
-  }
-  categorizedResults.total = results.count
-  categorizedResults.count += results.results.length
-  categorizedResults.next = results.next
-
-  results.results.forEach((e) => {
-    const result = {
-      id: e.id,
-      entity: e,
-    }
-    categorizedResults.items[getItemCategory(e)].data.push(result)
-  })
-  filteredResults.value = categorizedResults
-  showResults(event, newSearch)
+  next.value = results.next
+  options.value = sortOptions([...options.value, ...siteOptions(results)])
 }
 
 /**
- * Show the popup containing the results.
- * The display is delayed if the search bar is styled as a growing button
- * to wait for the animation to end.
- *
- * @param event
- * @param reset
+ * Show the results. The growing search bar shows them once its animation
+ * ends.
  */
-function showResults(event: Event, reset = false) {
+function show() {
   if (props.asGrowingButton && !isFocused.value) {
     const wasOpen = isOpen.value
     isFocused.value = true
     if (!wasOpen) {
-      // Trigger the results popup after the searchbar animation is finished
-      setTimeout(() => showResults(event, reset), 800)
+      setTimeout(show, 800)
       return
     }
   }
-  if (reset) {
-    highlightedIndex.value = undefined
+  const element = inputElement()
+  if (!element) {
+    return
   }
-  // @ts-expect-error PrimeVue component declaration omits basic
-  // VueJS attributes..
-  op.value!.show(event, input.value!.$el)
+  if (props.hub) {
+    overlayWidth.value = `${Math.max(element.offsetWidth, 352)}px`
+  }
+  popover.value?.show({ currentTarget: element } as unknown as Event, element)
 }
 
-function newEmptyResults(): SearchResults {
-  return {
-    total: 0,
-    count: 0,
-    next: null,
-    items: {
-      infra: {
-        title: "Infrastructures",
-        data: [],
-      },
-      supporter: {
-        title: "Supporters",
-        data: [],
-      },
-    },
-    categoryOrder: ["infra", "supporter"],
-  }
-}
-
-/**
- * Reset all refs and close the overlay.
- */
-function resetSearchBar() {
-  op.value!.hide()
+function reset() {
+  popover.value?.hide()
   searchTerm.value = ""
-  filteredResults.value = newEmptyResults()
-  highlightedIndex.value = undefined
+  options.value = []
+  next.value = null
+  highlightedIndex.value = null
+  searchCount++
 }
 
-function getHighlighted(): HTMLElement | null {
-  return document.querySelector(".search-result.highlighted")
+function choose(option: Option) {
+  if (option.action == "error") {
+    return
+  }
+  if (!props.hub) {
+    router.push(getEntityUrl(option.entity as Entity))
+  } else if (option.entity) {
+    emit("select", option.entity)
+  } else if (option.record) {
+    emit("addRecord", option.record)
+  } else {
+    emit("add", option.text!)
+  }
+  reset()
+}
+
+async function highlight(index: number) {
+  highlightedIndex.value = index
+  await nextTick()
+  resultsElement.value
+    ?.querySelector(".search-result.highlighted")
+    ?.scrollIntoView({ block: "nearest" })
 }
 
 function onKeyDown(event: KeyboardEvent) {
-  if (!["ArrowDown", "ArrowUp", "Enter"].includes(event.key)) {
-    return
-  }
-  if (event.key == "Enter") {
-    getHighlighted()?.click()
-    return
-  }
-  const resultsLength = filteredResults.value.count
-  if (resultsLength == 0) {
-    return
-  }
-
-  event.stopImmediatePropagation()
-
-  if (event.key === "ArrowDown") {
-    if (highlightedIndex.value === undefined) {
-      highlightedIndex.value = 0
-    } else if (highlightedIndex.value < resultsLength - 1) {
-      highlightedIndex.value += 1
-    }
-  } else if (event.key === "ArrowUp") {
-    if (highlightedIndex.value && highlightedIndex.value > 0) {
-      highlightedIndex.value -= 1
-      // @ts-expect-error PrimeVue component declaration omits basic
-      // VueJS attributes..
-      const inputEl: HTMLInputElement = input.value.$el
-      inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length)
-      setTimeout(
-        () =>
-          inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length),
-        50,
-      )
-    }
+  const count = options.value.length
+  if (event.key == "Escape") {
+    popover.value?.hide()
+  } else if (event.key == "Enter" && highlightedIndex.value != null) {
+    event.preventDefault()
+    choose(options.value[highlightedIndex.value])
+  } else if (event.key == "ArrowDown" && count) {
+    event.preventDefault()
+    const index = highlightedIndex.value
+    highlight(index == null ? 0 : Math.min(index + 1, count - 1))
+  } else if (event.key == "ArrowUp" && count) {
+    event.preventDefault()
+    highlight(Math.max((highlightedIndex.value ?? 0) - 1, 0))
   }
 }
 
-/**
- * When the virtual scroller is scrolled, we query additional data if required.
- * @param event
- */
-function onVirtualScroll(event: Event) {
-  // Whether the search bar need to fetch addidional data
-  if (filteredResults.value.count >= filteredResults.value.total) {
-    return
-  }
-  // When to query additional data
-  const virtEl: HTMLElement = searchResultsEl.value!
-  if (virtEl.scrollTop > virtEl.scrollHeight - (pageSize * itemSize) / 2) {
-    queryNextResults(event)
-  }
-}
-
-/**
- * Update the highlighted search result and scroll the results if required.
- */
-async function updateHighlightedResult() {
-  for (const category in filteredResults.value.items) {
-    filteredResults.value.items[category].data.forEach(
-      (r) => (r.highlighted = false),
-    )
-  }
-  if (highlightedIndex.value === undefined) {
-    return
-  }
-  let index = 0
-  for (const cId of filteredResults.value.categoryOrder) {
-    const category = filteredResults.value.items[cId]
-    const catCount = category.data.length
-    if (highlightedIndex.value < index + catCount) {
-      category.data[highlightedIndex.value - index].highlighted = true
-      break
-    }
-    index += catCount
-  }
-  // Might be needed to trigger ref update??
-  const data = filteredResults.value
-  filteredResults.value = data
-  if (!searchResultsEl.value) {
-    return
-  }
-  await nextTick()
-  const highlighted = getHighlighted()
-  if (!highlighted) {
-    return
-  }
-  const rect = highlighted?.getBoundingClientRect()
-  const virtEl: HTMLElement = searchResultsEl.value
-  const virtRect = virtEl.getBoundingClientRect()
-  // We add some margin for the up scrolling because of the sticky
-  // category titles
-  const virtTop = virtRect.top + 40
-  if (rect.top < virtTop) {
-    virtEl.scrollBy(0, rect.top - virtTop)
-  } else if (rect.bottom > virtRect.bottom) {
-    virtEl.scrollBy(0, rect.bottom - virtRect.bottom)
-  }
-}
-
-function focusOut() {
+// Leaving the search closes its results: clicking them keeps the focus in
+// the search (see the overlay's mousedown)
+function onFocusOut() {
   isFocused.value = false
-  highlightedIndex.value = undefined
-  if (!searchTerm.value) {
-    op.value!.hide()
-  }
+  highlightedIndex.value = null
+  popover.value?.hide()
 }
 
 /**
- * Unset top & bottom properties calculated by PrimeVue to make the popover
- * sticks to its parent.
+ * Unset the top and bottom positions computed by PrimeVue, so that the
+ * results stick to the fixed header's search bar.
  */
 function onPopoverShow() {
   if (!props.fixed) {
     return
   }
-  // @ts-expect-error Little hack to align the popover to the search bar.
-  const popoverEl = op.value?.container || op.value?.$el.nextElementSibling
-  if (!popoverEl) {
+  // Little hack to align the popover to the search bar: PrimeVue's type
+  // omits these attributes
+  const component = popover.value as any
+  const element: HTMLElement | undefined =
+    component?.container || component?.$el.nextElementSibling
+  if (!element) {
     return
   }
-  popoverEl.style.top = "unset"
-  popoverEl.style.bottom = "unset"
+  element.style.top = "unset"
+  element.style.bottom = "unset"
+}
+
+const registryLabels: Record<string, string> = {
+  ror: "ROR",
+  wikidata: "Wikidata",
+}
+
+const entityField = {
+  id: "entity",
+  title: "Entity",
+  field: "entity",
+  type: "entityLink" as const,
 }
 </script>
 
 <template>
-  <div class="search-bar" ref="search-bar">
+  <div class="search-bar" :class="{ hub: props.hub }" ref="search-bar">
     <IconField class="search-bar-input">
       <InputIcon class="search-bar-icon">
         <font-awesome-icon
@@ -367,73 +389,93 @@ function onPopoverShow() {
         ref="input"
         v-model="searchTerm"
         :placeholder="props.placeHolder ?? 'Search'"
-        @input="debouncedOnSearch"
-        @focus="showResults"
-        @focusout="focusOut"
-        :onKeydown="onKeyDown"
+        :invalid="props.invalid"
+        role="combobox"
+        aria-autocomplete="list"
+        @input="debouncedSearch"
+        @focus="show"
+        @focusout="onFocusOut"
+        @keydown="onKeyDown"
         style="width: 100%"
         :dt="{ paddingX: '0' }"
       />
     </IconField>
 
+    <!-- In the Hub, the results float over the table, out of its cell -->
     <Popover
-      ref="op"
+      ref="popover"
       class="popover-no-arrow"
-      :append-to="component || undefined"
+      :append-to="props.hub ? 'body' : component || undefined"
       :baseZIndex="9999"
       :dt="{ gutter: 0 }"
-      :style="`--width: ${elementWidth};`"
+      :style="`--width: ${props.hub ? overlayWidth : elementWidth};`"
       @show="onPopoverShow()"
     >
-      <div class="search-bar-overlay">
-        <div v-if="filteredResults.count == 0" class="search-howto">
-          <span v-if="searchStatus == 'idle' && searchTerm.trim().length > 0">
-            No results for search "{{ searchTerm.trim() }}"<br />
-          </span>
-          <span>
-            {{
-              `Search for supporters or infrastructures such as ${exampleEntities.slice(0, -1).join(", ")} or ${exampleEntities.at(-1)}`
-            }}
-          </span>
+      <div class="search-bar-overlay" @mousedown.prevent>
+        <div v-if="!options.length" class="search-howto">
+          <template v-if="props.hub">
+            Type a name, or a ROR or Wikidata ID.
+          </template>
+          <template v-else>
+            <span v-if="searchStatus == 'idle' && searchTerm.trim().length > 0">
+              No results for search "{{ searchTerm.trim() }}"<br />
+            </span>
+            <span>
+              {{
+                `Search for supporters or infrastructures such as ${exampleEntities.slice(0, -1).join(", ")} or ${exampleEntities.at(-1)}`
+              }}
+            </span>
+          </template>
         </div>
 
         <div
           v-else
-          ref="search-results"
+          ref="results"
           class="search-results"
-          @scroll="onVirtualScroll"
-          style="max-height: 300px"
+          role="listbox"
+          @scroll="onScroll"
         >
-          <div
-            v-for="categoryId of filteredResults.categoryOrder"
-            :key="categoryId"
-          >
-            <div
-              v-if="filteredResults.items[categoryId]?.data.length"
-              class="search-category"
+          <div v-for="group of groups" :key="group.id" class="search-category">
+            <h3 v-if="group.title" class="search-category-title">
+              {{ group.title }}
+            </h3>
+            <!-- The site's results are links to their page, whole -->
+            <component
+              :is="props.hub || !option.entity ? 'div' : RouterLink"
+              v-for="option of group.options"
+              :key="option.id"
+              :to="
+                props.hub || !option.entity
+                  ? undefined
+                  : getEntityUrl(option.entity as Entity)
+              "
+              class="search-result"
+              :class="{
+                highlighted: options.indexOf(option) == highlightedIndex,
+                action: !option.entity,
+                error: option.action == 'error',
+              }"
+              role="option"
+              :aria-selected="options.indexOf(option) == highlightedIndex"
+              @click="props.hub ? choose(option) : reset()"
             >
-              <h3 class="search-category-title">
-                {{ filteredResults.items[categoryId].title }}
-              </h3>
-              <div
-                v-for="item of filteredResults.items[categoryId].data"
-                :key="item.id"
-              >
-                <EntityLinkDataAtom
-                  @click="resetSearchBar"
-                  class="search-result"
-                  :style="{ height: itemSize + 'px' }"
-                  :class="{ highlighted: item.highlighted }"
-                  :data="item"
-                  :data-field="{
-                    id: 'entity',
-                    title: 'Entity',
-                    field: 'entity',
-                    type: 'entityLink',
-                  }"
-                />
-              </div>
-            </div>
+              <EntityLinkDataAtom
+                v-if="option.entity"
+                :data="option"
+                :dataField="entityField"
+                noLink
+              />
+              <span v-else-if="option.record" class="add-option">
+                <font-awesome-icon :icon="['fas', 'plus']" />
+                Add from {{ registryLabels[option.record.registry] }}:
+                {{ option.record.name ?? option.record.identifier }}
+              </span>
+              <span v-else-if="option.action == 'add'" class="add-option">
+                <font-awesome-icon :icon="['fas', 'plus']" />
+                Not found? Add a new organization
+              </span>
+              <span v-else>{{ option.text }}</span>
+            </component>
           </div>
         </div>
       </div>
@@ -445,26 +487,19 @@ function onPopoverShow() {
 .search-bar {
   text-align: center;
 
-  &.large {
-    .search-bar-input :deep(input) {
-      font-size: 1.8rem;
-      padding-inline-start: 2em;
-    }
-
-    .search-bar-icon {
-      font-size: 1.8em;
-      margin-top: -0.5em;
-    }
+  &.hub {
+    text-align: left;
   }
 }
-.search-bar:deep(.p-popover) {
+
+.search-bar:not(.hub):deep(.p-popover) {
   top: auto !important;
   left: auto !important;
 }
 
 .search-bar-input {
   display: inline-block;
-  width: v-bind(computedWidth);
+  width: v-bind(inputWidth);
   transition: width 0.1s ease-in;
 }
 
@@ -478,11 +513,14 @@ function onPopoverShow() {
 }
 
 .search-results {
-  overflow-x: hidden;
   position: relative;
+  max-height: 300px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
-.search-results:deep(a) {
+.search-results a {
+  color: inherit;
   text-decoration: none;
 }
 
@@ -493,21 +531,40 @@ function onPopoverShow() {
 .search-result {
   display: flex;
   align-items: center;
-  text-wrap: nowrap;
+  min-height: 40px;
   max-width: var(--content-width);
-  border-radius: 4x;
-  text-decoration: none;
+  border-radius: 4px;
+  text-wrap: nowrap;
+  cursor: pointer;
 
   &.highlighted,
   &:hover {
-    cursor: pointer;
     background-color: var(--p-surface-200);
+  }
+
+  &.error {
+    color: var(--p-red-600);
+    text-wrap: wrap;
+    cursor: default;
+
+    &:hover {
+      background: none;
+    }
   }
 
   & :deep(.entity-label) {
     text-overflow: ellipsis;
     overflow: hidden;
   }
+}
+
+.add-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.3rem;
+  color: var(--p-primary-color);
+  font-weight: 600;
 }
 
 .search-category {
@@ -519,9 +576,5 @@ function onPopoverShow() {
   top: 0;
   background-color: var(--color-background);
   padding: 0.35em 0;
-}
-
-.entity-label {
-  color: var(--color-text);
 }
 </style>

@@ -3,7 +3,6 @@ import Button from "primevue/button"
 import Checkbox from "primevue/checkbox"
 import InputNumber from "primevue/inputnumber"
 import InputText from "primevue/inputtext"
-import Message from "primevue/message"
 import Panel from "primevue/panel"
 import Select from "primevue/select"
 import Textarea from "primevue/textarea"
@@ -11,6 +10,7 @@ import { computed, onMounted, ref, watch, type Ref } from "vue"
 
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 import Image from "./atoms/ImageAtom.vue"
+import Message from "./atoms/MessageAtom.vue"
 
 import { devMode } from "@/singletons/devMode"
 import ChipList, { type ChipConfig } from "@/components/atoms/ChipListAtom.vue"
@@ -24,6 +24,11 @@ const props = defineProps<{
   entity: EntityDetails
   // Whether the user is allowed to edit the entity
   editable?: boolean
+  // Whether to start in edit mode, once editable
+  startEditing?: boolean
+  // Only the profile, without the entity's data below (the Hub's "Public
+  // page" tab): no box about reading the data
+  profileOnly?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -61,6 +66,16 @@ async function startEdit() {
       .sort((a, b) => a.name.localeCompare(b.name))
   }
 }
+
+watch(
+  () => props.editable && props.startEditing,
+  (start) => {
+    if (start && !editing.value) {
+      startEdit()
+    }
+  },
+  { immediate: true },
+)
 
 async function saveEdit() {
   if (await save()) {
@@ -756,7 +771,7 @@ function isDoab(): boolean {
       </div>
     </section>
 
-    <section class="data-info" v-if="!devMode">
+    <section class="data-info" v-if="!devMode && !props.profileOnly">
       <Panel
         toggleable
         class="info-box"

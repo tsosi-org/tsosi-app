@@ -7,7 +7,6 @@ from tsosi.models import (
     Currency,
     DataLoadSource,
     Entity,
-    EntityEditAccess,
     Identifier,
     InfrastructureDetails,
     Transfer,
@@ -114,6 +113,18 @@ class EntityDetailsSerializer(BaseEntitySerializer):
         return dls
 
 
+def is_amount_hidden(transfer: Transfer) -> bool:
+    """
+    A transfer's amount is hidden unless the transfer
+    itself allows it, or one of its entities is a partner who opted into
+    showing amounts.
+    """
+    if not transfer.hide_amount:
+        return False
+    entities = [transfer.emitter, transfer.recipient, *transfer.agents.all()]
+    return not any(a.is_partner and not a.hide_amount for a in entities)
+
+
 class BaseTransferSerializer(serializers.ModelSerializer):
     """
     Base serializer for transfers. It overloads amount-related
@@ -125,14 +136,7 @@ class BaseTransferSerializer(serializers.ModelSerializer):
     currency = serializers.SerializerMethodField()
 
     def _amount_hidden(self, obj: Transfer) -> bool:
-        """
-        A transfer's amount is hidden unless the transfer itself allows it,
-        or one of its entities is a partner who opted into showing amounts.
-        """
-        if not obj.hide_amount:
-            return False
-        entities = [obj.emitter, obj.recipient, *obj.agents.all()]
-        return not any(a.is_partner and not a.hide_amount for a in entities)
+        return is_amount_hidden(obj)
 
     def get_amount(self, obj: Transfer):
         return None if self._amount_hidden(obj) else obj.amount
@@ -357,9 +361,3 @@ class EntityEditSerializer(serializers.Serializer):
             if field in attrs and not attrs[field]:
                 attrs[field] = None
         return attrs
-
-
-class EntityEditAccessSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EntityEditAccess
-        fields = ["email", "date_expires"]

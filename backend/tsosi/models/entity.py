@@ -154,8 +154,15 @@ class Entity(TimestampedModel):
     parents = models.ManyToManyField(
         "self", related_name="children", symmetrical=False
     )
+    # The organizations that added it in the Data Contribution Hub, as the
+    # beneficiary or an intermediary of their supports, when it was missing
+    # from TSOSI
+    added_in_hub_by = models.ManyToManyField(
+        "self", related_name="entities_added_in_hub", symmetrical=False
+    )
 
     class Meta:
+        verbose_name_plural = "entities"
         constraints = [
             models.CheckConstraint(
                 condition=(  # type: ignore
@@ -176,6 +183,9 @@ class Entity(TimestampedModel):
                 name="entity_not_merged_with_self",
             ),
         ]
+
+    def __str__(self) -> str:
+        return self.name
 
     @property
     def children(self) -> list[Entity]:
@@ -228,6 +238,7 @@ class Entity(TimestampedModel):
 
 
 class InfrastructureDetails(TimestampedModel):
+    history = HistoricalRecords()
     entity = models.OneToOneField(
         Entity, on_delete=models.CASCADE, related_name="infrastructure_details"
     )
@@ -241,6 +252,7 @@ class InfrastructureDetails(TimestampedModel):
     legal_entity_wikidata_id = models.TextField(null=True)
 
     class Meta:
+        verbose_name_plural = "infrastructure details"
         constraints = [
             models.CheckConstraint(
                 condition=(  # type: ignore

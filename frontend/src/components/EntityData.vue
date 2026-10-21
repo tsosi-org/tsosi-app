@@ -2,11 +2,13 @@
 import { computed, ref } from "vue"
 
 import type { ButtonProps } from "@/components/atoms/ButtonAtom.vue"
-import Table, { type TableColumnProps } from "@/components/TableComponent.vue"
-import { selectedCurrency } from "@/singletons/currencyStore"
+import Table from "@/components/TableComponent.vue"
 import { type EntityDetails, type Transfer } from "@/singletons/ref-data"
-import { getTransferAmountCurrency } from "@/utils/data-utils"
-import { getTransferBaseUrl } from "@/utils/url-utils"
+import {
+  hiddenTransferColumns,
+  transferColumns,
+  transferDetailsButton,
+} from "@/utils/transfer-table"
 
 const props = defineProps<{
   entity: EntityDetails
@@ -17,110 +19,8 @@ const props = defineProps<{
 // mainly caused by this skeleton table.
 const displaySkeletonTable = ref(true)
 
-const currencyColumn = "__currency"
-const amountColumn = "__amount"
-const baseColumns: TableColumnProps[] = [
-  {
-    id: "date_clc",
-    title: "Date",
-    field: "date_clc",
-    type: "dateWithPrecision",
-    sortable: true,
-    info: "The date field is relative. <a href='/pages/faq#what-does-the-date-column-refer-to'>See our FAQ</a>",
-    filter: {
-      enable: true,
-    },
-  },
-  {
-    id: "emitter",
-    title: "Supporter",
-    field: "emitter",
-    type: "entityLink",
-    fieldLabel: "emitter.name",
-    sortable: true,
-    filter: {
-      enable: true,
-    },
-  },
-  {
-    id: "emitterCountry",
-    title: "Country",
-    field: "emitter.country",
-    type: "country",
-    sortable: true,
-    filter: {
-      enable: true,
-    },
-  },
-  {
-    id: "agents",
-    title: "Intermediary",
-    field: "agents",
-    type: "entityLink",
-    labelGetter: (item: any) =>
-      item.agents
-        ?.map(
-          (agent: any) =>
-            `${agent?.name}` +
-            (agent?.short_name ? ` (${agent.short_name})` : ""),
-        )
-        .join(", ") || "",
-    fieldLabel: "agent.name",
-    sortable: true,
-    info: "When a transfer is done through another entity like a library consortia, it appears in this column.",
-    filter: {
-      enable: true,
-    },
-  },
-  {
-    id: "recipient",
-    title: "Beneficiary",
-    field: "recipient",
-    type: "entityLink",
-    labelGetter: (item: any) =>
-      `${item.recipient?.name}` +
-      (item.recipient?.short_name ? ` (${item.recipient.short_name})` : ""),
-    sortable: true,
-    filter: {
-      enable: true,
-    },
-  },
-  {
-    id: "amount",
-    title: "Amount",
-    labelGetter: (row) =>
-      getTransferAmountCurrency(row as Transfer, selectedCurrency.value.id)
-        .amount,
-    field: amountColumn,
-    type: "number",
-    sortable: true,
-    nullValueTemplate: '<span class="data-label hidden-amount">hidden</span>',
-    info: "The amount of the support may be hidden. See <a href='/pages/faq#amounts-hidden'>the FAQ</a>",
-  },
-  {
-    id: "currency",
-    title: "Currency",
-    labelGetter: (row) =>
-      getTransferAmountCurrency(row as Transfer, selectedCurrency.value.id)
-        .currency,
-    field: currencyColumn,
-    type: "string",
-    currencySelector: true,
-  },
-]
-
-const buttons: Array<ButtonProps> = [
-  {
-    id: "transferDetails",
-    icon: ["fas", "ellipsis"],
-    type: "pageLink",
-    linkConfig: {
-      base: getTransferBaseUrl(),
-      suffix: "id",
-      suffixType: "field",
-    },
-  },
-]
+const baseColumns = transferColumns()
+const buttons: Array<ButtonProps> = [transferDetailsButton]
 
 const exportString = `TSOSI_${props.entity.name.replace(/\s+/g, "_")}`
 // Config for the transfer table
@@ -128,25 +28,7 @@ const tableProps = computed(() => {
   if (!props.transfers) {
     return null
   }
-  const toRemoveCols: string[] = []
-  if (props.transfers.every((t) => t.amount == null)) {
-    toRemoveCols.push("currency")
-    if (props.entity.is_recipient) {
-      toRemoveCols.push("amount")
-    }
-  }
-  if (props.transfers.every((t) => t.agent_ids.length == 0)) {
-    toRemoveCols.push("agents")
-  }
-  if (props.transfers.every((t) => t.emitter_id == props.entity.id)) {
-    toRemoveCols.push("emitter")
-  }
-  if (!props.entity.is_recipient) {
-    toRemoveCols.push("emitterCountry")
-  }
-  if (props.transfers.every((t) => t.recipient_id == props.entity.id)) {
-    toRemoveCols.push("recipient")
-  }
+  const toRemoveCols = hiddenTransferColumns(props.entity, props.transfers)
 
   return {
     id: `${props.entity.id}-transfers`,
@@ -159,6 +41,7 @@ const tableProps = computed(() => {
     rowUniqueId: "id",
     buttons: buttons,
     exportTitle: exportString,
+    urlState: true,
   }
 })
 

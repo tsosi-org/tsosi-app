@@ -4,8 +4,10 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGithub, faLinkedin } from "@fortawesome/free-brands-svg-icons";
 import {
   faAngleRight,
+  faArrowLeft,
   faArrowUpRightFromSquare,
   faAt,
+  faBan,
   faBars,
   faBuildingColumns,
   faBullhorn,
@@ -13,25 +15,38 @@ import {
   faChartColumn,
   faCheck,
   faChevronLeft,
+  faCircleCheck,
+  faCircleExclamation,
   faCircleInfo,
   faCircleQuestion,
   faClock,
+  faClone,
   faDownload,
   faEllipsis,
   faEllipsisVertical,
   faEnvelope,
+  faEquals,
+  faEyeSlash,
   faGlobe,
+  faHourglassHalf,
   faHouse,
   faImage,
   faLink,
   faListUl,
   faLocationDot,
+  faLock,
   faMagnifyingGlass,
   faMagnifyingGlassChart,
+  faNotEqual,
+  faPaperPlane,
   faPen,
+  faPlus,
+  faRotateLeft,
   faSpinner,
   faSquareCheck,
   faSquareXmark,
+  faTrash,
+  faTriangleExclamation,
   faUser,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
@@ -97,6 +112,38 @@ const MyPreset = definePreset(Aura, {
     dialog: {
       color: "var(--p-neutral-950)",
     },
+    // Messages with a thin neutral frame, unlike the info boxes
+    // (`.info-box`), whatever their severity: `MessageAtom` shows it with
+    // an icon.
+    message: {
+      root: {
+        borderRadius: "5px",
+      },
+      content: {
+        padding: "min(1em, 3vw) min(1rem, 1vw)",
+      },
+      text: {
+        fontWeight: "400",
+      },
+      colorScheme: {
+        light: Object.fromEntries(
+          ["info", "success", "warn", "error"].map((severity) => [
+            severity,
+            {
+              // Opaque, for the messages floating over the page
+              background: "var(--color-background)",
+              borderColor: "{surface.200}",
+              color: "{neutral.950}",
+              shadow: "none",
+              closeButton: {
+                hoverBackground: "{surface.100}",
+                focusRing: { color: "{primary.color}" },
+              },
+            },
+          ]),
+        ),
+      },
+    },
   },
 })
 
@@ -118,6 +165,7 @@ const usedIcons = [
   faAngleRight,
   faArrowUpRightFromSquare,
   faAt,
+  faBan,
   faBars,
   faBuildingColumns,
   faCalendar,
@@ -128,14 +176,19 @@ const usedIcons = [
   faClock,
   faCircleQuestion,
   faCircleInfo,
+  faCircleCheck,
+  faCircleExclamation,
+  faTriangleExclamation,
   faDownload,
   faEllipsisVertical,
   faEllipsis,
   faEnvelope,
+  faEyeSlash,
   faGithub,
   faLinkedin,
   faBullhorn,
   faGlobe,
+  faHourglassHalf,
   faHouse,
   faImage,
   faLink,
@@ -144,10 +197,19 @@ const usedIcons = [
   faMagnifyingGlass,
   faMagnifyingGlassChart,
   faPen,
+  faPlus,
+  faRotateLeft,
   faSpinner,
   faSquareCheck,
   faSquareXmark,
+  faTrash,
   faXmark,
+  faArrowLeft,
+  faClone,
+  faLock,
+  faPaperPlane,
+  faEquals,
+  faNotEqual,
 ]
 library.add(...usedIcons)
 app.component("font-awesome-icon", FontAwesomeIcon)

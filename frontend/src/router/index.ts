@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router"
 
-import { extractEditKey } from "@/singletons/edit-access"
+import { extractLoginToken, hubGuard } from "@/singletons/hub-session"
 import { applyRouteMeta, removeTrailingSlash } from "@/utils/seo"
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -124,6 +123,10 @@ const router = createRouter({
     },
     {
       path: "/new-provider",
+      redirect: (to) => ({ path: "/pages/new-provider", query: to.query }),
+    },
+    {
+      path: "/pages/new-provider",
       name: "new-provider",
       component: () => import("@/views/ProvideView.vue"),
       meta: {
@@ -131,8 +134,36 @@ const router = createRouter({
           "Become a TSOSI data provider and make your financial support to open infrastructures visible.",
       },
     },
+    {
+      path: "/hub/login",
+      name: "hub-login",
+      component: () => import("@/views/HubLoginView.vue"),
+    },
+    {
+      // Redirects to the member's organization Hub (see `hubGuard`)
+      path: "/hub",
+      name: "hub",
+      component: () => import("@/views/HubView.vue"),
+      meta: { hub: true },
+    },
+    {
+      path: "/hub/:entityId",
+      name: "hub-home",
+      component: () => import("@/views/HubView.vue"),
+      meta: { hub: true },
+    },
+    {
+      path: "/hub/:entityId/submit",
+      name: "hub-submit",
+      component: () => import("@/views/HubSubmitView.vue"),
+      meta: { hub: true },
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
+    // Only the query changed, e.g. a table's sort kept in the URL: stay
+    if (from.matched.length && to.path == from.path && to.hash == from.hash) {
+      return false
+    }
     if (to.hash === "#contact") {
       return false
     }
@@ -159,8 +190,9 @@ const router = createRouter({
   },
 })
 
-router.beforeEach(extractEditKey)
 router.beforeEach(removeTrailingSlash)
+router.beforeEach(extractLoginToken)
+router.beforeEach(hubGuard)
 router.afterEach(applyRouteMeta)
 
 // After a deploy, the chunks of the previous build no longer exist: load the

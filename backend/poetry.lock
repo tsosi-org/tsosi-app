@@ -1280,6 +1280,24 @@ files = [
 Django = ">=4.2"
 
 [[package]]
+name = "django-sesame"
+version = "3.2.5"
+description = "Frictionless authentication with \"Magic Links\" for your Django project."
+optional = false
+python-versions = ">=3.11"
+groups = ["main"]
+files = [
+    {file = "django_sesame-3.2.5-py3-none-any.whl", hash = "sha256:dfca2b0e0d480408894d9d0423109dc659d186e1946184f62506eeda2b4377c1"},
+    {file = "django_sesame-3.2.5.tar.gz", hash = "sha256:eeb662069ea74d635ab11e0f93446c8a7c187f41b0788ddc3c6c72c6f8db2eb1"},
+]
+
+[package.dependencies]
+django = ">=5.2"
+
+[package.extras]
+ua = ["ua-parser (>=0.15)"]
+
+[[package]]
 name = "django-simple-history"
 version = "3.13.0"
 description = "Store model history and view/revert changes from admin site."
@@ -4336,4 +4354,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "85c02850f1b94b2e4fc8cdba678ee2cd5f2b1b31fb70f02e13843496fa21ae83"
+content-hash = "7d2f249fb143e47cfaec48a6a5f05b0298447f82e9515af749cb7728d5636366"

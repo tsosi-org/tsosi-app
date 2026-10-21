@@ -1,4 +1,4 @@
-import type { Entity } from "@/singletons/ref-data"
+import type { DeepReadonly, Entity } from "@/singletons/ref-data"
 
 
 export function getEntityBaseUrl(): string {
@@ -7,6 +7,16 @@ export function getEntityBaseUrl(): string {
 
 export function getTransferBaseUrl(): string {
   return "/transfers/"
+}
+
+/**
+ * The ID of the organization in its Hub's URLs: its TSOSI ID.
+ */
+export function getHubEntityRef(
+  entity: DeepReadonly<Pick<Entity, "id" | "identifiers">>,
+): string {
+  const tsosi = entity.identifiers.find((id) => id.registry == "tsosi")
+  return tsosi?.value ?? entity.id
 }
 
 export function getEntityUrl(entity: Entity): string {

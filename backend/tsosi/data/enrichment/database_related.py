@@ -574,7 +574,6 @@ def update_entities_relationships(
             entity.parents.add(entity_id)
         for entity_id in entity_old_parents_ids - entity_new_parents_ids:
             entity.parents.remove(entity_id)
-        entity.save()
 
 
 def new_identifiers_from_records(registry_id: str) -> TaskResult:
@@ -715,19 +714,23 @@ def update_transfer_date_clc():
 def update_entity_active_status():
     """
     Update the active status entities.
-    An entity is active if it's a partner or if it's referenced in 1+ transfer.
+    An entity is active if it's a partner, if it's referenced in 1+ transfer,
+    or if it was added in the Data Contribution Hub, to be used in supports
+    not published yet.
     """
     logger.info("Updating active entities.")
     instances = Entity.objects.annotate(
         emitter_nb=Count("transfer_as_emitter"),
         recipient_nb=Count("transfer_as_recipient"),
         agent_nb=Count("transfer_as_agent"),
+        added_in_hub_nb=Count("added_in_hub_by"),
     ).values(
         "id",
         "is_partner",
         "emitter_nb",
         "recipient_nb",
         "agent_nb",
+        "added_in_hub_nb",
         "merged_with",
     )
     data = pd.DataFrame.from_records(instances)
@@ -736,6 +739,7 @@ def update_entity_active_status():
         | (data["emitter_nb"] > 0)
         | (data["recipient_nb"] > 0)
         | (data["agent_nb"] > 0)
+        | (data["added_in_hub_nb"] > 0)
     )
     bulk_update_from_df(Entity, data, ["id", "is_active"])
 

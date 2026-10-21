@@ -1,0 +1,24 @@
+{% extends "admin/change_form.html" %}
+
+{% comment %}
+The submission page is read-only: its actions post the page's form, with its
+CSRF token, to their own views (`formaction`).
+{% endcomment %}
+{% block submit_buttons_bottom %}
+{% if original.status == "submitted" and can_publish %}
+<div class="submit-row">
+  <input type="submit" class="default" value="Approve and publish"
+         formaction="{% url 'admin:tsosi_submission_approve' original.pk %}">
+  <input type="submit" value="Return to member"
+         formaction="{% url 'admin:tsosi_submission_return' original.pk %}">
+</div>
+<p class="help">
+  Approving publishes all the changes at once on tsosi.org. Returning unlocks
+  them in the Hub, to be fixed and submitted again: tell the members why by
+  e-mail.
+</p>
+{% elif original.status == "publishing" %}
+<p class="help">Publishing… Reload the page in a moment to see the result.</p>
+{% endif %}
+{{ block.super }}
+{% endblock %}

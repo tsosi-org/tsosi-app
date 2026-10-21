@@ -10,7 +10,7 @@ from celery.utils.log import get_task_logger
 from redis.lock import Lock
 
 from .app_settings import app_settings
-from .data import data_updates, enrichment, ingestion
+from .data import data_updates, enrichment, hub_publication, ingestion
 from .data.currencies import currency_rates
 from .data.task_result import TaskResult
 from .models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
@@ -151,6 +151,14 @@ def ingest_test():
     for f in files:
         _ = ingestion.ingest_data_file(folder / f, send_signals=False)
     ingestion.send_post_ingestion_signals()
+
+
+@shared_task(base=TsosiLockedTask)
+def publish_submission(submission_id: int, user_id: int | None = None):
+    """
+    Publish a Data Contribution Hub submission approved by the TSOSI team.
+    """
+    return hub_publication.run_publication(submission_id, user_id)
 
 
 @shared_task(base=TsosiLockedTask)

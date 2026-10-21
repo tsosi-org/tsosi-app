@@ -47,3 +47,9 @@ def test_entity_active_status(datasources):
     update_entity_active_status()
     e_1.refresh_from_db()
     assert e_1.is_active
+
+    # Added in the Hub, without transfer yet
+    e_0.added_in_hub_by.add(e_2)
+    update_entity_active_status()
+    e_0.refresh_from_db()
+    assert e_0.is_active

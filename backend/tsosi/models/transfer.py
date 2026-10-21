@@ -131,6 +131,10 @@ class Transfer(TimestampedModel):
     hide_amount = models.BooleanField(default=False)
     scoss = models.BooleanField(default=False)
     is_future = models.BooleanField(default=False)
+    # A source transfer with the organization's own values, declared in the
+    # Hub (a new support or an edit, not a confirmation): they win when
+    # merged (`by_precedence`)
+    hub_values = models.BooleanField(default=False)
     merged_into = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
