@@ -5,6 +5,7 @@ import pytest
 
 from tsosi.data.enrichment.merging import merge_entities
 from tsosi.data.exceptions import DataException
+from tsosi.models.entity import ENTITY_SCOPE_IN
 from tsosi.models.transfer import MATCH_CRITERIA_MERGED
 from tsosi.models.utils import MATCH_SOURCE_AUTOMATIC
 
@@ -31,6 +32,7 @@ def test_merging(datasources):
         raw_website="https://test.example",
         description="my_desc",
         short_name="E",
+        scope=ENTITY_SCOPE_IN,
     )
     t_e_1 = TransferFactory.create(emitter=e_merged_1)
     t_e_2 = TransferFactory.create(emitter=e_merged_1)
@@ -59,6 +61,7 @@ def test_merging(datasources):
     assert e_1.raw_website == e_merged_1.raw_website
     assert e_1.description == e_merged_1.description
     assert e_1.short_name == e_merged_1.short_name
+    assert e_1.scope == ENTITY_SCOPE_IN
 
     # Check merging related data
     assert e_merged_1.merged_with == e_1

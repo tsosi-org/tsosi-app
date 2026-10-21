@@ -743,7 +743,7 @@ def update_entity_active_status():
 def update_entity_roles_clc():
     """
     Update the `is_emitter`, `is_recipient`, `is_agent`, `is_partner` booleans according
-    to the transfer data.
+    to the public transfer data.
     """
     logger.info("Updating entity roles.")
 
@@ -754,9 +754,7 @@ def update_entity_roles_clc():
     }
 
     transfers = pd.DataFrame.from_records(
-        Transfer.objects.filter(merged_into__isnull=True).values(
-            "id", *fields_lookup.keys()
-        )
+        Transfer.objects.public().values("id", *fields_lookup.keys())
     )
     entities_cols = list(fields_lookup.values()) + ["is_partner"]
     entities = pd.DataFrame.from_records(

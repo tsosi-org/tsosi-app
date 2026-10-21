@@ -106,6 +106,7 @@ def merge_entities(
         "raw_website",
         "description",
         "short_name",
+        "scope",
     ]
 
     # 1 - Update the entities to be merged

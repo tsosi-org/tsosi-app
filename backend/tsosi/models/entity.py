@@ -5,6 +5,8 @@ import uuid
 
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
+from django.db.models import Q
+from simple_history.models import HistoricalRecords
 
 from .api_request import ApiRequest
 from .registry import Registry
@@ -19,6 +21,16 @@ def entity_logo_path(instance: Entity, filename: str) -> str:
 def entity_icon_path(instance: Entity, filename: str) -> str:
     """Return the file path where to store the entity icon file"""
     return f"{instance.id}/icon/{filename}"
+
+
+ENTITY_SCOPE_IN = "in_scope"
+ENTITY_SCOPE_OUT = "out_of_scope"
+ENTITY_SCOPE_TO_CHECK = "to_check"
+ENTITY_SCOPE_CHOICES = {
+    ENTITY_SCOPE_IN: "In TSOSI's scope",
+    ENTITY_SCOPE_OUT: "Not in TSOSI's scope",
+    ENTITY_SCOPE_TO_CHECK: "To be checked by the curation board",
+}
 
 
 class EntityQuerySet(models.QuerySet):
@@ -43,6 +55,18 @@ class EntityQuerySet(models.QuerySet):
             entity = entity.last()
         return entity
 
+    def public(objects):
+        """
+        Return the entities shown on the public site: the active entities
+        involved in 1+ public transfer, and the partners.
+        """
+        return objects.filter(is_active=True).filter(
+            Q(is_emitter=True)
+            | Q(is_recipient=True)
+            | Q(is_agent=True)
+            | Q(is_partner=True)
+        )
+
 
 class Entity(TimestampedModel):
     """
@@ -50,6 +74,7 @@ class Entity(TimestampedModel):
     """
 
     objects = EntityQuerySet.as_manager()
+    history = HistoricalRecords()
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     # The following attributes prefixed with `raw_` corresponds to default
     # values to be used for the CLC values without the prefixes.
@@ -97,6 +122,12 @@ class Entity(TimestampedModel):
     date_wikipedia_fetched = models.DateTimeField(null=True)
 
     is_partner = models.BooleanField(default=False)
+    # Whether the entity, as a beneficiary, is in TSOSI's scope. Only the
+    # transfers to a beneficiary in scope are public. Null for the entities
+    # that are not beneficiaries.
+    scope = models.CharField(
+        max_length=16, choices=ENTITY_SCOPE_CHOICES, null=True
+    )
     is_barcelona = models.BooleanField(default=False)
     # Whether transfer amounts should be hidden for this partner, overridable
     # per-transfer visibility (see `Transfer.hide_amount`)

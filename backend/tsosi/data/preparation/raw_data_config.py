@@ -69,7 +69,6 @@ __all__ = [
     "FieldDateStart",
     "FieldDateEnd",
     "FieldOriginalId",
-    "FieldOriginalAmountField",
 ]
 
 INPUT_FILE_TYPES = [".xlsx", ".xls", ".json"]
@@ -270,16 +269,6 @@ class FieldOriginalId(ConstOrField):
 
 
 @dataclass(kw_only=True)
-class FieldRawData(ConstOrField):
-    NAME = "raw_data"
-
-
-@dataclass(kw_only=True)
-class FieldOriginalAmountField(ConstOrField):
-    NAME = "original_amount_field"
-
-
-@dataclass(kw_only=True)
 class FieldHideAmount(ConstOrField):
     NAME = "hide_amount"
     required = True
@@ -316,7 +305,6 @@ ALL_FIELDS: list[Type[ConstOrField]] = [
     FieldDateStart,
     FieldDateEnd,
     FieldOriginalId,
-    FieldOriginalAmountField,
     FieldSupportType,
 ]
 
@@ -523,18 +511,8 @@ class RawDataConfig:
             format = field.format if field and field.format else DATE_FORMAT
             df[col] = df[col].apply(lambda x: undate(x, format))
 
-        df[FieldRawData.NAME] = df.apply(
-            lambda row: row.dropna().to_dict(), axis=1
-        )
-        amount_field = self.get_field(FieldAmount)
-        df[FieldOriginalAmountField.NAME] = (
-            amount_field.field if amount_field.field else None
-        )
         # Rename columns to appropriate referenced names
-        cols_to_rename = {
-            FieldRawData.NAME: FieldRawData.NAME,
-            FieldOriginalAmountField.NAME: FieldOriginalAmountField.NAME,
-        }
+        cols_to_rename = {}
 
         for field in self.active_fields:
             if not field.field:
