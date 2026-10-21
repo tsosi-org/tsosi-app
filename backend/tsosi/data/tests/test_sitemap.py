@@ -26,15 +26,20 @@ def test_sitemap(registries, settings, tmp_path):
         )
     settings.TSOSI_PUBLIC_RELPATH = str(tmp_path)
 
-    entity = EntityFactory.create()
+    entity = EntityFactory.create(is_emitter=True)
     IdentifierFactory.create(
         entity=entity, registry_id=REGISTRY_TSOSI, value="T123456"
     )
     # Entities are listed by their TSOSI ID only
     IdentifierFactory.create(entity=entity, value="05amyt365")
-    inactive = EntityFactory.create(is_active=False)
+    inactive = EntityFactory.create(is_active=False, is_emitter=True)
     IdentifierFactory.create(
         entity=inactive, registry_id=REGISTRY_TSOSI, value="T654321"
+    )
+    # Only the public ones
+    not_public = EntityFactory.create()
+    IdentifierFactory.create(
+        entity=not_public, registry_id=REGISTRY_TSOSI, value="T111111"
     )
 
     response = Client().get("/sitemap.xml")
@@ -47,6 +52,7 @@ def test_sitemap(registries, settings, tmp_path):
     assert f"<loc>{base_url}/entities/T123456</loc>" in content
     assert "05amyt365" not in content
     assert "T654321" not in content
+    assert "T111111" not in content
     assert (
         f"<loc>{base_url}/pages/blog/2026-02-10-ror-hierarchy/</loc>"
         "<lastmod>2026-03-18</lastmod>"

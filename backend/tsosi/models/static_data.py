@@ -105,6 +105,10 @@ DATA_SOURCES = [
     "urfist",
     "utrecht",
 ]
+# The supports declared by the organizations in the Data Contribution Hub,
+# published on approval of their submissions. It's no source of prepared
+# files: it's not in `DATA_SOURCES`.
+HUB_DATA_SOURCE = "tsosi_portal"
 
 
 def create_sources():
@@ -112,7 +116,7 @@ def create_sources():
     now = timezone.now()
     existing_sources = DataSource.objects.all().values_list("id", flat=True)
     to_create = []
-    for source_id in DATA_SOURCES:
+    for source_id in [*DATA_SOURCES, HUB_DATA_SOURCE]:
         if source_id in existing_sources:
             continue
         source = DataSource()

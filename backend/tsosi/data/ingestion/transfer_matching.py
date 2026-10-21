@@ -29,6 +29,10 @@ CRITERIA_DATE_START = "date_start"
 CRITERIA_DATE_END = "date_end"
 CRITERIA_DATE_CLC = "date_clc"
 
+# How a candidate matches a transfer (see `match_candidate`)
+MATCH_SAME = "same"
+MATCH_AMOUNT_DIFFERS = "amount_differs"
+
 
 def format_date(date: Date | None, precision: str | None = None) -> str | None:
     """
@@ -181,6 +185,22 @@ def transfer_is_matching(
     return True, None
 
 
+def match_candidate(transfer: Transfer, candidate: Transfer) -> str | None:
+    """
+    Whether the candidate may be the same support as the transfer, with the
+    criteria of `transfer_is_matching`: `MATCH_SAME` when they match,
+    `MATCH_AMOUNT_DIFFERS` when only their amounts differ, else None.
+    The transfer can be unsaved, e.g. built from values declared in the Hub:
+    only the candidate's converted amounts are used.
+    """
+    is_matching, criteria = transfer_is_matching(transfer, candidate)
+    if is_matching:
+        return MATCH_SAME
+    if criteria == CRITERIA_AMOUNT:
+        return MATCH_AMOUNT_DIFFERS
+    return None
+
+
 def get_non_null(*args: list[float | None]) -> float | None:
     """
     Return the first non-null value from args.
@@ -256,15 +276,33 @@ def copy_transfer(transfer: Transfer) -> Transfer:
     return copy
 
 
+def by_precedence(
+    transfers: list[Transfer],
+) -> tuple[list[Transfer], list[Transfer]]:
+    """
+    The transfers with values declared in the Data Contribution Hub
+    (`hub_values`: new supports and edits), and all the transfers with those
+    first. The organizations' own values win over the best value rule. Not
+    their confirmations, which leave the values to the other sources, e.g. a
+    later correction by the infrastructure.
+    """
+    declared = [t for t in transfers if t.hub_values]
+    return declared, declared + [t for t in transfers if t not in declared]
+
+
 def get_merged_fields(transfers: list[Transfer]) -> dict:
     """
     Compute the fields of the transfer merging the given source transfers.
+    The values declared in the Hub come first (see `by_precedence`): the
+    first non-null one, the first amount, and their most precise dates.
     """
+    declared, transfers = by_precedence(transfers)
     fields = {
         "emitter": get_non_null(*[t.emitter for t in transfers]),
         "recipient": get_non_null(*[t.recipient for t in transfers]),
         **{
-            field: get_best_date(*[getattr(t, field) for t in transfers])
+            field: get_best_date(*[getattr(t, field) for t in declared])
+            or get_best_date(*[getattr(t, field) for t in transfers])
             for field in MERGE_DATE_FIELDS
         },
         "description": get_non_null(*[t.description for t in transfers]),
@@ -276,6 +314,35 @@ def get_merged_fields(transfers: list[Transfer]) -> dict:
         *transfers
     )
     return fields
+
+
+def get_merged_agents(transfers: list[Transfer]) -> set:
+    """
+    The intermediaries of the transfer merging the given source transfers:
+    those of all of them, or those declared in the Hub if any.
+    """
+    declared, _ = by_precedence(transfers)
+    return set().union(*[set(t.agents.all()) for t in declared or transfers])
+
+
+def update_merged_transfer(merged: Transfer, transfers: list[Transfer]):
+    """
+    Set the fields of the merged transfer from its source transfers.
+    """
+    fields = get_merged_fields(transfers)
+    # Reset the other fields, computed later by the enrichment tasks,
+    # as for a new transfer.
+    for field in Transfer._meta.concrete_fields:
+        if field.name in fields or field.name in MERGE_KEPT_FIELDS:
+            continue
+        setattr(merged, field.attname, field.get_default())
+    for name, value in fields.items():
+        setattr(merged, name, value)
+    merged.save()
+    merged.agents.set(get_merged_agents(transfers))
+    merged.data_load_sources.set(
+        set().union(*[set(t.data_load_sources.all()) for t in transfers])
+    )
 
 
 @transaction.atomic
@@ -299,21 +366,8 @@ def merge_transfers(
         right_sources = [copy_transfer(transfer_right)]
     transfers = [*left_sources, *right_sources]
 
-    fields = get_merged_fields(transfers)
     merged = transfer_right
-    # Reset the other fields, computed later by the enrichment tasks,
-    # as for a new transfer.
-    for field in Transfer._meta.concrete_fields:
-        if field.name in fields or field.name in MERGE_KEPT_FIELDS:
-            continue
-        setattr(merged, field.attname, field.get_default())
-    for name, value in fields.items():
-        setattr(merged, name, value)
-    merged.save()
-    merged.agents.set(set().union(*[set(t.agents.all()) for t in transfers]))
-    merged.data_load_sources.set(
-        set().union(*[set(t.data_load_sources.all()) for t in transfers])
-    )
+    update_merged_transfer(merged, transfers)
     for transfer in transfers:
         transfer.merged_into = merged
         transfer.save()
@@ -439,10 +493,10 @@ def deduplicate_transfers(source: DataLoadSource) -> None:
     to_check = []
     for transfer in source_transfers:
         for other_transfer in all_other_transfers:
-            is_matching, reason = transfer_is_matching(transfer, other_transfer)
-            if is_matching:
+            match = match_candidate(transfer, other_transfer)
+            if match == MATCH_SAME:
                 matches.append((transfer.id, other_transfer.id))
-            elif reason == CRITERIA_AMOUNT:
+            elif match == MATCH_AMOUNT_DIFFERS:
                 to_check.append((transfer.id, other_transfer.id))
     # Raise if multiple matches found
     raise_if_multiple_matches(matches, to_check)

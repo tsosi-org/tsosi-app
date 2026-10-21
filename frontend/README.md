@@ -42,7 +42,7 @@ The different routes are defined [here](./src/router/index.ts):
 - `/explore` - [Entity list](./src/views/EntityListView.vue) - Browse and filter all entities (`/entities` redirects here).
 - `/entities/:id` - [Entity pages](./src/views/EntityView.vue) - The core of the application, individual entity page showing metadata and listing transfers.
 - `/transfers/:id` - [Transfer pages](./src/views/TransferView.vue) - Individual transfer page.
-- `/new-provider` - [Become a data provider](./src/views/ProvideView.vue) - Explains how to become a data provider and embeds a Grist form, prefilled with the `name` and `ror_url` query parameters.
+- `/pages/new-provider` - [Become a data provider](./src/views/ProvideView.vue) - Explains how to become a data provider and embeds a Grist form, prefilled with the `name` and `ror_url` query parameters (`/new-provider` redirects here, with its query).
 - `/pages/*` - Static pages: [FAQ](./src/views/FaqView.vue), [About](./src/views/AboutView.vue), [Legal notice](./src/views/LegalNotices.vue), [Privacy policy](./src/views/PrivacyPolicyView.vue), [Newsletter](./src/views/NewsView.vue) and [Blog](./src/views/BlogView.vue) (list and individual posts).
 - Any other path - [Not found page](./src/views/NotFoundView.vue).
 
@@ -83,6 +83,21 @@ Shared styles are put in [base.css](./src/assets/css/base.css) or [main.css](./s
 As much as possible, data components are abstracted to work with any data type (example: [TableComponent](./src/components/TableComponent.vue) or [SummaryComponent](./src/components/SummaryComponent.vue)).
 The goal is to pass a "config" object to the component that indicates how to retrieve the data and how to process it, mainly according to the data type.
 See [data-utils.ts](./src/utils/data-utils.ts).
+
+### Table state in the URL
+
+A `TableComponent` given `urlState` keeps its sort, filters and page in the URL's query, so that a table view can be shared, and is found again when coming back in the history (e.g. Back from a transfer's page). The transfers table of the entity pages and the Hub's supports table use it.
+
+- `sort`: the column IDs in their sort order, `-` for descending, e.g. `?sort=-date_clc,amount`.
+- `f_<column ID>`: one param per filter, e.g. `?f_recipient=doaj`. Filters only show from 10 rows: those of the URL are ignored below.
+- `page`: from 1.
+- Those of the default state are left out (default sort, no filter, page 1), so that a table with no change has a clean URL. The other params of the page are kept, e.g. the Hub's `tab` and `status` (the status picked in its legend, synced by `HubSupports`).
+- With several tables on a page, `urlState` can be a prefix for their params (`urlState: "supports_"` gives `supports_sort`, …).
+- Not in the URL: the rows per page, the row being edited.
+
+The URL is updated with `router.replace`, not `push`: Back leaves the page instead of undoing a sort, and the current history entry holds the state to restore. The router's `scrollBehavior` doesn't scroll when only the query changes. The params are user input: unknown, non-sortable or non-filterable columns, invalid orders and pages, and select filter values not in `filter.options` are ignored. A link to the same page with other params updates the table, which isn't remounted. The helpers are in [url-state.ts](./src/utils/url-state.ts).
+
+The sort functions are kept per column ID (`sortFunctions`), as the DataTable matches the sorting to its column by comparing them with `===`; they map the column IDs of the URL to the DataTable's sort. A row being edited in the Hub keeps its place: `sortRow` gives the values it's sorted by, its saved ones.
 
 ## Icons - Font Awesome
 

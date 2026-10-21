@@ -1,6 +1,5 @@
 import pytest
-from rest_framework.test import APIClient
-from tsosi.models import EntityEditAccess
+from tsosi.models import InfrastructureDetails
 from tsosi.models.entity import ENTITY_SCOPE_IN, ENTITY_SCOPE_TO_CHECK
 
 from .factories import EntityFactory
@@ -47,17 +46,27 @@ def test_no_entity_add_or_delete(admin_client):
 
 
 @pytest.mark.django_db
-def test_api_ignores_admin_session(registries, admin_user):
-    """
-    A Django admin session doesn't authenticate the API, so it doesn't
-    require a CSRF token on the API's write requests.
-    """
-    entity = EntityFactory.create(is_recipient=True)
-    _, key = EntityEditAccess.create_with_key(entity, "a@example.org", 1)
-    client = APIClient(enforce_csrf_checks=True)
-    client.force_login(admin_user)
-    client.credentials(HTTP_AUTHORIZATION=f"Bearer {key}")
-    response = client.patch(
-        f"/api/entities/{entity.id}/edit/", {"short_name": "E"}, format="json"
+def test_entity_public_page_link(admin_client):
+    entity = EntityFactory.create()
+    response = admin_client.get(f"{ENTITY_ADMIN_URL}{entity.id}/change/")
+    assert f"/entities/{entity.id}?edit" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_entity_hub_link(admin_client):
+    entity = EntityFactory.create()
+    response = admin_client.get(f"{ENTITY_ADMIN_URL}{entity.id}/change/")
+    assert f"/hub/{entity.id}" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_infrastructure_history(admin_client):
+    entity = EntityFactory.create()
+    url = f"{ENTITY_ADMIN_URL}{entity.id}/change/"
+    details = InfrastructureDetails.objects.create(
+        entity=entity, support_url="https://support.org"
     )
-    assert response.status_code == 200, response.data
+    history_url = f"/admin/tsosi/infrastructuredetails/{details.pk}/history/"
+    assert history_url in admin_client.get(url).content.decode()
+    response = admin_client.get(history_url)
+    assert response.status_code == 200

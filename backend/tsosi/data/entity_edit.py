@@ -1,6 +1,9 @@
 """
-Manual edition of an entity's data by an external user granted with
-a temporary `EntityEditAccess`.
+Manual edition of an entity's profile by its members or the TSOSI team, and
+creation of the entities added in the Data Contribution Hub.
+The changes are recorded with their user by `django-simple-history`, on
+`Entity` and `InfrastructureDetails`. New identifiers are recorded by their
+`IdentifierEntityMatching`.
 
 Edited values that are computed from PID records (name, country, ...) are
 stored in the entity's TSOSI identifier record, which has the highest
@@ -14,14 +17,11 @@ from datetime import date
 import nh3
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
-from django.utils import timezone
 
 from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI, generate_tsosi_id
 from tsosi.data.signals import identifiers_created, identifiers_fetched
 from tsosi.models import (
     Entity,
-    EntityEditAccess,
-    EntityEditLog,
     Identifier,
     IdentifierEntityMatching,
     InfrastructureDetails,
@@ -32,7 +32,7 @@ from tsosi.models.utils import MATCH_SOURCE_MANUAL
 
 logger = logging.getLogger(__name__)
 
-# Entity fields editable through an edit access.
+# Entity fields editable from the entity page.
 ENTITY_FIELDS = [
     "name",
     "short_name",
@@ -105,12 +105,22 @@ def update_tsosi_record(entity: Entity, values: dict) -> bool:
     return new_version
 
 
+def editor_label(user) -> str:
+    """
+    The editor, as shown in the identifiers' matching comments and the logs.
+    The TSOSI team are labeled as such: their account may have no e-mail.
+    """
+    if user.is_staff:
+        return f"TSOSI admin {user.email or user.get_username()}"
+    return user.email
+
+
 def update_identifiers(
-    entity: Entity, identifiers: dict[str, str | None], grantee: str
+    entity: Entity, identifiers: dict[str, str | None], comments: str
 ) -> tuple[dict, list[str]]:
     """
     Add the given identifiers to the entity, for the registries where it has
-    none.
+    none. `comments` explains their matching.
     """
     changes = {}
     created_registries = []
@@ -128,7 +138,7 @@ def update_identifiers(
             identifier=identifier,
             match_source=MATCH_SOURCE_MANUAL,
             match_criteria=MATCH_CRITERIA_FROM_INPUT,
-            comments=f"Entity edit by {grantee}.",
+            comments=comments,
         )
         created_registries.append(registry_id)
         changes[f"identifiers.{registry_id}"] = {"old": None, "new": new_value}
@@ -138,7 +148,7 @@ def update_identifiers(
 @transaction.atomic
 def apply_entity_edit(
     entity: Entity,
-    access: EntityEditAccess,
+    user,
     data: dict,
     logo: UploadedFile | None = None,
     icon: UploadedFile | None = None,
@@ -146,7 +156,7 @@ def apply_entity_edit(
     """
     Apply the given validated edit data to the entity.
     Only the keys present in `data` are updated.
-    Return the performed changes, which are also logged.
+    Return the performed changes.
 
     :param data:    The validated data. It can contain the keys from
                     `ENTITY_FIELDS`, plus:
@@ -155,7 +165,6 @@ def apply_entity_edit(
                       `INFRASTRUCTURE_FIELDS`
     """
     changes = {}
-    now = timezone.now()
 
     # Entity fields
     entity_values = {f: data[f] for f in ENTITY_FIELDS if f in data}
@@ -182,7 +191,7 @@ def apply_entity_edit(
         )
 
     # Logo & icon. The previous files are kept in the storage, only
-    # unlinked, so that they can be restored from the edit log.
+    # unlinked, so that they can be restored from the entity's history.
     old_files = {}
     if logo is not None:
         old_files["logo"] = entity.logo.name or None
@@ -192,7 +201,9 @@ def apply_entity_edit(
         old_files["icon"] = entity.icon.name or None
         entity.icon = icon
 
-    entity.save()
+    # Saved only when changed, so as not to add an empty history record
+    if changes or old_files:
+        entity.save()
     for field, old_name in old_files.items():
         # The new file name is only known once saved
         changes[field] = {"old": old_name, "new": getattr(entity, field).name}
@@ -224,18 +235,15 @@ def apply_entity_edit(
     created_registries = []
     if data.get("identifiers"):
         id_changes, created_registries = update_identifiers(
-            entity, data["identifiers"], access.grantee
+            entity, data["identifiers"], f"Entity edit by {editor_label(user)}."
         )
         changes.update(id_changes)
 
-    access.date_last_used = now
-    access.save(update_fields=["date_last_used", "date_last_updated"])
     if not changes:
         return changes
 
-    EntityEditLog.objects.create(entity=entity, access=access, changes=changes)
     logger.info(
-        f"Entity {entity.id} edited by {access.grantee}: "
+        f"Entity {entity.id} edited by {editor_label(user)}: "
         f"{list(changes.keys())}"
     )
 
@@ -246,3 +254,47 @@ def apply_entity_edit(
     if record_updated or any(k.startswith("identifiers.") for k in changes):
         identifiers_fetched.send(None, registry_id=REGISTRY_TSOSI)
     return changes
+
+
+@transaction.atomic
+def create_hub_entity(
+    organization: Entity,
+    user,
+    name: str,
+    country: str | None = None,
+    website: str | None = None,
+    identifier: tuple[str, str] | None = None,
+) -> Entity:
+    """
+    Create an entity missing from TSOSI, added in the Data Contribution Hub
+    by the organization: from the values of its ROR or Wikidata record, whose
+    fetching is then triggered, or from its name only. It gets a TSOSI ID,
+    like the ingested entities. It's not public until a support to it is
+    published.
+
+    :param identifier:  The registry and value of its ROR or Wikidata ID.
+    """
+    if website and len(website) > Entity._meta.get_field("website").max_length:
+        website = None
+    entity = Entity.objects.create(
+        raw_name=name,
+        name=name,
+        raw_country=country,
+        country=country,
+        raw_website=website,
+        website=website,
+    )
+    entity.added_in_hub_by.add(organization)
+    comments = f"Added in the Hub by {editor_label(user)}."
+    identifiers = {REGISTRY_TSOSI: generate_tsosi_id()}
+    if identifier is not None:
+        identifiers[identifier[0]] = identifier[1]
+    _, created_registries = update_identifiers(entity, identifiers, comments)
+    logger.info(
+        f"Entity {entity.id} added in the Hub by {editor_label(user)}, for "
+        f"{organization.id}."
+    )
+    registries = [r for r in created_registries if r != REGISTRY_TSOSI]
+    if registries:
+        identifiers_created.send(None, registries=registries)
+    return entity

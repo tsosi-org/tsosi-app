@@ -17,17 +17,17 @@ from django.contrib.sitemaps import Sitemap
 
 from tsosi.app_settings import app_settings
 from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
-from tsosi.models import Identifier
+from tsosi.models import Entity, Identifier
 
 logger = logging.getLogger(__name__)
 
 STATIC_PAGES = [
     "/",
     "/explore",
-    "/new-provider",
     "/pages/about",
     "/pages/faq",
     "/pages/blog",
+    "/pages/new-provider",
     "/pages/newsletter",
     "/pages/legal-notice",
     "/pages/privacy-policy",
@@ -56,7 +56,7 @@ class EntitySitemap(FrontendSitemap):
     def items(self):
         return (
             Identifier.objects.filter(
-                registry_id=REGISTRY_TSOSI, entity__is_active=True
+                registry_id=REGISTRY_TSOSI, entity__in=Entity.objects.public()
             )
             .select_related("entity")
             .order_by("value")
