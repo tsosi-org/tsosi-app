@@ -22,7 +22,8 @@ def stats_view(request):
         [(stat["tsosi_type"], stat["count"]) for i, stat in enumerate(stats)]
     )
     stats = list(
-        Entity.objects.filter(tsosi_type="other")
+        Entity.objects.public()
+        .filter(tsosi_type="other")
         .values("ror_types")
         .annotate(count=Count("ror_types"))
         .order_by("ror_types")

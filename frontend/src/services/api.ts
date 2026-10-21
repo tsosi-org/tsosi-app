@@ -37,7 +37,7 @@ export async function get(
   }
   baseUrl += baseUrl.endsWith("/") ? "" : "/"
   route = route[0] == "/" ? route.slice(1) : route
-  const url = new URL(baseUrl + route)
+  const url = new URL(baseUrl + route, window.location.href)
 
   url.searchParams.forEach((value, key) => queryParams.append(key, value))
   url.search = "?" + queryParams.toString()

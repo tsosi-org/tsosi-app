@@ -1,17 +1,17 @@
 import io
 import json
-from datetime import date, timedelta
+from datetime import date
 
 import pytest
+from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone
 from PIL import Image
 from rest_framework.test import APIClient
 
-from tsosi.data.edit_access import grant_edit_access
 from tsosi.data.entity_edit import sanitize_description
 from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
-from tsosi.models import EntityEditAccess, EntityEditLog
+from tsosi.models import IdentifierEntityMatching, Membership
+from tsosi.models.membership import MEMBERSHIP_STATUS_REVOKED
 from tsosi.models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
 
 from .factories import EntityFactory, IdentifierFactory
@@ -26,10 +26,15 @@ def edit_url(entity) -> str:
     return f"/api/entities/{entity.id}/edit/"
 
 
-def client_with_key(key: str) -> APIClient:
+def member_client(entity, email: str = "member@uni.edu", **kwargs):
+    """
+    Return a client logged in as a member of the entity, and the member.
+    """
+    user = get_user_model().objects.create_user(username=email, email=email)
+    Membership.objects.create(user=user, entity=entity, **kwargs)
     client = APIClient()
-    client.credentials(HTTP_AUTHORIZATION=f"Bearer {key}")
-    return client
+    client.force_login(user)
+    return client, user
 
 
 def png_file() -> SimpleUploadedFile:
@@ -41,48 +46,61 @@ def png_file() -> SimpleUploadedFile:
 
 
 @pytest.mark.django_db
-def test_grant_edit_access(registries):
+def test_edit_permissions(registries, admin_user):
     entity = EntityFactory.create(is_recipient=True)
-    access, url = grant_edit_access(entity, "someone@example.org", days=3)
+    other_entity = EntityFactory.create(is_recipient=True)
+    data = {"short_name": "E"}
+    client, _ = member_client(entity)
 
-    assert url.startswith(f"http://localhost:5173/entities/{entity.id}#edit=")
-    key = url.split("#edit=")[1]
-    # Only the hash is stored
-    assert access.key_hash != key
-    assert EntityEditAccess.objects.get_by_key(key) == access
+    assert client.patch(edit_url(entity), data).status_code == 200
+    # Members only edit their organization
+    assert client.patch(edit_url(other_entity), data).status_code == 403
+    assert APIClient().patch(edit_url(entity), data).status_code == 403
+    assert client.patch("/api/entities/unknown/edit/", data).status_code == 404
 
-    admin_access, url = grant_edit_access(None, "admin@example.org")
-    assert url.startswith("http://localhost:5173/#edit=")
-    # Admin accesses are short-lived by default
-    assert admin_access.date_expires - timezone.now() <= timedelta(days=1)
+    # An organization not on the public site yet can be edited, in preview
+    hidden = EntityFactory.create()
+    hidden_client, hidden_member = member_client(hidden, "hidden@uni.edu")
+    assert hidden_client.patch(edit_url(hidden), data).status_code == 200
 
-    # The grantee e-mail is optional
-    access, _ = grant_edit_access(entity)
-    assert access.email is None
-    assert access.grantee == f"edit access #{access.id}"
+    hidden_member.memberships.update(status=MEMBERSHIP_STATUS_REVOKED)
+    assert hidden_client.patch(edit_url(hidden), data).status_code == 403
+
+    # The TSOSI team edits every organization
+    staff_client = APIClient()
+    staff_client.force_login(admin_user)
+    for e in [entity, other_entity, hidden]:
+        assert staff_client.patch(edit_url(e), data).status_code == 200
 
 
 @pytest.mark.django_db
-def test_edit_access_check(registries):
-    entity = EntityFactory.create(is_recipient=True)
-    other_entity = EntityFactory.create(is_recipient=True)
-    _, key = EntityEditAccess.create_with_key(entity, "a@example.org", 1)
-    expired, expired_key = EntityEditAccess.create_with_key(
-        entity, "b@example.org", 1
+def test_edit_by_admin(registries):
+    # A TSOSI admin, whose account may have no e-mail
+    admin = get_user_model().objects.create_superuser(
+        username="admin", email="", password=None
     )
-    expired.date_expires = timezone.now() - timedelta(minutes=1)
-    expired.save()
+    entity = EntityFactory.create(is_recipient=True)
+    client = APIClient()
+    client.force_login(admin)
+    data = {"identifiers": {"wikidata": "Q42"}}
+    response = client.patch(edit_url(entity), data, format="json")
+    assert response.status_code == 200, response.data
+    matching = IdentifierEntityMatching.objects.get(identifier__value="Q42")
+    assert matching.comments == "Entity edit by TSOSI admin admin."
 
-    assert client_with_key(key).get(edit_url(entity)).status_code == 200
-    assert APIClient().get(edit_url(entity)).status_code == 403
-    assert client_with_key("wrong").get(edit_url(entity)).status_code == 403
-    assert client_with_key(expired_key).get(edit_url(entity)).status_code == 403
-    # The key is only valid for its entity
-    assert client_with_key(key).get(edit_url(other_entity)).status_code == 403
-    # An admin key is valid for all entities
-    _, admin_key = EntityEditAccess.create_with_key(None, "c@example.org", 1)
-    for e in [entity, other_entity]:
-        assert client_with_key(admin_key).get(edit_url(e)).status_code == 200
+
+@pytest.mark.django_db
+def test_edit_csrf(registries):
+    entity = EntityFactory.create(is_recipient=True)
+    _, user = member_client(entity)
+    client = APIClient(enforce_csrf_checks=True)
+    client.force_login(user)
+    data = {"short_name": "E"}
+    assert client.patch(edit_url(entity), data).status_code == 403
+    client.get("/api/hub/me")
+    csrf_token = client.cookies["csrftoken"].value
+    response = client.patch(edit_url(entity), data, HTTP_X_CSRFTOKEN=csrf_token)
+    assert response.status_code == 200
 
 
 @pytest.mark.django_db
@@ -97,7 +115,7 @@ def test_edit_entity(registries):
     ror_id = IdentifierFactory.create(
         entity=entity, registry_id=REGISTRY_ROR, value="02rx3b187"
     )
-    access, key = EntityEditAccess.create_with_key(entity, "a@example.org", 1)
+    client, user = member_client(entity)
 
     data = {
         "name": "New name",
@@ -122,7 +140,7 @@ def test_edit_entity(registries):
             "date_scoss_end": "2022-01-01",
         },
     }
-    response = client_with_key(key).patch(edit_url(entity), data, format="json")
+    response = client.patch(edit_url(entity), data, format="json")
     assert response.status_code == 200, response.data
 
     entity.refresh_from_db()
@@ -154,20 +172,30 @@ def test_edit_entity(registries):
     assert record["date_inception"] == "2001-02-03"
     assert record["wikipedia_url"] == "https://en.wikipedia.org/wiki/New"
 
-    log = EntityEditLog.objects.get(entity=entity)
-    assert log.access == access
-    assert log.changes["name"] == {"old": "Old name", "new": "New name"}
-    assert "identifiers.ror" not in log.changes
-    assert log.changes["identifiers.wikidata"] == {"old": None, "new": "Q42"}
+    # The edit is in the history, with its user
+    assert entity.history.filter(name="Old name").exists()
+    assert entity.history.latest().history_user == user
+    infra_history = entity.infrastructure_details.history.latest()
+    assert infra_history.history_user == user
+    assert infra_history.support_url == "https://support.org"
+    # The new identifier is traced by its matching
+    matching = IdentifierEntityMatching.objects.get(identifier__value="Q42")
+    assert user.email in matching.comments
 
     # Clearing a value removes it from the TSOSI record
-    response = client_with_key(key).patch(
-        edit_url(entity), {"country": ""}, format="json"
-    )
+    response = client.patch(edit_url(entity), {"country": ""}, format="json")
     assert response.status_code == 200, response.data
     tsosi_id.refresh_from_db()
     assert "country" not in tsosi_id.current_version.value
     assert tsosi_id.current_version.value["name"] == "New name"
+
+    # An edit without changes adds no history record
+    history_count = entity.history.count()
+    response = client.patch(
+        edit_url(entity), {"name": "New name"}, format="json"
+    )
+    assert response.status_code == 200, response.data
+    assert entity.history.count() == history_count
 
 
 @pytest.mark.django_db
@@ -180,8 +208,8 @@ def test_edit_entity_validation(registries):
     IdentifierFactory.create(
         entity=entity, registry_id=REGISTRY_WIKIDATA, value="Q1"
     )
-    _, key = EntityEditAccess.create_with_key(entity, "a@example.org", 1)
-    client = client_with_key(key)
+    client, _ = member_client(entity)
+    history_count = entity.history.count()
 
     invalid_payloads = [
         {"name": ""},
@@ -212,14 +240,13 @@ def test_edit_entity_validation(registries):
     for payload in invalid_payloads:
         response = client.patch(edit_url(entity), payload, format="json")
         assert response.status_code == 400, payload
-    assert not EntityEditLog.objects.exists()
+    assert entity.history.count() == history_count
 
 
 @pytest.mark.django_db
 def test_edit_entity_logo(registries, storage):
     entity = EntityFactory.create(is_recipient=True)
-    _, key = EntityEditAccess.create_with_key(entity, "a@example.org", 1)
-    client = client_with_key(key)
+    client, _ = member_client(entity)
 
     response = client.patch(
         edit_url(entity),
@@ -237,7 +264,7 @@ def test_edit_entity_logo(registries, storage):
     assert entity.manual_logo
     assert entity.icon
 
-    # Replacing the logo keeps the previous file, referenced in the edit log
+    # Replacing the logo keeps the previous file
     old_logo = entity.logo.name
     response = client.patch(
         edit_url(entity), {"logo": png_file()}, format="multipart"
@@ -246,8 +273,8 @@ def test_edit_entity_logo(registries, storage):
     entity.refresh_from_db()
     assert entity.logo.name != old_logo
     assert entity.logo.storage.exists(old_logo)
-    log = EntityEditLog.objects.filter(entity=entity).latest("id")
-    assert log.changes["logo"] == {"old": old_logo, "new": entity.logo.name}
+    # It's referenced in the entity's history
+    assert entity.history.filter(logo=old_logo).exists()
 
     not_an_image = SimpleUploadedFile("logo.png", b"not an image")
     response = client.patch(

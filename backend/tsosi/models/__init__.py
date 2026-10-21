@@ -1,6 +1,6 @@
 from .analytics import Analytic
 from .currency import Currency, CurrencyRate
-from .edit_access import EntityEditAccess, EntityEditLog
+from .declaration import Declaration, Submission
 from .entity import (
     Entity,
     EntityName,
@@ -15,6 +15,7 @@ from .identifier import (
     IdentifierVersion,
     Registry,
 )
+from .membership import Membership
 from .source import DataLoadSource, DataSource
 from .transfer import Transfer
 

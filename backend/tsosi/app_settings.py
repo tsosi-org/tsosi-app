@@ -174,15 +174,9 @@ class AppSettings:
     @property
     def FRONTEND_URL(self) -> str:
         """
-        Base URL of the frontend application, used to build the entity edit
-        links.
+        Base URL of the frontend application.
         """
         return self._setting("FRONTEND_URL", "https://tsosi.org").rstrip("/")
-
-    @property
-    def EDIT_ACCESS_DAYS(self) -> int:
-        """Default validity duration, in days, of entity edit accesses."""
-        return self._setting("EDIT_ACCESS_DAYS", 7)
 
     @property
     def ERROR_OUTPUT_FOLDER(self) -> str:

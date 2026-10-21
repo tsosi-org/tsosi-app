@@ -6,8 +6,9 @@ from tsosi.data.ingestion.transfer_matching import (
     merge_transfers,
 )
 from tsosi.models import Transfer
+from tsosi.models.static_data import HUB_DATA_SOURCE
 
-from ..factories import DataLoadSourceFactory, TransferFactory
+from ..factories import DataLoadSourceFactory, EntityFactory, TransferFactory
 
 
 @pytest.mark.django_db
@@ -112,6 +113,63 @@ def test_merge_transfers_keeps_best_values(datasources):
     merged = merge_transfers(left, right)
     assert merged.amount == 100
     assert merged.date_invoice == right.date_invoice
+
+
+@pytest.mark.django_db
+def test_merge_transfers_hub_precedence(datasources):
+    """The values declared in the Hub win over the best value rule."""
+    dls_left, dls_hub = [
+        DataLoadSourceFactory.create(data_source_id=value)
+        for value in ["rennes", HUB_DATA_SOURCE]
+    ]
+    left = TransferFactory.create(
+        data_load_sources=[dls_left],
+        amount=100,
+        date_invoice={"value": "2024-03-15", "precision": "day"},
+        agents=[EntityFactory.create()],
+    )
+    hub = TransferFactory.create(
+        data_load_sources=[dls_hub],
+        amount=200,
+        date_invoice={"value": "2024-01-01", "precision": "year"},
+        date_payment_emitter=None,
+        hub_values=True,
+    )
+    merged = merge_transfers(left, hub)
+    assert merged.amount == 200
+    assert merged.date_invoice == hub.date_invoice
+    assert not merged.agents.exists()
+    # The dates it doesn't declare come from the others
+    assert merged.date_payment_emitter == left.date_payment_emitter
+    # A merged transfer isn't a source of its own
+    assert not merged.hub_values
+    assert {t.hub_values for t in merged.merged_transfers.all()} == {
+        True,
+        False,
+    }
+
+
+@pytest.mark.django_db
+def test_merge_transfers_hub_confirmation(datasources):
+    """
+    A confirmation in the Hub (no `hub_values`) leaves the values to the
+    best value rule.
+    """
+    dls_left, dls_hub = [
+        DataLoadSourceFactory.create(data_source_id=value)
+        for value in ["rennes", HUB_DATA_SOURCE]
+    ]
+    left = TransferFactory.create(
+        data_load_sources=[dls_left],
+        date_invoice={"value": "2024-03-15", "precision": "day"},
+    )
+    confirmation = TransferFactory.create(
+        data_load_sources=[dls_hub],
+        date_invoice={"value": "2024-01-01", "precision": "year"},
+    )
+    merged = merge_transfers(left, confirmation)
+    # The most precise date
+    assert merged.date_invoice == left.date_invoice
 
 
 @pytest.mark.django_db

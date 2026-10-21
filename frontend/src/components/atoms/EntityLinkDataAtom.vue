@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeMount, ref, type Ref } from "vue"
+import { computed, onBeforeMount, ref, type Ref } from "vue"
+import { RouterLink } from "vue-router"
 
 import ImageAtom from "./ImageAtom.vue"
 
@@ -10,10 +11,14 @@ import { getEntityUrl } from "@/utils/url-utils"
 const props = defineProps<{
   data: Record<string, any>
   dataField: DataFieldProps
+  // Show the entity without the link to its page
+  noLink?: boolean
   hideIcon?: boolean
 }>()
 
 const entity: Ref<Entity | undefined> = ref()
+// The Hub's entities that aren't on the public site have no page
+const linked = computed(() => !props.noLink && entity.value?.is_public != false)
 
 onBeforeMount(() => {
   const entityFromData = getItemValue(props.data, props.dataField) as
@@ -28,11 +33,12 @@ onBeforeMount(() => {
 
 <template>
   <div class="entity-link-data">
-    <RouterLink
+    <component
+      :is="linked ? RouterLink : 'span'"
       v-if="entity"
       class="entity-link"
       :class="{ icon: entity?.icon != null && !props.hideIcon }"
-      :to="getEntityUrl(entity)"
+      :to="linked ? getEntityUrl(entity) : undefined"
       :title="entity.name"
     >
       <ImageAtom
@@ -48,7 +54,7 @@ onBeforeMount(() => {
       <span class="entity-label">
         {{ entity.short_name || entity.name }}
       </span>
-    </RouterLink>
+    </component>
     <span
       v-if="
         entity && props.dataField.field == 'emitter' && props.data.emitter_sub

@@ -53,10 +53,20 @@ TSOSI_OPTIONAL_SETTINGS = [
     # API Rate limiting
     "TSOSI_API_RATE",
     "TSOSI_API_WHITELIST_IPS",
-    # Entity edit accesses
     "TSOSI_FRONTEND_URL",
-    "TSOSI_EDIT_ACCESS_DAYS",
+    # E-mails (Hub login links), sent through an SMTP server in production
+    "EMAIL_BACKEND",
+    "EMAIL_HOST",
+    "EMAIL_PORT",
+    "EMAIL_HOST_USER",
+    "EMAIL_HOST_PASSWORD",
+    "EMAIL_USE_SSL",
+    "EMAIL_USE_TLS",
 ]
+
+# Defaults of the optional settings above, overridden by settings_local.py
+# E-mails are printed in the console unless an SMTP server is set.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 settings_local_module = importlib.import_module("backend_site.settings_local")
 for setting_name in TSOSI_OPTIONAL_SETTINGS:
@@ -265,6 +275,16 @@ STATIC_ROOT = BASE_DIR / "static"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
+# Sessions, of the Hub and the Django admin, last a day from login
+SESSION_COOKIE_AGE = 24 * 60 * 60
+
+# Hub login: passwordless, with a single-use link valid 15 minutes
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "sesame.backends.ModelBackend",
+]
+SESAME_MAX_AGE = 15 * 60
+SESAME_ONE_TIME = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
