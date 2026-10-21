@@ -38,10 +38,11 @@ export default defineConfig({
   },
   server: {
     host: "127.0.0.1",
-    // Media served on the same origin, as by nginx in production (ex: the
-    // images of the newsletters, linked from their HTML)
+    // The API and the media on the same origin, as by nginx in production
+    // (the Hub's session cookies, the images of the newsletters)
     proxy: {
-      "/media": "http://127.0.0.1:8000",
+      "/api": { target: "http://127.0.0.1:8000", changeOrigin: false },
+      "/media": { target: "http://127.0.0.1:8000", changeOrigin: false },
     },
   },
   build: {

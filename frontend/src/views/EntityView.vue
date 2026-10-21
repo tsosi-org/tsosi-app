@@ -1,28 +1,31 @@
 <script setup lang="ts">
-import { onBeforeMount, ref, shallowRef, type ShallowRef } from "vue"
+import { onBeforeMount, ref, shallowRef, type Ref, type ShallowRef } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import Tab from "primevue/tab"
 import TabList from "primevue/tablist"
 import TabPanel from "primevue/tabpanel"
 import TabPanels from "primevue/tabpanels"
 import Tabs from "primevue/tabs"
-import { watch } from "vue"
+import { computed, watch } from "vue"
 
 import Loader from "@/components/atoms/LoaderAtom.vue"
+import Message from "@/components/atoms/MessageAtom.vue"
 import NotFound from "@/components/atoms/NotFound.vue"
 import EntityData from "@/components/EntityData.vue"
 import EntityMeta from "@/components/EntityMeta.vue"
 import EntityViz from "@/components/EntityViz.vue"
 import { devMode } from "@/singletons/devMode"
-import { checkEditAccess, type EditAccess } from "@/singletons/edit-access"
 import {
   getEntityDetails,
+  getEntityPreview,
   getEntitySummary,
   getTransfers,
   resolveEntityRoute,
   type EntityDetails,
+  type PreviewReason,
   type Transfer,
 } from "@/singletons/ref-data"
+import { canEditEntity, loadSession, session } from "@/singletons/hub-session"
 import { formatDateWithPrecision } from "@/utils/data-utils"
 import {
   changeCanonicalUrl,
@@ -36,37 +39,77 @@ const router = useRouter()
 const entity: ShallowRef<EntityDetails | null> = shallowRef(null)
 const transfers: ShallowRef<Transfer[] | null> = shallowRef(null)
 const loading = ref(true)
-const editAccess: ShallowRef<EditAccess | null> = shallowRef(null)
+// Opened with the edit link (`?edit`), from the Hub or the admin
+const startEditing = ref(route.query.edit !== undefined)
+// Set when the entity is not on the public site yet: the page is a preview,
+// for its members and the TSOSI team only.
+const previewReason: Ref<PreviewReason | null> = ref(null)
+const editable = computed(
+  () => entity.value != null && canEditEntity(entity.value.id),
+)
+
+const previewMessages: Record<PreviewReason, string> = {
+  to_check:
+    "It will be published once TSOSI's curation board has added the infrastructure to its scope.",
+  out_of_scope: "The infrastructure is not in TSOSI's scope.",
+  no_public_support:
+    "It will be published with the organization's first public support.",
+}
 
 onBeforeMount(async () => {
   const entityId = resolveEntityRoute(route.params.id as string)
   const result = entityId ? getEntitySummary(entityId) : undefined
   const tsosiId = result?.identifiers.find((i) => i.registry === "tsosi")?.value
   if (tsosiId && tsosiId !== route.params.id) {
+    // The page is remounted on the new path: keep the query (`?edit`)
     router.replace({
       name: "entity",
       params: { id: tsosiId },
+      query: route.query,
       hash: route.hash,
     })
     return
   }
-  if (result == null) {
-    loading.value = false
-    return
+  // The session is only checked when needed (opened with the edit link, or
+  // already loaded), so that public visitors don't make an extra request.
+  const checkSession = startEditing.value || session.loaded
+  if (result != null) {
+    entity.value = (await getEntityDetails(result.id)) as EntityDetails
+  } else if (checkSession && (await loadSession())) {
+    await loadPreview(route.params.id as string)
   }
-  entity.value = (await getEntityDetails(result.id)) as EntityDetails
   loading.value = false
-  editAccess.value = await checkEditAccess(result.id)
+  if (startEditing.value) {
+    await loadSession()
+  }
 })
 
+async function loadPreview(id: string) {
+  const preview = await getEntityPreview(id)
+  if (preview) {
+    entity.value = preview.entity
+    previewReason.value = preview.reason
+  }
+}
+
 async function onEditSaved() {
-  entity.value = (await getEntityDetails(entity.value!.id)) as EntityDetails
+  startEditing.value = false
+  if (previewReason.value) {
+    await loadPreview(entity.value!.id)
+  } else {
+    entity.value = (await getEntityDetails(entity.value!.id)) as EntityDetails
+  }
 }
 
 watch(entity, onEntityChange)
 
 async function onEntityChange() {
   if (!entity.value) {
+    return
+  }
+  if (previewReason.value) {
+    changeMetaTitle(`${entity.value.name} (preview)`)
+    transfers.value = []
     return
   }
   changeMetaTitle(entity.value.name)
@@ -84,12 +127,20 @@ async function onEntityChange() {
   <NotFound v-else-if="!entity"></NotFound>
   <div class="container" v-else>
     <div class="regular-content">
+      <Message v-if="previewReason" severity="warn" class="preview-banner">
+        <strong>Preview: this page isn't public yet.</strong>
+        {{ previewMessages[previewReason] }} Only the organization's members and
+        the TSOSI team can see it.
+      </Message>
       <EntityMeta
         :entity="entity as EntityDetails"
-        :editable="editAccess != null"
+        :editable="editable"
+        :start-editing="startEditing"
+        :profile-only="!!previewReason"
         @saved="onEditSaved"
       />
-      <Tabs lazy value="0" v-if="devMode">
+      <template v-if="previewReason"></template>
+      <Tabs lazy value="0" v-else-if="devMode">
         <TabList class="tab-list">
           <Tab value="0" as="button">
             <span class="tab-header" v-if="!entity.is_recipient">
@@ -180,6 +231,10 @@ async function onEntityChange() {
 </template>
 
 <style scoped>
+.preview-banner {
+  margin-bottom: 1rem;
+}
+
 .tab-header {
   display: flex;
   flex-direction: row;

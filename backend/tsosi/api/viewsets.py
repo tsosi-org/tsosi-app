@@ -9,6 +9,7 @@ from django.urls import resolve as django_resolve
 from django.urls import reverse as django_reverse
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.filters import SearchFilter
@@ -17,11 +18,11 @@ from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from tsosi.api.hub.base import can_edit_entity
 from tsosi.api.serializers import (
     AnalyticSerializer,
     CurrencySerializer,
     EntityDetailsSerializer,
-    EntityEditAccessSerializer,
     EntityEditSerializer,
     EntitySerializer,
     TransferDetailsSerializer,
@@ -30,7 +31,7 @@ from tsosi.api.serializers import (
 from tsosi.app_settings import app_settings
 from tsosi.data.entity_edit import apply_entity_edit
 from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
-from tsosi.models import Analytic, Currency, Entity, EntityEditAccess, Transfer
+from tsosi.models import Analytic, Currency, Entity, Transfer
 
 IMAGE_MAX_SIZE = 2 * 1024 * 1024
 
@@ -131,33 +132,20 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
 
         return super().get_object()
 
-    def get_edit_access(
-        self, request: Request
-    ) -> tuple[EntityEditAccess, Entity]:
+    def get_editable_entity(self, request: Request) -> Entity:
         """
-        Return the edit access matching the key given in the request's
-        `Authorization: Bearer <key>` header, and the entity of the URL.
+        Return the entity of the URL, public or not, if the logged in user
+        can edit it: a member of that entity, or the TSOSI team.
         """
-        auth = request.headers.get("Authorization", "")
-        key = auth.removeprefix("Bearer ").strip()
-        if not auth.startswith("Bearer ") or not key:
-            raise PermissionDenied("Missing edit access key.")
         try:
             entity = Entity.objects.get_by_any_id(
                 self.kwargs[self.lookup_url_kwarg or self.lookup_field]
             ).sucessor_or_self()
         except Entity.DoesNotExist:
             raise Http404
-        try:
-            access = EntityEditAccess.objects.get_by_key(key)
-        except EntityEditAccess.DoesNotExist:
-            raise PermissionDenied("Invalid or expired edit access key.")
-        if (
-            not access.grants(entity)
-            or not self.queryset.filter(id=entity.id).exists()
-        ):
-            raise PermissionDenied("Invalid or expired edit access key.")
-        return access, entity
+        if not can_edit_entity(request.user, entity):
+            raise PermissionDenied("You can't edit this organization.")
+        return entity
 
     @staticmethod
     def validate_image(request: Request, field: str):
@@ -176,19 +164,19 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
 
     @action(
         detail=True,
-        methods=["get", "patch"],
+        methods=["patch"],
         parser_classes=[JSONParser, MultiPartParser],
+        # The Hub session, with its CSRF checks
+        authentication_classes=[SessionAuthentication],
     )
     def edit(self, request: Request, *args, **kwargs):
         """
-        GET:    Check the validity of the edit access key.
-        PATCH:  Edit the entity. The body is either the JSON edit data, or
-                a multipart form with the JSON edit data in the `data` field
-                and the optional image files in the `logo` & `icon` fields.
+        PATCH:  Edit the entity's profile. The body is either the JSON edit
+                data, or a multipart form with the JSON edit data in the
+                `data` field and the optional image files in the `logo` &
+                `icon` fields.
         """
-        access, entity = self.get_edit_access(request)
-        if request.method == "GET":
-            return Response(EntityEditAccessSerializer(access).data)
+        entity = self.get_editable_entity(request)
 
         logo, icon = None, None
         if request.content_type.startswith("multipart/"):
@@ -204,10 +192,18 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
         serializer = EntityEditSerializer(data=data, context={"entity": entity})
         serializer.is_valid(raise_exception=True)
         apply_entity_edit(
-            entity, access, serializer.validated_data, logo=logo, icon=icon
+            entity,
+            request.user,
+            serializer.validated_data,
+            logo=logo,
+            icon=icon,
         )
 
-        entity = self.get_queryset().get(id=entity.id)
+        entity = (
+            Entity.objects.prefetch_related("identifiers")
+            .select_related("infrastructure_details")
+            .get(id=entity.id)
+        )
         return Response(
             EntityDetailsSerializer(entity, context={"request": request}).data
         )

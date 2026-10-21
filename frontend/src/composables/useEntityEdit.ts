@@ -1,7 +1,60 @@
 import { computed, reactive, ref, type Ref } from "vue"
 
-import { submitEntityEdit, type EntityEditData } from "@/singletons/edit-access"
+import { apiRequest } from "@/services/api"
 import type { EntityDetails } from "@/singletons/ref-data"
+import { csrfHeaders } from "@/singletons/hub-session"
+
+export interface EntityEditData {
+  name?: string
+  short_name?: string | null
+  country?: string | null
+  date_inception?: string | null
+  description?: string | null
+  is_barcelona?: boolean
+  website?: string | null
+  wikipedia_url?: string | null
+  identifiers?: {
+    ror?: string | null
+    wikidata?: string | null
+  }
+  infrastructure?: {
+    support_url?: string | null
+    posi_url?: string | null
+    infra_finder_url?: string | null
+    date_scoss_start?: string | null
+    date_scoss_end?: string | null
+  }
+}
+
+/**
+ * Submit the entity edits, with the Hub session.
+ * Return the updated entity details, or the validation errors.
+ */
+async function submitEntityEdit(
+  entityId: string,
+  data: EntityEditData,
+  logo?: File | null,
+  icon?: File | null,
+): Promise<{ ok: boolean; data: any; status?: number }> {
+  let body: FormData | EntityEditData = data
+  if (logo || icon) {
+    body = new FormData()
+    body.append("data", JSON.stringify(data))
+    if (logo) {
+      body.append("logo", logo)
+    }
+    if (icon) {
+      body.append("icon", icon)
+    }
+  }
+  const result = await apiRequest(
+    `entities/${entityId}/edit/`,
+    "PATCH",
+    body,
+    csrfHeaders(),
+  )
+  return { ok: !result.error, data: result.data, status: result.status }
+}
 
 function toYear(date?: Date | null): number | null {
   return date ? date.getUTCFullYear() : null
@@ -178,7 +231,7 @@ export function useEntityEdit(entity: () => EntityDetails) {
       globalError.value = "Some fields are invalid, please check them below."
     } else if (result.status == 403) {
       globalError.value =
-        "Your edit access is invalid or has expired. Please contact us to get a new one."
+        "You can't edit this organization anymore. Please log in again."
     } else {
       globalError.value =
         "An error occurred while saving, please try again later."

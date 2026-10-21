@@ -2,7 +2,7 @@
  * This defines base types for the external TSOSI API along with
  * methods to interact with it.
  */
-import { fetchUrl, get } from "@/services/api"
+import { apiRequest, fetchUrl, get } from "@/services/api"
 import {
   initDateProperty,
   initDateWithPrecision,
@@ -53,6 +53,10 @@ export interface InfrastructureDetails extends ApiData {
   legal_entity_wikidata_id?: string
 }
 
+// Whether a beneficiary is in TSOSI's scope: only the supports to those in
+// scope are public
+export type EntityScope = "in_scope" | "out_of_scope" | "to_check"
+
 export interface Entity extends ApiData {
   id: string
   name: string
@@ -70,6 +74,11 @@ export interface Entity extends ApiData {
   is_posi: boolean
   is_barcelona: boolean
   is_child_transfer?: boolean
+  // Sent by the Hub only. The scope is null for the entities that aren't
+  // beneficiaries. `is_new`: added in the Hub, without published support yet.
+  scope?: EntityScope | null
+  is_public?: boolean
+  is_new?: boolean
 }
 
 export interface EntityDetails extends Entity {
@@ -98,6 +107,37 @@ export interface Transfer extends ApiData {
   description: string | null
   source_ids?: string[]
   sources?: DeepReadonly<Entity>[]
+}
+
+export type SupportStatus = "confirmed" | "not_confirmed"
+
+// An organization that declared a transfer, with the date of its data
+export interface Declarant {
+  id: string | null
+  name: string
+  short_name: string | null
+  date: string
+}
+
+// A transfer of an organization's supports table in the Hub
+export interface HubTransfer extends Transfer {
+  date_invoice: DateWithPrecision | null
+  date_payment_emitter: DateWithPrecision | null
+  date_payment_recipient: DateWithPrecision | null
+  date_start: DateWithPrecision | null
+  date_end: DateWithPrecision | null
+  amount_hidden: boolean
+  declared_by: Declarant[]
+  status: SupportStatus
+  // On the public site, with its page
+  is_public: boolean
+}
+
+// A transfer of the preview of the organization's public page, once its
+// changes are published: not converted into other currencies when new or
+// changed
+export interface PreviewTransfer extends HubTransfer {
+  unconverted: boolean
 }
 
 export interface TransferDetails extends Transfer {
@@ -301,32 +341,79 @@ export function resolveEntityRoute(id: string): string | undefined {
   return entityFromIdentifierId(id)
 }
 
+function processEntityDetails(val: Record<string, any>): EntityDetails {
+  initDateProperty(val, "date_inception")
+  initDateProperty(val, "date_data_update")
+  if (val.infrastructure) {
+    for (const property of ["date_scoss_start", "date_scoss_end"]) {
+      initDateProperty(val.infrastructure, property)
+    }
+  }
+  return val as EntityDetails
+}
+
 export async function getEntityDetails(
   id: string,
 ): Promise<DeepReadonly<EntityDetails> | null> {
   const url = getEntityApiUrl(id)
   const result = await get(url, true)
   if (result.data) {
-    const val = result.data as Record<string, any>
-    initDateProperty(val, "date_inception")
-    initDateProperty(val, "date_data_update")
-    if (val.infrastructure) {
-      for (const property of [
-        "date_scoss_start",
-        "date_scoss_end",
-      ]) {
-        initDateProperty(val.infrastructure, property)
-      }
-    }
-    return val as EntityDetails
+    return processEntityDetails(result.data as Record<string, any>)
   }
   return null
 }
 
-function processTransferEntities<T extends Transfer>(transfer: T, entity?: EntityDetails): void {
-  transfer.emitter = refData.entities[transfer.emitter_id]
-  transfer.recipient = refData.entities[transfer.recipient_id]
-  transfer.agents = transfer.agent_ids.map((id) => refData.entities[id])
+// Why an entity is not on the public site yet
+export type PreviewReason = "to_check" | "out_of_scope" | "no_public_support"
+
+/**
+ * Get the details of an entity, public or not, for its members and the TSOSI
+ * team (Hub session): the preview of a page not public yet.
+ * Return null for anyone else.
+ */
+export async function getEntityPreview(id: string): Promise<{
+  entity: EntityDetails
+  reason: PreviewReason | null
+} | null> {
+  const result = await apiRequest(`hub/entities/${id}`)
+  if (result.error || !result.data) {
+    return null
+  }
+  const { preview_reason, ...data } = result.data
+  return { entity: processEntityDetails(data), reason: preview_reason }
+}
+
+/**
+ * The entities sent by the Hub, missing from the reference data or with
+ * details it lacks (their scope), completed with the reference data.
+ */
+export function hubEntities(
+  entities: Record<string, Partial<Entity>>,
+): Record<string, Entity> {
+  const result: Record<string, Entity> = {}
+  for (const [id, entity] of Object.entries(entities)) {
+    // Without identifiers, their links use the TSOSI ID
+    result[id] = {
+      ...(refData.entities[id] ?? { identifiers: [] }),
+      ...entity,
+    } as Entity
+  }
+  return result
+}
+
+/**
+ * Fill the transfer's entities from the reference data, or from
+ * `otherEntities` (see `hubEntities`).
+ */
+function processTransferEntities<T extends Transfer>(
+  transfer: T,
+  entity?: DeepReadonly<EntityDetails>,
+  otherEntities: Record<string, Entity> = {},
+): void {
+  const getEntity = (id: string) => otherEntities[id] ?? refData.entities[id]
+  transfer.emitter = getEntity(transfer.emitter_id)
+  transfer.recipient = getEntity(transfer.recipient_id)
+  transfer.agents = transfer.agent_ids.map(getEntity)
   if (transfer.source_ids) {
     transfer.sources = transfer.source_ids.map((id) => refData.entities[id])
   }
@@ -465,4 +552,71 @@ export async function queryPaginatedApiUrl<T extends ApiData>(
     return null
   }
   return result.data as ApiPaginatedData<T>
+}
+
+
+/**
+ * Get the supports table of an organization, for its members and the TSOSI
+ * team (Hub session): its transfers of all scopes, with their amounts.
+ * The entities not on the public site come with the response.
+ */
+export async function getHubTransfers(
+  entity: DeepReadonly<EntityDetails>,
+): Promise<{
+  transfers: HubTransfer[]
+  entities: Record<string, Entity>
+} | null> {
+  const result = await apiRequest(`hub/entities/${entity.id}/transfers`)
+  if (result.error || !result.data) {
+    return null
+  }
+  const otherEntities = hubEntities(result.data.entities)
+  const transfers = result.data.transfers as HubTransfer[]
+  for (const transfer of transfers) {
+    processTransferEntities(transfer, entity, otherEntities)
+    for (const field of [
+      "date_invoice",
+      "date_payment_emitter",
+      "date_payment_recipient",
+      "date_start",
+      "date_end",
+    ] as const) {
+      initDateWithPrecision(transfer[field])
+    }
+  }
+  return { transfers, entities: otherEntities }
+}
+
+/**
+ * Get the organization's public supports once its unpublished changes are
+ * published, simulated by the Hub: the transfers, and the kinds of changes
+ * of each, by transfer ID.
+ */
+export async function getPublicationPreview(
+  entity: DeepReadonly<EntityDetails>,
+): Promise<{
+  transfers: PreviewTransfer[]
+  changes: Record<string, string[]>
+  // The drafts previewed, and a hash of their values, to submit (see
+  // `submitDeclarations`)
+  declarationIds: number[]
+  declarationsHash: string
+} | null> {
+  const result = await apiRequest(
+    `hub/entities/${entity.id}/publication-preview`,
+  )
+  if (result.error || !result.data) {
+    return null
+  }
+  const otherEntities = hubEntities(result.data.entities)
+  const transfers = result.data.transfers as PreviewTransfer[]
+  for (const transfer of transfers) {
+    processTransferEntities(transfer, entity, otherEntities)
+  }
+  return {
+    transfers,
+    changes: result.data.changes,
+    declarationIds: result.data.declaration_ids,
+    declarationsHash: result.data.declarations_hash,
+  }
 }

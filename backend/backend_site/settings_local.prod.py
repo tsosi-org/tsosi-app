@@ -30,6 +30,12 @@ ALLOWED_HOSTS = [
     "129.88.178.178",
 ]
 TSOSI_FRONTEND_URL = "https://tsosi.org"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "{REPLACE}"
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = "{REPLACE}"
+EMAIL_HOST_PASSWORD = "{REPLACE}"
 # Log config
 TSOSI_MAIN_LOG_FILE = "/var/log/tsosi_app.log"
 TSOSI_DATA_LOG_FILE = "/var/log/tsosi_data.log"
