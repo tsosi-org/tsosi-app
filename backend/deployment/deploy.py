@@ -189,6 +189,7 @@ def deploy(
         "address": server.address,
         "user": server.user,
         "branch": deploy_branch,
+        "frontend_mode": server.frontend_mode,
         "skip_front_build": skip_front_build,
         "restart_celery": not celery_no_restart,
     }
@@ -244,19 +245,44 @@ def deploy(
 
     # Build frontend deps
     frontend_dir = TSOSI_REPO_DIR / "frontend"
+    deployment_file = frontend_dir / "dist/deployment.json"
     if not skip_front_build:
         os.chdir(frontend_dir)
 
-        cmds = ["npm ci", "npm run build"]
+        # `npm run build` in 2 steps: it doesn't pass the mode on to vite.
+        cmds = [
+            "npm ci",
+            "npm run type-check",
+            f"npm run build-only -- --mode {server.frontend_mode}",
+        ]
         for cmd in cmds:
             run_local_cmd(cmd)
+    else:
+        # The existing build must target this server's API, e.g. not deploy
+        # a production build on the dev server.
+        built_mode = None
+        if deployment_file.exists():
+            with open(deployment_file) as f:
+                # Deployments before the dev server only built for prod.
+                built_mode = json.load(f).get("frontend_mode", "production")
+        if built_mode != server.frontend_mode:
+            print(
+                colored(
+                    f"The frontend files in frontend/dist were built in mode "
+                    f"`{built_mode}`, not `{server.frontend_mode}`.\n"
+                    "Deploy without --skip-front-build.",
+                    "red",
+                )
+            )
+            exit(1)
 
     # Add a deployment file with information on the deployed code
     deployment_info_object["date"] = datetime.datetime.now().strftime(
         "%Y-%m-%dT%H:%M:%SZ"
     )
+    deployment_info_object["frontend_mode"] = server.frontend_mode
 
-    with open(frontend_dir / "dist/deployment.json", "w") as f:
+    with open(deployment_file, "w") as f:
         json.dump(deployment_info_object, f, indent=2)
 
     # Pull back-end code on server

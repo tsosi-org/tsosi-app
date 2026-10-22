@@ -2,7 +2,7 @@
 Description=TSOSI gunicorn socket
 
 [Socket]
-ListenStream=/run/tsosi_gunicorn.socket
+ListenStream=/run/tsosi_gunicorn.sock
 # Our service won't need permissions for the socket, since it
 # inherits the file descriptor by socket activation.
 # Only the nginx daemon will need access to the socket:
