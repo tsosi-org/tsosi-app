@@ -1,10 +1,10 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="corner-container" v-tooltip.top="'TSOSI\'s data provider'">
+  <div class="corner-container" v-tooltip.top="'TSOSI data provider'">
     <img
       src="@/assets/img/tsosi_provider_simple.svg"
-      alt="TSOSI\'s data provider"
+      alt="TSOSI data provider"
     />
   </div>
 </template>

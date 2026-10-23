@@ -47,7 +47,7 @@ const dataLoaded = ref(false)
 const loading = ref(true)
 const chartData: Ref<ChartData | undefined> = ref()
 const chartOptions: Ref<object | undefined> = ref()
-const chartTitle = `Distribution of supports by year and infrastructure`
+const chartTitle = `Distribution of support by year and infrastructure`
 const yAxisTitle = computed(
   () => `Total amount of funding (${selectedCurrency.value.id})`,
 )

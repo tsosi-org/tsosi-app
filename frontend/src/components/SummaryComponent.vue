@@ -3,6 +3,7 @@ import { RouterLink } from "vue-router"
 
 import EntityLinkDataAtom from "./atoms/EntityLinkDataAtom.vue"
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
+import TsosiIconAtom from "./atoms/TsosiIconAtom.vue"
 
 import Country from "@/components/atoms/CountryAtom.vue"
 import {
@@ -13,7 +14,6 @@ import {
   getItemLink,
   nullValues,
 } from "@/utils/data-utils"
-
 
 export interface SummaryProps {
   data: Record<string, any>
@@ -37,19 +37,19 @@ const props = defineProps<SummaryProps>()
         class="summary-field"
       >
         <div class="summary-label">
-          {{ field.title
-          }}
+          <TsosiIconAtom
+            v-if="field.tsosiIcon"
+            v-tooltip.top="{ value: field.info, escape: false }"
+          />
+          {{ field.title }}
           <span
-            v-if="field.info"
-            v-tooltip.top="{
-              value: 'TSOSI data providers that have declared this transfer',
-              escape: false,
-            }"
-            >
+            v-if="field.info && !field.tsosiIcon"
+            v-tooltip.top="{ value: field.info, escape: false }"
+          >
             <font-awesome-icon
               :icon="['fas', 'circle-info']"
-            ></font-awesome-icon>
-            </span>&nbsp;:
+            ></font-awesome-icon> </span
+          >&nbsp;:
         </div>
         <div class="summary-value">
           <template v-if="field.type == 'entityLink'">
@@ -112,8 +112,8 @@ const props = defineProps<SummaryProps>()
 
 <style scoped>
 .summary {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: fit-content(150px) minmax(0, 1fr);
   gap: 1em;
   overflow-x: auto;
   padding: 1em;
@@ -125,20 +125,18 @@ const props = defineProps<SummaryProps>()
 }
 
 .summary-field {
-  display: flex;
-  flex-direction: row;
-  gap: 1em;
+  display: contents;
 }
 
 .summary-value {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
 }
 
 .summary-label {
   color: var(--p-primary-800);
   font-weight: 700;
-  flex: 0 0 min(35%, 150px);
   text-align: right;
 }
 

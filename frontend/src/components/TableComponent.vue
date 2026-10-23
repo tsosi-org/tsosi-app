@@ -459,7 +459,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
               "
               v-tooltip.bottom="{
                 value:
-                  'This support comes from a child entity, based on the ROR hierarchy. <a href=\'/pages/faq#entities-hierarchies\'>See our FAQ</a>.',
+                  'This contribution comes from a child entity, based on the ROR hierarchy. <a href=\'/pages/faq#entities-hierarchies\'>See our FAQ</a>.',
                 escape: false,
                 autoHide: false,
                 pt: { root: { class: 'left-aligned-tooltip' } },

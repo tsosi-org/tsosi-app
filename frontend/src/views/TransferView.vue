@@ -162,6 +162,7 @@ const metadataConfig: Array<DataFieldProps> = [
     id: "sources",
     title: "Sources",
     field: "sources",
+    tsosiIcon: true,
     type: "entityLink",
     fieldLabel: "source.name",
     fieldLink: {
@@ -169,7 +170,7 @@ const metadataConfig: Array<DataFieldProps> = [
       suffix: "source.id",
       suffixType: "field",
     },
-    info: "Providers of the data about this transfer",
+    info: "TSOSI data providers that have declared this transfer",
   },
   {
     id: "rawData",

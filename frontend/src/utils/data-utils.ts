@@ -36,6 +36,8 @@ export interface DataFieldProps {
   fieldLink?: LinkConfig
   labelGetter?: (data: Record<string, any>) => any
   info?: string
+  // Show the TSOSI icon left of the title
+  tsosiIcon?: boolean
 }
 
 /**

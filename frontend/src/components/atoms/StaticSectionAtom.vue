@@ -28,9 +28,13 @@ function copyFragmentLink() {
         v-if="!props.titleTag || props.titleTag == 'h2'"
         class="section-title"
       >
-        {{ props.title.split(" ").slice(0, -1).join(" ") }}
+        <slot name="title">
+          {{ props.title.split(" ").slice(0, -1).join(" ") + " " }}
+        </slot>
         <span style="white-space: nowrap">
-          {{ props.title.split(" ").slice(-1)[0] }}
+          <template v-if="!$slots.title">
+            {{ props.title.split(" ").slice(-1)[0] }}
+          </template>
           <a
             v-if="props.id && !props.noLink"
             :href="`#${props.id}`"
@@ -49,7 +53,7 @@ function copyFragmentLink() {
         </span>
       </h2>
       <h1 v-else class="section-title">
-        {{ props.title }}
+        <slot name="title">{{ props.title }}</slot>
         <a
           v-if="props.id && !props.noLink"
           :href="`#${props.id}`"
