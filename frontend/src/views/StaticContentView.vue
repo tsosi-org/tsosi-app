@@ -12,7 +12,9 @@ changeMetaTitle(props.title)
 <template>
   <div class="container small">
     <div class="regular-content static-content">
-      <h1 class="page-title">{{ props.title }}</h1>
+      <h1 class="page-title">
+        <slot name="title">{{ props.title }}</slot>
+      </h1>
       <slot> </slot>
     </div>
   </div>

@@ -4,6 +4,7 @@ import { RouterLink } from "vue-router"
 import CodeBlockAtom from "@/components/atoms/CodeBlockAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
+import TsosiIconAtom from "@/components/atoms/TsosiIconAtom.vue"
 import { useContactModal } from "@/composables/useContactModal"
 import { getPartners, type Entity } from "@/singletons/ref-data"
 import { shuffleArray } from "@/utils/data-utils"
@@ -72,11 +73,11 @@ shuffleArray(partners)
           providers. You can easily find them on the
           <RouterLink to="/explore">explore page</RouterLink>. Data can come
           from open infrastructures, universities, library consortia, research
-          funders and other types of organizations. The same financial support
-          can therefore be described by more than one data provider. To avoid
-          counting a support twice, a de-duplication process is included in the
-          curation process. The provenance of the data (data source) is
-          explained in the detail view. See for example
+          funders and other types of organizations. The same financial
+          contribution can therefore be described by more than one data
+          provider. To avoid counting a contribution twice, a de-duplication
+          process is included in the curation process. The provenance of the
+          data (data source) is explained in the detail view. See for example
           <span v-for="partner of partners" :key="partner.id">
             <RouterLink :to="getEntityUrl(partner)">{{
               partner?.short_name || partner.name
@@ -88,14 +89,19 @@ shuffleArray(partners)
 
       <StaticSectionAtom
         id="data-provider"
-        title="Who are TSOSI’s data providers?"
+        title="Who are TSOSI data providers?"
       >
+        <template #title>
+          Who are <TsosiIconAtom /> TSOSI data providers?
+        </template>
         <p>
-          TSOSI’s data providers are the organizations that have shared
-          financial data about support for open infrastructures with TSOSI.
-          These can include, for example, research institutions, open
-          infrastructures, library consortia, research funders, or government
-          bodies.
+          TSOSI data providers are the organizations that have shared financial
+          data about support for open infrastructures with TSOSI. These can
+          include, for example, research institutions, open infrastructures,
+          library consortia, research funders, or government bodies. See how to
+          <RouterLink to="/new-provider"
+            >become a TSOSI data provider</RouterLink
+          >.
         </p>
       </StaticSectionAtom>
 
@@ -120,33 +126,38 @@ shuffleArray(partners)
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom id="join-tsosi" title="How can I join TSOSI?">
+      <StaticSectionAtom id="join-tsosi" title="How can I be part of TSOSI?">
         <p>
           We are eager to welcome your institution or infrastructure to
           TSOSI.org. We believe that the more data we have about financial
           support for open infrastructures, the more supporters we will attract.
-          Please see our
+          Everything you need to know is on the
+          <RouterLink to="/new-provider"
+            >Become a TSOSI data provider</RouterLink
+          >
+          page. You can also review the data needed in our
           <ExternalLinkAtom
             :label="'data collection schema'"
             :href="'https://github.com/tsosi-org/data-collection-schema'"
           />
-          on Github to review the data needed, and
+          on Github, and
           <a @click="openContactModal">contact us</a> to be part of this
           exciting initiative.
         </p>
       </StaticSectionAtom>
 
       <StaticSectionAtom
-        id="why-dont-i-see-the-supports-made-by-my-organization"
-        title="Why don't I see the supports made by my organization?"
+        id="why-dont-i-see-the-support-made-by-my-organization"
+        title="Why don't I see the support made by my organization?"
       >
         <p>
           TSOSI's data only comes from
-          <RouterLink :to="'#data-provider'">its providers</RouterLink>. You are
-          very welcome to be part of this, so that all your support can be
-          included.
-          <br />
-          See <RouterLink :to="'#join-tsosi'">How can I join TSOSI?</RouterLink>
+          <RouterLink :to="'#data-provider'">its data providers</RouterLink>.
+          You are very welcome to be part of this, so that all your support can
+          be included. See how to
+          <RouterLink to="/new-provider"
+            >become a TSOSI data provider</RouterLink
+          >.
         </p>
       </StaticSectionAtom>
 
@@ -287,11 +298,11 @@ shuffleArray(partners)
         title="What does the date column refer to?"
       >
         <p>
-          The date field is relative: it can represent either when the support
-          was made or when it was received. Both dates are shown in the detail
-          view; in the main table, the date of reception is prioritized. Also,
-          the date precision depends on the data TSOSI receives and may be at
-          the year, year–month, or year–month–day level.
+          The date field is relative: it can represent either when the
+          contribution was made or when it was received. Both dates are shown in
+          the detail view; in the main table, the date of reception is
+          prioritized. Also, the date precision depends on the data TSOSI
+          receives and may be at the year, year–month, or year–month–day level.
         </p>
       </StaticSectionAtom>
 

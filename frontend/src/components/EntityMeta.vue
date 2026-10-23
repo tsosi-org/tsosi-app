@@ -11,6 +11,7 @@ import { computed, onMounted, ref, watch, type Ref } from "vue"
 
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 import Image from "./atoms/ImageAtom.vue"
+import TsosiIconAtom from "./atoms/TsosiIconAtom.vue"
 
 import { devMode } from "@/singletons/devMode"
 import ChipList, { type ChipConfig } from "@/components/atoms/ChipListAtom.vue"
@@ -87,6 +88,14 @@ const rorIdentifier = computed(() => {
   }
   return null
 })
+// Pre-fills the new-provider contact form with this organization
+const newProviderUrl = computed(() => ({
+  path: "/new-provider",
+  query: {
+    name: props.entity.name,
+    ror_url: rorIdentifier.value ? getRorUrl(rorIdentifier.value) : undefined,
+  },
+}))
 const wikidataIdentifier = computed(() => {
   const ids = props.entity.identifiers.filter((id) => id.registry == "wikidata")
   if (ids.length > 0) {
@@ -566,8 +575,8 @@ function isDoab(): boolean {
           </div>
           <div v-if="editing" class="entity-header__buttons">
             <div v-if="props.entity.is_partner" class="badge-edit">
-              <img src="/img/favicon-192x192.png" />
-              <span>TSOSI provider</span>
+              <TsosiIconAtom />
+              <span>TSOSI data provider</span>
             </div>
             <div
               v-if="showInfrastructure"
@@ -658,18 +667,17 @@ function isDoab(): boolean {
           <div v-else-if="hasButtons" class="entity-header__buttons">
             <Button
               v-if="props.entity.is_partner"
-              label="TSOSI provider"
+              label="TSOSI data provider"
               variant="outlined"
               as="div"
               v-tooltip.top="{
-                value:
-                  'TSOSI\'s data provider (see the <a href=\'/pages/faq#data-provider\'>FAQ</a>)',
+                value: 'See the <a href=\'/pages/faq#data-provider\'>FAQ</a>',
                 escape: false,
                 autoHide: false,
               }"
             >
               <template #icon>
-                <img src="/img/favicon-192x192.png" />
+                <TsosiIconAtom />
               </template>
             </Button>
             <Button
@@ -767,17 +775,20 @@ function isDoab(): boolean {
         </template>
         <div class="info-box-content">
           <ul>
-            <li>Each line of the table below shows a financial support</li>
+            <li>Each line of the table below shows a financial contribution</li>
             <li>
               TSOSI's data comes from
               <RouterLink to="/pages/faq#data-provider"
-                >its providers</RouterLink
+                >its data providers</RouterLink
               >
             </li>
             <li v-if="!props.entity.is_partner">
               {{ props.entity.name }} is
               <strong>not yet a TSOSI data provider</strong>, the data below
-              might not cover all of their supports.
+              might not cover all of their support.
+              <RouterLink :to="newProviderUrl"
+                >See how to become a data provider</RouterLink
+              >
             </li>
             <li v-if="isDoaj() || isDoab()">
               DOAJ and DOAB data only start from 2021:

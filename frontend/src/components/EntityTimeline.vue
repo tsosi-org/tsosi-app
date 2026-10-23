@@ -37,7 +37,7 @@ const props = defineProps<{
 const chartData: Ref<ChartData | undefined> = ref()
 const chartOptions: Ref<object | undefined> = ref()
 const loading = ref(true)
-const chartTitle = `Dates of supports by infrastructure`
+const chartTitle = `Dates of contributions by infrastructure`
 const chartComponent = useTemplateRef("chart")
 const chartPlugins: Plugin<"scatter">[] = []
 const chartContainerStyle = computed(() => {

@@ -9,6 +9,7 @@ import { RouterLink, useRoute } from "vue-router"
 
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
 import StaticSectionAtom from "@/components/atoms/StaticSectionAtom.vue"
+import TsosiIconAtom from "@/components/atoms/TsosiIconAtom.vue"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 
 const route = useRoute()
@@ -29,11 +30,15 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
 
 <template>
   <StaticContentComponent title="Become a TSOSI data provider">
+    <template #title> Become a <TsosiIconAtom /> TSOSI data provider </template>
     <template #default>
       <p class="intro">
-        <b>TSOSI's data providers</b> are the organizations that shared
-        financial data about support for open infrastructures with TSOSI.
-        Institutions, infrastructures, consortia and funders are all welcome.
+        <b>TSOSI data providers</b> are the organizations that shared financial
+        data about support for open infrastructures with TSOSI (see
+        <RouterLink to="/explore?provider=true"
+          >the current data providers</RouterLink
+        >). Institutions, infrastructures, consortia and funders are all
+        welcome.
       </p>
       <div class="cta">
         <Button as="router-link" to="#get-in-touch" label="Get in touch" />
@@ -42,7 +47,9 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
       <Accordion v-model:value="openPanels" multiple class="faq">
         <AccordionPanel value="why-join">
           <AccordionHeader>
-            <span class="as-heading">Why join?</span>
+            <span class="as-heading"
+              >Why become a <TsosiIconAtom /> TSOSI data provider?</span
+            >
           </AccordionHeader>
           <AccordionContent>
             <ul>
@@ -71,7 +78,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
         <AccordionPanel value="who-can-join">
           <AccordionHeader>
             <span class="as-heading"
-              >Who can become a TSOSI data provider?</span
+              >Who can become a <TsosiIconAtom /> TSOSI data provider?</span
             >
           </AccordionHeader>
           <AccordionContent>
@@ -153,14 +160,14 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
                   href="https://www.wikidata.org"
                   label="Wikidata"
                 />
-                identifiers. We also match your supports with those already
-                declared in TSOSI, so that the same support is
+                identifiers. We also match your support with those already
+                declared in TSOSI, so that the same contribution is
                 <RouterLink to="/pages/faq#data-source"
                   >never counted twice</RouterLink
                 >.
               </li>
               <li>
-                <b>You validate.</b> We send you a preview of how your supports
+                <b>You validate.</b> We send you a preview of how your support
                 will appear on TSOSI. You confirm by email that it is correct
                 and that you agree to its publication.
               </li>
@@ -183,7 +190,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
               <li>
                 Institutions (universities, research organizations, libraries,
                 government bodies...) fill in a spreadsheet template with the
-                supports they made.
+                contributions they made.
               </li>
               <li>
                 Consortia share the data they already have. An export from
@@ -205,14 +212,14 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
         <AccordionPanel value="data-we-need">
           <AccordionHeader>
             <span class="as-heading"
-              >What data is required to describe a support?</span
+              >What data is required to describe a contribution?</span
             >
           </AccordionHeader>
           <AccordionContent>
             <p>
-              We describe each financial support with the following data: the
-              supporting organization, the infrastructure receiving the support,
-              the amount, the currency, and the date.
+              We describe each financial contribution with the following data:
+              the supporting organization, the infrastructure receiving the
+              support, the amount, the currency, and the date.
             </p>
             <p>
               If you enjoy technical descriptions as much as we do, we invite

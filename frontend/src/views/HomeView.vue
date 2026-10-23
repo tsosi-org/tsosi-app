@@ -9,6 +9,7 @@ import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg"
 import mesrLogoUrl from "@/assets/img/mesr_logo_noir.png"
 import ExternalLink from "@/components/atoms/ExternalLinkAtom.vue"
 import ImageAtom from "@/components/atoms/ImageAtom.vue"
+import TsosiIconAtom from "@/components/atoms/TsosiIconAtom.vue"
 import EntityMap from "@/components/EntityMap.vue"
 import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery"
 import { setBigHeader, togglePageNoHeader } from "@/singletons/fixedHeaderStore"
@@ -121,7 +122,13 @@ const citations = [
       <div class="container">
         <div class="regular-content content-section">
           <h2 class="banner-title" style="text-align: center">
-            TSOSI data comes from the following organizations:
+            TSOSI data comes from the following organizations.
+          </h2>
+          <h2 style="text-align: center">
+            To be part of this, see how to
+            <RouterLink to="/new-provider"
+              >become a <TsosiIconAtom /> TSOSI data provider</RouterLink
+            >
           </h2>
           <div class="partner-cards">
             <RouterLink
@@ -142,12 +149,6 @@ const citations = [
             </RouterLink>
           </div>
         </div>
-        <div class="regular-content content-section">
-          <h2 class="banner-title" style="text-align: center">
-            Be part of this! See how to
-            <RouterLink :to="'/pages/faq#join-tsosi'"> join TSOSI</RouterLink>.
-          </h2>
-        </div>
       </div>
     </section>
 
@@ -159,10 +160,16 @@ const citations = [
           </h2>
           <div class="explain-boxes">
             <div class="explain-box" style="--l-pos: 80px">
-              <h3>1. We collect financial data from TSOSI providers</h3>
+              <h3>
+                1. We collect financial data from <TsosiIconAtom /> TSOSI data
+                providers
+              </h3>
               <p>
                 We collect financial data from various organization. We started
                 with infrastructures and we have added institutions.
+                <RouterLink to="/new-provider"
+                  >Become a data provider</RouterLink
+                >.
               </p>
             </div>
             <div class="explain-box" style="--l-pos: calc(100% - 80px)">

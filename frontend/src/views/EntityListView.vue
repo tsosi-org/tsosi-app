@@ -14,6 +14,7 @@ import {
 } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
+import TsosiIconAtom from "@/components/atoms/TsosiIconAtom.vue"
 import EntityCard from "@/components/EntityCard.vue"
 import { getCountries, getEntities, type Entity } from "@/singletons/ref-data"
 
@@ -230,9 +231,9 @@ const filteredEntities = computed(() => {
         <p class="filter-title">Filter</p>
         <div class="filter-group">
           <ToggleButton v-model="isPartner">
-            <img src="/img/favicon-192x192.png" />
+            <TsosiIconAtom />
             <span class="p-togglebutton-label" data-pc-section="label"
-              >TSOSI provider</span
+              >TSOSI data provider</span
             >
             <font-awesome-icon
               :icon="['fas', 'circle-question']"
