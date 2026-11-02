@@ -6,7 +6,6 @@ import threading
 from collections.abc import Callable
 from urllib.parse import quote
 
-from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.core.mail import send_mail
 from rest_framework import serializers
@@ -86,8 +85,8 @@ def send_login_link(user, next_path: str = "") -> None:
         send_mail,
         LOGIN_EMAIL_SUBJECT,
         LOGIN_EMAIL_MESSAGE.format(link=link),
-        # Sent from the SMTP account
-        settings.EMAIL_HOST_USER,
+        # Sent from DEFAULT_FROM_EMAIL
+        None,
         [user.email],
     )
 
