@@ -1214,6 +1214,31 @@ argon2 = ["argon2-cffi (>=23.1.0)"]
 bcrypt = ["bcrypt (>=4.1.1)"]
 
 [[package]]
+name = "django-anymail"
+version = "14.0"
+description = "Django email backends and webhooks for Amazon SES, Brevo,  MailerSend, Mailgun, Mailjet, Mailtrap, Mandrill, Postal, Postmark, Resend,  Scaleway TEM, SendGrid, SparkPost, and Unisender Go  (EmailBackend, transactional email tracking and inbound email signals)"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "django_anymail-14.0-py3-none-any.whl", hash = "sha256:98e5575bcff231952a92117b7d0a4dd37fab582333a343de302d415a31dc72b1"},
+    {file = "django_anymail-14.0.tar.gz", hash = "sha256:ca42e52da62d2c96ce92412f9d68ef6d2067d96a384096b6e932d6a247e9fd61"},
+]
+
+[package.dependencies]
+django = ">=4.0"
+idna = "*"
+requests = ">=2.4.3"
+urllib3 = ">=1.25.0"
+
+[package.extras]
+amazon-ses = ["boto3 (>=1.24.6)"]
+postal = ["cryptography ; python_version >= \"3.9\""]
+resend = ["svix"]
+sendgrid = ["cryptography ; python_version >= \"3.9\""]
+uts46 = ["uts46"]
+
+[[package]]
 name = "django-celery-beat"
 version = "2.9.0"
 description = "Database-backed Periodic Tasks."
@@ -4354,4 +4379,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "7d2f249fb143e47cfaec48a6a5f05b0298447f82e9515af749cb7728d5636366"
+content-hash = "04e1b32f80b84c1fa52a42426783ba07e4eeb6b41aae82e8138e11f647076057"

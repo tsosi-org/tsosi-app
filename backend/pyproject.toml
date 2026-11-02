@@ -37,6 +37,7 @@ nh3 = "^0.2"
 lxml = "~6.1.3"
 pygithub = "~2.10.0"
 django-sesame = "^3.2.5"
+django-anymail = "^14"
 
 [tool.poetry.group.dev.dependencies]
 # Dev linting & formatting

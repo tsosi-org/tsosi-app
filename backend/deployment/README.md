@@ -172,8 +172,8 @@ It is prepared as in **Server preparation** above, with these differences:
     # Used in the Hub's login e-mails and the sitemap.
     TSOSI_FRONTEND_URL = "https://dev.tsosi.org"
     # Login e-mails are printed in the gunicorn log
-    # (`sudo journalctl -u tsosi_gunicorn`). Use the SMTP settings of prod
-    # instead to receive them.
+    # (`sudo journalctl -u tsosi_gunicorn`). Use the e-mail settings of prod
+    # instead to receive them (the servers can't reach SMTP ports).
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     # In the log folder of `deployer`, rotated by logrotate.
     TSOSI_MAIN_LOG_FILE = "/var/log/tsosi/tsosi_app.log"

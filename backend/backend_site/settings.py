@@ -54,8 +54,12 @@ TSOSI_OPTIONAL_SETTINGS = [
     "TSOSI_API_RATE",
     "TSOSI_API_WHITELIST_IPS",
     "TSOSI_FRONTEND_URL",
-    # E-mails (Hub login links), sent through an SMTP server in production
+    # E-mails (Hub login links), sent in production through the HTTP API of a
+    # transactional e-mail provider (django-anymail), as the servers can't
+    # reach SMTP ports, or through an SMTP server
     "EMAIL_BACKEND",
+    "DEFAULT_FROM_EMAIL",
+    "ANYMAIL",
     "EMAIL_HOST",
     "EMAIL_PORT",
     "EMAIL_HOST_USER",
