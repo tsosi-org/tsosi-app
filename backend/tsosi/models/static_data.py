@@ -85,6 +85,7 @@ DATA_SOURCES = [
     "ird",
     "leuven",
     "liege",
+    "mdc",
     "mersenne",
     "mirabel",
     "olh",

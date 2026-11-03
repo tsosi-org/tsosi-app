@@ -36,5 +36,7 @@ def get_config(
             rdc.FieldDateInvoice(field="date_invoice"),
             rdc.FieldDatePaymentEmitter(field="date_sent"),
             rdc.FieldDatePaymentRecipient(field="date_received"),
+            rdc.FieldDateStart(field="date_start"),
+            rdc.FieldDateEnd(field="date_end"),
         ],
     )

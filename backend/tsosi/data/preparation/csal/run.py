@@ -39,9 +39,21 @@ def main() -> None:
         "date_invoice": "date_invoice",
         "date_sent": "date_sent",
         "date_received": "date_received",
+        "contract/date_start": "date_start",
+        "contract/date_end": "date_end",
     }
     df = df.rename(columns=mapping)[mapping.values()]
     df = df.map(clean_cell_value)
+
+    # Fixes from Make Data Count's data (sent by DataCite on 2026-10-21):
+    # CERN pays 1,750 € a year and ETH Zurich paid its 3 years at once in 2025.
+    is_mdc = df["recipient/name"] == "Make Data Count"
+    is_cern = df["emitter/name"] == "European Organization for Nuclear Research"
+    df.loc[is_mdc & is_cern, "amount"] = 1750
+    is_eth = is_mdc & (df["emitter/name"] == "ETH Zurich")
+    df = df.drop(df[is_eth & (df["date_invoice"] != 2025)].index)
+    is_eth = is_eth[df.index]
+    df.loc[is_eth, ["amount", "date_start", "date_end"]] = [10500, 2025, 2027]
 
     # Add infra identifiers
     infra_path = (
