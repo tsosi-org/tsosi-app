@@ -72,6 +72,7 @@ DATA_SOURCES = [
     "basel",
     "couperin",
     "csal",
+    "datacite",
     "doab_oapen_library",
     "doab_oapen_sponsor",
     "doab_oapen",
