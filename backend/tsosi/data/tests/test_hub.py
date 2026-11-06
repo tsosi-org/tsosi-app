@@ -239,6 +239,87 @@ def test_add_member(admin_client, admin_user, member):
 
 
 @pytest.mark.django_db
+def test_add_member_invitation(
+    admin_client, django_capture_on_commit_callbacks
+):
+    entity = EntityFactory.create(name="Uni")
+    data = {
+        "email": "new@uni.edu",
+        "entity": entity.id,
+        "status": MEMBERSHIP_STATUS_ACTIVE,
+        "can_declare_supports": "on",
+        "send_invitation": "on",
+    }
+    with django_capture_on_commit_callbacks(execute=True):
+        response = admin_client.post(
+            f"{MEMBERSHIP_ADMIN_URL}add/", data, follow=True
+        )
+    assert response.status_code == 200
+    assert "An invitation e-mail was sent to new@uni.edu" in str(
+        list(response.context["messages"])
+    )
+    assert len(mail.outbox) == 1
+    message = mail.outbox[0]
+    assert message.to == ["new@uni.edu"]
+    assert "member of Uni on the TSOSI Data" in message.body
+    assert "declare and confirm" in message.body
+    assert "/hub/login and enter this e-mail address" in message.body
+    # No login token: it would expire
+    assert "token" not in message.body
+
+    # Profile only, as for an infrastructure
+    other = EntityFactory.create()
+    profile_only = {
+        k: v for k, v in data.items() if k != "can_declare_supports"
+    }
+    with django_capture_on_commit_callbacks(execute=True):
+        admin_client.post(
+            f"{MEMBERSHIP_ADMIN_URL}add/",
+            {**profile_only, "email": "infra@org.org", "entity": other.id},
+        )
+    assert len(mail.outbox) == 2
+    assert mail.outbox[1].to == ["infra@org.org"]
+    assert "declare" not in mail.outbox[1].body
+    assert "edit your organization's public page" in mail.outbox[1].body
+
+    # Unchecked
+    data_unchecked = {k: v for k, v in data.items() if k != "send_invitation"}
+    with django_capture_on_commit_callbacks(execute=True):
+        response = admin_client.post(
+            f"{MEMBERSHIP_ADMIN_URL}add/",
+            {**data_unchecked, "email": "quiet@uni.edu", "entity": other.id},
+        )
+    assert response.status_code == 302
+    assert Membership.objects.filter(user__email="quiet@uni.edu").exists()
+    assert len(mail.outbox) == 2
+
+    # Not for a revoked membership
+    with django_capture_on_commit_callbacks(execute=True):
+        admin_client.post(
+            f"{MEMBERSHIP_ADMIN_URL}add/",
+            {
+                **data,
+                "email": "revoked@uni.edu",
+                "status": MEMBERSHIP_STATUS_REVOKED,
+            },
+        )
+    assert Membership.objects.filter(user__email="revoked@uni.edu").exists()
+    assert len(mail.outbox) == 2
+
+    # Not when a membership is edited: the option isn't on its form
+    membership = Membership.objects.get(user__email="new@uni.edu")
+    url = f"{MEMBERSHIP_ADMIN_URL}{membership.pk}/change/"
+    response = admin_client.get(url)
+    assert "send_invitation" not in response.content.decode()
+    with django_capture_on_commit_callbacks(execute=True):
+        response = admin_client.post(url, profile_only)
+    assert response.status_code == 302
+    membership.refresh_from_db()
+    assert not membership.can_declare_supports
+    assert len(mail.outbox) == 2
+
+
+@pytest.mark.django_db
 def test_me_staff(admin_user):
     client = APIClient()
     client.force_login(admin_user)
