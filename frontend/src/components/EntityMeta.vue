@@ -7,6 +7,7 @@ import Panel from "primevue/panel"
 import Select from "primevue/select"
 import Textarea from "primevue/textarea"
 import { computed, onMounted, ref, watch, type Ref } from "vue"
+import type { RouteLocationRaw } from "vue-router"
 
 import ExternalLinkAtom from "./atoms/ExternalLinkAtom.vue"
 import Image from "./atoms/ImageAtom.vue"
@@ -17,6 +18,7 @@ import { devMode } from "@/singletons/devMode"
 import ChipList, { type ChipConfig } from "@/components/atoms/ChipListAtom.vue"
 import { useEntityEdit } from "@/composables/useEntityEdit"
 import { isDesktop } from "@/composables/useMediaQuery"
+import { session } from "@/singletons/hub-session"
 import { getCountries, type EntityDetails } from "@/singletons/ref-data"
 import { formatDateWithPrecision, getCountryLabel } from "@/utils/data-utils"
 import { getRorUrl, getWikidataUrl } from "@/utils/url-utils"
@@ -25,8 +27,9 @@ const props = defineProps<{
   entity: EntityDetails
   // Whether the user is allowed to edit the entity
   editable?: boolean
-  // Whether to start in edit mode, once editable
-  startEditing?: boolean
+  // The organization's Hub, where its profile is edited: a button to it
+  // instead of the edit one (the public entity page)
+  hubLink?: RouteLocationRaw
   // Only the profile, without the entity's data below (the Hub's "Public
   // page" tab): no box about reading the data
   profileOnly?: boolean
@@ -68,15 +71,11 @@ async function startEdit() {
   }
 }
 
-watch(
-  () => props.editable && props.startEditing,
-  (start) => {
-    if (start && !editing.value) {
-      startEdit()
-    }
-  },
-  { immediate: true },
-)
+// The icon, shown in small next to the name, is set by the TSOSI team
+const canEditIcon = computed(() => !!session.member?.is_staff)
+
+// The edit bar: the edit buttons, or the button to the Hub
+const hasEditBar = computed(() => props.editable || !!props.hubLink)
 
 async function saveEdit() {
   if (await save()) {
@@ -179,12 +178,23 @@ function isDoab(): boolean {
 <template>
   <div
     class="entity-meta"
-    :class="{ desktop: isDesktop, editable: props.editable }"
+    :class="{ desktop: isDesktop, editable: hasEditBar }"
   >
-    <div v-if="props.editable" class="edit-bar">
+    <div v-if="hasEditBar" class="edit-bar">
       <div class="edit-bar__buttons">
         <Button
-          v-if="!editing"
+          v-if="!props.editable"
+          as="router-link"
+          :to="props.hubLink!"
+          label="Edit in the Hub"
+          severity="secondary"
+        >
+          <template #icon>
+            <font-awesome-icon :icon="['fas', 'pen']" />
+          </template>
+        </Button>
+        <Button
+          v-else-if="!editing"
           label="Edit"
           severity="secondary"
           @click="startEdit"
@@ -325,7 +335,7 @@ function isDoab(): boolean {
           <small class="edit-error logo-error" v-if="fieldError('logo')">
             {{ fieldError("logo") }}
           </small>
-          <div class="icon-edit-row">
+          <div v-if="canEditIcon" class="icon-edit-row">
             <label
               class="logo-edit icon-edit"
               :class="{ empty: !iconPreview }"
@@ -351,7 +361,10 @@ function isDoab(): boolean {
               />
             </label>
           </div>
-          <small class="edit-error logo-error" v-if="fieldError('icon')">
+          <small
+            class="edit-error logo-error"
+            v-if="canEditIcon && fieldError('icon')"
+          >
             {{ fieldError("icon") }}
           </small>
         </div>

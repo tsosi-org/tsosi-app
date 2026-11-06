@@ -31,7 +31,8 @@ changeMetaTitle("Data Contribution Hub")
 type HubTab = "supports" | "page"
 
 const organization = ref<EntityDetails | null>(null)
-// The TSOSI team on another organization's Hub
+// The TSOSI team on another organization's Hub: its supports are read-only,
+// its public page editable (`canEditEntity`)
 const readOnly = ref(false)
 const loading = ref(true)
 const showSupports = ref(false)
@@ -105,12 +106,11 @@ async function logOutAndLeave() {
   <div class="container" v-else>
     <div class="regular-content hub">
       <Message v-if="readOnly">
-        You're viewing this organization's Hub as a TSOSI admin, in read-only
-        mode.
+        You're viewing this organization's Hub as a TSOSI admin: its supports
+        are read-only, its public page can be edited.
       </Message>
       <div class="hub-header">
         <h1>{{ organization.name }}</h1>
-        <!-- It would also end the admin's Django admin session -->
         <Button
           v-if="!readOnly"
           label="Log out"
@@ -146,13 +146,6 @@ async function logOutAndLeave() {
           </TabPanel>
           <TabPanel value="page">
             <section class="profile" aria-label="Public page">
-              <p class="hint">
-                The organization's information shown on its
-                <RouterLink
-                  :to="{ name: 'entity', params: { id: organization.id } }"
-                  >public page</RouterLink
-                >. Edits are published at once.
-              </p>
               <EntityMeta
                 :entity="organization"
                 :editable="editable"

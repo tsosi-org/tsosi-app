@@ -12,7 +12,7 @@ import {
   newSupport,
   transfer,
 } from "@/__tests__/hub-fixtures"
-import { NONE, type Declaration } from "@/singletons/hub-declarations"
+import type { Declaration } from "@/singletons/hub-declarations"
 import type { HubTransfer } from "@/singletons/ref-data"
 import {
   AMOUNT_FORMAT_ERROR,
@@ -21,7 +21,6 @@ import {
   draftPayloadValues,
   errorMessage,
   errorMessages,
-  matchQuery,
   newSupportOperations,
   newSupportPayload,
   payloadValues,
@@ -96,41 +95,6 @@ describe("payload values", () => {
     expect(values.date_start).toBe("2024")
     expect(values.date_end).toBeNull()
     expect(values.recipient_id).toBeNull()
-  })
-})
-
-describe("matchQuery", () => {
-  const draft = () => ({
-    ...emptyDraft("EUR"),
-    recipient: DOAJ,
-    amount: 1000,
-    dates: { ...emptyDraft("EUR").dates, date_invoice: "2024-03" },
-  })
-
-  it("needs the beneficiary and a valid date", () => {
-    expect(matchQuery({ ...draft(), recipient: null }, null)).toBeNull()
-    const invalid = draft()
-    invalid.dates.date_invoice = "2024-13"
-    expect(matchQuery(invalid, null)).toBeNull()
-  })
-
-  it("holds the values typed, and the row edited", () => {
-    expect(JSON.parse(matchQuery(draft(), "new-7")!)).toEqual({
-      recipient_id: DOAJ.id,
-      amount: 1000,
-      currency: "EUR",
-      date_invoice: "2024-03",
-      date_payment_emitter: null,
-      date_payment_recipient: null,
-      date_start: null,
-      date_end: null,
-      exclude: "new-7",
-    })
-  })
-
-  it("has no currency without amount", () => {
-    const query = JSON.parse(matchQuery({ ...draft(), amount: null }, null)!)
-    expect(query.currency).toBeNull()
   })
 })
 
@@ -256,36 +220,22 @@ describe("newSupportOperations", () => {
     amount: 500,
   })
 
-  it("makes it the change of the published support picked", () => {
-    expect(newSupportOperations(table, draft, values, "t2", ["t2"])).toEqual(
-      asChangeOf(table, draft, "t2", values),
-    )
-  })
-
-  it("puts the values in the other new support picked", () => {
-    expect(
-      newSupportOperations(table, draft, values, "new-8", ["new-8"]),
-    ).toEqual({
-      saves: [
-        {
-          // Keeping what the other one was declared not to be
-          payload: newSupportPayload(table, values, ["t1"]),
-          id: 8,
-        },
-      ],
-      deletions: [draft],
+  it("saves the values, a new support or the draft", () => {
+    expect(newSupportOperations(table, null, values)).toEqual({
+      saves: [{ payload: newSupportPayload(table, values, []) }],
+      deletions: [],
+    })
+    expect(newSupportOperations(table, draft, values)).toEqual({
+      saves: [{ payload: newSupportPayload(table, values, []), id: 7 }],
+      deletions: [],
     })
   })
 
-  it("lists the matches it isn't, with none of these", () => {
-    for (const choice of [NONE, null]) {
-      expect(
-        newSupportOperations(table, null, values, choice, ["t1", "new-8"]),
-      ).toEqual({
-        saves: [{ payload: newSupportPayload(table, values, ["t1", "new-8"]) }],
-        deletions: [],
-      })
-    }
+  it("keeps what the draft was declared not to be", () => {
+    expect(newSupportOperations(table, other, values)).toEqual({
+      saves: [{ payload: newSupportPayload(table, values, ["t1"]), id: 8 }],
+      deletions: [],
+    })
   })
 })
 

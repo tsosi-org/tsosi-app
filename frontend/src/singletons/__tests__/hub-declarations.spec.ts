@@ -4,7 +4,6 @@ import { mockApi } from "@/__tests__/api-mock"
 import {
   computeDateClc,
   deleteDeclaration,
-  findMatches,
   formatAmountInput,
   formatDateInput,
   getDeclarations,
@@ -152,29 +151,6 @@ describe("requests", () => {
     expect(requests.map((r) => r.method)).toEqual(["POST", "PUT"])
     expect(requests[0].headers.get("X-CSRFToken")).toBe("abc=")
     expect(requests[0].body).toEqual({ kind: "new", transfer_id: null })
-  })
-
-  it("leaves the empty values out of the matches query", async () => {
-    const requests = mockApi({
-      "hub/entities/T1/matches": {
-        body: { matches: [{ row_id: "t1", amount_differs: false }] },
-      },
-    })
-    const matches = await findMatches("T1", {
-      recipient_id: "e1",
-      amount: 0,
-      currency: null,
-      date_invoice: "",
-      date_start: "2024",
-    })
-    expect(matches).toEqual([{ row_id: "t1", amount_differs: false }])
-    const params = Object.fromEntries(requests[0].params)
-    expect(params).toEqual({
-      recipient_id: "e1",
-      amount: "0",
-      date_start: "2024",
-      format: "json",
-    })
   })
 })
 

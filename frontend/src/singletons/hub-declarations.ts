@@ -2,8 +2,7 @@
  * Declarations of the Data Contribution Hub: the changes an organization
  * makes to its supports (new support, confirmation, edit, removal), and
  * whether possible duplicates are the same support (merge) or not, saved as
- * drafts until they're submitted and approved. Also the reconciliation
- * matches, and the submissions.
+ * drafts until they're submitted and approved. Also the submissions.
  */
 import { apiRequest, type ApiRequestResult } from "@/services/api"
 import { csrfHeaders } from "@/singletons/hub-session"
@@ -293,38 +292,6 @@ export function computeDateClc(
     }
   }
   return null
-}
-
-// The reconciliation choice of none of the possible matches or duplicates
-export const NONE = "none"
-
-// A saved support that may be the one being entered: its row in the table
-export interface Match {
-  row_id: string
-  amount_differs: boolean
-}
-
-/**
- * The organization's saved supports, published or new, that may be the
- * support being entered, with whether their amount differs. The values are
- * those of a declaration, the dates as typed and valid; `exclude` is the row
- * being edited.
- */
-export async function findMatches(
-  entityId: string,
-  values: Record<string, string | number | null>,
-): Promise<Match[] | null> {
-  const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(values)) {
-    if (value != null && value !== "") {
-      params.set(key, String(value))
-    }
-  }
-  const result = await apiRequest(`hub/entities/${entityId}/matches?${params}`)
-  if (result.error || !result.data) {
-    return null
-  }
-  return result.data.matches as Match[]
 }
 
 export type SubmissionStatus = "submitted" | "publishing"

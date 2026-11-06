@@ -10,7 +10,6 @@ from tsosi.api.hub.organizations import (
     EntityOrganizationsView,
     OrganizationSearchView,
 )
-from tsosi.api.hub.reconciliation import EntityMatchesView
 from tsosi.api.hub.session import LoginLinkView, LoginView, LogoutView, MeView
 from tsosi.api.hub.submissions import (
     EntityPublicationPreviewView,
@@ -78,10 +77,6 @@ urlpatterns = [
     path(
         "api/hub/entities/<str:entity_id>/organizations",
         EntityOrganizationsView.as_view(),
-    ),
-    path(
-        "api/hub/entities/<str:entity_id>/matches",
-        EntityMatchesView.as_view(),
     ),
     path(
         "api/hub/entities/<str:entity_id>/submissions",

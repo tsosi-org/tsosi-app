@@ -258,17 +258,13 @@ def test_edit_entity_validation(registries):
 
 
 @pytest.mark.django_db
-def test_edit_entity_logo(registries, storage):
+def test_edit_entity_logo(registries, storage, admin_user):
     entity = EntityFactory.create(is_recipient=True)
     client, _ = member_client(entity)
 
     response = client.patch(
         edit_url(entity),
-        {
-            "data": json.dumps({"short_name": "E"}),
-            "logo": png_file(),
-            "icon": png_file(),
-        },
+        {"data": json.dumps({"short_name": "E"}), "logo": png_file()},
         format="multipart",
     )
     assert response.status_code == 200, response.data
@@ -276,6 +272,31 @@ def test_edit_entity_logo(registries, storage):
     assert entity.short_name == "E"
     assert entity.logo
     assert entity.manual_logo
+
+    # Only the TSOSI team changes the icon: the whole edit is refused
+    response = client.patch(
+        edit_url(entity),
+        {
+            "data": json.dumps({"short_name": "F"}),
+            "logo": png_file(),
+            "icon": png_file(),
+        },
+        format="multipart",
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "icon": "Only the TSOSI team can change the icon."
+    }
+    entity.refresh_from_db()
+    assert entity.short_name == "E"
+    assert not entity.icon
+    staff_client = APIClient()
+    staff_client.force_login(admin_user)
+    response = staff_client.patch(
+        edit_url(entity), {"icon": png_file()}, format="multipart"
+    )
+    assert response.status_code == 200, response.data
+    entity.refresh_from_db()
     assert entity.icon
 
     # Replacing the logo keeps the previous file

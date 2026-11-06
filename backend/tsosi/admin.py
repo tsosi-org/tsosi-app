@@ -39,8 +39,8 @@ def entity_ref(entity: Entity) -> str:
 class EntityAdmin(SimpleHistoryAdmin):
     """
     Entities come from the data pipeline: only their scope is set here, by
-    the curation board. Filter on the scope to list the infrastructures to be
-    checked.
+    the TSOSI team. Filter on the scope to list the infrastructures to be
+    checked. Their profile is edited in their Hub's Public page tab.
     """
 
     list_display = [
@@ -81,22 +81,27 @@ class EntityAdmin(SimpleHistoryAdmin):
     @admin.display(description="Public page")
     def public_page(self, entity: Entity):
         """
-        Link to the entity's page, in edit mode: the profile is edited there,
-        public or in preview.
+        Link to the entity's page on the public site. It's not found there
+        until the entity is public: its Hub shows it in preview.
         """
-        url = f"{app_settings.FRONTEND_URL}/entities/{entity_ref(entity)}?edit"
+        url = f"{app_settings.FRONTEND_URL}/entities/{entity_ref(entity)}"
         return format_html(
-            '<a href="{}" target="_blank">View / edit public page</a>', url
+            '<a href="{}" target="_blank">View public page</a>', url
         )
 
     @admin.display(description="Hub")
     def hub(self, entity: Entity):
         """
-        Link to the organization's Hub, read-only for the TSOSI team.
+        Links to the organization's Hub: its Public page tab, where the TSOSI
+        team edits the profile of any organization, public or in preview, and
+        its supports, read-only for the TSOSI team.
         """
         url = f"{app_settings.FRONTEND_URL}/hub/{entity_ref(entity)}"
         return format_html(
-            '<a href="{}" target="_blank">Open (read-only)</a>', url
+            '<a href="{}?tab=page" target="_blank">Edit public page</a><br>'
+            '<a href="{}" target="_blank">Supports (read-only)</a>',
+            url,
+            url,
         )
 
     @admin.display(description="Hub submissions")
@@ -161,8 +166,9 @@ class EntityAdmin(SimpleHistoryAdmin):
 @admin.register(InfrastructureDetails)
 class InfrastructureDetailsAdmin(SimpleHistoryAdmin):
     """
-    Read-only: the infrastructure details are edited on the organization's
-    page. Kept for their history, linked from the entity page.
+    Read-only: the infrastructure details are edited in the organization's
+    Hub, Public page tab. Kept for their history, linked from the entity
+    page.
     """
 
     list_display = ["entity", "support_url", "posi_url"]

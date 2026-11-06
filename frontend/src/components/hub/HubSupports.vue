@@ -9,7 +9,7 @@ import {
   useTemplateRef,
   watch,
 } from "vue"
-import { useRoute, useRouter } from "vue-router"
+import { useRouter } from "vue-router"
 
 import Loader from "@/components/atoms/LoaderAtom.vue"
 import Message from "@/components/atoms/MessageAtom.vue"
@@ -19,24 +19,16 @@ import Table, { type TableColumnProps } from "@/components/TableComponent.vue"
 import { originalCurrency, selectedCurrency } from "@/singletons/currencyStore"
 import {
   EDITOR_FIELD_ERRORS,
-  findMatches,
   getDeclarations,
   getSubmissions,
   KIND_LABELS,
-  NONE,
   type Declaration,
   type DeclarationErrors,
   type EditorField,
-  type Match,
   type Submission,
   type SupportDraft,
 } from "@/singletons/hub-declarations"
-import {
-  recipientScope,
-  SCOPE_INFOS,
-  SCOPE_LABELS,
-  SCOPE_SEVERITIES,
-} from "@/singletons/hub-organizations"
+import { recipientScope, scopeHighlight } from "@/singletons/hub-organizations"
 import {
   getEntitySummary,
   getHubTransfers,
@@ -49,13 +41,11 @@ import {
   formatDateWithPrecision,
   formatDateWithPrecisionObj,
 } from "@/utils/data-utils"
-import debounce from "@/utils/debounce"
 import {
   draftErrors,
   draftPayloadValues,
   errorMessage,
   errorMessages,
-  matchQuery,
   newSupportOperations,
   reconcileOperations,
   runOperations,
@@ -67,46 +57,36 @@ import {
   addedRows,
   buildSupportTable,
   defaultCurrency,
-  dismissedRows,
   draftFromValues,
   emptyDraft,
-  filterRows,
-  groupCounts,
-  isLocked,
-  lockedReason,
   NEW_ROW_ID,
   orphans,
   pairDisabledReasons,
-  rowNotes,
+  ROW_STATUSES,
   sortRow,
+  statusInfo,
   tableRows,
   valuesFromDeclaration,
   valuesFromDraft,
   valuesFromTransfer,
-  type FilterGroup,
   type RowsState,
   type SubRow,
   type SupportRow,
 } from "@/utils/hub-support-rows"
-import { queryString, replaceQuery } from "@/utils/url-state"
+import { hiddenTransferColumns, transferColumns } from "@/utils/transfer-table"
 import { getHubEntityRef } from "@/utils/url-utils"
-import {
-  hiddenTransferColumns,
-  transferColumns,
-  transferDetailsButton,
-} from "@/utils/transfer-table"
 
 /**
  * The organization's supports table in the Hub: the transfers declared about
  * it, merged with its changes not published yet (declarations), which members
  * prepare here, reconcile with the saved ones, and submit.
  * A row is edited in place: its cells become inputs, but its dates, typed in
- * a panel under it. The possible duplicates of a row, and the matches of a
- * new support, show as sub-rows under it.
+ * a panel under it. The possible duplicates of a row, found once it's saved,
+ * show as sub-rows under it.
  * The rows are built by `hub-support-rows`, the changes saved by
  * `hub-support-changes`: this component holds the state and renders it.
- * The status picked in the legend is in the URL (`?status=`), like the
- * table's sort, filters and page.
+ * The table's filters, its status' included, are in the URL, like its sort
+ * and page. Escape cancels the row being edited or added.
  */
 const props = defineProps<{
   organization: DeepReadonly<EntityDetails>
@@ -114,39 +94,18 @@ const props = defineProps<{
   readOnly: boolean
 }>()
 
-const route = useRoute()
 const router = useRouter()
 const root = useTemplateRef<HTMLElement>("root")
 
-const legend: { group: FilterGroup; label: string; info: string }[] = [
-  {
-    group: "not_confirmed",
-    label: "Not confirmed",
-    info: "Only other organizations declared this support. Confirm it, or edit it if it's not right.",
-  },
-  {
-    group: "duplicate",
-    label: "Possible duplicate",
-    info: "Another support of the organization looks like the same one, with the same beneficiary and dates. Show it, and tell whether they're the same support.",
-  },
-  {
-    group: "unpublished",
-    label: "Not published",
-    info: "A new support, confirmation, edit, removal (faded) or reconciliation made here. Preview and submit it: it's published once approved by the TSOSI team.",
-  },
-  {
-    group: "submitted",
-    label: "Waiting for approval",
-    info: "A change submitted to the TSOSI team, read-only until it's approved.",
-  },
-]
+// The fields edited in their cell: the dates in the panel under the row,
+// the currency with the amount
+type CellField = Exclude<EditorField, "date" | "currency">
 
 const editableColumns: Record<string, EditorField> = {
   date_clc: "date",
   agents: "agents",
   recipient: "recipient",
   amount: "amount",
-  currency: "currency",
 }
 
 const transfers = ref<HubTransfer[] | null>(null)
@@ -167,15 +126,11 @@ interface Editing {
   draft: SupportDraft
   // The dates' panel is open
   dateOpen: boolean
-  // The organization being added from its name, for the beneficiary or an
-  // intermediary
+  // The organization being added, for the beneficiary or an intermediary,
+  // from the text searched
   adding: { field: "agents" | "recipient"; name: string } | null
   errors: DeclarationErrors
   saving: boolean
-  // For a new support: the saved supports it may be, and the one picked,
-  // or `NONE`
-  matches: Match[]
-  matchChoice: string | null
 }
 const editing = ref<Editing | null>(null)
 
@@ -236,46 +191,14 @@ const rowsState = computed<RowsState>(() => {
     editing: current && {
       rowId: current.rowId,
       values: valuesFromDraft(current.draft),
-      matches: current.matches,
     },
     openDuplicates: openDuplicates.value,
   }
 })
 
 const rows = computed(() => tableRows(table.value, rowsState.value))
-// The new support being added, and its matches
+// The new support being added
 const newRows = computed(() => addedRows(table.value, rowsState.value))
-
-// The rows of the status picked in the legend, if any
-function urlGroup(): FilterGroup | null {
-  const status = queryString(route.query, "status")
-  return legend.find((item) => item.group == status)?.group ?? null
-}
-const groupFilter = ref<FilterGroup | null>(urlGroup())
-watch(
-  () => route.query.status,
-  () => (groupFilter.value = urlGroup()),
-)
-watch(groupFilter, (group) => replaceQuery(router, route, { status: group }))
-const counts = computed(() => groupCounts(table.value.rows))
-const shownLegend = computed(() =>
-  legend.filter((item) => counts.value[item.group]),
-)
-// Show all the rows again when the picked status has none left, e.g. once
-// loaded, from the URL
-watch(counts, (value) => {
-  if (transfers.value && groupFilter.value && !value[groupFilter.value]) {
-    groupFilter.value = null
-  }
-})
-
-function toggleGroupFilter(group: FilterGroup) {
-  groupFilter.value = groupFilter.value == group ? null : group
-}
-
-const visibleRows = computed(() =>
-  filterRows(table.value, rows.value, groupFilter.value, rowsState.value),
-)
 
 // Close the possible duplicates of a row once they're all reconciled
 watch(
@@ -294,15 +217,46 @@ const changesCount = computed(
   () => declarations.value.filter((d) => d.status == "draft").length,
 )
 
+const COLUMN_WIDTHS: Record<string, string | undefined> = {
+  date_clc: "9rem",
+  emitterCountry: "8rem",
+  amount: "16rem",
+  status: "10rem",
+}
+
+// The amount shown and its currency: in the selected currency once
+// converted, else in its own, e.g. until TSOSI converts an amount declared
+function shownAmount(row: SupportRow): {
+  amount: number | null
+  currency: string | null
+} {
+  if (row.amount == null) {
+    return { amount: null, currency: null }
+  }
+  const selected = selectedCurrency.value.id
+  const converted = row.unconverted ? null : row.amounts_clc?.[selected]
+  return converted != null
+    ? { amount: converted, currency: selected }
+    : { amount: row.amount, currency: row.currency }
+}
+
 function hubColumns(): TableColumnProps[] {
-  const columns = transferColumns()
+  // Without the columns' explanations
+  const columns = transferColumns().map<TableColumnProps>((column) => ({
+    ...column,
+    info: undefined,
+  }))
+  // The full dates declared, not only their year
+  columns.find((c) => c.id == "date_clc")!.fullDate = true
+  // The amount declared in the Hub, its currency next to it when it's not
+  // the selected one, as on the public page
   const amount = columns.find((c) => c.id == "amount")!
-  // The amount declared in the Hub, in its own currency until converted
   Object.assign(amount, {
-    labelGetter: (row: SupportRow) =>
-      row.unconverted || selectedCurrency.value.id == originalCurrency.id
-        ? row.amount
-        : (row.amounts_clc?.[selectedCurrency.value.id] ?? null),
+    labelGetter: (row: SupportRow) => shownAmount(row).amount,
+    labelSuffix: (row: SupportRow) => {
+      const { currency } = shownAmount(row)
+      return currency != selectedCurrency.value.id ? currency : null
+    },
     nullValueTemplate: undefined,
     info: undefined,
     iconGetter: (row: SupportRow) => {
@@ -315,34 +269,55 @@ function hubColumns(): TableColumnProps[] {
       return null
     },
   })
-  // The currency of the amount shown: its own, when not converted yet
-  const currency = columns.find((c) => c.id == "currency")!
-  currency.labelGetter = (row) => {
-    if (row.amount == null) {
-      return ""
-    }
-    if (row.unconverted || selectedCurrency.value.id == originalCurrency.id) {
-      return row.currency
-    }
-    return row.amounts_clc?.[selectedCurrency.value.id] == null
-      ? ""
-      : selectedCurrency.value.id
-  }
+  // Only in the exports
+  columns.find((c) => c.id == "currency")!.labelGetter = (row) =>
+    shownAmount(row as SupportRow).currency ?? ""
   // The beneficiaries whose supports aren't public
   const recipient = columns.find((c) => c.id == "recipient")!
-  recipient.tagGetter = (row) => {
+  recipient.highlightGetter = (row) => {
     const entity = (row as SupportRow).recipient
-    const scope = entity ? recipientScope(entity) : "in_scope"
-    if (scope == "in_scope") {
-      return null
-    }
-    return {
-      value: SCOPE_LABELS[scope],
-      severity: SCOPE_SEVERITIES[scope],
-      tooltip: SCOPE_INFOS[scope],
-    }
+    return entity ? scopeHighlight(recipientScope(entity)) : null
+  }
+  columns.push(statusColumn())
+  // Fixed widths, whatever is shown or typed: the organizations share the
+  // rest
+  for (const column of columns) {
+    column.width = COLUMN_WIDTHS[column.id]
   }
   return columns
+}
+
+// The status of the row, a tag explained on hover, and its filter. The
+// sub-rows show their own status, but are filtered by their row's, to be
+// shown with it.
+function statusColumn(): TableColumnProps {
+  return {
+    id: "status",
+    title: "Status",
+    field: "status",
+    type: "string",
+    sortable: true,
+    labelGetter: (row) => {
+      const sub = (row as SupportRow).sub
+      const status = sub
+        ? table.value.rowById.get(sub.parentId)?.status
+        : (row as SupportRow).status
+      return status ? ROW_STATUSES[status].label : ""
+    },
+    tagGetter: (row) => {
+      const status = (row as SupportRow).status
+      return status
+        ? {
+            label: ROW_STATUSES[status].label,
+            tooltip: statusInfo(table.value, row as SupportRow),
+          }
+        : null
+    },
+    filter: {
+      enable: true,
+      options: Object.values(ROW_STATUSES).map((s) => s.label),
+    },
+  }
 }
 
 // All the columns, to fill them, but the supporter's when it's always the
@@ -355,13 +330,25 @@ const columns = computed(() => {
   )
 })
 
+// The possible duplicates of the row whose duplicates are shown: under it,
+// and in the rest of the table
+const shownDuplicates = computed(
+  () =>
+    new Set(
+      openDuplicates.value
+        ? (table.value.rowById.get(openDuplicates.value)?.duplicateIds ?? [])
+        : [],
+    ),
+)
+
 function rowClass(row: SupportRow): string {
   if (row.sub) {
-    const picked =
-      row.sub.kind == "match" && editing.value?.matchChoice == row.sub.otherId
-    return `support-row sub-row${picked ? " picked" : ""}`
+    return "support-row sub-row duplicate-match"
   }
-  const classes = ["support-row", `row-${row.group}`]
+  const classes = ["support-row"]
+  if (shownDuplicates.value.has(row.id)) {
+    classes.push("duplicate-match")
+  }
   if (row.removed) {
     classes.push("row-removed")
   }
@@ -383,7 +370,7 @@ function customCell(row: SupportRow, column: TableColumnProps): boolean {
 
 function cellClass(row: SupportRow, column: TableColumnProps) {
   const field = editableColumns[column.id]
-  if (!customCell(row, column) || field == "date") {
+  if (!field || !customCell(row, column) || field == "date") {
     return undefined
   }
   return fieldHasError(field) ? "inline-cell has-error" : "inline-cell"
@@ -396,12 +383,6 @@ function toggleDates() {
 // The errors of the row, listed in its panel: its cells only show that
 // they're invalid
 const rowErrors = computed(() => errorMessages(editing.value?.errors ?? {}))
-
-// An error of a cell not from the server, e.g. an organization that couldn't
-// be added
-function setCellError(field: EditorField, message: string) {
-  editing.value!.errors[EDITOR_FIELD_ERRORS[field][0]] = [message]
-}
 
 // The values of each cell, to tell which one changed
 function cellValues(draft: SupportDraft): Record<EditorField, string> {
@@ -430,29 +411,19 @@ watch(
   },
 )
 
-// The new support being edited may be one of the saved supports under it:
-// the member picks one, or none, before saving
-const matchNotice = computed(() => {
-  const current = editing.value
-  return current?.matches.length && current.matchChoice == null
-    ? "This may already be on TSOSI: is it one of the supports below? Pick it (This is it), or None of these."
-    : null
-})
-
 // The row being edited has a panel under it: its dates, the organization
-// being added, the errors, or the notice of its matches
+// being added, or the errors
 const panelOpen = computed(
   () =>
     !!editing.value &&
     (editing.value.dateOpen ||
       !!editing.value.adding ||
-      rowErrors.value.length > 0 ||
-      !!matchNotice.value),
+      rowErrors.value.length > 0),
 )
 
-// The table's callbacks get its rows as plain records. Created once, like
-// the buttons: new ones at each render remount the table's cells, so the
-// inputs being typed in would lose the focus.
+// The table's callbacks get its rows as plain records. Created once: new
+// ones at each render remount the table's cells, so the inputs being typed
+// in would lose the focus.
 type Row = Record<string, any>
 const rowCallbacks = {
   rowClass: (row: Row) => rowClass(row as SupportRow),
@@ -460,32 +431,27 @@ const rowCallbacks = {
     cellClass(row as SupportRow, column),
   customCell: (row: Row, column: TableColumnProps) =>
     customCell(row as SupportRow, column),
-  hideButtons: (row: Row) => !row.transfer?.is_public,
   sortRow: (row: Row) => sortRow(table.value, row as SupportRow),
 }
 
-// The "…" button to the page of a public transfer, the sub-rows' included
-const buttons = [
-  {
-    ...transferDetailsButton,
-    linkConfig: { ...transferDetailsButton.linkConfig!, suffix: "transfer.id" },
-  },
-]
 const defaultSort = { sortField: "date_clc", sortOrder: -1 as const }
+// The actions' buttons wrap in their column. Created once, like the
+// callbacks.
+const fixedLayout = { minWidth: "66rem", actionsWidth: "12rem" }
 
 const tableProps = computed(() => ({
   id: `${props.organization.id}-hub-supports`,
-  data: visibleRows.value,
-  // The new support being added, and its matches, first
+  data: rows.value,
+  // The new support being added, first
   frozenData: newRows.value,
   columns: columns.value,
   defaultSort,
   rowUniqueId: "id",
-  buttons,
   urlState: true,
   exportTitle: `TSOSI_Hub_${props.organization.name.replace(/\s+/g, "_")}`,
   ...rowCallbacks,
   expandedRowId: panelOpen.value ? editing.value!.rowId : null,
+  fixedLayout,
 }))
 
 interface RowAction {
@@ -497,6 +463,8 @@ interface RowAction {
   text?: string
   // A choice: pressed when picked
   pressed?: boolean
+  // In red, e.g. possible duplicates to reconcile
+  danger?: boolean
   primary?: boolean
   // Why it can't be used
   disabledReason?: string
@@ -505,15 +473,26 @@ interface RowAction {
 function rowActions(row: SupportRow): RowAction[] {
   const current = editing.value
   if (current?.rowId == row.id) {
-    return editingActions(current)
-  }
-  if (row.sub?.kind == "match") {
-    return [matchAction(row.sub)]
+    return editingActions
   }
   if (row.sub) {
     return duplicateActions(row.sub)
   }
   const actions: RowAction[] = []
+  // First, in red: they're to be reconciled
+  if (row.duplicateIds.length) {
+    const open = openDuplicates.value == row.id
+    actions.push({
+      id: "duplicates",
+      label: open
+        ? "Hide its possible duplicates"
+        : "Show its possible duplicates",
+      icon: ["fas", "clone"],
+      pressed: open,
+      danger: true,
+      run: () => (openDuplicates.value = open ? null : row.id),
+    })
+  }
   const declaration = row.declaration
   if (declaration?.status != "submitted") {
     actions.push({
@@ -545,18 +524,6 @@ function rowActions(row: SupportRow): RowAction[] {
       run: () => declare(row, "removal"),
     })
   }
-  if (row.duplicateIds.length) {
-    const open = openDuplicates.value == row.id
-    actions.push({
-      id: "duplicates",
-      label: open
-        ? "Hide its possible duplicates"
-        : "Show its possible duplicates",
-      icon: ["fas", "clone"],
-      pressed: open,
-      run: () => (openDuplicates.value = open ? null : row.id),
-    })
-  }
   for (const reconciliation of row.reconciliations) {
     if (reconciliation.status == "draft") {
       actions.push({
@@ -573,51 +540,22 @@ function rowActions(row: SupportRow): RowAction[] {
   return actions
 }
 
-function editingActions(current: Editing): RowAction[] {
-  const actions: RowAction[] = []
-  if (current.matches.length) {
-    actions.push({
-      id: "none",
-      label: "None of the supports below: it's a new support",
-      text: "None of these",
-      icon: ["fas", "ban"],
-      pressed: current.matchChoice == NONE,
-      run: () => pickMatch(NONE),
-    })
-  }
-  actions.push(
-    {
-      id: "cancel",
-      label: "Cancel",
-      text: "Cancel",
-      icon: ["fas", "xmark"],
-      run: cancelEdit,
-    },
-    {
-      id: "save",
-      label: "Save",
-      text: "Save",
-      icon: ["fas", "check"],
-      primary: true,
-      run: save,
-    },
-  )
-  return actions
-}
-
-function matchAction(sub: SubRow): RowAction {
-  return {
-    id: "match",
-    label: sub.amountDiffers
-      ? "This is the support entered: your amount is published"
-      : "This is the support entered",
-    text: "This is it",
+// The actions of the row being edited
+const editingActions: RowAction[] = [
+  {
+    id: "cancel",
+    label: "Cancel",
+    icon: ["fas", "xmark"],
+    run: cancelEdit,
+  },
+  {
+    id: "save",
+    label: "Save",
     icon: ["fas", "check"],
-    pressed: editing.value?.matchChoice == sub.otherId,
-    disabledReason: lockedReason(table.value.rowById.get(sub.otherId)),
-    run: () => pickMatch(sub.otherId),
-  }
-}
+    primary: true,
+    run: save,
+  },
+]
 
 function duplicateActions(sub: SubRow): RowAction[] {
   const parent = table.value.rowById.get(sub.parentId)!
@@ -643,13 +581,20 @@ function duplicateActions(sub: SubRow): RowAction[] {
   ]
 }
 
+function actionSeverity(action: RowAction): string | undefined {
+  if (action.danger) {
+    return "danger"
+  }
+  return action.primary || action.pressed ? undefined : "secondary"
+}
+
 function canAct(row: SupportRow): boolean {
   if (props.readOnly) {
     return false
   }
-  // While a row is edited, only its actions and those of its matches
+  // While a row is edited, only its actions
   if (editing.value) {
-    return row.id == editing.value.rowId || row.sub?.kind == "match"
+    return row.id == editing.value.rowId
   }
   return true
 }
@@ -662,21 +607,6 @@ function actionDisabled(action: RowAction, row: SupportRow): boolean {
     return editing.value.saving && action.id != "cancel"
   }
   return busy.value || !canAct(row)
-}
-
-function escapeHtml(text: string): string {
-  const element = document.createElement("span")
-  element.textContent = text
-  return element.innerHTML
-}
-
-function notesOf(row: SupportRow): string[] {
-  return rowNotes(table.value, row)
-}
-
-// The notes of the row, one per line, as the HTML of a tooltip
-function notesTooltip(row: SupportRow): string {
-  return notesOf(row).map(escapeHtml).join("<br>")
 }
 
 /**
@@ -709,16 +639,18 @@ function newEditing(
     adding: null,
     errors: {},
     saving: false,
-    matches: [],
-    matchChoice: null,
   }
 }
 
-// Edit a row, the focus on its first cell
+// Edit a row, the focus on its first cell, or on the invoice date when the
+// dates' panel opens with it (`SupportDates`)
 async function openEditing(value: Editing) {
   actionError.value = null
   openDuplicates.value = null
   editing.value = value
+  if (value.dateOpen) {
+    return
+  }
   await nextTick()
   root.value?.querySelector<HTMLElement>(".date-cell")?.focus()
 }
@@ -732,8 +664,13 @@ function startEdit(row: SupportRow) {
   openEditing(newEditing(row.id, row, draftFromValues(values)))
 }
 
+// A new support starts in the currency selected for the table, or the
+// organization's last one when the table shows each support's own
 function startAdd() {
-  const currency = defaultCurrency(transfers.value ?? [], props.organization.id)
+  const currency =
+    selectedCurrency.value.id == originalCurrency.id
+      ? defaultCurrency(transfers.value ?? [], props.organization.id)
+      : selectedCurrency.value.id
   openEditing(newEditing(NEW_ROW_ID, null, emptyDraft(currency)))
 }
 
@@ -747,6 +684,40 @@ function cancelEdit() {
   closeEditing()
 }
 
+// Escape cancels the row being edited, but first closes the dropdown it's
+// pressed in, if open (the search or the currency): caught before the cells
+// stop it
+function onEscape(event: KeyboardEvent) {
+  const target = event.target as HTMLElement | null
+  if (
+    !editing.value ||
+    target?.closest('[role="combobox"][aria-expanded="true"]')
+  ) {
+    return
+  }
+  event.preventDefault()
+  cancelEdit()
+}
+
+// The organization being added from its name is no longer, once another one
+// is picked for its cell, e.g. in the search
+watch(
+  () => {
+    const draft = editing.value?.draft
+    return draft && [draft.recipient?.id, draft.agents.map((a) => a.id).join()]
+  },
+  (ids, previous) => {
+    const current = editing.value
+    if (!current?.adding || !ids || !previous) {
+      return
+    }
+    const index = current.adding.field == "recipient" ? 0 : 1
+    if (ids[index] != previous[index]) {
+      current.adding = null
+    }
+  },
+)
+
 function onOrganizationAdded(entity: Entity) {
   const current = editing.value!
   if (current.adding?.field == "recipient") {
@@ -758,64 +729,10 @@ function onOrganizationAdded(entity: Entity) {
   current.adding = null
 }
 
-// A new support, being added or a draft: it's reconciled with the saved
-// supports it may be
+// A new support, being added or a draft: once saved, it's reconciled with
+// the saved supports it may be (possible duplicates)
 function isNewSupport(current: Editing): boolean {
   return current.rowId == NEW_ROW_ID || current.row?.declaration?.kind == "new"
-}
-
-// The values of the new support being edited, to find its matches
-const currentMatchQuery = computed<string | null>(() => {
-  const current = editing.value
-  if (!current || !isNewSupport(current)) {
-    return null
-  }
-  return matchQuery(current.draft, current.row?.id ?? null)
-})
-
-function setMatches(matches: Match[]) {
-  const current = editing.value!
-  // Only the supports of the table can be picked
-  matches = matches.filter((m) => table.value.rowById.has(m.row_id))
-  const ids = (list: Match[]) => list.map((m) => m.row_id).join()
-  if (ids(matches) != ids(current.matches)) {
-    current.matchChoice = null
-    // A draft already declared as none of these
-    const dismissed = dismissedRows(current.row?.declaration ?? null)
-    if (matches.length && matches.every((m) => dismissed.includes(m.row_id))) {
-      current.matchChoice = NONE
-    }
-  }
-  current.matches = matches
-}
-
-// The values whose matches are shown
-let matchedQuery: string | null = null
-
-async function updateMatches(query: string) {
-  const matches = await findMatches(props.organization.id, JSON.parse(query))
-  // Only the matches of the values still typed
-  if (editing.value && currentMatchQuery.value == query) {
-    setMatches(matches ?? [])
-    matchedQuery = query
-  }
-}
-
-const debouncedUpdateMatches = debounce(updateMatches, 400)
-
-watch(currentMatchQuery, (query) => {
-  if (query) {
-    debouncedUpdateMatches(query)
-  } else if (editing.value) {
-    setMatches([])
-    matchedQuery = null
-  }
-})
-
-function pickMatch(choice: string) {
-  const current = editing.value!
-  current.matchChoice = current.matchChoice == choice ? null : choice
-  delete current.errors.match
 }
 
 async function save() {
@@ -830,31 +747,11 @@ async function save() {
     return
   }
   current.saving = true
-  // The matches of the values typed last, not found yet
-  const query = currentMatchQuery.value
-  if (query && query != matchedQuery) {
-    await updateMatches(query)
-  }
   const draft = current.row?.declaration ?? null
   const values = draftPayloadValues(current.draft)
   let operations: Operations
   if (isNewSupport(current)) {
-    if (current.matches.length && current.matchChoice == null) {
-      current.errors = {
-        match: [
-          "This may already be on TSOSI: pick the support below that it is (This is it), or None of these, to save it.",
-        ],
-      }
-      current.saving = false
-      return
-    }
-    operations = newSupportOperations(
-      table.value,
-      draft,
-      values,
-      current.matchChoice,
-      current.matches.map((m) => m.row_id),
-    )
+    operations = newSupportOperations(table.value, draft, values)
   } else {
     operations = supportOperations(current.row!.transfer!, draft, values)
   }
@@ -936,6 +833,7 @@ function openSubmit() {
     ref="root"
     class="hub-supports"
     :class="{ 'is-editing': !!editing }"
+    @keydown.esc.capture="onEscape"
   >
     <Message
       v-for="submission of submissions"
@@ -989,27 +887,6 @@ function openSubmit() {
         </li>
       </ul>
     </Message>
-    <div v-if="shownLegend.length" class="legend">
-      <span :id="`${tableProps.id}-legend`" class="legend-title">Filter:</span>
-      <ul :aria-labelledby="`${tableProps.id}-legend`">
-        <li v-for="item of shownLegend" :key="item.group">
-          <button
-            type="button"
-            class="legend-item"
-            :class="[
-              `row-${item.group}`,
-              { active: groupFilter == item.group },
-            ]"
-            :aria-pressed="groupFilter == item.group"
-            v-tooltip.bottom="item.info"
-            @click="toggleGroupFilter(item.group)"
-          >
-            {{ item.label }}
-            <span class="legend-count">{{ counts[item.group] }}</span>
-          </button>
-        </li>
-      </ul>
-    </div>
 
     <p v-if="rows.length == 0 && !newRows.length" class="empty">
       TSOSI doesn't know any support from this organization yet.
@@ -1061,7 +938,7 @@ function openSubmit() {
         <SupportCellEditor
           v-else-if="editing"
           v-model:draft="editing.draft"
-          :field="editableColumns[column.id] as Exclude<EditorField, 'date'>"
+          :field="editableColumns[column.id] as CellField"
           :organizationId="props.organization.id"
           :errors="editing.errors"
           :key="`${data.id}-${column.id}`"
@@ -1069,37 +946,9 @@ function openSubmit() {
             (field, name) => (editing!.adding = { field, name })
           "
           @focus="editing.dateOpen = false"
-          @error="
-            (message) => setCellError(editableColumns[column.id], message)
-          "
         />
       </template>
       <template #actions="{ data }">
-        <span
-          v-if="notesOf(data as SupportRow).length"
-          v-tooltip.bottom="{
-            value: notesTooltip(data as SupportRow),
-            escape: false,
-          }"
-          class="row-icon"
-          tabindex="0"
-          role="img"
-          :aria-label="notesOf(data as SupportRow).join('. ')"
-        >
-          <font-awesome-icon :icon="['fas', 'circle-info']" />
-        </span>
-        <span
-          v-if="isLocked(data as SupportRow)"
-          v-tooltip.bottom="
-            'Waiting for approval by the TSOSI team: read-only until then.'
-          "
-          class="row-icon"
-          tabindex="0"
-          role="img"
-          aria-label="Waiting for approval by the TSOSI team: read-only until then."
-        >
-          <font-awesome-icon :icon="['fas', 'lock']" />
-        </span>
         <span
           v-if="canAct(data as SupportRow)"
           class="row-actions"
@@ -1112,9 +961,7 @@ function openSubmit() {
             :aria-label="action.label"
             :aria-pressed="action.pressed"
             :label="action.text"
-            :severity="
-              action.primary || action.pressed ? undefined : 'secondary'
-            "
+            :severity="actionSeverity(action)"
             :class="{ pressed: action.pressed }"
             :disabled="actionDisabled(action, data as SupportRow)"
             :loading="action.id == 'save' && editing?.saving"
@@ -1134,8 +981,7 @@ function openSubmit() {
           :showDates="editing.dateOpen"
           :errors="editing.errors"
           :errorMessages="rowErrors"
-          :notice="matchNotice"
-          :addingName="editing.adding?.name ?? null"
+          :adding="editing.adding"
           @added="onOrganizationAdded"
           @cancelAdd="editing.adding = null"
         />
@@ -1154,6 +1000,7 @@ function openSubmit() {
 .supports-toolbar {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: 1rem;
 }
@@ -1180,14 +1027,14 @@ function openSubmit() {
   color: var(--p-neutral-500);
 }
 
-.row-icon {
-  padding: 0 0.3rem;
-  color: var(--p-neutral-500);
-}
-
 /* The buttons of a row, laid out by the table's buttons cell */
 .row-actions {
   display: contents;
+}
+
+/* They wrap in the fixed width of their column */
+.hub-supports :deep(.row-buttons) {
+  flex-wrap: wrap;
 }
 
 .empty {
@@ -1195,82 +1042,6 @@ function openSubmit() {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-}
-
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-
-  & ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-}
-
-.legend-title {
-  font-weight: 600;
-}
-
-/* Like the table's rows: their color, and their top and bottom borders */
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  border: none;
-  border-block: 1px solid var(--p-datatable-body-cell-border-color);
-  border-radius: 0;
-  background: var(--row-color);
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-
-  &:hover {
-    border-block-color: var(--p-neutral-400);
-  }
-
-  &.active {
-    border-block-color: var(--p-primary-color);
-    box-shadow:
-      inset 0 1px 0 var(--p-primary-color),
-      inset 0 -1px 0 var(--p-primary-color);
-  }
-}
-
-.legend-count {
-  color: var(--p-neutral-500);
-}
-
-/* Row colors, by status. The legend's items use the same classes. */
-.hub-supports :deep(.row-not_confirmed) {
-  --row-color: var(--p-amber-50);
-  --row-accent: var(--p-amber-400);
-}
-
-.hub-supports :deep(.row-duplicate) {
-  --row-color: var(--p-orange-50);
-  --row-accent: var(--p-orange-400);
-}
-
-.hub-supports :deep(.row-unpublished) {
-  --row-color: var(--p-sky-50);
-  --row-accent: var(--p-sky-500);
-}
-
-.hub-supports :deep(.row-submitted) {
-  --row-color: var(--p-slate-100);
-  --row-accent: var(--p-slate-500);
-}
-
-/* Confirmed rows have no color */
-.hub-supports :deep(tr.support-row) {
-  background: var(--row-color, transparent);
 }
 
 /* The supports shown under a row, as rows of the table: indented, with a
@@ -1295,12 +1066,10 @@ function openSubmit() {
   border-bottom: 2px solid var(--p-neutral-300);
 }
 
-/* The match picked */
-.hub-supports :deep(tr.sub-row.picked) {
-  background: var(--p-primary-50);
-  box-shadow:
-    inset 0 1px 0 var(--p-primary-color),
-    inset 0 -1px 0 var(--p-primary-color);
+/* The possible duplicates of the row whose duplicates are shown, under it
+   and in the rest of the table */
+.hub-supports :deep(tr.duplicate-match) {
+  background: var(--p-red-50);
 }
 
 /* A choice picked among the row's actions */
@@ -1308,29 +1077,45 @@ function openSubmit() {
   box-shadow: inset 0 0 0 1px var(--p-primary-color);
 }
 
-/* The "…" link button, like the other buttons: over the global link color,
-   and without the inherited line height that buttons don't have */
-.hub-supports :deep(.row-buttons a.p-button) {
-  color: revert-layer;
-  line-height: normal;
+.hub-supports :deep(.row-buttons .p-button-danger.pressed) {
+  box-shadow: inset 0 0 0 2px var(--p-red-800);
 }
 
 /* While a row is edited or added, the rest of the table fades: the other
-   rows, the headers and the filters, but the row's panel and its matches */
-.hub-supports :deep(:is(.legend, thead, tr.support-row, .p-paginator)) {
+   rows, the headers and the filter, but the row's panel */
+.hub-supports :deep(:is(thead, tr.support-row, .p-paginator)) {
   transition: opacity 0.15s;
 }
 
 .hub-supports.is-editing
-  :deep(
-    :is(
-        .legend,
-        thead,
-        tr.support-row:not(.row-editing, .sub-row),
-        .p-paginator
-      )
-  ) {
+  :deep(:is(thead, tr.support-row:not(.row-editing), .p-paginator)) {
   opacity: 0.4;
+}
+
+/* All the rows the height of a row with its buttons, so that they keep it
+   while a row is edited, which hides the other rows' buttons */
+.hub-supports :deep(tr.support-row > td) {
+  height: 3.95rem;
+}
+
+/* The currency selector next to the Amount title takes the rest of the
+   header */
+.hub-supports :deep(.header-currency-selector) {
+  flex: 1;
+  min-width: 0;
+
+  & .p-select {
+    width: 100%;
+  }
+
+  /* Compact, to show the code with little room */
+  & .p-select-label {
+    padding-inline: 0.5rem 0;
+  }
+
+  & .p-select-dropdown {
+    width: 1.75rem;
+  }
 }
 
 /* Faded, all but the buttons' cell */

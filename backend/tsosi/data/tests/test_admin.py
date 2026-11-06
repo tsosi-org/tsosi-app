@@ -1,4 +1,5 @@
 import pytest
+
 from tsosi.models import InfrastructureDetails
 from tsosi.models.entity import ENTITY_SCOPE_IN, ENTITY_SCOPE_TO_CHECK
 
@@ -49,14 +50,18 @@ def test_no_entity_add_or_delete(admin_client):
 def test_entity_public_page_link(admin_client):
     entity = EntityFactory.create()
     response = admin_client.get(f"{ENTITY_ADMIN_URL}{entity.id}/change/")
-    assert f"/entities/{entity.id}?edit" in response.content.decode()
+    content = response.content.decode()
+    assert f'/entities/{entity.id}"' in content
 
 
 @pytest.mark.django_db
 def test_entity_hub_link(admin_client):
     entity = EntityFactory.create()
     response = admin_client.get(f"{ENTITY_ADMIN_URL}{entity.id}/change/")
-    assert f"/hub/{entity.id}" in response.content.decode()
+    content = response.content.decode()
+    # The profile is edited in the Hub's Public page tab
+    assert f'/hub/{entity.id}?tab=page"' in content
+    assert f'/hub/{entity.id}"' in content
 
 
 @pytest.mark.django_db

@@ -19,7 +19,11 @@ import {
 } from "@/__tests__/hub-fixtures"
 import { buttonNames, findButton, mountComponent } from "@/__tests__/mount"
 import HubSupports from "@/components/hub/HubSupports.vue"
-import { defaultCurrency, selectedCurrency } from "@/singletons/currencyStore"
+import {
+  defaultCurrency,
+  originalCurrency,
+  selectedCurrency,
+} from "@/singletons/currencyStore"
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -76,6 +80,19 @@ async function click(name: string | RegExp, within: Element = root()) {
   const button = findButton(within, name)
   expect(button, String(name)).toBeDefined()
   button!.click()
+  await flushPromises()
+}
+
+// The status of a row, as shown in its Status column
+function statusOf(rowId: string): string | null {
+  const tag = rowOf(rowId).querySelector(".cell-tag")
+  return tag?.textContent!.trim() ?? null
+}
+
+async function pressEscape(target: Element) {
+  target.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  )
   await flushPromises()
 }
 
@@ -144,72 +161,55 @@ function lastPayload(backend: HubBackend) {
 }
 
 describe("HubSupports", () => {
-  describe("rows and legend", () => {
-    it("counts the rows by status, and filters them", async () => {
+  describe("rows and statuses", () => {
+    it("shows the status of each row, explained on hover", async () => {
       hubBackend({
         transfers: [
           transfer({ id: "t1" }),
           transfer({ id: "t2", status: "confirmed" }),
           transfer({ id: "t3", status: "confirmed" }),
-          transfer({ id: "t4", status: "confirmed" }),
-          transfer({ id: "t5", status: "confirmed" }),
         ],
         declarations: [
           newSupport({ id: 7 }),
-          declaration({ id: 8, transfer_id: "t5", status: "submitted" }),
+          declaration({ id: 8, transfer_id: "t3", status: "submitted" }),
         ],
-        duplicates: [["t3", "t4"]],
       })
       await mountSupports()
-      expect(rowsShown()).toHaveLength(6)
-      const legend = [...root().querySelectorAll(".legend-item")]
+      expect(rowsShown()).toHaveLength(4)
+      expect(["new-7", "t1", "t2", "t3"].map(statusOf)).toEqual([
+        "Created",
+        "Not confirmed",
+        null,
+        "Waiting for approval",
+      ])
       expect(
-        legend.map((l) => l.textContent!.replace(/\s+/g, " ").trim()),
-      ).toEqual([
-        "Not confirmed 1",
-        "Possible duplicate 2",
-        "Not published 1",
-        "Waiting for approval 1",
-      ])
-      // The rows of a status only, until it's clicked again
-      ;(legend[1] as HTMLElement).click()
-      await flushPromises()
-      expect(legend[1].getAttribute("aria-pressed")).toBe("true")
-      expect(rowsShown().map((r) => r.className)).toEqual([
-        expect.stringContaining("row-duplicate"),
-        expect.stringContaining("row-duplicate"),
-      ])
-      ;(legend[1] as HTMLElement).click()
-      await flushPromises()
-      expect(rowsShown()).toHaveLength(6)
+        rowOf("new-7").querySelector(".cell-tag")!.getAttribute("aria-label"),
+      ).toMatch(/^Created: .*preview and submit your changes/)
+      // No legend, no colors, no details' button
+      expect(root().querySelector(".legend")).toBeNull()
+      expect(rowOf("t1").className).not.toMatch(/row-not_confirmed/)
+      expect(rowOf("t1").querySelector("a.p-button")).toBeNull()
     })
 
-    it("keeps the status picked in the URL", async () => {
+    it("is filtered by status too, the sub-rows with their row", async () => {
       hubBackend({
         transfers: [
           transfer({ id: "t1" }),
-          transfer({ id: "t2", status: "confirmed" }),
+          ...Array.from({ length: 10 }, (_, i) =>
+            transfer({ id: `c${i}`, status: "confirmed" }),
+          ),
         ],
+        duplicates: [["t1", "c0"]],
       })
-      const { router } = await mountSupports(
-        false,
-        "/hub/org?status=not_confirmed",
-      )
-      expect(rowsShown()).toHaveLength(1)
+      await mountSupports(false, "/hub/org?f_status=not%20confirmed")
+      // The columns' search filters, and the status' select
       expect(
-        root().querySelector(".legend-item.active")!.textContent,
-      ).toContain("Not confirmed")
-      ;(root().querySelector(".legend-item.active") as HTMLElement).click()
-      await flushPromises()
-      expect(router.currentRoute.value.query).toEqual({})
-      expect(rowsShown()).toHaveLength(2)
-    })
-
-    it("ignores a status of the URL without rows", async () => {
-      hubBackend({ transfers: [transfer({ id: "t1", status: "confirmed" })] })
-      const { router } = await mountSupports(false, "/hub/org?status=duplicate")
+        root().querySelectorAll("input.table-filter").length,
+      ).toBeGreaterThan(0)
+      expect(root().querySelectorAll(".p-select.table-filter")).toHaveLength(1)
       expect(rowsShown()).toHaveLength(1)
-      expect(router.currentRoute.value.query).toEqual({})
+      await act("t1", "Show its possible duplicates")
+      expect(actions("t1>c0")).toBeTruthy()
     })
 
     it("tells when there's no support yet", async () => {
@@ -245,7 +245,7 @@ describe("HubSupports", () => {
         kind: "confirmation",
         transfer_id: "t1",
       })
-      expect(rowOf("t1").className).toContain("row-unpublished")
+      expect(statusOf("t1")).toBe("Confirmed")
       expect(actionNames("t1")).toEqual(["Edit", "Undo the change"])
       const submit = findButton(root(), /^Preview and submit/)!
       expect(submit.textContent).toContain("(1 change)")
@@ -272,6 +272,7 @@ describe("HubSupports", () => {
         transfer_id: "t1",
       })
       expect(rowOf("t1").className).toContain("row-removed")
+      expect(statusOf("t1")).toBe("Deleted")
     })
 
     it("tells why an undo failed (F5)", async () => {
@@ -302,13 +303,10 @@ describe("HubSupports", () => {
       expect(messages()[0]).toMatch(
         /^Submission waiting for approval by the TSOSI team\. Sent on .* by member@uni\.edu, with 1 change\./,
       )
-      expect(rowOf("t1").className).toContain("row-submitted")
       expect(actionNames("t1")).toEqual([])
-      const icons = [...rowOf("t1").querySelectorAll(".row-icon")]
-      expect(icons.map((i) => i.getAttribute("aria-label"))).toEqual([
-        "Confirmation (waiting for approval)",
-        "Waiting for approval by the TSOSI team: read-only until then.",
-      ])
+      const status = rowOf("t1").querySelector(".cell-tag")!
+      expect(status.textContent!.trim()).toBe("Waiting for approval")
+      expect(status.getAttribute("aria-label")).toContain("read-only")
     })
 
     it("lists the changes of supports gone, to undo", async () => {
@@ -363,13 +361,14 @@ describe("HubSupports", () => {
       // Only the row being edited has actions
       expect(root().querySelectorAll("[data-row-id]")).toHaveLength(1)
 
-      // The dates' panel, opened from the Date cell, the focus kept on it
+      // The dates' panel, opened from the Date cell, the focus on the
+      // invoice date
       dates.click()
       await flushPromises()
       expect(dates.isConnected).toBe(true)
-      expect(document.activeElement).toBe(dates)
       expect(dates.getAttribute("aria-expanded")).toBe("true")
       expect(panel()!.querySelectorAll("input")).toHaveLength(5)
+      expect(document.activeElement).toBe(panel()!.querySelector("input"))
       // Closed by the other cells
       const amount = amountInput() as HTMLInputElement
       amount.focus()
@@ -404,8 +403,9 @@ describe("HubSupports", () => {
       expect(document.activeElement?.closest("[data-row-id]")).toBe(
         actions("t1"),
       )
-      // Shown in its own currency until converted
-      expect(rowOf("t1").textContent).toMatch(/1\s200,5EUR/)
+      // In the selected currency: without it
+      expect(rowOf("t1").textContent).toMatch(/1\s200,5/)
+      expect(rowOf("t1").textContent).not.toContain("EUR")
     })
 
     it("fades the rest of the table while a row is edited", async () => {
@@ -422,6 +422,22 @@ describe("HubSupports", () => {
       expect(root().className).not.toContain("is-editing")
     })
 
+    it("cancels the row being edited or added with Escape", async () => {
+      const backend = hubBackend({ transfers: [transfer()] })
+      await mountSupports()
+      await act("t1", "Edit")
+      await typeIn(amountInput(), "2000")
+      await pressEscape(amountInput())
+      expect(root().querySelector(".date-cell")).toBeNull()
+      // Its saved values
+      expect(rowOf("t1").textContent).not.toMatch(/2\D?000/)
+      await click("Add a support")
+      expect(root().querySelector(".date-cell")).toBeTruthy()
+      await pressEscape(panel()!.querySelector("input")!)
+      expect(root().querySelector(".date-cell")).toBeNull()
+      expect(changes(backend)).toEqual([])
+    })
+
     it("shows an edited amount in its currency, until converted", async () => {
       hubBackend({ transfers: [transfer()] })
       selectedCurrency.value = { id: "USD", name: "US dollar" }
@@ -429,7 +445,7 @@ describe("HubSupports", () => {
       await act("t1", "Edit")
       await typeIn(amountInput(), "1200")
       await click("Save", edited())
-      expect(rowOf("t1").textContent).toMatch(/1\s200EUR/)
+      expect(rowOf("t1").textContent).toMatch(/1\s200\sEUR/)
     })
 
     it("cancels the edit without saving", async () => {
@@ -524,13 +540,16 @@ describe("HubSupports", () => {
       await pickOrganization(
         cell("Intermediary"),
         "New lab",
-        "Add a new organization",
+        "Not found? Add an intermediary",
       )
       const form = panel()!.querySelector("form")!
+      expect(form.querySelector("h4")!.textContent).toMatch(
+        /^\s*Add an intermediary /,
+      )
       expect((form.querySelector("input") as HTMLInputElement).value).toBe(
         "New lab",
       )
-      await click("Add this organization", form)
+      await click("Add from its name", form)
       expect(panel()).toBeNull()
       expect(cell("Intermediary").textContent!.trim()).toBe("New lab")
       await click("Save", edited())
@@ -539,22 +558,32 @@ describe("HubSupports", () => {
         agent_ids: ["new-lab"],
       })
     })
+
+    it("closes the organization being added once another is picked", async () => {
+      hubBackend({ transfers: [transfer({ agent_ids: [COUPERIN.id] })] })
+      await mountSupports()
+      await act("t1", "Edit")
+      await click("Replace", cell("Intermediary"))
+      await pickOrganization(
+        cell("Intermediary"),
+        "New lab",
+        "Not found? Add an intermediary",
+      )
+      expect(panel()!.querySelector("form")).toBeTruthy()
+      await pickOrganization(cell("Intermediary"), "arx", "arXiv")
+      expect(panel()).toBeNull()
+      expect(cell("Intermediary").textContent).toContain("arXiv")
+    })
   })
 
-  describe("a failed save after saved changes (C4)", () => {
-    // A draft new support, the change of the published support with a
-    // pending confirmation: the confirmation becomes its edit, then the
-    // draft is deleted
-    async function saveAsChangeOf(backend: HubBackend) {
+  describe("a failed reconciliation after saved changes (C4)", () => {
+    // A draft new support, the same as the published support with a pending
+    // confirmation: the confirmation becomes its edit, then the draft is
+    // deleted
+    async function reconcileAsSame(backend: HubBackend) {
       await mountSupports()
-      await act("new-7", "Edit")
-      // The matches found first
-      await click("Save", edited())
-      await click(
-        /^This is the support entered/,
-        root().querySelector("tr.sub-row")!,
-      )
-      await click("Save", edited())
+      await act("new-7", "Show its possible duplicates")
+      await act("new-7>t1", "The same support")
       expect(changes(backend)).toEqual([
         "PUT declarations/1",
         "DELETE declarations/7",
@@ -576,7 +605,7 @@ describe("HubSupports", () => {
           declaration({ id: 1 }),
           newSupport({ id: 7, recipient_id: "doaj" }),
         ],
-        matches: [{ row_id: "t1", amount_differs: true }],
+        duplicates: [["new-7", "t1"]],
       })
     }
 
@@ -588,34 +617,29 @@ describe("HubSupports", () => {
           backend.declarations.splice(1, 1)
         }
       }
-      await saveAsChangeOf(backend)
+      await reconcileAsSame(backend)
       // The edit saved, the draft gone, the error above the table
       expect(reloadedAfterDelete(backend)).toBe(true)
-      expect(root().querySelector(".date-cell")).toBeNull()
       expect(actions("new-7")).toBeNull()
-      expect(rowOf("t1").className).toContain("row-unpublished")
+      expect(statusOf("t1")).toBe("Edited")
       expect(backend.declarations).toMatchObject([{ id: 1, kind: "edit" }])
       expect(messages()).toContain("Not found.")
     })
 
-    it("reloads the table, the row still edited", async () => {
+    it("reloads the table, the draft still there", async () => {
       const backend = backendWithDraft()
       backend.failures[`DELETE ${DECLARATIONS_ROUTE}/7`] = { status: 500 }
-      await saveAsChangeOf(backend)
+      await reconcileAsSame(backend)
       expect(reloadedAfterDelete(backend)).toBe(true)
-      expect(edited()).toBe(rowOf("new-7"))
-      expect(panel()!.textContent).toContain(
+      // The error above the table, the edit saved, the draft kept
+      expect(messages()).toContain(
         "The change couldn't be saved. Please try again.",
       )
-      // Tried again: the edit saved again, then the draft deleted
-      delete backend.failures[`DELETE ${DECLARATIONS_ROUTE}/7`]
-      await click("Save", edited())
-      expect(changes(backend).slice(2)).toEqual([
-        "PUT declarations/1",
-        "DELETE declarations/7",
+      expect(backend.declarations).toMatchObject([
+        { id: 1, kind: "edit" },
+        { id: 7, kind: "new" },
       ])
-      expect(root().querySelector(".date-cell")).toBeNull()
-      expect(actions("new-7")).toBeNull()
+      expect(actions("new-7")).not.toBeNull()
     })
   })
 
@@ -623,10 +647,11 @@ describe("HubSupports", () => {
     async function startAdding() {
       await click("Add a support")
       const row = edited()
-      // First, frozen above the others, with its dates' panel open
+      // First, frozen above the others, with its dates' panel open, the
+      // focus on the invoice date
       expect(row.closest("tbody")!.querySelector("tr")).toBe(row)
-      expect(document.activeElement).toBe(row.querySelector(".date-cell"))
       expect(panel()!.querySelectorAll("input")).toHaveLength(5)
+      expect(document.activeElement).toBe(panel()!.querySelector("input"))
       return row
     }
 
@@ -636,7 +661,7 @@ describe("HubSupports", () => {
       await typeIn(amountInput(), "500")
     }
 
-    it("saves a new support in the organization's last currency", async () => {
+    it("saves a new support in the currency selected", async () => {
       const backend = hubBackend({
         transfers: [transfer({ currency: "USD", status: "confirmed" })],
       })
@@ -652,7 +677,7 @@ describe("HubSupports", () => {
         recipient_id: ARXIV.id,
         agent_ids: [],
         amount: 500,
-        currency: "USD",
+        currency: "EUR",
         date_invoice: "2025",
         date_payment_emitter: null,
         date_payment_recipient: null,
@@ -662,10 +687,34 @@ describe("HubSupports", () => {
         other_declaration_ids: [],
       })
       expect(actionNames("new-100")).toEqual(["Edit", "Undo the change"])
-      expect(rowOf("new-100").className).toContain("row-unpublished")
+      expect(statusOf("new-100")).toBe("Created")
     })
 
-    it("shows its matches under it, one to pick before saving", async () => {
+    it("starts in the organization's last currency, without one selected", async () => {
+      hubBackend({
+        transfers: [transfer({ currency: "USD", status: "confirmed" })],
+      })
+      selectedCurrency.value = originalCurrency
+      await mountSupports()
+      await startAdding()
+      expect(edited().querySelector(".p-select-label")!.textContent).toBe("USD")
+    })
+
+    it("has no Currency column, but the currency selector", async () => {
+      hubBackend({ transfers: [transfer()] })
+      await mountSupports()
+      const headers = [...root().querySelectorAll("thead th")].map((th) =>
+        th.textContent!.trim(),
+      )
+      expect(headers.some((h) => h.startsWith("Currency"))).toBe(false)
+      const amount =
+        root().querySelectorAll("thead th")[
+          headers.findIndex((h) => h.startsWith("Amount"))
+        ]
+      expect(amount.querySelector(".header-currency-selector")).toBeTruthy()
+    })
+
+    it("saves it at once, its possible duplicates shown once saved", async () => {
       const backend = hubBackend({
         transfers: [
           transfer({
@@ -676,57 +725,27 @@ describe("HubSupports", () => {
             date_clc: apiDate("2025"),
           }),
         ],
-        matches: [{ row_id: "t1", amount_differs: false }],
-      })
-      await mountSupports()
-      await startAdding()
-      await fillSupport()
-      // Saved at once: the matches are found first
-      await click("Save", edited())
-      expect(changes(backend)).toEqual([])
-      const match = root().querySelector<HTMLElement>("tr.sub-row")!
-      // Under the row being added, and its panel
-      expect(match.previousElementSibling).toBe(edited().nextElementSibling)
-      expect(buttonNames(edited())).toContain(
-        "None of the supports below: it's a new support",
-      )
-      expect(panel()!.textContent).toContain(
-        "pick the support below that it is (This is it), or None of these",
-      )
-
-      // This is it: the confirmation of the support it is
-      await click("This is the support entered", match)
-      expect(match.className).toContain("picked")
-      await click("Save", edited())
-      expect(lastPayload(backend)).toEqual({
-        kind: "confirmation",
-        transfer_id: "t1",
-      })
-    })
-
-    it("lists the matches it isn't, with None of these", async () => {
-      const backend = hubBackend({
-        transfers: [transfer({ recipient_id: ARXIV.id })],
-        matches: [{ row_id: "t1", amount_differs: true }],
+        // Reported by the backend once the new support is saved
+        duplicates: [["new-100", "t1"]],
       })
       await mountSupports()
       await startAdding()
       await fillSupport()
       await wait(450)
       await flushPromises()
-      expect(panel()!.textContent).toContain(
-        "This may already be on TSOSI: is it one of the supports below?",
+      // No match is looked up while typing
+      expect(backend.requests.some((r) => r.route.includes("matches"))).toBe(
+        false,
       )
-      const match = root().querySelector<HTMLElement>("tr.sub-row")!
-      expect(buttonNames(match)).toEqual([
-        "This is the support entered: your amount is published",
-      ])
-      await click("None of the supports below: it's a new support", edited())
+      expect(root().querySelector("tr.sub-row")).toBeNull()
       await click("Save", edited())
       expect(lastPayload(backend)).toMatchObject({
         kind: "new",
-        other_transfer_ids: ["t1"],
+        other_transfer_ids: [],
       })
+      expect(root().querySelector(".date-cell")).toBeNull()
+      expect(statusOf("new-100")).toBe("Created")
+      expect(actionNames("new-100")).toContain("Show its possible duplicates")
     })
   })
 
@@ -737,6 +756,12 @@ describe("HubSupports", () => {
         duplicates: [["t1", "t2"]],
       })
       await mountSupports()
+      // First, in red
+      expect(actionNames("t1")[0]).toBe("Show its possible duplicates")
+      expect(
+        findButton(actions("t1")!, "Show its possible duplicates")!.className,
+      ).toContain("p-button-danger")
+      expect(rowOf("t2").className).not.toContain("duplicate-match")
       await act("t1", "Show its possible duplicates")
       expect(
         findButton(
@@ -744,6 +769,10 @@ describe("HubSupports", () => {
           "Hide its possible duplicates",
         )!.getAttribute("aria-pressed"),
       ).toBe("true")
+      // Colored, under the row and in the rest of the table
+      expect(rowOf("t1>t2").className).toContain("duplicate-match")
+      expect(rowOf("t2").className).toContain("duplicate-match")
+      expect(rowOf("t1").className).not.toContain("duplicate-match")
       const sub = actions("t1>t2")!
       expect(buttonNames(sub)).toEqual([
         "The same support",
@@ -762,9 +791,10 @@ describe("HubSupports", () => {
         "Confirm",
         "Undo: marked as the same support",
       ])
-      const info = rowOf("t1").querySelector(".row-icon")!
+      expect(statusOf("t1")).toBe("Merged")
+      const info = rowOf("t1").querySelector(".cell-tag")!
       expect(info.getAttribute("aria-label")).toMatch(
-        /^The same support as .* \(not published\)$/,
+        /^Merged: Marked as the same support as .*\. Not published yet/,
       )
 
       await act("t1", "Undo: marked as the same support")
@@ -789,7 +819,7 @@ describe("HubSupports", () => {
         amount: 500,
       })
       expect(actions("new-7")).toBeNull()
-      expect(rowOf("t1").className).toContain("row-unpublished")
+      expect(statusOf("t1")).toBe("Edited")
     })
 
     it("can't make it the change of a support waiting for approval", async () => {

@@ -10,8 +10,8 @@ import type { Entity } from "@/singletons/ref-data"
 
 /**
  * The panel under the row being edited: its dates, when the Date cell is
- * open, the organization being added from its name, and the errors of the
- * row, or a notice.
+ * open, the organization being added, and the errors of the row, or a
+ * notice.
  */
 const props = defineProps<{
   organizationId: string
@@ -19,8 +19,8 @@ const props = defineProps<{
   errors: DeclarationErrors
   // The messages of `errors`, and those of the cells
   errorMessages: string[]
-  // The name of the organization being added, if any
-  addingName: string | null
+  // The organization being added, if any: its cell and the text searched
+  adding: { field: "agents" | "recipient"; name: string } | null
   notice?: string | null
 }>()
 const dates = defineModel<Record<DateFieldName, string>>("dates", {
@@ -40,9 +40,10 @@ const emit = defineEmits<{
       :errors="props.errors"
     />
     <NewOrganizationPanel
-      v-if="props.addingName != null"
+      v-if="props.adding"
       :organizationId="props.organizationId"
-      :initialName="props.addingName"
+      :field="props.adding.field"
+      :initialName="props.adding.name"
       @added="(entity) => emit('added', entity)"
       @cancel="emit('cancelAdd')"
     />

@@ -9,35 +9,60 @@ import {
   DATE_FIELDS,
   formatAmountInput,
   formatDateInput,
-  KIND_LABELS,
   newRowId,
   parseDateInput,
   RECONCILIATION_KINDS,
   SUPPORT_CHANGE_KINDS,
   type DateFieldName,
   type Declaration,
-  type Match,
   type SupportDraft,
 } from "@/singletons/hub-declarations"
 import type { DeepReadonly, Entity, HubTransfer } from "@/singletons/ref-data"
 import type { DateWithPrecision } from "@/utils/data-utils"
 import { supportLabel } from "@/utils/hub-supports"
 
-// The status of a row, shown by its style
-export type RowGroup =
+// The status of a row, shown in its Status column: its change not published
+// yet, its submission, or a support to confirm. Confirmed supports have none.
+export type RowStatus =
   | "not_confirmed"
-  | "confirmed"
-  | "duplicate"
-  | "unpublished"
+  | "new"
+  | "edit"
+  | "removal"
+  | "confirmation"
+  | "merge"
+  | "not_duplicate"
   | "submitted"
 
-// The statuses that need attention, colored and explained by the legend,
-// whose items filter the table. Confirmed rows have neither.
-export type FilterGroup = Exclude<RowGroup, "confirmed">
+const SUBMIT_HINT =
+  "Not published yet: preview and submit your changes to the TSOSI team."
 
-function filterGroup(row: { group: RowGroup }): FilterGroup | null {
-  return row.group == "confirmed" ? null : row.group
-}
+// The label of each status, and its explanation on hover
+export const ROW_STATUSES: Record<RowStatus, { label: string; info: string }> =
+  {
+    not_confirmed: {
+      label: "Not confirmed",
+      info: "Only other organizations declared this support. Confirm it, or edit it if it's not right.",
+    },
+    new: { label: "Created", info: `Added here. ${SUBMIT_HINT}` },
+    edit: { label: "Edited", info: `Edited here. ${SUBMIT_HINT}` },
+    removal: { label: "Deleted", info: `Removed here. ${SUBMIT_HINT}` },
+    confirmation: {
+      label: "Confirmed",
+      info: `Confirmed here. ${SUBMIT_HINT}`,
+    },
+    merge: {
+      label: "Merged",
+      info: `Marked as the same support as another one. ${SUBMIT_HINT}`,
+    },
+    not_duplicate: {
+      label: "Not a duplicate",
+      info: `Marked as a different support from another one. ${SUBMIT_HINT}`,
+    },
+    submitted: {
+      label: "Waiting for approval",
+      info: "Submitted to the TSOSI team: read-only until it's approved.",
+    },
+  }
 
 // The values of a support, as shown in its row
 export interface SupportValues {
@@ -48,14 +73,12 @@ export interface SupportValues {
   dates: Record<DateFieldName, DateWithPrecision | null>
 }
 
-// Another saved support shown under a row: one of its possible duplicates,
-// or a match of the new support being edited
+// Another saved support shown under a row: one of its possible duplicates
 export interface SubRow {
   parentId: string
-  kind: "duplicate" | "match"
+  kind: "duplicate"
   // The row of the support shown
   otherId: string
-  amountDiffers?: boolean
 }
 
 export interface SupportRow {
@@ -69,7 +92,7 @@ export interface SupportRow {
   reconciliations: Declaration[]
   // The rows of its possible duplicates, not reconciled yet
   duplicateIds: string[]
-  group: RowGroup
+  status: RowStatus | null
   // Removed by a change not published yet: faded
   removed: boolean
   sub?: SubRow
@@ -185,21 +208,27 @@ function declaredColumns(values: SupportValues) {
   }
 }
 
-// The possible duplicates first, then the changes, then the status
-export function rowGroup(
-  pending: Declaration[],
-  duplicateIds: string[],
-  status: RowGroup,
-): RowGroup {
-  if (duplicateIds.length) {
-    return "duplicate"
+/**
+ * The status of a row: its change not published yet, else its
+ * reconciliation not published yet, else its changes waiting for approval,
+ * else whether only other organizations declared it.
+ */
+export function rowStatus(
+  change: Declaration | null,
+  reconciliations: Declaration[],
+  transfer: HubTransfer | null,
+): RowStatus | null {
+  if (change?.status == "draft") {
+    return change.kind as RowStatus
   }
-  if (pending.length) {
-    return pending.some((d) => d.status == "draft")
-      ? "unpublished"
-      : "submitted"
+  const reconciliation = reconciliations.find((d) => d.status == "draft")
+  if (reconciliation) {
+    return reconciliation.kind as RowStatus
   }
-  return status
+  if ([change, ...reconciliations].some((d) => d?.status == "submitted")) {
+    return "submitted"
+  }
+  return transfer?.status == "not_confirmed" ? "not_confirmed" : null
 }
 
 // The data of the supports table, as loaded
@@ -283,14 +312,13 @@ function transferRow(table: SupportTable, transfer: HubTransfer): SupportRow {
   const declaration = table.changeByTransfer.get(transfer.id) ?? null
   const reconciliations = table.reconciliationsByTransfer.get(transfer.id) ?? []
   const duplicateIds = table.duplicatesByRow.get(transfer.id) ?? []
-  const pending = [...(declaration ? [declaration] : []), ...reconciliations]
   const row: SupportRow = {
     id: transfer.id,
     transfer,
     declaration,
     reconciliations,
     duplicateIds,
-    group: rowGroup(pending, duplicateIds, transfer.status),
+    status: rowStatus(declaration, reconciliations, transfer),
     removed: declaration?.kind == "removal",
     emitter_id: transfer.emitter_id,
     emitter: transfer.emitter,
@@ -329,11 +357,8 @@ function newSupportRow(
     declaration,
     reconciliations: [],
     duplicateIds,
-    group: rowGroup(
-      declaration ? [declaration] : [],
-      duplicateIds,
-      "unpublished",
-    ),
+    // The support being added has no status yet
+    status: declaration ? rowStatus(declaration, [], null) : null,
     removed: false,
     emitter_id: table.organization.id,
     emitter: table.organization,
@@ -341,52 +366,37 @@ function newSupportRow(
   }
 }
 
-// The row being edited and its matches, and the row whose possible
-// duplicates are shown
+// The row being edited, and the row whose possible duplicates are shown
 export interface RowsState {
   editing: {
     rowId: string
     // The values typed
     values: SupportValues
-    // For a new support: the saved supports it may be
-    matches: Match[]
   } | null
   openDuplicates: string | null
 }
 
-function subRow(
-  other: SupportRow,
-  parentId: string,
-  kind: SubRow["kind"],
-  amountDiffers?: boolean,
-): SupportRow {
+function subRow(other: SupportRow, parentId: string): SupportRow {
   return {
     ...other,
     id: `${parentId}>${other.id}`,
-    sub: { parentId, kind, otherId: other.id, amountDiffers },
+    sub: { parentId, kind: "duplicate", otherId: other.id },
     saved: undefined,
   }
 }
 
-// The sub-rows under a row: the matches of the new support being edited, or
-// its possible duplicates, when shown. Only those of the table's rows.
+// The sub-rows under a row: its possible duplicates, when shown. Only those
+// of the table's rows.
 function subRows(
   table: SupportTable,
   rowId: string,
   state: RowsState,
 ): SupportRow[] {
   const { rowById } = table
-  if (state.editing?.rowId == rowId) {
-    return state.editing.matches
-      .filter((m) => rowById.has(m.row_id))
-      .map((m) =>
-        subRow(rowById.get(m.row_id)!, rowId, "match", m.amount_differs),
-      )
-  }
   if (state.openDuplicates == rowId) {
     return (rowById.get(rowId)?.duplicateIds ?? [])
       .filter((id) => rowById.has(id))
-      .map((id) => subRow(rowById.get(id)!, rowId, "duplicate"))
+      .map((id) => subRow(rowById.get(id)!, rowId))
   }
   return []
 }
@@ -403,49 +413,12 @@ export function tableRows(table: SupportTable, state: RowsState): SupportRow[] {
   ])
 }
 
-// The row of the support being added, and its matches
+// The row of the support being added
 export function addedRows(table: SupportTable, state: RowsState): SupportRow[] {
   if (state.editing?.rowId != NEW_ROW_ID) {
     return []
   }
-  return [
-    newSupportRow(table, NEW_ROW_ID, state.editing.values, null),
-    ...subRows(table, NEW_ROW_ID, state),
-  ]
-}
-
-// The rows of a status, with the row being edited or whose possible
-// duplicates are shown; the sub-rows with their row
-export function filterRows(
-  table: SupportTable,
-  rows: SupportRow[],
-  group: FilterGroup | null,
-  state: RowsState,
-): SupportRow[] {
-  if (!group) {
-    return rows
-  }
-  const visible = (row: SupportRow) =>
-    filterGroup(row) == group ||
-    row.id == state.editing?.rowId ||
-    row.id == state.openDuplicates
-  return rows.filter((row) =>
-    row.sub ? visible(table.rowById.get(row.sub.parentId)!) : visible(row),
-  )
-}
-
-// The number of saved rows of each status of the legend
-export function groupCounts(
-  rows: SupportRow[],
-): Partial<Record<FilterGroup, number>> {
-  const counts: Partial<Record<FilterGroup, number>> = {}
-  for (const row of rows) {
-    const group = filterGroup(row)
-    if (group) {
-      counts[group] = (counts[group] ?? 0) + 1
-    }
-  }
-  return counts
+  return [newSupportRow(table, NEW_ROW_ID, state.editing.values, null)]
 }
 
 // The sort values of a row: the sub-rows are sorted with their row, just
@@ -566,30 +539,27 @@ function rowLabel(table: SupportTable, id: string): string {
   return row ? supportLabel(row) : "a support"
 }
 
-// What's pending on the row, and its possible duplicates, one per item
-export function rowNotes(table: SupportTable, row: SupportRow): string[] {
-  if (row.sub) {
-    return []
+/**
+ * The explanation of a row's status, shown on hover: with the supports it
+ * was marked as the same as, or different from.
+ */
+export function statusInfo(table: SupportTable, row: SupportRow): string {
+  if (!row.status) {
+    return ""
   }
-  const notes: string[] = []
-  const state = (d: Declaration) =>
-    d.status == "submitted" ? "waiting for approval" : "not published"
-  if (row.declaration && row.transfer) {
-    const kind = KIND_LABELS[row.declaration.kind]
-    notes.push(`${kind} (${state(row.declaration)})`)
+  const reconciliation = row.reconciliations.find(
+    (d) => d.status == "draft" && d.kind == row.status,
+  )
+  if (!reconciliation) {
+    return ROW_STATUSES[row.status].info
   }
-  for (const reconciliation of row.reconciliations) {
-    const others = reconciledWith(reconciliation, row.id)
-      .map((id) => rowLabel(table, id))
-      .join("; ")
-    notes.push(
-      reconciliation.kind == "merge"
-        ? `The same support as ${others} (${state(reconciliation)})`
-        : `Not the same support as ${others} (${state(reconciliation)})`,
-    )
-  }
-  for (const id of row.duplicateIds) {
-    notes.push(`May be the same support as ${rowLabel(table, id)}`)
-  }
-  return notes
+  const transferId = row.transfer!.id
+  const others = reconciledWith(reconciliation, transferId)
+    .map((id) => rowLabel(table, id))
+    .join("; ")
+  const marked =
+    reconciliation.kind == "merge"
+      ? `Marked as the same support as ${others}.`
+      : `Marked as a different support from ${others}.`
+  return `${marked} ${SUBMIT_HINT}`
 }

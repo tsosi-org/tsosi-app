@@ -109,7 +109,7 @@ describe("TableComponent", () => {
     expect(inputs[0].parentElement!.className).toBe("edited")
   })
 
-  it("tags the organizations of the columns with a `tagGetter`", async () => {
+  it("highlights the organizations of a `highlightGetter`", async () => {
     const organization = (row: Row) => ({
       id: row.id,
       name: `Org ${row.name}`,
@@ -124,14 +124,16 @@ describe("TableComponent", () => {
           title: "Organization",
           field: "org",
           type: "entityLink",
-          tagGetter: (row: Row) =>
-            row.rank > 2 ? { value: "Low", severity: "warn" } : null,
+          highlightGetter: (row: Row) =>
+            row.rank > 2 ? { class: "low", tooltip: "Low rank" } : null,
         },
       ],
     }))
-    const tags = [...wrapper!.element.querySelectorAll(".cell-tag")]
-    expect(tags.map((t) => t.textContent)).toEqual(["Low"])
-    expect(tags[0].closest("tr")!.textContent).toContain("Gamma")
+    const highlighted = [...wrapper!.element.querySelectorAll(".low")]
+    expect(highlighted).toHaveLength(1)
+    expect(highlighted[0].classList).toContain("entity-links-container")
+    expect(highlighted[0].textContent).toContain("Org Gamma")
+    expect(highlighted[0].closest("tr")!.textContent).toContain("Gamma")
   })
 
   it("has the actions of each row, and of the header", async () => {

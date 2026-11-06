@@ -25,32 +25,42 @@ import {
   type PreviewReason,
   type Transfer,
 } from "@/singletons/ref-data"
-import { canEditEntity, loadSession, session } from "@/singletons/hub-session"
+import {
+  canEditEntity,
+  loadSession,
+  mayHaveSession,
+} from "@/singletons/hub-session"
 import { formatDateWithPrecision } from "@/utils/data-utils"
 import {
   changeCanonicalUrl,
   changeMetaDescription,
   changeMetaTitle,
 } from "@/utils/seo"
-import { getEntityUrl } from "@/utils/url-utils"
+import { getEntityUrl, getHubEntityRef } from "@/utils/url-utils"
 
 const route = useRoute()
 const router = useRouter()
 const entity: ShallowRef<EntityDetails | null> = shallowRef(null)
 const transfers: ShallowRef<Transfer[] | null> = shallowRef(null)
 const loading = ref(true)
-// Opened with the edit link (`?edit`), from the Hub or the admin
-const startEditing = ref(route.query.edit !== undefined)
 // Set when the entity is not on the public site yet: the page is a preview,
 // for its members and the TSOSI team only.
 const previewReason: Ref<PreviewReason | null> = ref(null)
-const editable = computed(
-  () => entity.value != null && canEditEntity(entity.value.id),
+// The profile is edited in the Hub's "Public page" tab: a button leads there,
+// for the entity's members and the TSOSI team
+const hubLink = computed(() =>
+  entity.value != null && canEditEntity(entity.value.id)
+    ? {
+        name: "hub-home",
+        params: { entityId: getHubEntityRef(entity.value) },
+        query: { tab: "page" },
+      }
+    : undefined,
 )
 
 const previewMessages: Record<PreviewReason, string> = {
   to_check:
-    "It will be published once TSOSI's curation board has added the infrastructure to its scope.",
+    "It will be published once the TSOSI team has added the infrastructure to its scope.",
   out_of_scope: "The infrastructure is not in TSOSI's scope.",
   no_public_support:
     "It will be published with the organization's first public support.",
@@ -61,7 +71,7 @@ onBeforeMount(async () => {
   const result = entityId ? getEntitySummary(entityId) : undefined
   const tsosiId = result?.identifiers.find((i) => i.registry === "tsosi")?.value
   if (tsosiId && tsosiId !== route.params.id) {
-    // The page is remounted on the new path: keep the query (`?edit`)
+    // The page is remounted on the new path
     router.replace({
       name: "entity",
       params: { id: tsosiId },
@@ -70,16 +80,16 @@ onBeforeMount(async () => {
     })
     return
   }
-  // The session is only checked when needed (opened with the edit link, or
-  // already loaded), so that public visitors don't make an extra request.
-  const checkSession = startEditing.value || session.loaded
+  // The session is only checked for visitors who may be logged in (see
+  // `mayHaveSession`)
+  const checkSession = mayHaveSession()
   if (result != null) {
     entity.value = (await getEntityDetails(result.id)) as EntityDetails
   } else if (checkSession && (await loadSession())) {
     await loadPreview(route.params.id as string)
   }
   loading.value = false
-  if (startEditing.value) {
+  if (checkSession) {
     await loadSession()
   }
 })
@@ -89,15 +99,6 @@ async function loadPreview(id: string) {
   if (preview) {
     entity.value = preview.entity
     previewReason.value = preview.reason
-  }
-}
-
-async function onEditSaved() {
-  startEditing.value = false
-  if (previewReason.value) {
-    await loadPreview(entity.value!.id)
-  } else {
-    entity.value = (await getEntityDetails(entity.value!.id)) as EntityDetails
   }
 }
 
@@ -134,10 +135,8 @@ async function onEntityChange() {
       </Message>
       <EntityMeta
         :entity="entity as EntityDetails"
-        :editable="editable"
-        :start-editing="startEditing"
+        :hub-link="hubLink"
         :profile-only="!!previewReason"
-        @saved="onEditSaved"
       />
       <template v-if="previewReason"></template>
       <Tabs lazy value="0" v-else-if="devMode">

@@ -1,7 +1,7 @@
 /**
  * A fake backend of an organization's Hub (`ORG`) for the component tests,
  * over `mockApi`: the member logged in, the organization's supports table,
- * its declarations, saved, changed and deleted in memory, its matches, its
+ * its declarations, saved, changed and deleted in memory, its
  * submissions and the preview of their publication. Its URLs take its UUID
  * or its TSOSI ID. A failure can be set for a method and route (with the
  * UUID), and a change made before a request is answered, e.g. by another
@@ -14,7 +14,6 @@ import {
   DATE_FIELDS,
   type Declaration,
   type DeclarationPayload,
-  type Match,
   type Submission,
 } from "@/singletons/hub-declarations"
 import type { Member } from "@/singletons/hub-session"
@@ -28,8 +27,6 @@ export interface HubBackend {
   // The pairs of rows that may be the same support, before reconciliation
   duplicates: [string, string][]
   submissions: Submission[]
-  // The matches of any support being entered
-  matches: Match[]
   preview: {
     transfers: PreviewTransfer[]
     changes: Record<string, string[]>
@@ -114,7 +111,6 @@ export function hubBackend(data: Partial<HubBackend> = {}): HubBackend {
     declarations: [],
     duplicates: [],
     submissions: [],
-    matches: [],
     preview: { transfers: [], changes: {} },
     failures: {},
     beforeRequest: null,
@@ -220,8 +216,6 @@ export function hubBackend(data: Partial<HubBackend> = {}): HubBackend {
           return request.method == "GET"
             ? { body: backend.submissions }
             : submit(request)
-        case "matches":
-          return { body: { matches: backend.matches } }
         case "publication-preview":
           return {
             body: {

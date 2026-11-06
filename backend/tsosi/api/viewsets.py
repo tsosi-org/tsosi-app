@@ -174,7 +174,7 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
         PATCH:  Edit the entity's profile. The body is either the JSON edit
                 data, or a multipart form with the JSON edit data in the
                 `data` field and the optional image files in the `logo` &
-                `icon` fields.
+                `icon` fields. The icon is only changed by the TSOSI team.
         """
         entity = self.get_editable_entity(request)
 
@@ -184,6 +184,10 @@ class EntityViewSet(viewsets.ReadOnlyModelViewSet, AllActionViewSet):
                 data = json.loads(request.data.get("data") or "{}")
             except json.JSONDecodeError:
                 raise ValidationError({"data": "Invalid JSON."})
+            if "icon" in request.FILES and not request.user.is_staff:
+                raise ValidationError(
+                    {"icon": "Only the TSOSI team can change the icon."}
+                )
             logo = self.validate_image(request, "logo")
             icon = self.validate_image(request, "icon")
         else:

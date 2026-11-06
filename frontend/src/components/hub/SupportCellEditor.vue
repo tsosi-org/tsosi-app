@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import Button from "primevue/button"
+import InputGroup from "primevue/inputgroup"
 import InputText from "primevue/inputtext"
 import Select from "primevue/select"
 import { computed, onMounted, ref, watch } from "vue"
 
 import EntityLinkDataAtom from "@/components/atoms/EntityLinkDataAtom.vue"
-import ScopeTag from "@/components/hub/ScopeTag.vue"
 import SearchBar from "@/components/SearchBar.vue"
 import {
   EDITOR_FIELD_ERRORS,
@@ -14,11 +14,7 @@ import {
   type EditorField,
   type SupportDraft,
 } from "@/singletons/hub-declarations"
-import {
-  addOrganization,
-  recipientScope,
-  type RegistryRecord,
-} from "@/singletons/hub-organizations"
+import { recipientScope, scopeHighlight } from "@/singletons/hub-organizations"
 import {
   getCurrencies,
   type Currency,
@@ -29,8 +25,9 @@ import {
 /**
  * The input of an editable cell of the row being edited, in place of its
  * value. An organization (the beneficiary, or the intermediary) shows with a
- * button replacing it by the organization search, in the same place. The
- * amount and currency are typed. The dates are typed in the panel under the
+ * button replacing it by the organization search, in the same place; a
+ * beneficiary whose supports aren't public is highlighted. The
+ * amount is typed, its currency picked next to it. The dates are typed in the panel under the
  * row (`SupportDates`). The cell shows that it's invalid; the panel lists the
  * errors.
  */
@@ -38,26 +35,23 @@ import {
 type OrganizationField = "agents" | "recipient"
 
 const props = defineProps<{
-  field: Exclude<EditorField, "date">
+  field: Exclude<EditorField, "date" | "currency">
   // The organization whose Hub it is
   organizationId: string
   errors: DeclarationErrors
 }>()
 const draft = defineModel<SupportDraft>("draft", { required: true })
 const emit = defineEmits<{
-  // Add an organization from its name, in the panel under the row
-  addOrganization: [field: OrganizationField, name: string]
+  // Add an organization missing from TSOSI, in the panel under the row
+  addOrganization: [field: OrganizationField, text: string]
   // The cell is being edited
   focus: []
-  // An error of the cell not from the server, e.g. an organization that
-  // couldn't be added
-  error: [message: string]
 }>()
 
 const currencies = ref<DeepReadonly<Currency>[]>([])
 
 onMounted(async () => {
-  if (props.field == "currency") {
+  if (props.field == "amount") {
     currencies.value = Object.values((await getCurrencies()) ?? {}).sort(
       (a, b) => a.id.localeCompare(b.id),
     )
@@ -107,26 +101,10 @@ function clear() {
   replacing.value = false
 }
 
-// An organization being added from its ROR or Wikidata record
-const addingRecord = ref(false)
-
-async function addRecord(field: OrganizationField, record: RegistryRecord) {
-  addingRecord.value = true
-  const result = await addOrganization(props.organizationId, {
-    identifier: record.identifier,
-  })
-  addingRecord.value = false
-  if (result.error) {
-    const message = result.data?.identifier ?? result.data?.detail
-    emit(
-      "error",
-      message
-        ? [message].flat().join(" ")
-        : "The organization couldn't be added. Please try again.",
-    )
-    return
-  }
-  pick(field, result.data as Entity)
+function highlight(organization: DeepReadonly<Entity>) {
+  return props.field == "recipient"
+    ? scopeHighlight(recipientScope(organization))
+    : null
 }
 
 // The amount as typed, committed at each keystroke when it's valid: with
@@ -143,6 +121,9 @@ const invalid = computed(
       parseAmountInput(draft.value.amountText) == null) ||
     EDITOR_FIELD_ERRORS[props.field].some((key) => props.errors[key]),
 )
+const currencyInvalid = computed(() =>
+  EDITOR_FIELD_ERRORS.currency.some((key) => props.errors[key]),
+)
 </script>
 
 <template>
@@ -156,15 +137,13 @@ const invalid = computed(
             v-for="organization of organizations"
             :key="organization.id"
             class="organization-value"
+            :class="highlight(organization)?.class"
+            v-tooltip.bottom="highlight(organization)?.tooltip"
           >
             <EntityLinkDataAtom
               :data="{ entity: organization }"
               :dataField="entityField"
               noLink
-            />
-            <ScopeTag
-              v-if="props.field == 'recipient'"
-              :scope="recipientScope(organization)"
             />
           </span>
         </div>
@@ -204,13 +183,15 @@ const invalid = computed(
               ? 'Pick the beneficiary'
               : 'Pick the intermediary, if any'
           "
-          @select="(entity) => pick(props.field as OrganizationField, entity)"
-          @addRecord="
-            (record) => addRecord(props.field as OrganizationField, record)
+          :addLabel="
+            props.field == 'recipient'
+              ? 'Add an infrastructure'
+              : 'Add an intermediary'
           "
+          @select="(entity) => pick(props.field as OrganizationField, entity)"
           @add="
-            (name) =>
-              emit('addOrganization', props.field as OrganizationField, name)
+            (text) =>
+              emit('addOrganization', props.field as OrganizationField, text)
           "
         />
         <Button
@@ -229,33 +210,29 @@ const invalid = computed(
       </div>
     </template>
 
-    <InputText
-      v-else-if="props.field == 'amount'"
-      :modelValue="draft.amountText"
-      aria-label="Amount, all taxes included"
-      inputmode="decimal"
-      fluid
-      :invalid="invalid"
-      @update:modelValue="onAmountInput"
-    />
-
-    <Select
-      v-else-if="props.field == 'currency'"
-      v-model="draft.currency"
-      aria-label="Currency"
-      :options="currencies"
-      optionLabel="id"
-      optionValue="id"
-      filter
-      fluid
-      :invalid="invalid"
-    >
-      <template #option="{ option }">
-        {{ option.id }} · {{ option.name }}
-      </template>
-    </Select>
-
-    <small v-if="addingRecord" class="hint">Adding the organization…</small>
+    <InputGroup v-else-if="props.field == 'amount'">
+      <InputText
+        :modelValue="draft.amountText"
+        aria-label="Amount, all taxes included"
+        inputmode="decimal"
+        :invalid="invalid"
+        @update:modelValue="onAmountInput"
+      />
+      <Select
+        v-model="draft.currency"
+        class="currency-select"
+        aria-label="Currency"
+        :options="currencies"
+        optionLabel="id"
+        optionValue="id"
+        filter
+        :invalid="currencyInvalid"
+      >
+        <template #option="{ option }">
+          {{ option.id }} · {{ option.name }}
+        </template>
+      </Select>
+    </InputGroup>
   </div>
 </template>
 
@@ -293,12 +270,19 @@ const invalid = computed(
   gap: 0.4rem;
 }
 
+/* The amount takes the room the currency leaves */
+.cell-editor :deep(.p-inputtext:not(.p-select-label)) {
+  flex: 1;
+  min-width: 0;
+}
+
+.currency-select {
+  flex: none;
+  width: 6.5rem;
+}
+
 /* The select's label inherits the page's line height, which inputs don't */
 .cell-editor :deep(.p-select-label) {
   line-height: normal;
-}
-
-.hint {
-  color: var(--p-neutral-500);
 }
 </style>

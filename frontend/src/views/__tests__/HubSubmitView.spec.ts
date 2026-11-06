@@ -100,10 +100,6 @@ describe("HubSubmitView", () => {
         "1 edit",
         "1 new organization",
       ])
-      // The new support's beneficiary isn't in scope yet
-      expect(text(".hint")[0]).toContain(
-        "1 change is about infrastructures not in TSOSI's scope yet",
-      )
     } finally {
       delete ENTITIES[NEW_INFRA.id]
     }
@@ -129,8 +125,9 @@ describe("HubSubmitView", () => {
     expect(rows.map((r) => r.className).join(" ")).not.toContain("changed")
     expect(preview.querySelector(".p-message, .hint")).toBeNull()
     const texts = rows.map((r) => r.textContent!)
-    expect(texts.filter((t) => /1\s000EUR/.test(t))).toHaveLength(1)
-    expect(texts.filter((t) => /700USD/.test(t))).toHaveLength(1)
+    // In the selected currency, the others' next to their amount
+    expect(texts.filter((t) => /1\s000\s*$/.test(t))).toHaveLength(1)
+    expect(texts.filter((t) => /700\sUSD/.test(t))).toHaveLength(1)
     // The hidden amount isn't shown
     expect(texts.filter((t) => t.includes("hidden"))).toHaveLength(1)
   })
