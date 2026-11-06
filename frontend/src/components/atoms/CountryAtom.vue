@@ -14,7 +14,9 @@ const props = defineProps<CountryProps>()
     <img
       class="country-icon"
       :src="getCountryIcon(props.code)"
-      :title="props.code"
+      :alt="getCountryLabel(props.code)"
+      :title="onlyFlag ? undefined : props.code"
+      v-tooltip.top="onlyFlag ? getCountryLabel(props.code) : undefined"
     />
     {{ onlyFlag ? undefined : getCountryLabel(props.code) }}
   </div>
