@@ -6,9 +6,13 @@ import {
   selectedCurrency,
   setSelectedCurrency,
   getCurrencies,
+  originalCurrency,
 } from "@/singletons/currencyStore"
 import { type Currency, type DeepReadonly } from "@/singletons/ref-data"
 
+const props = defineProps<{
+  showCode?: boolean // Show the selected currency's ISO code instead of its name
+}>()
 
 const currency = ref(selectedCurrency.value)
 const availableCurrencies: Ref<Array<DeepReadonly<Currency>>> = ref([])
@@ -40,9 +44,9 @@ watch(selectedCurrency, () => {
 </script>
 
 <template>
-  <Select
-    v-model="currency"
-    :options="availableCurrencies"
-    optionLabel="name"
-  />
+  <Select v-model="currency" :options="availableCurrencies" optionLabel="name">
+    <template v-if="props.showCode" #value="{ value }">
+      {{ value?.id == originalCurrency.id ? "Original" : value?.id }}
+    </template>
+  </Select>
 </template>

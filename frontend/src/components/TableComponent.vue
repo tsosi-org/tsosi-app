@@ -30,6 +30,7 @@ import CurrencySelector from "@/components/CurrencySelector.vue"
 import {
   exportCSV,
   exportJSON,
+  formatDateWithPrecision,
   formatItemLabel,
   getCountryLabel,
   getEntityLinkRows,
@@ -50,6 +51,8 @@ export interface TableColumnProps extends DataFieldProps {
   info?: string
   currencySelector?: boolean
   nullValueTemplate?: string
+  labelSuffix?: (item: Record<string, any>) => string | null | undefined
+  exportOnly?: boolean
   filter?: {
     enable?: boolean
     placeHolder?: string
@@ -92,6 +95,9 @@ const filteredData: Ref<Array<Record<string, any>>> = ref([])
 const minWidthWithFilter = "100px"
 const useFilters = computed(
   () => !props.skeleton && props.data.length >= minDataForFilters,
+)
+const displayedColumns = computed(() =>
+  props.columns.filter((c) => !c.exportOnly),
 )
 const filterStatus: Ref<DebounceStatus> = ref("idle")
 
@@ -293,7 +299,7 @@ function applyFilters() {
       for (const columnId in filtersToApply) {
         const columnProps = props.columns.filter((c) => c.id == columnId)[0]
         if (
-          !formatItemLabel(item, columnProps)
+          !formatCellLabel(item, columnProps)
             ?.toString()
             .toLowerCase()
             .includes(filtersToApply[columnId])
@@ -307,6 +313,23 @@ function applyFilters() {
   } else {
     filteredData.value = props.data
   }
+}
+
+/**
+ * The label of a cell as displayed in the table, also used for filtering.
+ * @param item
+ * @param column
+ */
+function formatCellLabel(
+  item: Record<string, any>,
+  column: TableColumnProps,
+): string | number | null {
+  if (column.type == "dateWithPrecision" || column.type == "date") {
+    const value = getItemLabel(item, column)
+    const date = column.type == "dateWithPrecision" ? value?.value : value
+    return date ? formatDateWithPrecision(date, "year") : ""
+  }
+  return formatItemLabel(item, column)
 }
 
 /**
@@ -382,7 +405,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
     </template>
     -->
     <Column
-      v-for="column of columns"
+      v-for="column of displayedColumns"
       :field="column.field"
       :sortable="column.sortable ? true : undefined"
       :sortField="getSortFieldFunction(column)"
@@ -412,7 +435,15 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         <span class="p-datatable-column-title">
           {{ column.title }}
         </span>
-        <CurrencySelector v-if="column.currencySelector" />
+        <!-- Prevent clicks in the selector from sorting the column -->
+        <span
+          v-if="column.currencySelector"
+          class="header-currency-selector"
+          @click.stop
+          @keydown.stop
+        >
+          <CurrencySelector showCode />
+        </span>
       </template>
 
       <template v-if="useFilters && column.filter?.enable" #filter>
@@ -479,6 +510,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
               :key="`${column.id}-${entityData[column.field]?.id || entityData[column.field]?.name || index}`"
               :data="entityData"
               :dataField="column"
+              :hideIcon="column.field != 'recipient'"
             />
           </div>
         </div>
@@ -499,15 +531,18 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         />
       </template>
       <template v-else-if="column.type == 'country'" #body="{ data }">
-        <Country :code="getItemLabel(data, column)" />
+        <Country :code="getItemLabel(data, column)" onlyFlag />
       </template>
       <template v-else #body="{ data }">
         <div
-          v-if="column.nullValueTemplate && !formatItemLabel(data, column)"
+          v-if="column.nullValueTemplate && !formatCellLabel(data, column)"
           v-html="column.nullValueTemplate"
         ></div>
         <span v-else>
-          {{ formatItemLabel(data, column) }}
+          {{ formatCellLabel(data, column) }}
+          <span v-if="column.labelSuffix?.(data)" class="cell-label-suffix">
+            {{ column.labelSuffix(data) }}
+          </span>
         </span>
       </template>
     </Column>
@@ -613,6 +648,14 @@ function isColumnFiltered(column: TableColumnProps): boolean {
   align-items: center;
   justify-content: flex-start;
   gap: var(--p-datatable-header-cell-gap);
+}
+
+.header-currency-selector {
+  margin-left: 0.5em;
+}
+
+.cell-label-suffix {
+  color: var(--p-neutral-500);
 }
 
 .info-button-inline {

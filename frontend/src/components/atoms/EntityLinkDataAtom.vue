@@ -10,6 +10,7 @@ import { getEntityUrl } from "@/utils/url-utils"
 const props = defineProps<{
   data: Record<string, any>
   dataField: DataFieldProps
+  hideIcon?: boolean
 }>()
 
 const entity: Ref<Entity | undefined> = ref()
@@ -30,13 +31,15 @@ onBeforeMount(() => {
     <RouterLink
       v-if="entity"
       class="entity-link"
-      :class="{ icon: entity?.icon != null }"
+      :class="{ icon: entity?.icon != null && !props.hideIcon }"
       :to="getEntityUrl(entity)"
       :title="entity.name"
     >
       <ImageAtom
         class="entity-icon"
-        v-if="entity.icon && props.dataField.field != 'sources'"
+        v-if="
+          entity.icon && !props.hideIcon && props.dataField.field != 'sources'
+        "
         :src="entity.icon"
         :width="'1.4em'"
         :height="'1.4em'"

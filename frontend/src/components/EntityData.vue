@@ -91,11 +91,21 @@ const baseColumns: TableColumnProps[] = [
     labelGetter: (row) =>
       getTransferAmountCurrency(row as Transfer, selectedCurrency.value.id)
         .amount,
+    labelSuffix: (row) => {
+      const { amount, currency } = getTransferAmountCurrency(
+        row as Transfer,
+        selectedCurrency.value.id,
+      )
+      return amount != null && currency != selectedCurrency.value.id
+        ? currency
+        : null
+    },
     field: amountColumn,
     type: "number",
     sortable: true,
     nullValueTemplate: '<span class="data-label hidden-amount">hidden</span>',
     info: "The amount of the support may be hidden. See <a href='/pages/faq#amounts-hidden'>the FAQ</a>",
+    currencySelector: true,
   },
   {
     id: "currency",
@@ -105,7 +115,7 @@ const baseColumns: TableColumnProps[] = [
         .currency,
     field: currencyColumn,
     type: "string",
-    currencySelector: true,
+    exportOnly: true,
   },
 ]
 
@@ -129,7 +139,8 @@ const tableProps = computed(() => {
     return null
   }
   const toRemoveCols: string[] = []
-  if (props.transfers.every((t) => t.amount == null)) {
+  const noAmount = props.transfers.every((t) => t.amount == null)
+  if (noAmount) {
     toRemoveCols.push("currency")
     if (props.entity.is_recipient) {
       toRemoveCols.push("amount")
@@ -151,7 +162,14 @@ const tableProps = computed(() => {
   return {
     id: `${props.entity.id}-transfers`,
     data: props.transfers,
-    columns: baseColumns.filter((col) => !toRemoveCols.includes(col.id)),
+    columns: baseColumns
+      .filter((col) => !toRemoveCols.includes(col.id))
+      // No currency to pick when all amounts are hidden
+      .map((col) =>
+        col.id == "amount" && noAmount
+          ? { ...col, currencySelector: false }
+          : col,
+      ),
     defaultSort: {
       sortField: "date_clc",
       sortOrder: -1 as 0 | 1 | -1,
