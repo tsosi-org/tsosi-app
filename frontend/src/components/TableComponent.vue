@@ -317,6 +317,7 @@ function applyFilters() {
 
 /**
  * The label of a cell as displayed in the table, also used for filtering.
+ * Dates only show their year in tables, the exports keep the full date.
  * @param item
  * @param column
  */
@@ -435,7 +436,11 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         <span class="p-datatable-column-title">
           {{ column.title }}
         </span>
+        <<<<<<< HEAD
         <!-- Prevent clicks in the selector from sorting the column -->
+        =======
+        <!-- Keep clicks and keys in the selector from sorting the column -->
+        >>>>>>> 6d22c6f (Rework transfers table display)
         <span
           v-if="column.currencySelector"
           class="header-currency-selector"
@@ -531,11 +536,15 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         />
       </template>
       <template v-else-if="column.type == 'country'" #body="{ data }">
+        <<<<<<< HEAD
         <Country
           :code="getItemLabel(data, column)"
           onlyFlag
           class="country-cell"
         />
+        =======
+        <Country :code="getItemLabel(data, column)" onlyFlag />
+        >>>>>>> 6d22c6f (Rework transfers table display)
       </template>
       <template v-else #body="{ data }">
         <div
