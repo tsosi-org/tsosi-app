@@ -52,16 +52,6 @@ shuffleArray(partners)
         </p>
       </StaticSectionAtom>
 
-      <StaticSectionAtom id="who-runs-tsosi" title="Who runs TSOSI?">
-        <p>
-          TSOSI has its own governance, composed of a steering committee, an
-          advisory board, a user group and an operational team. See the people
-          involved in the "<RouterLink to="/pages/about#who-we-are"
-            >Who we are</RouterLink
-          >" section.
-        </p>
-      </StaticSectionAtom>
-
       <StaticSectionAtom
         id="data-source"
         title="Where does the data come from?"
@@ -187,18 +177,6 @@ shuffleArray(partners)
           infrastructure encompasses software, standards, protocols, services,
           platforms, and organizations that allow scholarly stakeholders to
           practise, develop, think about, and observe open science.
-        </p>
-      </StaticSectionAtom>
-
-      <StaticSectionAtom
-        id="tsosi-publications-infrastructure"
-        title="Does TSOSI only concern infrastructures dedicated to publications?"
-      >
-        <p>
-          No. In its launch year, TSOSI has worked with infrastructures more
-          focused on publications, but all infrastructures, like those dedicated
-          to software, data, monitoring, or identifiers, are, of course, in the
-          scope of TSOSI.
         </p>
       </StaticSectionAtom>
 
