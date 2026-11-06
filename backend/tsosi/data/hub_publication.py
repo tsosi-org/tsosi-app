@@ -481,7 +481,7 @@ SUPPORT_CHANGE_PUBLISHERS = {
 def set_recipients_scope(declarations: list[Declaration]):
     """
     The declared beneficiaries without scope, added in the Hub or not, are
-    to be checked by the curation board.
+    to be checked by the TSOSI team.
     """
     for declaration in declarations:
         if declaration.kind not in DECLARATION_KINDS_WITH_VALUES:

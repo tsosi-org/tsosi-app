@@ -167,12 +167,6 @@ ENDPOINTS = {
         f"/api/hub/entities/{h.org.id}/organizations",
         {"name": "A new beneficiary"},
     ),
-    "matches": lambda h: (
-        "get",
-        f"/api/hub/entities/{h.org.id}/matches"
-        f"?recipient_id={h.infra.id}&date_invoice=2024",
-        None,
-    ),
     "submissions_list": lambda h: (
         "get",
         f"/api/hub/entities/{h.org.id}/submissions",
@@ -232,7 +226,6 @@ EXPECTED = {
     "declaration_update": write(200),
     "declaration_delete": write(204),
     "organizations_create": write(201),
-    "matches": READ,
     "submissions_list": READ,
     "submissions_create": write(201),
     "publication_preview": READ,
@@ -258,7 +251,6 @@ ROUTES = {
         "declaration_delete",
     ],
     "api/hub/entities/<str:entity_id>/organizations": ["organizations_create"],
-    "api/hub/entities/<str:entity_id>/matches": ["matches"],
     "api/hub/entities/<str:entity_id>/submissions": [
         "submissions_list",
         "submissions_create",
@@ -423,10 +415,7 @@ def test_other_organization_data_not_listed(hub, other_hub):
     assert [t["id"] for t in transfers] == [str(hub.transfer.id)]
     declarations = client.get(f"{base}/declarations").json()["declarations"]
     assert [d["id"] for d in declarations] == [hub.draft.id]
-    # The matches of a support like the other organization's
-    response = client.get(
-        f"{base}/matches",
-        {"recipient_id": str(hub.infra.id), "date_invoice": "2024"},
-    )
-    rows = [m["row_id"] for m in response.json()["matches"]]
+    # Nor among its possible duplicates
+    pairs = client.get(f"{base}/declarations").json()["possible_duplicates"]
+    rows = {row for pair in pairs for row in pair}
     assert str(transfer.id) not in rows and f"new-{draft.id}" not in rows

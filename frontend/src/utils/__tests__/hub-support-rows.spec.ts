@@ -12,11 +12,7 @@ import {
   newSupport,
   transfer,
 } from "@/__tests__/hub-fixtures"
-import {
-  DATE_FIELDS,
-  type Declaration,
-  type Match,
-} from "@/singletons/hub-declarations"
+import { DATE_FIELDS, type Declaration } from "@/singletons/hub-declarations"
 import type { HubTransfer } from "@/singletons/ref-data"
 import type { DateWithPrecision } from "@/utils/data-utils"
 import { formatAmount } from "@/utils/hub-supports"
@@ -27,16 +23,14 @@ import {
   dismissedRows,
   draftFromValues,
   emptyDraft,
-  filterRows,
-  groupCounts,
   isLocked,
   lockedReason,
   NEW_ROW_ID,
   orphans,
   pairDisabledReasons,
-  rowGroup,
-  rowNotes,
+  rowStatus,
   sortRow,
+  statusInfo,
   tableRows,
   valuesFromDraft,
   valuesFromTransfer,
@@ -83,21 +77,31 @@ function makeTable(
 
 const NO_STATE: RowsState = { editing: null, openDuplicates: null }
 
-describe("rowGroup", () => {
-  const draft = declaration()
+describe("rowStatus", () => {
+  const unconfirmed = transfer()
+  const confirmed = transfer({ status: "confirmed" })
+  const draftEdit = declaration({ kind: "edit" })
   const submitted = declaration({ status: "submitted" })
+  const draftMerge = declaration({ id: 2, kind: "merge" })
 
-  it("shows the possible duplicates first", () => {
-    expect(rowGroup([draft], ["t2"], "confirmed")).toBe("duplicate")
+  it("shows the change not published yet first", () => {
+    expect(rowStatus(draftEdit, [draftMerge], unconfirmed)).toBe("edit")
+    expect(rowStatus(newSupport(), [], null)).toBe("new")
   })
 
-  it("then the changes: not published while one is a draft", () => {
-    expect(rowGroup([submitted, draft], [], "confirmed")).toBe("unpublished")
-    expect(rowGroup([submitted], [], "not_confirmed")).toBe("submitted")
+  it("then the reconciliation not published yet", () => {
+    expect(rowStatus(submitted, [draftMerge], confirmed)).toBe("merge")
   })
 
-  it("then the status", () => {
-    expect(rowGroup([], [], "not_confirmed")).toBe("not_confirmed")
+  it("then the changes waiting for approval", () => {
+    expect(rowStatus(submitted, [], unconfirmed)).toBe("submitted")
+    const merge = { ...draftMerge, status: "submitted" as const }
+    expect(rowStatus(null, [merge], confirmed)).toBe("submitted")
+  })
+
+  it("then whether it's confirmed: none when it is", () => {
+    expect(rowStatus(null, [], unconfirmed)).toBe("not_confirmed")
+    expect(rowStatus(null, [], confirmed)).toBeNull()
   })
 })
 
@@ -111,7 +115,7 @@ describe("buildSupportTable", () => {
     const row = table.rowById.get("new-7")!
     expect(row).toMatchObject({
       transfer: null,
-      group: "unpublished",
+      status: "new",
       emitter: ORG,
       recipient: ARXIV,
       agents: [COUPERIN],
@@ -133,14 +137,14 @@ describe("buildSupportTable", () => {
       ],
     })
     expect(table.rowById.get("t1")).toMatchObject({
-      group: "not_confirmed",
+      status: "not_confirmed",
       recipient: DOAJ,
       amounts_clc: { EUR: 1000, USD: 1100 },
       amount_hidden: true,
       unconverted: false,
       removed: false,
     })
-    expect(table.rowById.get("t2")!.group).toBe("confirmed")
+    expect(table.rowById.get("t2")!.status).toBeNull()
   })
 
   it("shows the values of an edit, and fades a removal", () => {
@@ -159,7 +163,7 @@ describe("buildSupportTable", () => {
     })
     const edited = table.rowById.get("t1")!
     expect(edited).toMatchObject({
-      group: "unpublished",
+      status: "edit",
       amount: 1200,
       currency: "USD",
       amounts_clc: { USD: 1200 },
@@ -168,6 +172,7 @@ describe("buildSupportTable", () => {
     expect(edited.date_clc?.value).toBe("2024-06-01")
     expect(edited.declaration?.kind).toBe("edit")
     expect(table.rowById.get("t2")).toMatchObject({
+      status: "removal",
       removed: true,
       amount: 1000,
     })
@@ -188,7 +193,8 @@ describe("buildSupportTable", () => {
     expect(table.rowById.get("t2")!.declaration).toBeNull()
     expect(table.rowById.get("t1")!.duplicateIds).toEqual(["t3"])
     expect(table.rowById.get("t3")!.duplicateIds).toEqual(["t1"])
-    expect(table.rowById.get("t3")!.group).toBe("duplicate")
+    expect(table.rowById.get("t1")!.status).toBe("merge")
+    expect(table.rowById.get("t2")!.status).toBe("merge")
   })
 })
 
@@ -209,7 +215,7 @@ describe("tableRows", () => {
 
   it("shows the values typed in the row being edited", () => {
     const rows = tableRows(table, {
-      editing: { rowId: "t2", values: typed, matches: [] },
+      editing: { rowId: "t2", values: typed },
       openDuplicates: null,
     })
     const edited = rows.find((r) => r.id == "t2")!
@@ -219,45 +225,13 @@ describe("tableRows", () => {
     expect(sortRow(table, edited)).toBe(table.rowById.get("t2"))
   })
 
-  it("shows the matches of the new support edited under it", () => {
-    const matches: Match[] = [
-      { row_id: "t1", amount_differs: true },
-      // Missing from the table, e.g. merged since
-      { row_id: "gone", amount_differs: false },
-    ]
-    const rows = tableRows(table, {
-      editing: {
-        rowId: "new-7",
-        values: valuesFromTransfer(table.transferById.get("t1")!),
-        matches,
-      },
-      openDuplicates: null,
-    })
-    expect(rows.map((r) => r.id)).toEqual([
-      "new-7",
-      "new-7>t1",
-      "t1",
-      "t2",
-      "t3",
-    ])
-    const sub = rows[1]
-    expect(sub.sub).toEqual({
-      parentId: "new-7",
-      kind: "match",
-      otherId: "t1",
-      amountDiffers: true,
-    })
-    // Sorted with its row, just after it
-    expect(sortRow(table, sub)).toBe(table.rowById.get("new-7"))
-  })
-
   it("shows the possible duplicates of a row when open", () => {
     const rows = tableRows(table, { editing: null, openDuplicates: "t1" })
     expect(rows.map((r) => r.id)).toEqual(["new-7", "t1", "t1>t3", "t2", "t3"])
     expect(rows[2].sub?.kind).toBe("duplicate")
   })
 
-  it("adds the row of the support being added, and its matches", () => {
+  it("adds the row of the support being added", () => {
     expect(addedRows(table, NO_STATE)).toEqual([])
     const values = valuesFromDraft({
       ...emptyDraft("EUR"),
@@ -266,55 +240,12 @@ describe("tableRows", () => {
       dates: { ...emptyDraft("EUR").dates, date_invoice: "2023-02" },
     })
     const rows = addedRows(table, {
-      editing: {
-        rowId: NEW_ROW_ID,
-        values,
-        matches: [{ row_id: "t2", amount_differs: false }],
-      },
+      editing: { rowId: NEW_ROW_ID, values },
       openDuplicates: null,
     })
-    expect(rows.map((r) => r.id)).toEqual([NEW_ROW_ID, `${NEW_ROW_ID}>t2`])
+    expect(rows.map((r) => r.id)).toEqual([NEW_ROW_ID])
     expect(rows[0]).toMatchObject({ amount: 300, recipient: DOAJ })
     expect(rows[0].date_clc?.value).toBe("2023-02-01")
-  })
-})
-
-describe("filterRows and groupCounts", () => {
-  const table = makeTable({
-    transfers: [
-      transfer(),
-      transfer({ id: "t2", status: "confirmed" }),
-      transfer({ id: "t3", status: "confirmed" }),
-    ],
-    duplicates: [["t2", "t3"]],
-  })
-
-  it("counts the rows of each status of the legend", () => {
-    expect(groupCounts(table.rows)).toEqual({ not_confirmed: 1, duplicate: 2 })
-  })
-
-  it("keeps the rows of the status, and the sub-rows with their row", () => {
-    const state = { editing: null, openDuplicates: "t2" }
-    const rows = tableRows(table, state)
-    expect(
-      filterRows(table, rows, "not_confirmed", state).map((r) => r.id),
-    ).toEqual(["t1", "t2", "t2>t3"])
-    expect(filterRows(table, rows, null, state)).toBe(rows)
-  })
-
-  it("keeps the row being edited", () => {
-    const state: RowsState = {
-      editing: {
-        rowId: "t3",
-        values: valuesFromTransfer(table.transferById.get("t3")!),
-        matches: [],
-      },
-      openDuplicates: null,
-    }
-    const rows = tableRows(table, state)
-    expect(
-      filterRows(table, rows, "not_confirmed", state).map((r) => r.id),
-    ).toEqual(["t1", "t3"])
   })
 })
 
@@ -426,42 +357,42 @@ describe("locks and reconciliation rules", () => {
   })
 })
 
-describe("rowNotes", () => {
-  it("lists the changes, reconciliations and possible duplicates", () => {
+describe("statusInfo", () => {
+  it("names the supports of a reconciliation not published yet", () => {
     const table = makeTable({
       transfers: [
         transfer(),
         transfer({ id: "t2", agent_ids: [COUPERIN.id], amount: 2000 }),
-        transfer({ id: "t3" }),
       ],
       declarations: [
-        declaration({ status: "submitted" }),
         declaration({
-          id: 2,
           kind: "not_duplicate",
           transfer_id: "t2",
           other_transfer_ids: ["t1"],
         }),
       ],
-      duplicates: [["t1", "t3"]],
     })
-    const notes = rowNotes(table, table.rowById.get("t1")!)
-    expect(notes).toHaveLength(3)
-    expect(notes[0]).toBe("Confirmation (waiting for approval)")
-    expect(notes[1]).toMatch(/^Not the same support as .*\(not published\)$/)
-    expect(notes[1]).toContain(`via Couperin · ${formatAmount(2000, "EUR")} (`)
-    expect(notes[2]).toMatch(/^May be the same support as /)
-    expect(notes[2]).toContain(formatAmount(1000, "EUR"))
+    const info = statusInfo(table, table.rowById.get("t1")!)
+    expect(info).toMatch(/^Marked as a different support from /)
+    expect(info).toContain(`via Couperin · ${formatAmount(2000, "EUR")}.`)
+    expect(info).toContain("preview and submit")
     // The other row: the support it isn't
-    const other = rowNotes(table, table.rowById.get("t2")!)
-    expect(other).toHaveLength(1)
-    expect(other[0]).toMatch(/^Not the same support as /)
-    expect(other[0]).toContain(formatAmount(1000, "EUR"))
+    const other = statusInfo(table, table.rowById.get("t2")!)
+    expect(other).toContain(formatAmount(1000, "EUR"))
   })
 
-  it("has none for the new supports and the sub-rows", () => {
-    const table = makeTable({ declarations: [newSupport({ id: 7 })] })
-    expect(rowNotes(table, table.rowById.get("new-7")!)).toEqual([])
+  it("explains the other statuses, and is empty without one", () => {
+    const table = makeTable({
+      transfers: [transfer(), transfer({ id: "t2", status: "confirmed" })],
+      declarations: [newSupport({ id: 7 })],
+    })
+    expect(statusInfo(table, table.rowById.get("new-7")!)).toContain(
+      "preview and submit",
+    )
+    expect(statusInfo(table, table.rowById.get("t1")!)).toMatch(
+      /^Only other organizations declared this support/,
+    )
+    expect(statusInfo(table, table.rowById.get("t2")!)).toBe("")
   })
 })
 

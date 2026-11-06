@@ -51,6 +51,11 @@ describe("SupportDates", () => {
     expect(wrapper.findAll("input")).toHaveLength(5)
   })
 
+  it("focuses the invoice date when opened", async () => {
+    const wrapper = await mountDates()
+    expect(document.activeElement).toBe(input(wrapper, "Invoice date").element)
+  })
+
   it("flags the invalid dates as they're typed", async () => {
     const dates = emptyDates()
     const wrapper = await mountDates(dates)

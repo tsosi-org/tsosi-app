@@ -9,9 +9,7 @@ import {
   deleteDeclaration,
   EDITOR_FIELD_ERRORS,
   formatDateInput,
-  NONE,
   parseAmountInput,
-  parseDateInput,
   saveDeclaration,
   type Declaration,
   type DeclarationErrors,
@@ -72,36 +70,6 @@ export function draftErrors(draft: SupportDraft): DeclarationErrors {
     return { amount: ["Enter the amount."] }
   }
   return {}
-}
-
-/**
- * The values of the new support being edited, to find its matches: those
- * typed and valid, with at least the beneficiary and a date. `exclude` is
- * the row of a draft new support, which isn't its own match.
- */
-export function matchQuery(
-  draft: SupportDraft,
-  exclude: string | null,
-): string | null {
-  if (!draft.recipient) {
-    return null
-  }
-  const dates = Object.fromEntries(
-    DATE_FIELDS.map((f) => [
-      f,
-      formatDateInput(parseDateInput(draft.dates[f])) || null,
-    ]),
-  )
-  if (!Object.values(dates).some(Boolean)) {
-    return null
-  }
-  return JSON.stringify({
-    recipient_id: draft.recipient.id,
-    amount: draft.amount,
-    currency: draft.amount == null ? null : draft.currency,
-    ...dates,
-    exclude,
-  })
 }
 
 /**
@@ -198,33 +166,15 @@ export function supportOperations(
 
 /**
  * Save the values typed for a new support (a draft, or the one being
- * added), given the match picked: a published support, which it becomes the
- * change of; another new support, which gets the values; or none of them
- * (`NONE` or null), which it then lists as supports it isn't.
+ * added). A draft keeps the supports it was declared not to be. The saved
+ * supports it may be show as its possible duplicates once saved.
  */
 export function newSupportOperations(
   table: SupportTable,
   draft: Declaration | null,
   values: PayloadValues,
-  choice: string | null,
-  matchIds: string[],
 ): Operations {
-  if (choice && choice != NONE && !choice.startsWith("new-")) {
-    return asChangeOf(table, draft, choice, values)
-  }
-  if (choice && choice != NONE) {
-    const other = table.rowById.get(choice)!.declaration!
-    return {
-      saves: [
-        {
-          payload: newSupportPayload(table, values, dismissedRows(other)),
-          id: other.id,
-        },
-      ],
-      deletions: draft ? [draft] : [],
-    }
-  }
-  const payload = newSupportPayload(table, values, matchIds)
+  const payload = newSupportPayload(table, values, dismissedRows(draft))
   return { saves: [{ payload, id: draft?.id }], deletions: [] }
 }
 
