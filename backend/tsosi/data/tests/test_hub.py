@@ -343,6 +343,7 @@ def test_entity_preview(member, admin_user, registries):
     assert response.status_code == 200
     assert response.json()["name"] == entity.name
     assert response.json()["preview_reason"] == ENTITY_SCOPE_TO_CHECK
+    assert response.json()["open_science_policy_url"] is None
 
     entity.scope = ENTITY_SCOPE_IN
     entity.save()

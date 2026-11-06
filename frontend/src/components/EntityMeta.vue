@@ -130,7 +130,8 @@ const hasButtons = computed(() => {
     props.entity.is_scoss ||
     props.entity.infrastructure?.posi_url ||
     props.entity.is_barcelona ||
-    props.entity.infrastructure?.infra_finder_url
+    props.entity.infrastructure?.infra_finder_url ||
+    props.entity.open_science_policy_url
   )
 })
 
@@ -658,6 +659,27 @@ function isDoab(): boolean {
               <span>Barcelona Declaration</span>
             </label>
             <div
+              v-if="!showInfrastructure"
+              class="badge-edit"
+              :class="{ inactive: !form.open_science_policy_url }"
+            >
+              <font-awesome-icon :icon="['fas', 'file-lines']" />
+              <span>Open science policy</span>
+              <InputText
+                v-model="form.open_science_policy_url"
+                type="url"
+                size="small"
+                aria-label="Open science policy URL"
+                placeholder="https://..."
+              />
+              <small
+                class="edit-error"
+                v-if="fieldError('open_science_policy_url')"
+              >
+                {{ fieldError("open_science_policy_url") }}
+              </small>
+            </div>
+            <div
               v-if="showInfrastructure"
               class="badge-edit"
               :class="{ inactive: !form.infra_finder_url }"
@@ -772,6 +794,19 @@ function isDoab(): boolean {
             >
               <template #icon>
                 <img src="@/assets/img/ioi_icon.ico" />
+              </template>
+            </Button>
+            <Button
+              v-if="props.entity.open_science_policy_url"
+              as="a"
+              target="_blank"
+              rel="noopener"
+              :href="props.entity.open_science_policy_url"
+              variant="outlined"
+              label="Open science policy"
+            >
+              <template #icon>
+                <font-awesome-icon :icon="['fas', 'file-lines']" />
               </template>
             </Button>
           </div>
@@ -1059,6 +1094,7 @@ function isDoab(): boolean {
   }
 
   &.inactive > img,
+  &.inactive > svg,
   &.inactive > span {
     opacity: 0.5;
   }

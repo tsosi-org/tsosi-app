@@ -13,6 +13,7 @@ export interface EntityEditData {
   is_barcelona?: boolean
   website?: string | null
   wikipedia_url?: string | null
+  open_science_policy_url?: string | null
   identifiers?: {
     ror?: string | null
     wikidata?: string | null
@@ -91,6 +92,7 @@ export function useEntityEdit(entity: () => EntityDetails) {
     is_barcelona: false,
     website: "",
     wikipedia_url: "",
+    open_science_policy_url: "",
     ror: "",
     wikidata: "",
     support_url: "",
@@ -127,6 +129,7 @@ export function useEntityEdit(entity: () => EntityDetails) {
       is_barcelona: e.is_barcelona,
       website: e.website ?? "",
       wikipedia_url: e.wikipedia_url ?? "",
+      open_science_policy_url: e.open_science_policy_url ?? "",
       ror: getIdentifier("ror"),
       wikidata: getIdentifier("wikidata"),
       support_url: e.infrastructure?.support_url ?? "",
@@ -200,6 +203,10 @@ export function useEntityEdit(entity: () => EntityDetails) {
           ? { wikidata: form.wikidata }
           : {}),
       },
+    }
+    if (!showInfrastructure.value) {
+      // Institutions only: their open science policy
+      data.open_science_policy_url = form.open_science_policy_url || null
     }
     if (showInfrastructure.value) {
       data.infrastructure = {

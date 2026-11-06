@@ -87,6 +87,8 @@ export interface EntityDetails extends Entity {
   website?: string
   wikipedia_url?: string
   wikipedia_extract?: string
+  // Institutions only
+  open_science_policy_url?: string | null
   infrastructure?: InfrastructureDetails
   date_data_update?: Date
   children: string[]

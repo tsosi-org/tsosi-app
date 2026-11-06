@@ -127,6 +127,7 @@ def test_edit_entity(registries):
         "is_barcelona": True,
         "website": "https://new.org",
         "wikipedia_url": "https://en.wikipedia.org/wiki/New",
+        "open_science_policy_url": "https://new.org/open-science",
         "identifiers": {
             # Unchanged identifier
             "ror": "https://ror.org/02rx3b187",
@@ -142,6 +143,10 @@ def test_edit_entity(registries):
     }
     response = client.patch(edit_url(entity), data, format="json")
     assert response.status_code == 200, response.data
+    assert (
+        response.data["open_science_policy_url"]
+        == "https://new.org/open-science"
+    )
 
     entity.refresh_from_db()
     assert entity.name == "New name"
@@ -154,6 +159,7 @@ def test_edit_entity(registries):
     assert entity.is_barcelona
     assert entity.website == "https://new.org"
     assert entity.wikipedia_url == "https://en.wikipedia.org/wiki/New"
+    assert entity.open_science_policy_url == "https://new.org/open-science"
     # The extract of the previous page is dropped
     assert entity.wikipedia_extract is None
     assert entity.is_scoss
@@ -183,10 +189,17 @@ def test_edit_entity(registries):
     assert user.email in matching.comments
 
     # Clearing a value removes it from the TSOSI record
-    response = client.patch(edit_url(entity), {"country": ""}, format="json")
+    response = client.patch(
+        edit_url(entity),
+        {"country": "", "open_science_policy_url": ""},
+        format="json",
+    )
     assert response.status_code == 200, response.data
     tsosi_id.refresh_from_db()
     assert "country" not in tsosi_id.current_version.value
+    assert "open_science_policy_url" not in tsosi_id.current_version.value
+    entity.refresh_from_db()
+    assert entity.open_science_policy_url is None
     assert tsosi_id.current_version.value["name"] == "New name"
 
     # An edit without changes adds no history record
@@ -216,6 +229,7 @@ def test_edit_entity_validation(registries):
         {"country": "France"},
         {"website": "not an url"},
         {"wikipedia_url": "https://example.org/wiki/Page"},
+        {"open_science_policy_url": "not an url"},
         {"identifiers": {"ror": "not-a-ror"}},
         # Identifier attached to another entity
         {"identifiers": {"ror": "02rx3b187"}},
