@@ -25,10 +25,10 @@ logger = logging.getLogger(__name__)
 
 # Scope of the login tokens, so that no other sesame token logs in
 LOGIN_SCOPE = "hub"
-LOGIN_EMAIL_SUBJECT = "Your TSOSI Data Contribution Hub login link"
+LOGIN_EMAIL_SUBJECT = "Your Data Contribution Hub login link"
 LOGIN_EMAIL_MESSAGE = """Hello,
 
-Use the link below to log in to the TSOSI Data Contribution Hub.
+Use the link below to log in to the Data Contribution Hub.
 It's valid for 15 minutes and can only be used once.
 
 {link}
@@ -37,6 +37,24 @@ If you didn't ask for it, you can ignore this e-mail.
 
 The TSOSI team
 """
+
+
+INVITATION_EMAIL_SUBJECT = "Your access to the TSOSI Data Contribution Hub"
+INVITATION_EMAIL_MESSAGE = """Hello,
+
+You've been added as a member of {organization} on the TSOSI Data
+Contribution Hub. {rights}
+
+To log in, go to {login_url} and enter this e-mail address: a login link is
+then sent to it.
+
+The TSOSI team
+"""
+INVITATION_RIGHTS_SUPPORTS = (
+    "You can declare and confirm your organization's supports, and edit its "
+    "public page."
+)
+INVITATION_RIGHTS_PAGE = "You can edit your organization's public page."
 
 
 def run_in_background(func: Callable, *args) -> None:
@@ -88,6 +106,30 @@ def send_login_link(user, next_path: str = "") -> None:
         # Sent from DEFAULT_FROM_EMAIL
         None,
         [user.email],
+    )
+
+
+def send_invitation(membership: Membership) -> None:
+    """
+    Tell a new member how to log in to their organization's Hub. No login
+    link: it would expire before being read.
+    """
+    rights = (
+        INVITATION_RIGHTS_SUPPORTS
+        if membership.can_declare_supports
+        else INVITATION_RIGHTS_PAGE
+    )
+    run_in_background(
+        send_mail,
+        INVITATION_EMAIL_SUBJECT,
+        INVITATION_EMAIL_MESSAGE.format(
+            organization=membership.entity.name,
+            rights=rights,
+            login_url=f"{app_settings.FRONTEND_URL}/hub/login",
+        ),
+        # Sent from DEFAULT_FROM_EMAIL
+        None,
+        [membership.user.email],
     )
 
 

@@ -4,6 +4,7 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect
@@ -12,6 +13,7 @@ from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from simple_history.admin import SimpleHistoryAdmin
 
+from tsosi.api.hub.session import send_invitation
 from tsosi.app_settings import app_settings
 from tsosi.data.hub_changes import submission_changes
 from tsosi.data.hub_publication import (
@@ -179,19 +181,34 @@ class InfrastructureDetailsAdmin(SimpleHistoryAdmin):
 class MembershipForm(forms.ModelForm):
     """
     A member is added by e-mail: the user is created if it doesn't exist.
+    They can be sent an invitation e-mail, only when added.
     """
 
     email = forms.EmailField()
+    send_invitation = forms.BooleanField(
+        label="Send an invitation e-mail",
+        required=False,
+        initial=True,
+        help_text="Tells the new member how to log in to their "
+        "organization's Hub, once saved. Only for an active membership.",
+    )
 
     class Meta:
         model = Membership
-        fields = ["email", "entity", "status", "can_declare_supports"]
+        fields = [
+            "email",
+            "entity",
+            "status",
+            "can_declare_supports",
+            "send_invitation",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
             self.fields["email"].initial = self.instance.user.email
             self.fields["email"].disabled = True
+            del self.fields["send_invitation"]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -238,6 +255,7 @@ class MembershipAdmin(admin.ModelAdmin):
     Members of the organizations, who can log in to their Hub and edit
     their organization's profile. Uncheck "Can declare supports" for
     infrastructures and consortia. Revoke a member by changing their status.
+    A new member is sent an invitation e-mail, unless unchecked.
     """
 
     form = MembershipForm
@@ -259,10 +277,31 @@ class MembershipAdmin(admin.ModelAdmin):
     def email(self, membership: Membership) -> str:
         return membership.user.email
 
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        if obj is not None:
+            # The invitation is only sent to the new members
+            fields = [f for f in fields if f != "send_invitation"]
+        return fields
+
     def save_model(self, request, obj, form, change):
         if not change:
             obj.added_by = request.user
         super().save_model(request, obj, form, change)
+        if change or not form.cleaned_data.get("send_invitation"):
+            return
+        if obj.status != MEMBERSHIP_STATUS_ACTIVE:
+            self.message_user(
+                request,
+                "No invitation e-mail was sent: the membership isn't active.",
+                messages.WARNING,
+            )
+            return
+        # Sent once the membership is saved, so that the member can log in
+        transaction.on_commit(lambda: send_invitation(obj))
+        self.message_user(
+            request, f"An invitation e-mail was sent to {obj.user.email}."
+        )
 
     def has_delete_permission(self, request, obj=None) -> bool:
         return False
