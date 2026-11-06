@@ -11,7 +11,9 @@ import {
 import { type Currency, type DeepReadonly } from "@/singletons/ref-data"
 
 const props = defineProps<{
-  showCode?: boolean // Show the selected currency's ISO code instead of its name
+  // Show the selected currency's ISO code instead of its name, e.g. in a
+  // narrow column header. The options keep their names.
+  showCode?: boolean
 }>()
 
 const currency = ref(selectedCurrency.value)
