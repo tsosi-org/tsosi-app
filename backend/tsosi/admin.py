@@ -61,6 +61,7 @@ class EntityAdmin(SimpleHistoryAdmin):
         "short_name",
         "country",
         "website",
+        "open_science_policy_url",
         "tsosi_type",
         "pids",
         "public_page",

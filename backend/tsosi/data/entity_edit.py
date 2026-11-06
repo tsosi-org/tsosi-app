@@ -32,7 +32,7 @@ from tsosi.models.utils import MATCH_SOURCE_MANUAL
 
 logger = logging.getLogger(__name__)
 
-# Entity fields editable from the entity page.
+# Entity fields editable from the Hub's Public page tab.
 ENTITY_FIELDS = [
     "name",
     "short_name",
@@ -42,6 +42,7 @@ ENTITY_FIELDS = [
     "is_barcelona",
     "website",
     "wikipedia_url",
+    "open_science_policy_url",
 ]
 INFRASTRUCTURE_FIELDS = [
     "support_url",

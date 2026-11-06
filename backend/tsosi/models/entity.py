@@ -29,7 +29,7 @@ ENTITY_SCOPE_TO_CHECK = "to_check"
 ENTITY_SCOPE_CHOICES = {
     ENTITY_SCOPE_IN: "In TSOSI's scope",
     ENTITY_SCOPE_OUT: "Not in TSOSI's scope",
-    ENTITY_SCOPE_TO_CHECK: "To be checked by the curation board",
+    ENTITY_SCOPE_TO_CHECK: "To be checked by the TSOSI team",
 }
 
 
@@ -120,6 +120,10 @@ class Entity(TimestampedModel):
     wikipedia_url = models.CharField(max_length=512, null=True)
     wikipedia_extract = models.TextField(null=True)
     date_wikipedia_fetched = models.DateTimeField(null=True)
+
+    # The institution's open science policy page. A manual input, from the
+    # entity's profile edit.
+    open_science_policy_url = models.URLField(max_length=512, null=True)
 
     is_partner = models.BooleanField(default=False)
     # Whether the entity, as a beneficiary, is in TSOSI's scope. Only the
