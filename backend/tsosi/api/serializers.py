@@ -97,6 +97,7 @@ class EntityDetailsSerializer(BaseEntitySerializer):
             "website",
             "wikipedia_url",
             "wikipedia_extract",
+            "open_science_policy_url",
             "infrastructure",
             "date_data_update",
             "ror_types",
@@ -340,6 +341,9 @@ class EntityEditSerializer(serializers.Serializer):
             "https://en.wikipedia.org/wiki/Page_name"
         },
     )
+    open_science_policy_url = serializers.URLField(
+        max_length=512, required=False, allow_null=True, allow_blank=True
+    )
     identifiers = EntityEditIdentifiersSerializer(required=False)
     infrastructure = EntityEditInfrastructureSerializer(required=False)
 
@@ -357,6 +361,7 @@ class EntityEditSerializer(serializers.Serializer):
             "description",
             "website",
             "wikipedia_url",
+            "open_science_policy_url",
         ]:
             if field in attrs and not attrs[field]:
                 attrs[field] = None
