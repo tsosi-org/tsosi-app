@@ -9,7 +9,6 @@ import InputText from "primevue/inputtext"
 import Popover from "primevue/popover"
 import Select from "primevue/select"
 import Skeleton from "primevue/skeleton"
-import Tag from "primevue/tag"
 import {
   computed,
   nextTick,
@@ -53,10 +52,17 @@ export interface CellIcon {
   tooltip: string
 }
 
-export interface CellTag {
-  value: string
-  severity?: string
+// A class and tooltip highlighting the organizations of a cell, e.g. with an
+// outline and background color
+export interface CellHighlight {
+  class: string
   tooltip?: string
+}
+
+// A tag in place of the value, explained by its tooltip, e.g. a status
+export interface CellTag {
+  label: string
+  tooltip: string
 }
 
 // A line of a cell, with a detail that isn't broken across lines
@@ -73,12 +79,17 @@ export interface TableColumnProps extends DataFieldProps {
   nullValueTemplate?: string
   // Icon with a tooltip displayed after the value, for some rows
   iconGetter?: (item: Record<string, any>) => CellIcon | null
-  // Tag displayed after the value, for some rows
-  tagGetter?: (item: Record<string, any>) => CellTag | null
+  // Highlight of the organizations of an `entityLink` cell, for some rows
+  highlightGetter?: (item: Record<string, any>) => CellHighlight | null
   // Display the value as lines. The label is still used to filter and
   // export the data.
   linesGetter?: (item: Record<string, any>) => CellLine[]
+  // Display the value as a tag with a tooltip, for some rows (`CellTag`)
+  tagGetter?: (item: Record<string, any>) => CellTag | null
   minWidth?: string
+  // Its width with `fixedLayout`, e.g. `8rem`. The columns without one share
+  // the rest.
+  width?: string
   // Text appended to the displayed value, e.g. the currency of an amount
   // that differs from the selected one.
   labelSuffix?: (item: Record<string, any>) => string | null | undefined
@@ -135,6 +146,9 @@ export interface TableProps {
   // The values a row is sorted by, e.g. its saved values while it's edited,
   // so that it doesn't move. Defaults to the row itself.
   sortRow?: (item: Record<string, any>) => Record<string, any>
+  // The columns keep their `width`, whatever their content, e.g. inputs or
+  // the rows of the page. The table is at least `fixedLayout.minWidth` wide.
+  fixedLayout?: { minWidth: string; actionsWidth?: string }
 }
 const props = defineProps<TableProps>()
 const slots = defineSlots<{
@@ -159,6 +173,16 @@ const appliedFilters: Ref<{ [columnId: string]: string | null | undefined }> =
   ref({})
 const filteredData: Ref<Array<Record<string, any>>> = ref([])
 const minWidthWithFilter = "100px"
+
+function columnStyle(column: TableColumnProps): string | undefined {
+  if (props.fixedLayout) {
+    return column.width ? `width: ${column.width}` : undefined
+  }
+  if (column.minWidth) {
+    return `min-width: ${column.minWidth}`
+  }
+  return column.filter?.enable ? `min-width: ${minWidthWithFilter}` : undefined
+}
 const useFilters = computed(
   () => !props.skeleton && props.data.length >= minDataForFilters,
 )
@@ -639,6 +663,11 @@ function isColumnFiltered(column: TableColumnProps): boolean {
     }"
     v-model:filters="filters"
     :filterDisplay="filters ? 'row' : undefined"
+    :tableStyle="
+      props.fixedLayout
+        ? `table-layout: fixed; min-width: ${props.fixedLayout.minWidth}`
+        : undefined
+    "
   >
     <!--
       The DataTable's slots are always given: a conditional slot would make
@@ -690,13 +719,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         pcColumnFilterButton: { style: 'display: none;' },
         pcColumnFilterClearButton: { style: 'display: none;' },
       }"
-      :style="
-        column.minWidth
-          ? `min-width: ${column.minWidth}`
-          : column.filter?.enable
-            ? `min-width: ${minWidthWithFilter}`
-            : undefined
-      "
+      :style="columnStyle(column)"
     >
       <!-- Header template -->
       <template #header>
@@ -804,7 +827,11 @@ function isColumnFiltered(column: TableColumnProps): boolean {
               </div>
               <div
                 class="entity-links-container"
-                :class="{ multiple: column.field == 'agents' }"
+                :class="[
+                  { multiple: column.field == 'agents' },
+                  column.highlightGetter?.(data)?.class,
+                ]"
+                v-tooltip.bottom="column.highlightGetter?.(data)?.tooltip"
               >
                 <EntityLinkDataAtom
                   v-for="(entityData, index) of getEntityLinkRows(data, column)"
@@ -821,13 +848,6 @@ function isColumnFiltered(column: TableColumnProps): boolean {
               >
                 <font-awesome-icon :icon="column.iconGetter(data)!.icon" />
               </span>
-              <Tag
-                v-if="column.tagGetter?.(data)"
-                v-tooltip.bottom="column.tagGetter(data)!.tooltip"
-                class="cell-tag"
-                :value="column.tagGetter(data)!.value"
-                :severity="column.tagGetter(data)!.severity"
-              />
             </div>
           </template>
           <template v-else-if="column.type == 'pageLink'">
@@ -858,6 +878,17 @@ function isColumnFiltered(column: TableColumnProps): boolean {
               v-if="column.nullValueTemplate && !formatCellLabel(data, column)"
               v-html="column.nullValueTemplate"
             ></div>
+            <template v-else-if="column.tagGetter">
+              <span
+                v-if="column.tagGetter(data)"
+                v-tooltip.bottom="column.tagGetter(data)!.tooltip"
+                class="cell-tag"
+                tabindex="0"
+                :aria-label="`${column.tagGetter(data)!.label}: ${column.tagGetter(data)!.tooltip}`"
+              >
+                {{ column.tagGetter(data)!.label }}
+              </span>
+            </template>
             <div v-else-if="column.linesGetter">
               <div
                 v-for="(line, index) of column.linesGetter(data)"
@@ -890,7 +921,14 @@ function isColumnFiltered(column: TableColumnProps): boolean {
       </template>
     </Column>
 
-    <Column v-if="props.buttons || slots.actions">
+    <Column
+      v-if="props.buttons || slots.actions"
+      :style="
+        props.fixedLayout?.actionsWidth
+          ? `width: ${props.fixedLayout.actionsWidth}`
+          : undefined
+      "
+    >
       <template #header>
         <div class="row-buttons header-buttons">
           <slot name="actionsHeader" />
@@ -1010,14 +1048,20 @@ function isColumnFiltered(column: TableColumnProps): boolean {
   color: var(--p-neutral-500);
 }
 
+.cell-tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--p-neutral-300);
+  border-radius: 1rem;
+  background: var(--p-neutral-50);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  cursor: help;
+}
+
 .cell-icon {
   margin-left: 0.4em;
   color: var(--p-neutral-500);
-}
-
-.cell-tag {
-  flex-shrink: 0;
-  white-space: nowrap;
 }
 
 .inline-container {

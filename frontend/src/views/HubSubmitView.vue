@@ -288,12 +288,6 @@ async function submit() {
                 <strong>{{ item.count }}</strong> {{ item.label }}
               </li>
             </ul>
-            <p v-if="notPublicCount" class="hint">
-              {{ notPublicCount }}
-              {{ notPublicCount == 1 ? "change is" : "changes are" }} about
-              infrastructures not in TSOSI's scope yet: their supports aren't on
-              the public page until they are.
-            </p>
             <p v-if="waitingCount" class="hint">
               The changes already waiting for approval aren't included.
             </p>

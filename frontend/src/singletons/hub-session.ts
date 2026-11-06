@@ -133,6 +133,17 @@ export function canEditEntity(entityId: string): boolean {
   return !!member && (member.is_staff || member.organization?.id == entityId)
 }
 
+/**
+ * Whether the visitor may be logged in: they have the CSRF cookie, set once
+ * they opened the Hub. The public pages only load the session then, so that
+ * public visitors don't make an extra request.
+ */
+export function mayHaveSession(): boolean {
+  return state.loaded
+    ? !!state.member
+    : /(?:^|;\s*)csrftoken=/.test(document.cookie)
+}
+
 export function hasLoginToken(): boolean {
   return loginToken !== null
 }

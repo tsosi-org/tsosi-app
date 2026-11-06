@@ -67,19 +67,20 @@ function organizations(
 }
 
 describe("SearchBar in the Hub", () => {
-  it("picks an organization among the results, grouped by role", async () => {
+  it("picks an organization among the results, in one list", async () => {
     const requests = organizations({ results: [COUPERIN, DOAJ], lookup: null })
     await mountSearch({ hub: true })
     await type("op")
     expect(requests[0].params.get("search")).toBe("op")
-    expect(groupTitles()).toEqual(["Infrastructures", "Supporters"])
-    // The infrastructures first, then the option adding one
+    // Not grouped by role: in the order of the results, then the option
+    // adding one
+    expect(groupTitles()).toEqual([])
     expect(resultTexts()).toEqual([
-      "DOAJ",
       "Couperin",
-      "Not found? Add a new organization",
+      "DOAJ",
+      "Not found? Add an organization",
     ])
-    results()[0].click()
+    results()[1].click()
     expect(wrapper!.emitted("select")).toEqual([
       [expect.objectContaining({ id: DOAJ.id })],
     ])
@@ -97,57 +98,39 @@ describe("SearchBar in the Hub", () => {
     expect(results()).toEqual([])
   })
 
-  it("adds an organization from the record of its ID, or its name", async () => {
-    const record = {
-      registry: "ror",
-      identifier: "02feahw73",
-      name: "CNRS",
-      country: "FR",
-      website: null,
-    }
-    organizations({
-      results: [],
-      lookup: { registry: "ror", identifier: "02feahw73", record, error: null },
-    })
-    await mountSearch({ hub: true })
-    await type("02feahw73")
-    expect(resultTexts()).toEqual([
-      "Add from ROR: CNRS",
-      "Not found? Add a new organization",
-    ])
-    results()[0].click()
-    expect(wrapper!.emitted("addRecord")).toEqual([[record]])
-
-    await type("New lab")
-    results().at(-1)!.click()
-    expect(wrapper!.emitted("add")).toEqual([["New lab"]])
-  })
-
-  it("shows the errors, which can't be picked", async () => {
+  it("adds an organization missing from TSOSI from the text searched", async () => {
+    // The record of an ID missing from TSOSI is looked up by the panel adding
+    // it, not offered here
     organizations({
       results: [],
       lookup: {
         registry: "ror",
         identifier: "02feahw73",
-        record: null,
-        error: "No ROR record has this ID.",
+        record: { registry: "ror", identifier: "02feahw73", name: "CNRS" },
+        error: null,
       },
     })
-    await mountSearch({ hub: true })
+    await mountSearch({ hub: true, addLabel: "Add an infrastructure" })
     await type("02feahw73")
-    expect(resultTexts()[0]).toBe("No ROR record has this ID.")
+    expect(resultTexts()).toEqual(["Not found? Add an infrastructure"])
+    results()[0].click()
+    expect(wrapper!.emitted("add")).toEqual([["02feahw73"]])
+    expect(wrapper!.emitted()).not.toHaveProperty("addRecord")
+  })
+
+  it("shows the errors, which can't be picked", async () => {
+    organizations({}, 500)
+    await mountSearch({ hub: true })
+    await type("arxiv")
+    expect(resultTexts()).toEqual([
+      "The search failed. Please try again.",
+      "Not found? Add an organization",
+    ])
     results()[0].click()
     // Still open, nothing picked
     expect(results()).toHaveLength(2)
     expect(wrapper!.emitted()).not.toHaveProperty("select")
     expect(wrapper!.emitted()).not.toHaveProperty("add")
-
-    organizations({}, 500)
-    await type("arxiv")
-    expect(resultTexts()).toEqual([
-      "The search failed. Please try again.",
-      "Not found? Add a new organization",
-    ])
   })
 
   it("is used with the keyboard", async () => {

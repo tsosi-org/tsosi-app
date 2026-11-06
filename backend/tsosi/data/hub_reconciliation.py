@@ -1,9 +1,10 @@
 """
-Reconciliation in the Data Contribution Hub: the saved supports that may be
-the one an organization is entering (matches), and the possible duplicates
-among its saved supports. Both use the criteria of the ingestion's
-deduplication (`match_candidate`), the amount excepted: a support declared
-with another amount may still be the same.
+Reconciliation in the Data Contribution Hub: the possible duplicates among
+an organization's saved supports, shown once a support is saved, and the
+published supports that a new one may be (checked again on publication).
+Both use the criteria of the ingestion's deduplication (`match_candidate`),
+the amount excepted: a support declared with another amount may still be
+the same.
 
 The saved supports are the rows of the organization's supports table: its
 published supports (keyed by transfer ID), with the values of their pending
@@ -136,18 +137,6 @@ def matching_rows(
         if match is not None:
             matches.append((key, match == MATCH_AMOUNT_DIFFERS))
     return sorted(matches, key=lambda m: m[1])
-
-
-def find_matches(
-    entity: Entity, transfer: Transfer, exclude: str | None = None
-) -> list[tuple[str, bool]]:
-    """
-    The organization's saved supports that may be the transfer being
-    entered (see `matching_rows`), the row being edited excepted.
-    """
-    rows = saved_supports(entity, list(own_supports(entity)))
-    rows.pop(exclude, None)
-    return matching_rows(transfer, rows)
 
 
 def find_published_matches(entity: Entity, transfer: Transfer) -> list[str]:

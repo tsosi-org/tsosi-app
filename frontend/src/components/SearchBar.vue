@@ -14,10 +14,7 @@ import {
 import { RouterLink, useRouter } from "vue-router"
 
 import EntityLinkDataAtom from "@/components/atoms/EntityLinkDataAtom.vue"
-import {
-  searchOrganizations,
-  type RegistryRecord,
-} from "@/singletons/hub-organizations"
+import { searchOrganizations } from "@/singletons/hub-organizations"
 import {
   entitySearch,
   getEntities,
@@ -32,10 +29,11 @@ import { getEntityUrl } from "@/utils/url-utils"
 
 /**
  * The search over the organizations, their results shown with their name
- * and icon, by role. On the site (header), it searches the public ones, its
- * results opening their page. In the Hub (`hub`), it picks an organization,
- * public or not; a ROR or Wikidata ID missing from TSOSI gives its record,
- * to add the organization, and the last option adds one from its name.
+ * and icon. On the site (header), it searches the public ones, grouped by
+ * role, its results opening their page. In the Hub (`hub`), it picks an
+ * organization, public or not, in a single list; the last option adds one
+ * missing from TSOSI (`addLabel`), from its ROR or Wikidata ID or its name,
+ * in the panel under the row.
  */
 export interface SearchBarProps {
   fixed?: boolean
@@ -47,15 +45,15 @@ export interface SearchBarProps {
   hub?: boolean
   invalid?: boolean
   autofocus?: boolean
+  // The Hub's last option, e.g. "Add an infrastructure"
+  addLabel?: string
 }
 
 const props = defineProps<SearchBarProps>()
 const emit = defineEmits<{
   select: [entity: DeepReadonly<Entity>]
-  // Add the organization of a ROR or Wikidata record
-  addRecord: [record: RegistryRecord]
-  // Add an organization from its name, the one searched
-  add: [name: string]
+  // Add an organization missing from TSOSI, from the text searched
+  add: [text: string]
 }>()
 
 const router = useRouter()
@@ -64,21 +62,22 @@ const component = useTemplateRef("search-bar")
 const input = useTemplateRef("input")
 const resultsElement = useTemplateRef("results")
 
-// A result: an organization, the record of an ID, adding an organization
-// from the name searched, or an error
+// A result: an organization, adding an organization missing from TSOSI, or
+// an error
 interface Option {
   id: string
   category: string
   entity?: DeepReadonly<Entity>
-  record?: RegistryRecord
   action?: "add" | "error"
   text?: string
 }
 
-// The results are grouped by role, then the Hub's other options
+// The site's results are grouped by role; the Hub's are in a single list,
+// then its other options
 const categories: { id: string; title?: string }[] = [
   { id: "infra", title: "Infrastructures" },
   { id: "supporter", title: "Supporters" },
+  { id: "organizations" },
   { id: "actions" },
 ]
 
@@ -97,6 +96,8 @@ const searchStatus = ref<DebounceStatus>("idle")
 let searchCount = 0
 
 const isFocused = ref(false)
+// The results are shown, e.g. for Escape to close them first in the Hub
+const resultsShown = ref(false)
 const isOpen = computed(
   () =>
     !props.asGrowingButton || searchTerm.value.length > 0 || isFocused.value,
@@ -178,27 +179,15 @@ async function hubOptions(query: string): Promise<Option[]> {
       text: "The search failed. Please try again.",
     })
   } else {
+    // A ROR or Wikidata ID missing from TSOSI (`lookup`) is added from the
+    // panel under the row
     list.push(
       ...result.results.map((entity) => ({
         id: entity.id,
-        category: roleCategory(entity),
+        category: "organizations",
         entity,
       })),
     )
-    if (result.lookup?.record) {
-      list.push({
-        id: "__record",
-        category: "actions",
-        record: result.lookup.record,
-      })
-    } else if (result.lookup?.error) {
-      list.push({
-        id: "__error",
-        category: "actions",
-        action: "error",
-        text: result.lookup.error,
-      })
-    }
   }
   list.push({ id: "__add", category: "actions", action: "add", text: query })
   return list
@@ -297,8 +286,6 @@ function choose(option: Option) {
     router.push(getEntityUrl(option.entity as Entity))
   } else if (option.entity) {
     emit("select", option.entity)
-  } else if (option.record) {
-    emit("addRecord", option.record)
   } else {
     emit("add", option.text!)
   }
@@ -339,10 +326,11 @@ function onFocusOut() {
 }
 
 /**
- * Unset the top and bottom positions computed by PrimeVue, so that the
- * results stick to the fixed header's search bar.
+ * Mark the results shown, and unset the top and bottom positions computed by
+ * PrimeVue, so that the results stick to the fixed header's search bar.
  */
 function onPopoverShow() {
+  resultsShown.value = true
   if (!props.fixed) {
     return
   }
@@ -356,11 +344,6 @@ function onPopoverShow() {
   }
   element.style.top = "unset"
   element.style.bottom = "unset"
-}
-
-const registryLabels: Record<string, string> = {
-  ror: "ROR",
-  wikidata: "Wikidata",
 }
 
 const entityField = {
@@ -392,6 +375,7 @@ const entityField = {
         :invalid="props.invalid"
         role="combobox"
         aria-autocomplete="list"
+        :aria-expanded="resultsShown"
         @input="debouncedSearch"
         @focus="show"
         @focusout="onFocusOut"
@@ -410,6 +394,7 @@ const entityField = {
       :dt="{ gutter: 0 }"
       :style="`--width: ${props.hub ? overlayWidth : elementWidth};`"
       @show="onPopoverShow()"
+      @hide="resultsShown = false"
     >
       <div class="search-bar-overlay" @mousedown.prevent>
         <div v-if="!options.length" class="search-howto">
@@ -465,14 +450,9 @@ const entityField = {
                 :dataField="entityField"
                 noLink
               />
-              <span v-else-if="option.record" class="add-option">
-                <font-awesome-icon :icon="['fas', 'plus']" />
-                Add from {{ registryLabels[option.record.registry] }}:
-                {{ option.record.name ?? option.record.identifier }}
-              </span>
               <span v-else-if="option.action == 'add'" class="add-option">
                 <font-awesome-icon :icon="['fas', 'plus']" />
-                Not found? Add a new organization
+                Not found? {{ props.addLabel ?? "Add an organization" }}
               </span>
               <span v-else>{{ option.text }}</span>
             </component>

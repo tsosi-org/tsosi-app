@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import InputText from "primevue/inputtext"
-import { useId } from "vue"
+import { onMounted, ref, useId } from "vue"
 
 import {
   DATE_FIELDS,
@@ -13,7 +13,8 @@ import {
 /**
  * The dates of the support being edited, in the panel under its row: the
  * five dates of the data collection schema. The invalid ones are flagged;
- * the panel lists the errors.
+ * the panel lists the errors. Opened, the focus is on the first one, the
+ * invoice date.
  */
 const props = defineProps<{ errors: DeclarationErrors }>()
 const dates = defineModel<Record<DateFieldName, string>>("dates", {
@@ -21,6 +22,16 @@ const dates = defineModel<Record<DateFieldName, string>>("dates", {
 })
 
 const idPrefix = useId()
+
+const root = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  root.value
+    ?.querySelector<HTMLInputElement>(
+      `#${CSS.escape(`${idPrefix}-${DATE_FIELDS[0]}`)}`,
+    )
+    ?.focus()
+})
 
 const dateFormat = "A year (2024), a month (2024-03) or a day (2024-03-13)."
 const requiredDate =
@@ -42,7 +53,7 @@ function dateInvalid(field: DateFieldName): boolean {
 </script>
 
 <template>
-  <div class="support-dates">
+  <div ref="root" class="support-dates">
     <div class="date-fields">
       <div v-for="field of DATE_FIELDS" :key="field" class="field">
         <label :for="`${idPrefix}-${field}`">
