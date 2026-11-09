@@ -11,7 +11,7 @@ const { isContactModalOpen, closeContactModal } = useContactModal()
 </script>
 
 <template>
-  <div class="container">
+  <div class="contact">
     <Dialog
       v-model:visible="isContactModalOpen"
       modal

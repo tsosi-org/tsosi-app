@@ -46,8 +46,12 @@ https://primevue.org/theming/styled/#colors
   --color-success: var(--p-green-500);
   --color-error: var(--p-red-500);
 
-  --container-width: 1280px;
-  --small-container-width: 950px;
+  /* Page layout: section backgrounds are full width, their content is
+  capped by .container (main.css) and kept off the edges by the gutter. */
+  --container-width: 1440px;
+  --narrow-container-width: 960px;
+  --wide-container-width: 1760px;
+  --gutter: clamp(16px, 5vw, 64px);
   --big-header-height: 150px;
   --regular-header-height: 50px;
 

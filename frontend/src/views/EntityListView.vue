@@ -211,7 +211,7 @@ const filteredEntities = computed(() => {
 </script>
 
 <template>
-  <div class="container">
+  <div class="container wide">
     <div class="container title-container">
       <h1 class="title">
         Explore the funding network of<br />open science infrastructure

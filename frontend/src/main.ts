@@ -4,6 +4,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGithub, faLinkedin } from "@fortawesome/free-brands-svg-icons";
 import {
   faAngleRight,
+  faArrowRight,
   faArrowUpRightFromSquare,
   faAt,
   faBars,
@@ -20,6 +21,7 @@ import {
   faEllipsis,
   faEllipsisVertical,
   faEnvelope,
+  faEye,
   faGlobe,
   faHouse,
   faImage,
@@ -29,6 +31,7 @@ import {
   faMagnifyingGlass,
   faMagnifyingGlassChart,
   faPen,
+  faScaleBalanced,
   faSpinner,
   faSquareCheck,
   faSquareXmark,
@@ -116,6 +119,7 @@ app.use(DialogService)
 // Registering used Font Awesome icons
 const usedIcons = [
   faAngleRight,
+  faArrowRight,
   faArrowUpRightFromSquare,
   faAt,
   faBars,
@@ -132,6 +136,7 @@ const usedIcons = [
   faEllipsisVertical,
   faEllipsis,
   faEnvelope,
+  faEye,
   faGithub,
   faLinkedin,
   faBullhorn,
@@ -144,6 +149,7 @@ const usedIcons = [
   faMagnifyingGlass,
   faMagnifyingGlassChart,
   faPen,
+  faScaleBalanced,
   faSpinner,
   faSquareCheck,
   faSquareXmark,

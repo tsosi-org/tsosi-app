@@ -1,9 +1,10 @@
 from collections import OrderedDict
 
-from django.db.models import Count
+from django.db.models import Count, Max
 from django.http import JsonResponse
+from django.views.decorators.cache import cache_page
 
-from tsosi.models import Entity
+from tsosi.models import DataLoadSource, Entity, Transfer
 
 
 def stats_view(request):
@@ -41,9 +42,25 @@ def stats_view(request):
         safe=False,
     )
 
-
-# tsosi_type : {
-#     "company": 22,
-#     "funder": 16,
-# },
-# other_ror_types :
+@cache_page(60 * 15)
+def home_figures_view(request):
+    """
+    Key figures of the home page
+    """
+    transfers = Transfer.objects.filter(
+        merged_into__isnull=True, is_future=False
+    )
+    amount_usd = sum(
+        (amounts or {}).get("USD") or 0
+        for amounts in transfers.values_list("amounts_clc", flat=True)
+    )
+    date_data_update = DataLoadSource.objects.aggregate(
+        date=Max("date_data_obtained")
+    )["date"]
+    return JsonResponse(
+        {
+            "supports": transfers.count(),
+            "amount_usd": round(amount_usd),
+            "date_data_update": date_data_update,
+        }
+    )

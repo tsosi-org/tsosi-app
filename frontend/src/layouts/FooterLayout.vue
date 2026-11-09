@@ -131,7 +131,7 @@ footer {
 
 .footer-wrapper {
   --after-height: 2px;
-  padding: 2em;
+  padding-block: 2em;
 
   h3 {
     color: inherit;

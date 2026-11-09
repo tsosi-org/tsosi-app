@@ -253,7 +253,6 @@ header.home {
   flex-direction: column;
   align-items: start;
   justify-content: center;
-  margin-left: 15px;
 }
 
 .main-container {
@@ -320,7 +319,6 @@ header.home {
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-right: 15px;
 
   .search-bar {
     margin-right: 15px;

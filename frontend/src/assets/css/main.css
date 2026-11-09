@@ -10,12 +10,26 @@
   font-weight: normal;
 }
 
+/* Content column: capped width, centred, with a gutter on both sides.
+- default: page sections, home, entity pages
+- .narrow: running text (static pages), for readable line lengths
+- .wide: data-heavy content (grids, tables) that benefits from width */
 .container {
   max-width: var(--container-width);
   margin: 0 auto;
+  padding-inline: var(--gutter);
 
-  &.small {
-    max-width: var(--small-container-width);
+  &.narrow {
+    max-width: var(--narrow-container-width);
+  }
+
+  &.wide {
+    max-width: var(--wide-container-width);
+  }
+
+  /* The outer container already holds the gutter */
+  & .container {
+    padding-inline: 0;
   }
 }
 
@@ -26,7 +40,7 @@
 
   .regular-content {
     width: 100%;
-    padding: min(1rem, 3vw);
+    padding-block: min(1rem, 3vw);
     /* background-color: var(--color-background-component); */
     border-radius: 10px;
     display: inline-block;

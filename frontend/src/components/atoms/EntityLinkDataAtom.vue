@@ -27,7 +27,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <div class="container">
+  <div class="entity-link-data">
     <RouterLink
       v-if="entity"
       class="entity-link"
@@ -60,7 +60,7 @@ onBeforeMount(() => {
 </template>
 
 <style scoped>
-.container {
+.entity-link-data {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
