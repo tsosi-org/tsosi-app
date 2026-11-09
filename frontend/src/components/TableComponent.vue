@@ -531,7 +531,11 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         />
       </template>
       <template v-else-if="column.type == 'country'" #body="{ data }">
-        <Country :code="getItemLabel(data, column)" onlyFlag />
+        <Country
+          :code="getItemLabel(data, column)"
+          onlyFlag
+          class="country-cell"
+        />
       </template>
       <template v-else #body="{ data }">
         <div
@@ -664,6 +668,10 @@ function isColumnFiltered(column: TableColumnProps): boolean {
 
 .entity-links-container {
   display: flex;
+}
+
+.country-cell {
+  justify-content: center;
 }
 
 .entity-links-container.multiple {
