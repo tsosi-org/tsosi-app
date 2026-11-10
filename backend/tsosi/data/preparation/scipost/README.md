@@ -27,7 +27,9 @@ The data fetching uses OAuth2 authentication against SciPost identity provider w
 
 The SciPost data already contains ROR identifier.
 
-We provide additional entity ID <-> (ROR ID, wikidata ID, website) mapping in the [entity_mapping.py](./entity_mapping.py) file.
+We provide additional entity ID <-> (ROR ID, wikidata ID, website) mapping in the [entity_mapping.py](./entity_mapping.py) file. An entry there takes precedence over the identifiers given by SciPost, e.g. to attribute the supports of a university to its library.
+
+[entity_mapping.py](./entity_mapping.py) also holds `AGENT_MAPPING`, to set another intermediary than the coordinator of a collective (e.g. the California Digital Library rather than the University of California System), without changing the coordinator as an emitter.
 
 The script will log the entities without enrichment data.
 

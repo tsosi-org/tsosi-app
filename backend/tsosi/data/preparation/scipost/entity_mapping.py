@@ -65,4 +65,27 @@ ENTITY_MAPPING = [
         "wikidata_id": None,
         "website_url": None,
     },
+    # Erasmus University Rotterdam: the supports come from its library.
+    {
+        "organization_id": 430,
+        "ror_id": None,
+        "wikidata_id": "Q130493218",
+        "website_url": None,
+    },
+]
+
+
+# Intermediaries to set instead of a collective's coordinator, matched on the
+# coordinator's SciPost organization ID. Unlike ENTITY_MAPPING, the
+# organization is left as is when it is the emitter of a subsidy.
+AGENT_MAPPING = [
+    # The University of California System coordinates the UC collective, but
+    # the subsidies go through the California Digital Library.
+    {
+        "organization_id": 551,
+        "name": "California Digital Library",
+        "ror_id": "03yrm5c26",
+        "wikidata_id": None,
+        "website_url": None,
+    },
 ]
