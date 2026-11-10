@@ -45,6 +45,14 @@ TSOSI_SCIPOST_AUTH = {
     "client_id": "",
     "client_secret": "",
 }
+# GitHub "Homepage news" board of the home page news (see tsosi/data/news.py)
+# TSOSI_NEWS_BOARD = {
+#     "owner": "tsosi-org",
+#     "project_number": 0,
+#     "app_id": "",
+#     "installation_id": "",
+#     "private_key": "",
+# }
 TSOSI_API_WHITELIST_IPS = ["127.0.0.1"]
 CACHES = {
     "default": {

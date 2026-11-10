@@ -16,6 +16,7 @@ from .identifier import (
     Registry,
 )
 from .membership import Membership
+from .news import NewsItem, NewsProposal, Newsletter
 from .source import DataLoadSource, DataSource
 from .transfer import Transfer
 

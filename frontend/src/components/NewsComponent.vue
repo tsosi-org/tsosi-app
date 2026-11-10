@@ -1,32 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue"
-
 export interface Post {
   id: string
   date: Date
-  download_url: string
+  keyPoints: string[]
+  // HTML content of the newsletter, only for the detail view
+  html?: string
 }
 interface Props extends Post {
   fullPage?: boolean
 }
 const props = defineProps<Props>()
-const html_content = ref<string>("")
-const keypoints = ref<string[]>([])
 const title = `${props.date.toLocaleString("default", { month: "long", timeZone: "UTC" })} ${props.date.getUTCFullYear()}`
-
-onMounted(async () => {
-  const res = await fetch(props.download_url)
-  const raw_html = await res.text()
-  const dom = document.createElement("html")
-  dom.innerHTML = raw_html
-  keypoints.value =
-    dom.querySelectorAll("h2,h3").length > 0
-      ? Array.from(dom.querySelectorAll("h2,h3")).map(
-          (h2) => h2.textContent?.trim() || "",
-        )
-      : []
-  html_content.value = dom.querySelector("body")?.innerHTML || ""
-})
 </script>
 
 <template>
@@ -36,10 +20,12 @@ onMounted(async () => {
       <h2 class="post-title">{{ title }}</h2>
     </RouterLink>
     <div>
-      <div class="post-desc" v-if="keypoints.length > 0">
+      <div class="post-desc" v-if="props.keyPoints.length > 0">
         <p class="post-desc-intro">Keypoints:</p>
         <ul>
-          <li v-for="(kp, index) in keypoints" :key="index">{{ kp }}</li>
+          <li v-for="(kp, index) in props.keyPoints" :key="index">
+            {{ kp }}
+          </li>
         </ul>
       </div>
       <RouterLink class="post-read-more" :to="`/pages/newsletter/${props.id}`">
@@ -50,7 +36,7 @@ onMounted(async () => {
   <!-- List view -->
   <article class="post" v-else>
     <h2 class="post-title">{{ title }}</h2>
-    <div v-html="html_content"></div>
+    <div v-html="props.html"></div>
   </article>
 </template>
 

@@ -1,10 +1,10 @@
 from collections import OrderedDict
 
 from django.db.models import Count, Max
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.views.decorators.cache import cache_page
 
-from tsosi.models import DataLoadSource, Entity, Transfer
+from tsosi.models import DataLoadSource, Entity, NewsItem, Newsletter, Transfer
 
 
 def stats_view(request):
@@ -43,6 +43,7 @@ def stats_view(request):
         safe=False,
     )
 
+
 @cache_page(60 * 15)
 def home_figures_view(request):
     """
@@ -64,4 +65,54 @@ def home_figures_view(request):
             "amount_usd": round(amount_usd),
             "date_data_update": date_data_update,
         }
+    )
+
+
+def news_view(request):
+    """
+    The news shown on the home page
+    """
+    news = [
+        {
+            "kind": item.kind,
+            "title": item.title,
+            "text": item.text,
+            "url": item.url,
+            "date": item.date.isoformat() if item.date else None,
+            "image": (
+                request.build_absolute_uri(item.image.url)
+                if item.image
+                else None
+            ),
+            "image_alt": item.image_alt,
+        }
+        for item in NewsItem.objects.order_by("position")
+    ]
+    return JsonResponse(news, safe=False)
+
+
+def newsletter_data(newsletter: Newsletter) -> dict:
+    return {
+        "id": newsletter.name,
+        "date": newsletter.date.isoformat(),
+        "key_points": newsletter.key_points,
+    }
+
+
+def newsletters_view(request):
+    """The newsletters, latest first (see `tsosi.data.newsletters`)."""
+    return JsonResponse(
+        [newsletter_data(n) for n in Newsletter.objects.order_by("-date")],
+        safe=False,
+    )
+
+
+def newsletter_view(request, name: str):
+    """A newsletter, with the HTML content of its body."""
+    try:
+        newsletter = Newsletter.objects.get(name=name)
+    except Newsletter.DoesNotExist:
+        raise Http404()
+    return JsonResponse(
+        {**newsletter_data(newsletter), "html": newsletter.html}
     )

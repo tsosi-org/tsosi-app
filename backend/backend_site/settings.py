@@ -42,6 +42,8 @@ TSOSI_OPTIONAL_SETTINGS = [
     # Settings used to generate data files locally
     "TSOSI_DATA_EXPORT_FOLDER",
     "TSOSI_SCIPOST_AUTH",
+    # Only used to refresh the news of the home page
+    "TSOSI_NEWS_BOARD",
     # Only used by the `ingest_all` management command
     "TSOSI_TO_INGEST_DIR",
     # Only used by background tasks & Celery
@@ -312,6 +314,10 @@ TSOSI_CELERY_BEAT_SCHEDULE = {
     "hourly-clc-fields-updates": {
         "task": "tsosi.tasks.update_clc_fields_hourly",
         "schedule": crontab(minute="30"),
+    },
+    "hourly-news-refresh": {
+        "task": "tsosi.tasks.refresh_news",
+        "schedule": crontab(minute="10"),
     },
     # Daily
     "periodic-identifier-update": {

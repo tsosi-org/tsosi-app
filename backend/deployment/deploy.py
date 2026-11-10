@@ -367,15 +367,16 @@ def deploy(
         ssh_client=ssh_client,
     )
 
-    # Fetch blog content and setup cron to fetch it daily.
+    # Fetch blog content and newsletters, then refreshed hourly by the
+    # `refresh_news` task.
     ssh_execute(
         f"cd {release_dir}/backend && {poetry_bin} run python3 manage.py fetch_blog",
         ssh_client=ssh_client,
     )
-    # ssh_execute(
-    #     f"sudo su -c \"echo '0 2 * * * deployer cd /var/www/current/backend && {poetry_bin} run python3 manage.py fetch_blog' > /etc/cron.d/tsosi\"",
-    #     ssh_client=ssh_client,
-    # )
+    ssh_execute(
+        f"cd {release_dir}/backend && {poetry_bin} run python3 manage.py refresh_newsletters",
+        ssh_client=ssh_client,
+    )
 
     # Update main symlink to the deployed version
     ssh_execute(

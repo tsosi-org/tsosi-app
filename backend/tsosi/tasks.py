@@ -10,7 +10,7 @@ from celery.utils.log import get_task_logger
 from redis.lock import Lock
 
 from .app_settings import app_settings
-from .data import data_updates, enrichment, hub_publication, ingestion
+from .data import data_updates, enrichment, hub_publication, ingestion, news
 from .data.currencies import currency_rates
 from .data.task_result import TaskResult
 from .models.static_data import REGISTRY_ROR, REGISTRY_WIKIDATA
@@ -289,6 +289,11 @@ def refresh_scipost_data():
 @shared_task(base=TsosiLockedTask)
 def refresh_barcelona_data():
     data_updates.refresh_barcelona_data()
+
+
+@shared_task(base=TsosiLockedTask)
+def refresh_news():
+    news.refresh_news()
 
 
 ## Signal handlers to trigger related tasks

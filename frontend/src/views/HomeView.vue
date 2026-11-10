@@ -31,7 +31,7 @@ onBeforeMount(() => {
 onMounted(() => {
   window.addEventListener("scroll", updateHeaderHome)
   loadFigures()
-  loadLatestBlogPost()
+  loadNews()
 })
 
 onUnmounted(() => {
@@ -135,32 +135,77 @@ function formatDate(date: string | Date): string {
   })
 }
 
-// News
-interface BlogPostCard {
+// News, picked on the GitHub "Homepage news" board (backend `tsosi/data/news.py`)
+type NewsKind = "linkedin" | "blog" | "newsletter" | "other"
+
+interface NewsItem {
+  kind: NewsKind
   title: string
-  summary: string
-  date: string
+  text: string
   url: string
+  date: string | null
+  image: string | null
+  image_alt: string
 }
 
-const latestBlogPost = ref<BlogPostCard | null>(null)
+const newsLabels: Record<NewsKind, string> = {
+  linkedin: "LinkedIn",
+  blog: "Blog",
+  newsletter: "Newsletter",
+  other: "News",
+}
 
-async function loadLatestBlogPost() {
+const newsLinkTexts: Record<NewsKind, string> = {
+  linkedin: "Read on LinkedIn",
+  blog: "Read the post",
+  newsletter: "Read the newsletter",
+  other: "Read more",
+}
+
+const news = ref<NewsItem[]>([])
+
+async function loadNews() {
+  const result = await get("news", true)
+  if (!result.error && Array.isArray(result.data) && result.data.length) {
+    news.value = result.data as NewsItem[]
+    return
+  }
+  // Until news are picked on the board
+  const post = await fetchLatestBlogPost()
+  if (post) {
+    news.value = [post]
+  }
+}
+
+async function fetchLatestBlogPost(): Promise<NewsItem | null> {
   const res = await fetch("/pages/blog/index.json").catch(() => null)
   if (!res?.ok) {
-    return
+    return null
   }
   const data = await res.json().catch(() => null)
   const post = data?.posts?.[0]
   if (!post) {
-    return
+    return null
   }
-  latestBlogPost.value = {
+  return {
+    kind: "blog",
     title: post.title,
-    summary: htmlToText(post.summary),
-    date: post.date,
+    text: htmlToText(post.summary),
     url: `/pages/blog/${post.permalink.split("/")[2]}/`,
+    date: post.date,
+    image: null,
+    image_alt: "",
   }
+}
+
+/**
+ * The route of the blog posts and newsletters, opened in the app.
+ */
+function newsRoute(item: NewsItem): string | null {
+  if (item.kind != "blog" && item.kind != "newsletter") {
+    return null
+  }
+  return new URL(item.url, window.location.origin).pathname
 }
 
 function htmlToText(html: string): string {
@@ -172,10 +217,6 @@ function htmlToText(html: string): string {
 }
 
 const linkedInUrl = "https://www.linkedin.com/company/tsosi/"
-const linkedInPlaceholders = [
-  "[First lines of the latest LinkedIn post, cut at three lines.]",
-  "[First lines of the second LinkedIn post, cut at three lines.]",
-]
 
 // Governance
 const leadLogos = [
@@ -322,32 +363,44 @@ const memberLogos = [
         </div>
         <div class="news-row">
           <article
-            v-for="(text, index) of linkedInPlaceholders"
-            :key="index"
+            v-for="(item, index) of news"
+            :key="`${index}-${item.url}`"
             class="news-card"
           >
-            <div class="news-media">[Post image]</div>
-            <div class="news-body">
-              <p class="news-meta">LinkedIn · [Date]</p>
-              <p class="news-text">{{ text }}</p>
-              <ExternalLink :href="linkedInUrl" class="strong-link">
-                Read on LinkedIn
-              </ExternalLink>
+            <div v-if="item.image" class="news-media">
+              <img
+                :src="item.image"
+                :alt="item.image_alt"
+                class="news-image"
+                loading="lazy"
+              />
             </div>
-          </article>
-          <article v-if="latestBlogPost" class="news-card">
-            <div class="news-media news-media-dark">
+            <div v-else class="news-media news-media-dark">
               <img src="@/assets/img/logo_white.svg" alt="" />
             </div>
             <div class="news-body">
               <p class="news-meta">
-                Blog · {{ formatDate(latestBlogPost.date) }}
+                {{ newsLabels[item.kind] }}
+                <template v-if="item.date">
+                  · {{ formatDate(item.date) }}
+                </template>
               </p>
-              <h3>{{ latestBlogPost.title }}</h3>
-              <p class="news-summary">{{ latestBlogPost.summary }}</p>
-              <RouterLink :to="latestBlogPost.url" class="strong-link">
-                Read the post
+              <h3 v-if="item.title">{{ item.title }}</h3>
+              <p
+                v-if="item.text"
+                :class="item.kind == 'linkedin' ? 'news-text' : 'news-summary'"
+                v-text="item.text"
+              ></p>
+              <RouterLink
+                v-if="newsRoute(item)"
+                :to="newsRoute(item)!"
+                class="strong-link"
+              >
+                {{ newsLinkTexts[item.kind] }}
               </RouterLink>
+              <ExternalLink v-else :href="item.url" class="strong-link">
+                {{ newsLinkTexts[item.kind] }}
+              </ExternalLink>
             </div>
           </article>
         </div>
@@ -768,9 +821,14 @@ const memberLogos = [
 
 /* News */
 .news-row {
+  --news-gap: 24px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-  gap: 24px;
+  /* At most 3 columns, a row of fewer cards keeps their width */
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, max(300px, (100% - 2 * var(--news-gap)) / 3)), 1fr)
+  );
+  gap: var(--news-gap);
 }
 
 @media (max-width: 640px) {
@@ -828,8 +886,15 @@ const memberLogos = [
   }
 
   & .strong-link {
+    margin-top: auto;
     font-size: 15px;
   }
+}
+
+.news-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .news-meta {
@@ -841,12 +906,16 @@ const memberLogos = [
 }
 
 .news-text {
-  flex-grow: 1;
   font-size: 17px;
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .news-summary {
-  flex-grow: 1;
   color: var(--home-muted);
   display: -webkit-box;
   -webkit-line-clamp: 4;
