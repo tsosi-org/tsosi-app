@@ -103,8 +103,9 @@ const baseColumns: TableColumnProps[] = [
     field: amountColumn,
     type: "number",
     sortable: true,
-    nullValueTemplate: '<span class="data-label hidden-amount">hidden</span>',
-    info: "The amount of the support may be hidden. See <a href='/pages/faq#amounts-hidden'>the FAQ</a>",
+    nullValueTemplate:
+      '<span class="data-label hidden-amount">undisclosed</span>',
+    info: "The amount of the support may be undisclosed. See <a href='/pages/faq#amounts-undisclosed'>the FAQ</a>",
     currencySelector: true,
   },
   {

@@ -298,16 +298,16 @@ shuffleArray(partners)
       </StaticSectionAtom>
 
       <StaticSectionAtom
-        id="amounts-hidden"
-        title="Why are the support amounts hidden sometimes?"
+        id="amounts-undisclosed"
+        title="Why are the support amounts undisclosed sometimes?"
       >
         <p>
           While using the app, you may notice that some amounts are visible
-          while others are hidden. This is because each infrastructure that
+          while others are undisclosed. This is because each infrastructure that
           shares data with TSOSI can choose whether or not to display the
-          amounts. For example, on the DOAJ page, amounts are hidden by default,
-          but when a university becomes a TSOSI data provider, the amount of its
-          support to DOAJ is shown.
+          amounts. For example, on the DOAJ page, amounts are undisclosed by
+          default, but when a university becomes a TSOSI data provider, the
+          amount of its support to DOAJ is shown.
         </p>
       </StaticSectionAtom>
 
