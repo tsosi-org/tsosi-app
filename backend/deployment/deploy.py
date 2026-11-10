@@ -11,18 +11,20 @@ import datetime
 import json
 import os
 import subprocess
+import tarfile
+import tempfile
 import time
 from pathlib import Path
 
 import paramiko
-from scp import SCPClient
 from termcolor import colored
 
 from .servers import SERVERS, ServerConfig, get_server
 
 TSOSI_REPO_DIR = Path(__file__).resolve().parent.parent.parent
 RELEASES_MAX_NB = 3
-SCP_SOCKET_TIMEOUT_SECONDS = 300
+UPLOAD_TIMEOUT_SECONDS = 300
+SSH_KEEPALIVE_SECONDS = 30
 
 
 def create_ssh_client(server: ServerConfig):
@@ -39,48 +41,43 @@ def create_ssh_client(server: ServerConfig):
     ssh_client.load_host_keys(Path.home() / ".ssh/known_hosts")
 
     ssh_client.connect(server.address, username=server.user, look_for_keys=True)
+    ssh_client.get_transport().set_keepalive(SSH_KEEPALIVE_SECONDS)
     return ssh_client
 
 
-def scp_execute(
-    local_path: str,
-    remote_path: str,
-    server: ServerConfig | None = None,
-    ssh_client: paramiko.SSHClient | None = None,
-    socket_timeout_seconds: int = SCP_SOCKET_TIMEOUT_SECONDS,
+def upload_dir(
+    local_dir: str,
+    remote_dir: str,
+    server: ServerConfig,
+    ssh_client: paramiko.SSHClient,
 ):
     """
-    Perform a scp command.
-    You can either:
-        -   pass a `ServerConfig` object. A SSH connection will be opened only
-            for this command execution and closed afterwards.
-        -   pass a `SSHClient` object. The command will be executed using this
-            client.
+    Upload the content of `local_dir` into `remote_dir` (which must exist)
+    as a single tar.gz archive, then extract it on the server.
     """
-    close_client = ssh_client is None
-    if ssh_client is None:
-        if server is None:
-            raise Exception("Either `server` or `ssh_client` is required.")
-        ssh_client = create_ssh_client(server)
     print(
-        f"{colored("RUNNING: ", "blue")} {colored(f"scp {local_path} {remote_path}", "yellow")}"
+        f"{colored("RUNNING: ", "blue")} {colored(f"upload {local_dir}/* -> {remote_dir}", "yellow")}"
     )
-    transport = ssh_client.get_transport()
-    transport.set_keepalive(120)
-    if transport is None:
-        raise Exception("The underlying SSH transport object is None.")
-
-    # Default scp timeout is short and can fail on large frontend bundles.
-    with SCPClient(transport, socket_timeout=socket_timeout_seconds) as scp:
-        scp.put(
-            local_path,
-            remote_path,
-            recursive=True,
-            preserve_times=False,
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        archive_path = Path(tmp_dir) / "upload.tar.gz"
+        with tarfile.open(archive_path, "w:gz") as tar:
+            tar.add(local_dir, arcname=".")
+        subprocess.run(
+            [
+                "scp",
+                "-q",
+                "-o",
+                "ServerAliveInterval=30",
+                str(archive_path),
+                f"{server.user}@{server.address}:{remote_dir}/upload.tar.gz",
+            ],
+            check=True,
+            timeout=UPLOAD_TIMEOUT_SECONDS,
         )
-
-    if close_client:
-        ssh_client.close()
+    ssh_execute(
+        f"cd {remote_dir} && tar -xzf upload.tar.gz && rm upload.tar.gz",
+        ssh_client=ssh_client,
+    )
 
 
 def ssh_execute(
@@ -119,7 +116,7 @@ def ssh_execute(
         print(out)
 
     elif not out and not err:
-        print("")
+        print()
 
     if close_client:
         ssh_client.close()
@@ -204,7 +201,7 @@ def deploy(
     if resp not in ["Y", "y"]:
         print(colored(f"Aborted by input {resp}", "red"))
         return
-    print("")
+    print()
 
     # Check that the current branch is the same as the input one
     current_branch = run_local_cmd(
@@ -363,11 +360,10 @@ def deploy(
 
     # Copy front files in release folder
     ssh_execute(f"mkdir -p {release_dir}/public", ssh_client=ssh_client)
-    scp_execute(
-        f"{frontend_dir}/dist", f"{release_dir}/public", ssh_client=ssh_client
-    )
-    ssh_execute(
-        f"cd {release_dir}/public && mv dist/* . && rm -r dist/",
+    upload_dir(
+        f"{frontend_dir}/dist",
+        f"{release_dir}/public",
+        server=server,
         ssh_client=ssh_client,
     )
 
