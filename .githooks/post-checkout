@@ -1,0 +1,117 @@
+#!/bin/sh
+# After a branch switch that changes the tsosi migrations, syncs the local
+# database with the new branch, once confirmed:
+# - rolls back the tsosi migrations the new branch doesn't have, with the
+#   migration files of the previous commit (exported from git into a temporary
+#   folder, so no checkout is needed), which drops their data;
+# - applies the migrations of the new branch.
+# Without a terminal (e.g. the VS Code branch picker), it only prints and shows
+# a desktop notification: run `.githooks/post-checkout` from the repository
+# root afterwards to sync. It never fails the checkout.
+# Enable the repository hooks with:
+#   git config core.hooksPath .githooks
+
+if [ $# -eq 0 ]; then
+    # Manual run: sync with the branch checked out before this one.
+    set -- "$(git rev-parse -q --verify '@{-1}')" "$(git rev-parse HEAD)" 1
+    [ -n "$1" ] || { echo "No previous branch in the reflog." >&2; exit 1; }
+fi
+
+# $3 is 1 for a branch checkout, 0 for a file checkout.
+[ "$3" = 1 ] || exit 0
+# First checkout after a clone, or same commit.
+case "$1" in 0000000*) exit 0 ;; esac
+[ "$1" = "$2" ] && exit 0
+# The checkouts of a rebase: run migrate once it's done.
+GIT_DIR="$(git rev-parse --git-dir)" || exit 0
+[ -d "$GIT_DIR/rebase-merge" ] || [ -d "$GIT_DIR/rebase-apply" ] && exit 0
+
+git diff --quiet "$1" "$2" -- backend/tsosi/migrations && exit 0
+
+OLD="$1"
+OLD_NAME="$(git name-rev --name-only --refs='refs/heads/*' "$OLD" 2>/dev/null)"
+OLD_NAME="${OLD_NAME:-$(git rev-parse --short "$OLD")}"
+ROOT="$(git rev-parse --show-toplevel)" || exit 0
+
+say() { echo "post-checkout: $*" >&2; }
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 \
+        && notify-send -a git "TSOSI migrations" "$1" 2>/dev/null
+}
+
+if ! command -v poetry >/dev/null 2>&1; then
+    say "the tsosi migrations changed, poetry not found to check the database."
+    exit 0
+fi
+cd "$ROOT/backend" || exit 0
+PYTHON="$(poetry env info -e 2>/dev/null)"
+[ -x "$PYTHON" ] || { say "no poetry environment in backend/."; exit 0; }
+
+# One "key value" line per result.
+STATE="$(timeout 60 "$PYTHON" manage.py shell -v 0 -c '
+from django.db import connection
+from django.db.migrations.loader import MigrationLoader
+
+loader = MigrationLoader(connection, ignore_no_migrations=True)
+disk = {n for a, n in loader.disk_migrations if a == "tsosi"}
+applied = {n for a, n in loader.applied_migrations if a == "tsosi"}
+common = sorted(applied & disk)
+print("db", connection.settings_dict["NAME"])
+print("missing", " ".join(sorted(applied - disk)))
+print("pending", " ".join(sorted(disk - applied)))
+print("target", common[-1].split("_")[0] if common else "zero")
+' 2>/dev/null)" || {
+    say "the tsosi migrations changed, could not check the database (is it running?)."
+    exit 0
+}
+value() { printf '%s\n' "$STATE" | sed -n "s/^$1 //p"; }
+DB="$(value db)"
+MISSING="$(value missing)"
+PENDING="$(value pending)"
+TARGET="$(value target)"
+[ -z "$MISSING" ] && [ -z "$PENDING" ] && exit 0
+
+count() { echo "$1" | wc -w; }
+if [ -n "$MISSING" ]; then
+    say "$DB has $(count "$MISSING") tsosi migration(s) this branch doesn't" \
+        "have, from $OLD_NAME: $MISSING"
+    say "  to roll back to $TARGET (drops their data)."
+fi
+if [ -n "$PENDING" ]; then
+    say "$DB lacks $(count "$PENDING") tsosi migration(s) of this branch: $PENDING"
+fi
+
+if ! { exec </dev/tty; } 2>/dev/null; then
+    say "no terminal to confirm: run .githooks/post-checkout from the" \
+        "repository root to sync the database."
+    notify "$DB doesn't match this branch's migrations. Run .githooks/post-checkout to sync it."
+    exit 0
+fi
+printf 'post-checkout: sync %s with this branch now? [y/N] ' "$DB" >&2
+read -r answer
+case "$answer" in
+    [yY]*) ;;
+    *) say "skipped. Run .githooks/post-checkout later to sync."; exit 0 ;;
+esac
+
+if [ -n "$MISSING" ]; then
+    TMP="$(mktemp -d)" || exit 0
+    trap 'rm -rf "$TMP"' EXIT
+    # The previous commit's backend, with the local settings, so the reverse
+    # operations run with the code they were written for.
+    git -C "$ROOT" archive "$OLD" backend | tar -x -C "$TMP" \
+        && ln -s "$ROOT/backend/backend_site/settings_local.py" \
+            "$TMP/backend/backend_site/settings_local.py" \
+        && say "rolling back tsosi to $TARGET with the files of $OLD_NAME ..." \
+        && (cd "$TMP/backend" && "$PYTHON" manage.py migrate tsosi "$TARGET") \
+        || {
+            say "the rollback failed, the database was not migrated. Roll back" \
+                "by hand: git checkout $OLD_NAME && (cd backend && poetry run" \
+                "python manage.py migrate tsosi $TARGET) && git checkout -"
+            exit 0
+        }
+fi
+say "applying the migrations of this branch ..."
+"$PYTHON" manage.py migrate || say "migrate failed."
+exit 0
