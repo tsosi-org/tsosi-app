@@ -40,7 +40,7 @@ const params = {
 <style scoped>
 h1 {
   text-align: center;
-  font-size: 3rem;
+  font-size: var(--text-display);
 }
 
 .not-found {

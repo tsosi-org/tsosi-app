@@ -1,44 +1,27 @@
 <script setup lang="ts">
-import Card from "primevue/card"
-import Carousel from "primevue/carousel"
-import { computed, onBeforeMount, onMounted, onUnmounted } from "vue"
+import { computed, onBeforeMount, onMounted, onUnmounted, ref } from "vue"
 
-import cosoLogoUrl from "@/assets/img/coso-black-logo.svg"
-import gricadLogoUrl from "@/assets/img/logo_gricad_noir.svg"
-import ugaLogoUrl from "@/assets/img/logo_UGA_noir_cmjn.jpg"
-import mesrLogoUrl from "@/assets/img/mesr_logo_noir.png"
+import cosoLogoUrl from "@/assets/img/coso_logo_couleur.svg"
+import couperinLogoUrl from "@/assets/img/couperin_logo.png"
+import doajLogoUrl from "@/assets/img/doaj_logo.svg"
+import gricadLogoUrl from "@/assets/img/logo_gricad_couleur.png"
+import ugaLogoUrl from "@/assets/img/logo_UGA_couleur.svg"
+import mesrLogoUrl from "@/assets/img/mesr_logo_couleur.png"
+import oapenDoabLogoUrl from "@/assets/img/oapen_doab_logo.png"
+import pciLogoUrl from "@/assets/img/pci_logo.png"
+import scipostLogoUrl from "@/assets/img/scipost_logo.png"
+import scossLogoUrl from "@/assets/img/scoss_logo.png"
 import ExternalLink from "@/components/atoms/ExternalLinkAtom.vue"
-import ImageAtom from "@/components/atoms/ImageAtom.vue"
-import TsosiIconAtom from "@/components/atoms/TsosiIconAtom.vue"
-import EntityMap from "@/components/EntityMap.vue"
-import { isDesktop, useMediaQuery } from "@/composables/useMediaQuery"
+import { get } from "@/services/api"
 import { setBigHeader, togglePageNoHeader } from "@/singletons/fixedHeaderStore"
-import { getEmitters, getPartners, type Entity } from "@/singletons/ref-data"
+import {
+  getEmitters,
+  getInfrastructures,
+  getPartners,
+  type Entity,
+} from "@/singletons/ref-data"
 import { shuffleArray } from "@/utils/data-utils"
 import { getEntityUrl } from "@/utils/url-utils"
-
-const partners = getPartners() as Entity[]
-shuffleArray(partners)
-
-const emitters = getEmitters() as Entity[]
-const countries: string[] = []
-
-emitters.forEach((e) => {
-  if (e.country && !countries.includes(e.country)) {
-    countries.push(e.country)
-  }
-})
-
-const breakPoint1 = useMediaQuery("(min-width: 850px)", false)
-const breakPoint2 = useMediaQuery("(min-width: 550px)", false)
-const partnerLogoWidth = computed(() => {
-  if (breakPoint1.value) {
-    return "175px"
-  } else if (breakPoint2.value) {
-    return "150px"
-  }
-  return "100px"
-})
 
 onBeforeMount(() => {
   setBigHeader(true)
@@ -47,6 +30,8 @@ onBeforeMount(() => {
 
 onMounted(() => {
   window.addEventListener("scroll", updateHeaderHome)
+  loadFigures()
+  loadNews()
 })
 
 onUnmounted(() => {
@@ -59,210 +44,495 @@ function updateHeaderHome() {
   setBigHeader(window.scrollY < 70)
 }
 
-const citations = [
-  "TSOSI spotlights all the organizations that have supported open science infrastructure",
-  "The more we highlight those who have funded, the more funders we will attract",
-  "TSOSI aims to make funding to open science infrastructure the norm",
+const MOSAIC_SIZE = 15
+const partners = getPartners() as Entity[]
+const partnersWithLogo = partners.filter((e) => e.logo)
+shuffleArray(partnersWithLogo)
+const mosaicPartners = partnersWithLogo.slice(0, MOSAIC_SIZE)
+
+function tilePosition(k: number) {
+  return { "--i": Math.floor(k / 4), "--j": k % 4 }
+}
+
+const emitters = getEmitters()
+const countryCount = new Set(emitters.map((e) => e.country).filter((c) => c))
+  .size
+const infrastructureCount = getInfrastructures().length
+
+interface HomeFigures {
+  supports: number
+  amount_usd: number
+  date_data_update: string | null
+}
+
+const homeFigures = ref<HomeFigures | null>(null)
+
+async function loadFigures() {
+  const result = await get("home-figures", true)
+  if (!result.error && result.data) {
+    homeFigures.value = result.data as HomeFigures
+  }
+  animateCount()
+}
+
+const numberFormat = new Intl.NumberFormat("en-US")
+const amountFormat = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 1,
+})
+
+// Figures count up from 0 once the API figures are loaded
+const COUNT_DURATION = 1400
+const countProgress = ref(0)
+
+function animateCount() {
+  const start = performance.now()
+  const step = (now: number) => {
+    const t = Math.min((now - start) / COUNT_DURATION, 1)
+    countProgress.value = 1 - (1 - t) ** 3 // ease-out
+    if (t < 1) {
+      requestAnimationFrame(step)
+    }
+  }
+  requestAnimationFrame(step)
+}
+
+function countUp(value: number, format: Intl.NumberFormat): string {
+  return format.format(Math.round(value * countProgress.value))
+}
+
+const figures = computed(() => [
+  {
+    value: countUp(emitters.length, numberFormat),
+    label: "organizations",
+  },
+  {
+    value: countUp(infrastructureCount, numberFormat),
+    label: "infrastructures",
+  },
+  { value: countUp(countryCount, numberFormat), label: "countries" },
+  {
+    value: homeFigures.value
+      ? countUp(homeFigures.value.supports, numberFormat)
+      : "–",
+    label: "financial contributions",
+  },
+  {
+    value: homeFigures.value
+      ? countUp(homeFigures.value.amount_usd, amountFormat)
+      : "–",
+    label: "total of all contributions",
+  },
+])
+
+function formatDate(date: string | Date): string {
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })
+}
+
+// News, picked on the GitHub "Homepage news" board (backend `tsosi/data/news.py`)
+type NewsKind = "linkedin" | "blog" | "newsletter" | "other"
+
+interface NewsItem {
+  kind: NewsKind
+  title: string
+  text: string
+  url: string
+  date: string | null
+  image: string | null
+  image_alt: string
+}
+
+const newsLabels: Record<NewsKind, string> = {
+  linkedin: "LinkedIn",
+  blog: "Blog",
+  newsletter: "Newsletter",
+  other: "News",
+}
+
+const newsLinkTexts: Record<NewsKind, string> = {
+  linkedin: "Read on LinkedIn",
+  blog: "Read more",
+  newsletter: "Read more",
+  other: "Read more",
+}
+
+const news = ref<NewsItem[]>([])
+
+async function loadNews() {
+  const result = await get("news", true)
+  if (!result.error && Array.isArray(result.data) && result.data.length) {
+    news.value = result.data as NewsItem[]
+    return
+  }
+  // Until news are picked on the board
+  const post = await fetchLatestBlogPost()
+  if (post) {
+    news.value = [post]
+  }
+}
+
+async function fetchLatestBlogPost(): Promise<NewsItem | null> {
+  const res = await fetch("/pages/blog/index.json").catch(() => null)
+  if (!res?.ok) {
+    return null
+  }
+  const data = await res.json().catch(() => null)
+  const post = data?.posts?.[0]
+  if (!post) {
+    return null
+  }
+  return {
+    kind: "blog",
+    title: post.title,
+    text: htmlToText(post.summary),
+    url: `/pages/blog/${post.permalink.split("/")[2]}/`,
+    date: post.date,
+    image: null,
+    image_alt: "",
+  }
+}
+
+/**
+ * The route of the blog posts and newsletters, opened in the app.
+ */
+function newsRoute(item: NewsItem): string | null {
+  if (item.kind != "blog" && item.kind != "newsletter") {
+    return null
+  }
+  return new URL(item.url, window.location.origin).pathname
+}
+
+function htmlToText(html: string): string {
+  return (
+    new DOMParser().parseFromString(html, "text/html").body.textContent || ""
+  )
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+const linkedInUrl = "https://www.linkedin.com/company/tsosi/"
+
+// Governance
+const leadLogos = [
+  {
+    name: "Université Grenoble Alpes",
+    src: ugaLogoUrl,
+    href: "https://www.univ-grenoble-alpes.fr/en",
+    size: 72,
+  },
+  {
+    name: "GRICAD",
+    src: gricadLogoUrl,
+    href: "https://gricad.univ-grenoble-alpes.fr/en/",
+    size: 84,
+  },
+  {
+    name: "French Ministry of Higher Education, Research and Space",
+    src: mesrLogoUrl,
+    href: "https://www.enseignementsup-recherche.gouv.fr/fr",
+    size: 100,
+  },
+  {
+    name: "French Committee for Open Science (Ouvrir la science)",
+    src: cosoLogoUrl,
+    href: "https://www.ouvrirlascience.fr/home/",
+    size: 46,
+  },
+]
+
+const memberLogos = [
+  {
+    name: "OAPEN & DOAB",
+    src: oapenDoabLogoUrl,
+    href: "https://www.doabooks.org/",
+    size: 58,
+  },
+  {
+    name: "Directory of Open Access Journals",
+    src: doajLogoUrl,
+    href: "https://doaj.org/",
+    size: 44,
+  },
+  {
+    name: "SCOSS",
+    src: scossLogoUrl,
+    href: "https://scoss.org/",
+    size: 53,
+  },
+  {
+    name: "Peer Community In",
+    src: pciLogoUrl,
+    href: "https://peercommunityin.org/",
+    size: 84,
+  },
+  {
+    name: "SciPost",
+    src: scipostLogoUrl,
+    href: "https://scipost.org/",
+    size: 53,
+  },
+  {
+    name: "Couperin",
+    src: couperinLogoUrl,
+    href: "https://www.couperin.org/",
+    size: 75,
+  },
 ]
 </script>
 
 <template>
-  <div id="home" :class="{ mobile: !isDesktop }">
-    <section class="banner">
-      <div class="container">
-        <div class="content-section">
-          <Carousel
-            :value="citations"
-            :num-visible="1"
-            :num-scroll="1"
-            circular
-            :autoplay-interval="5000"
-          >
-            <template #item="slotProps">
-              <div class="citation">
-                <h2>
-                  <span>
-                    {{ slotProps.data }}
-                  </span>
-                </h2>
-              </div>
-            </template>
-          </Carousel>
+  <div id="home">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-main">
+        <div class="hero-text">
+          <h1 id="hero-title">
+            Making support for open infrastructures visible
+          </h1>
+          <p class="lead">
+            TSOSI gathers financial support provided to open infrastructures,
+            organizes this data with identifiers and then makes it openly
+            available to everyone
+          </p>
+          <div class="hero-actions">
+            <RouterLink to="/explore" class="btn btn-primary">
+              Explore the data
+              <font-awesome-icon :icon="['fas', 'arrow-right']" />
+            </RouterLink>
+            <!-- <RouterLink to="/new-provider" class="strong-link">
+              Become a data provider
+            </RouterLink> -->
+          </div>
         </div>
-      </div>
-    </section>
-
-    <section class="banner banner-dark">
-      <div class="container">
-        <div class="regular-content content-section">
-          <h2 class="banner-title data-summary">
-            So far, TSOSI includes
-            <span class="number-emphasis">
-              {{ emitters.length }}
-            </span>
-            organizations from
-            <span class="number-emphasis">
-              {{ countries.length.toString() }}
-            </span>
-            countries that have supported open science infrastructure.
-          </h2>
-
-          <EntityMap
-            class="home-map"
-            :id="'home-supporters-map'"
-            :supporters="emitters"
-            :data-loaded="true"
-            :export-title-base="'overall supporters'"
-          />
-        </div>
-      </div>
-    </section>
-
-    <section id="partner-banner" class="banner">
-      <div class="container">
-        <div class="regular-content content-section">
-          <h2 class="banner-title" style="text-align: center">
-            TSOSI data comes from the following organizations.
-          </h2>
-          <h2 style="text-align: center">
-            To be part of this, see how to
-            <RouterLink to="/new-provider"
-              >become a <TsosiIconAtom /> TSOSI data provider</RouterLink
-            >
-          </h2>
-          <div class="partner-cards">
-            <RouterLink
-              :to="getEntityUrl(entity)"
-              v-for="entity of partners"
+        <div class="hero-mosaic">
+          <ul class="mosaic" aria-label="TSOSI data providers">
+            <li
+              v-for="(entity, k) of mosaicPartners"
               :key="entity.id"
-              class="card-link"
+              :style="tilePosition(k)"
             >
-              <Card class="partner-card">
-                <template #header>
-                  <ImageAtom
-                    :src="entity.logo"
-                    :width="partnerLogoWidth"
-                    :center="true"
-                  />
+              <RouterLink
+                :to="getEntityUrl(entity)"
+                class="dia"
+                :title="entity.name"
+              >
+                <span class="dia-bg" aria-hidden="true"></span>
+                <img :src="entity.logo" :alt="entity.name" loading="lazy" />
+              </RouterLink>
+            </li>
+            <li :style="tilePosition(mosaicPartners.length)">
+              <RouterLink
+                to="/new-provider"
+                class="dia dia-cta"
+                title="Become a data provider"
+              >
+                <span class="dia-bg" aria-hidden="true"></span>
+                <span class="dia-text">Your<br />logo<br />here?</span>
+              </RouterLink>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="figures-band">
+        <dl class="container figures">
+          <div v-for="figure of figures" :key="figure.label" class="figure">
+            <dt>{{ figure.label }}</dt>
+            <dd>{{ figure.value }}</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- News -->
+    <section class="band band-light" aria-labelledby="news-title">
+      <div class="container stack">
+        <div class="section-head">
+          <h2 id="news-title">Latest news</h2>
+          <div class="section-links">
+            <ExternalLink :href="linkedInUrl">LinkedIn</ExternalLink>
+            <RouterLink to="/pages/blog">Blog</RouterLink>
+            <RouterLink to="/pages/newsletter">Newsletter</RouterLink>
+          </div>
+        </div>
+        <div class="news-row">
+          <article
+            v-for="(item, index) of news"
+            :key="`${index}-${item.url}`"
+            class="news-card"
+          >
+            <div v-if="item.image" class="news-media">
+              <!-- The whole image, over a blurred copy filling the frame -->
+              <img
+                :src="item.image"
+                alt=""
+                class="news-image-backdrop"
+                loading="lazy"
+              />
+              <img
+                :src="item.image"
+                :alt="item.image_alt"
+                class="news-image"
+                loading="lazy"
+              />
+            </div>
+            <div v-else class="news-media news-media-dark">
+              <img src="@/assets/img/logo_white.svg" alt="" />
+            </div>
+            <div class="news-body">
+              <p class="news-meta">
+                {{ newsLabels[item.kind] }}
+                <template v-if="item.date">
+                  | {{ formatDate(item.date) }}
                 </template>
-              </Card>
-            </RouterLink>
+              </p>
+              <h3 v-if="item.title">{{ item.title }}</h3>
+              <!-- As in the newsletter list -->
+              <div
+                v-if="item.kind == 'newsletter' && item.text"
+                class="news-keypoints"
+              >
+                <p class="news-keypoints-intro">Keypoints:</p>
+                <ul>
+                  <li v-for="(point, i) of item.text.split('\n')" :key="i">
+                    {{ point }}
+                  </li>
+                </ul>
+              </div>
+              <p
+                v-else-if="item.text"
+                :class="item.kind == 'linkedin' ? 'news-text' : 'news-summary'"
+                v-text="item.text"
+              ></p>
+              <RouterLink
+                v-if="newsRoute(item)"
+                :to="newsRoute(item)!"
+                class="strong-link news-card-link"
+              >
+                {{ newsLinkTexts[item.kind] }}
+              </RouterLink>
+              <ExternalLink
+                v-else
+                :href="item.url"
+                class="strong-link news-card-link"
+              >
+                {{ newsLinkTexts[item.kind] }}
+              </ExternalLink>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- What TSOSI does -->
+    <section class="band" aria-labelledby="what-title">
+      <div class="container stack">
+        <h2 id="what-title">What TSOSI does</h2>
+        <div class="missions">
+          <div class="mission">
+            <font-awesome-icon :icon="['fas', 'eye']" class="mission-icon" />
+            <h3>We make financial support for open infrastructures visible</h3>
+            <p>
+              Each support links an institution to an infrastructure, with a
+              year and an amount.
+            </p>
+          </div>
+          <div class="mission">
+            <font-awesome-icon
+              :icon="['fas', 'scale-balanced']"
+              class="mission-icon"
+            />
+            <h3>We bring transparency to funding policies</h3>
+            <p>
+              Institutions can show what they contribute and see how others do.
+            </p>
+          </div>
+          <div class="mission">
+            <font-awesome-icon
+              :icon="['fas', 'magnifying-glass']"
+              class="mission-icon"
+            />
+            <h3>We help users explore who funds open infrastructures</h3>
+            <p>
+              Search by institutions, infrastructure or country, and reuse the
+              data through the open API.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="explain-banner" class="banner banner-dark">
-      <div class="container">
-        <div class="regular-content content-section">
-          <h2 class="banner-title" style="text-align: center">
-            How does it work?
-          </h2>
-          <div class="explain-boxes">
-            <div class="explain-box" style="--l-pos: 80px">
-              <h3>
-                1. We collect financial data from <TsosiIconAtom /> TSOSI data
-                providers
-              </h3>
-              <p>
-                We collect financial data from various organization. We started
-                with infrastructures and we have added institutions.
-                <RouterLink to="/new-provider"
-                  >Become a data provider</RouterLink
-                >.
-              </p>
-            </div>
-            <div class="explain-box" style="--l-pos: calc(100% - 80px)">
-              <h3>2. We enrich data with ROR and Wikidata identifiers</h3>
-              <p>
-                Which allows to deduplicate and retrieve descriptions and logos
-                from Wikipedia
-              </p>
-            </div>
-            <div class="explain-box">
-              <h3>3. We ingest data in TSOSI software</h3>
-              <p>
-                So that everyone can explore this data, and wants to contribute
-                to open infrastructure
-              </p>
-            </div>
+    <!-- Governance -->
+    <section class="band band-light" aria-labelledby="gov-title">
+      <div class="container stack">
+        <h2 id="gov-title">Governed by the research community</h2>
+        <div class="governance-lead">
+          <div class="governance-text">
+            <p>
+              TSOSI is led by <b>Université Grenoble Alpes</b>, funded by the
+              <b>French National Fund for Open Science</b>, and operated by
+              <b>GRICAD</b>.
+              <RouterLink to="/pages/about#who-we-are" class="strong-link">
+                See more about our governance
+              </RouterLink>
+            </p>
+          </div>
+          <div class="logo-row lead-logos">
+            <ExternalLink
+              v-for="logo of leadLogos"
+              :key="logo.name"
+              :href="logo.href"
+              class="logo-link"
+            >
+              <img
+                :src="logo.src"
+                :alt="logo.name"
+                :style="{ height: `${logo.size}px` }"
+              />
+            </ExternalLink>
+          </div>
+        </div>
+        <div class="governance-members">
+          <div class="logo-row member-logos">
+            <ExternalLink
+              v-for="logo of memberLogos"
+              :key="logo.name"
+              :href="logo.href"
+              class="logo-link"
+            >
+              <img
+                :src="logo.src"
+                :alt="logo.name"
+                :style="{ height: `${logo.size}px` }"
+              />
+            </ExternalLink>
           </div>
         </div>
       </div>
     </section>
-    <section id="who-is-behind" class="banner">
+
+    <!-- Call to action -->
+    <section class="band" aria-labelledby="cta-title">
       <div class="container">
-        <div class="regular-content content-section">
-          <h2 class="banner-title" style="text-align: center">
-            Who is behind TSOSI?
-          </h2>
-          <div class="partner-cards">
-            <ExternalLink
-              href="https://www.enseignementsup-recherche.gouv.fr/fr"
-              class="card-link"
-            >
-              <Card class="partner-card">
-                <template #header>
-                  <ImageAtom
-                    :src="mesrLogoUrl"
-                    :width="'120px'"
-                    :height="'110px'"
-                    :center="true"
-                  />
-                </template>
-              </Card>
-            </ExternalLink>
-            <ExternalLink
-              href="https://www.ouvrirlascience.fr/home/"
-              class="card-link"
-            >
-              <Card class="partner-card">
-                <template #header>
-                  <ImageAtom
-                    :src="cosoLogoUrl"
-                    :width="'150px'"
-                    :height="'100px'"
-                    :center="true"
-                  />
-                </template>
-              </Card>
-            </ExternalLink>
-            <ExternalLink
-              href="https://www.univ-grenoble-alpes.fr/english/"
-              class="card-link"
-            >
-              <Card class="partner-card">
-                <template #header>
-                  <ImageAtom
-                    :src="ugaLogoUrl"
-                    :width="'100px'"
-                    :height="'100px'"
-                    :center="true"
-                  />
-                </template>
-              </Card>
-            </ExternalLink>
-            <ExternalLink
-              href="https://gricad.univ-grenoble-alpes.fr/en/"
-              class="card-link"
-            >
-              <Card class="partner-card">
-                <template #header>
-                  <ImageAtom
-                    :src="gricadLogoUrl"
-                    :width="'90px'"
-                    :height="'100px'"
-                    :center="true"
-                  />
-                </template>
-              </Card>
-            </ExternalLink>
+        <div class="cta">
+          <div class="cta-text">
+            <h2 id="cta-title">
+              Does your organization support open infrastructures?
+            </h2>
+            <p>
+              Follow the {{ partners.length }} organizations that have already
+              shared data with TSOSI, and make your support visible!
+            </p>
           </div>
-          <div style="text-align: center">
-            <RouterLink :to="'/pages/about'">
-              See governance and partners
-            </RouterLink>
-          </div>
+          <RouterLink to="/new-provider" class="btn btn-dark">
+            Become a data provider
+          </RouterLink>
         </div>
       </div>
     </section>
@@ -270,199 +540,602 @@ const citations = [
 </template>
 
 <style scoped>
-#home > *:first-child {
-  padding-top: 15vh;
+#home {
+  --home-text: var(--p-primary-900);
+  --home-muted: var(--p-primary-700);
+  --home-border: #dfe6ee;
+  --home-light: #f3f6f9;
+  --home-accent: #e7a925;
+  --home-link: #1d6c95;
+  --section-space: clamp(96px, 11vw, 152px);
+  --block-space: clamp(28px, 3vw, 40px);
+
+  color: var(--home-text);
+  font-size: var(--text-base);
+  line-height: 1.6;
+
+  & h1,
+  & h2,
+  & h3 {
+    color: var(--home-text);
+    margin: 0;
+  }
+
+  & h2 {
+    font-size: var(--text-2xl);
+    line-height: 1.2;
+  }
+
+  & h3 {
+    font-size: var(--text-lg);
+    line-height: 1.3;
+  }
+
+  & p {
+    margin: 0;
+  }
+
+  & ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
 }
 
-#home.mobile {
-  .citation,
-  .citation h2 {
-    font-size: 2.8rem;
-  }
+/* Shared pieces */
+.band {
+  padding-block: calc(var(--section-space) / 2);
 
-  .banner-title {
-    font-size: 1.75rem;
-  }
-
-  .grid-2-cols {
-    grid-template-columns: 1fr;
+  &.band-light {
+    background-color: var(--home-light);
   }
 }
 
-.citation {
-  height: 100%;
-  margin: auto auto;
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--block-space);
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px 32px;
+  flex-wrap: wrap;
+}
+
+.section-links {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  font-size: var(--text-base);
+}
+
+.section-links a,
+.strong-link {
+  color: var(--home-link);
+  font-weight: 700;
+
+  &:hover {
+    color: var(--p-primary-900);
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 14px 26px;
+  border-radius: 10px;
+  font-size: var(--text-base);
+  font-weight: 700;
+  text-decoration: none;
+  color: white;
+}
+
+.btn-primary {
+  background-color: var(--home-link);
+
+  &:hover {
+    background-color: #14506f;
+  }
+}
+
+.btn-dark {
+  background-color: var(--p-primary-900);
+
+  &:hover {
+    background-color: var(--p-primary-700);
+  }
+}
+
+.btn:focus-visible,
+.logo-link:focus-visible {
+  outline: 3px solid var(--home-link);
+  outline-offset: 3px;
+}
+
+/* Hero */
+.hero {
+  background-color: var(--home-light);
+  overflow: hidden;
+}
+
+.hero-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--block-space) 48px;
+  padding-block: 32px;
+}
+
+.hero-text {
+  flex: 1 1 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  & h1 {
+    font-size: var(--text-display);
+    line-height: 1.08;
+    text-transform: none;
+    padding: 0;
+    text-align: left;
+  }
+}
+
+.lead {
+  font-size: var(--text-md);
+  color: var(--home-muted);
+  text-wrap: pretty;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  padding-top: 8px;
+
+  & .strong-link {
+    font-size: var(--text-base);
+  }
+}
+
+.hero-mosaic {
+  flex: 1 1 420px;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.mosaic {
+  --t: clamp(56px, 7.2vw, 120px);
+  --gap: 10px;
+  --d: calc(var(--t) * 1.4142);
+  --h: calc((var(--t) + var(--gap)) * 0.7071);
+  position: relative;
+  flex: none;
+  width: calc(6 * var(--h) + var(--d));
+  height: calc(6 * var(--h) + var(--d));
+
+  & li {
+    position: absolute;
+    width: var(--d);
+    height: var(--d);
+    left: calc((3 + var(--j) - var(--i)) * var(--h));
+    top: calc((var(--i) + var(--j)) * var(--h));
+  }
+}
+
+@media (max-width: 700px) {
+  .mosaic {
+    --t: 15vw;
+    --gap: 2vw;
+  }
+}
+
+.dia {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-}
-
-.citation h2 {
-  max-width: 1000px;
-  font-size: 5rem;
-  font-weight: 400;
-  line-height: 1.4;
-}
-
-.logo {
-  max-width: 100%;
-}
-
-.data-summary {
-  padding: min(1rem, 3vw);
-  border-radius: 20px;
-  font-weight: 700;
-}
-
-.banner {
-  width: 100%;
-  padding: 4vh 0;
-
-  &.banner-dark {
-    background-color: var(--p-gray-100);
-  }
-}
-
-.banner-title {
-  font-size: 2.5rem;
-  text-align: left;
-}
-
-.partner-cards {
-  margin: 2rem auto;
-  display: flex;
-  flex-wrap: wrap;
-  row-gap: 1em;
-  column-gap: 2em;
-  justify-content: space-around;
-  max-width: 800px;
-}
-
-.card-link {
-  display: block;
-  text-decoration: unset;
-
-  &:deep(.p-card.partner-card) {
-    padding: 10px;
-    box-shadow: unset;
-  }
-
-  &:deep(.p-card.partner-card .p-card-body) {
-    padding: 0;
-  }
+  text-decoration: none;
+  /* Hover and clicks only on the diamond (.dia-bg), not the square box */
+  pointer-events: none;
 
   &:hover,
   &:focus-visible {
-    text-decoration: underline;
-    outline: unset;
-
-    & :deep(.p-card.partner-card) {
-      box-shadow:
-        rgba(0, 0, 0, 0.1) 0px 1px 5px 5px,
-        rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
-    }
+    z-index: 1;
+    outline: none;
   }
 
-  &:focus-visible {
-    & :deep(.p-card.partner-card) {
-      outline: 2px solid var(--p-primary-color);
+  & img {
+    position: relative;
+    width: 46%;
+    height: 46%;
+    object-fit: contain;
+  }
+}
+
+.dia-bg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--t);
+  height: var(--t);
+  transform: translate(-50%, -50%) rotate(45deg);
+  background-color: white;
+  /* Card style of base.css */
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  pointer-events: auto;
+  transition:
+    border-color 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.dia:hover .dia-bg,
+.dia:focus-visible .dia-bg {
+  border-color: var(--card-border-color-hover);
+}
+
+.dia:focus-visible .dia-bg {
+  border-width: 3px;
+}
+
+.dia-cta {
+  .dia-bg {
+    background-color: var(--home-accent);
+    border-color: var(--home-accent);
+  }
+
+  &:hover .dia-bg {
+    background-color: #f0bd4a;
+  }
+}
+
+.dia-text {
+  position: relative;
+  color: var(--home-text);
+  font-weight: 700;
+  font-size: clamp(10px, 1vw, 14px);
+  line-height: 1.15;
+  text-align: center;
+}
+
+/* Key figures */
+.figures-band {
+  border-top: 1px solid var(--home-border);
+  background-color: white;
+  padding-block: 28px;
+}
+
+.figures {
+  margin-block: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(170px, 40%), 1fr));
+  gap: 20px;
+  text-align: center;
+}
+
+.figure {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+
+  & dt {
+    font-size: var(--text-base);
+    color: var(--home-muted);
+  }
+
+  & dd {
+    margin: 0;
+    font-family: Mount, Verdana, sans-serif;
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* News */
+.news-row {
+  --news-gap: 24px;
+  display: grid;
+  /* At most 3 columns, a row of fewer cards keeps their width */
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, max(300px, (100% - 2 * var(--news-gap)) / 3)), 1fr)
+  );
+  gap: var(--news-gap);
+}
+
+@media (max-width: 640px) {
+  .news-row {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: 82%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 8px;
+
+    & > * {
+      scroll-snap-align: start;
     }
   }
 }
 
-.content-section {
+.news-card {
+  /* The whole card is clickable: its link covers it (.news-card-link) */
+  position: relative;
   display: flex;
   flex-direction: column;
-  row-gap: 4vh;
-}
+  overflow: hidden;
+  background-color: white;
+  /* Card style of base.css */
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  transition: border-color 0.2s ease;
 
-.number-emphasis {
-  font-weight: 700;
-  font-size: 1.15em;
-  color: var(--p-primary-color);
-  padding: 5px;
-  border-radius: 5px;
-  box-shadow: 0 0 6px 1px var(--p-surface-300);
-}
-
-.home-map :deep(.map-container) {
-  height: min(40rem, 75vh);
-}
-
-.explain-box {
-  --b-margin: 5rem;
-  --box-color: var(--b-col, var(--p-surface-300));
-  position: relative;
-  padding: 2em;
-  border-radius: 20px;
-  max-width: 650px;
-  margin: 0 auto var(--b-margin);
-  border: 2px solid var(--box-color);
-
-  & h3 {
-    font-size: 1.5rem;
+  &:hover {
+    border-color: var(--card-border-color-hover);
   }
 
+  &:has(.news-card-link:focus-visible) {
+    outline: 2px solid var(--home-link);
+    outline-offset: 2px;
+  }
+}
+
+.news-card-link {
   &::after {
     content: "";
     position: absolute;
-    top: calc(100% + 1px);
-    left: var(--l-pos, calc(50% - 1px));
-    height: calc(var(--b-margin) + 2px);
-    width: 2px;
-    background-color: var(--box-color);
+    inset: 0;
   }
 
-  &::before {
-    --arrow-size: 14px;
-    content: "";
-    position: absolute;
-    top: calc(100% + 1px + var(--b-margin) - var(--arrow-size));
-    left: calc(var(--l-pos, calc(50%)) + 1px - (var(--arrow-size) / 2));
-    transform: rotate(45deg);
-    width: var(--arrow-size);
-    height: var(--arrow-size);
-    border-bottom: 4px solid var(--box-color);
-    border-right: 4px solid var(--box-color);
-    border-radius: 4px;
-    animation: arrow-anim 1s linear infinite;
+  &:focus-visible {
+    outline: none;
   }
+}
 
-  &:last-child {
-    margin-bottom: 0;
+.news-card:hover .news-card-link {
+  color: var(--p-primary-900);
+}
 
-    &::after {
-      all: unset;
-    }
+.news-keypoints {
+  color: var(--home-muted);
 
-    &::before {
-      all: unset;
+  /* Bullets, as in the newsletter list (the home page lists have none) */
+  .news-card & ul {
+    margin: 4px 0 0;
+    padding-left: 1.2em;
+    list-style: disc;
+  }
+}
+
+.news-keypoints-intro {
+  font-weight: 700;
+}
+
+.news-media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--home-border);
+  color: var(--p-primary-600);
+  font-size: var(--text-base);
+
+  &.news-media-dark {
+    background-color: var(--p-primary-900);
+
+    & img {
+      height: 44px;
     }
   }
 }
 
-@keyframes arrow-anim {
-  0% {
-    opacity: 0.2;
-    transform: translateY(-5rem) rotate(45deg);
+.news-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 22px 24px;
+
+  & h3 {
+    font-size: var(--text-md);
+    line-height: 1.35;
   }
 
-  50% {
-    opacity: 1;
-    transform: translateY(-2.5rem) rotate(45deg);
-  }
-
-  100% {
-    opacity: 0.2;
-    transform: rotate(45deg);
+  & .strong-link {
+    margin-top: auto;
+    font-size: var(--text-base);
   }
 }
 
-.grid-2-cols {
+.news-image {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.news-image-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(18px) brightness(0.9);
+  transform: scale(1.15);
+}
+
+.news-meta {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--home-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.news-text {
+  font-size: var(--text-base);
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-summary {
+  color: var(--home-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* What TSOSI does */
+.missions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2em;
-  row-gap: 4em;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: var(--block-space);
+}
+
+.mission {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  & p {
+    color: var(--home-muted);
+  }
+}
+
+.mission-icon {
+  height: 36px;
+  width: auto;
+  align-self: start;
+  color: var(--home-link);
+}
+
+/* Call to action */
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: clamp(28px, 5vw, 56px);
+  border-radius: 20px;
+  background-color: var(--home-accent);
+
+  & h2 {
+    font-size: var(--text-2xl);
+  }
+}
+
+.cta-text {
+  flex: 1 1 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: var(--text-md);
+}
+
+/* Governance */
+.governance-lead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--block-space) 64px;
+}
+
+.governance-text {
+  flex: 1 1 400px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 16px;
+
+  & > p {
+    margin: 0;
+    font-size: var(--text-base);
+    color: var(--home-muted);
+  }
+}
+
+.lead-logos {
+  flex: 1 1 480px;
+  min-width: 0;
+  justify-content: end;
+  gap: 20px 48px;
+
+  & .logo-link img {
+    max-width: min(240px, 100%);
+  }
+}
+
+.logo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px 28px;
+}
+
+.governance-members {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 32px;
+  border-top: 1px solid var(--home-border);
+
+  & h3 {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: 700;
+  }
+}
+
+/* Logos shrink rather than wrap, wrapping only on narrow screens */
+.member-logos {
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  column-gap: 32px;
+
+  & .logo-link {
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+
+  @media (max-width: 760px) {
+    flex-wrap: wrap;
+    justify-content: start;
+  }
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+
+  & img {
+    display: block;
+    width: auto;
+    max-width: min(200px, 100%);
+    object-fit: contain;
+  }
 }
 </style>

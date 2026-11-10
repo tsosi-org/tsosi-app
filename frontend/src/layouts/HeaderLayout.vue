@@ -253,7 +253,6 @@ header.home {
   flex-direction: column;
   align-items: start;
   justify-content: center;
-  margin-left: 15px;
 }
 
 .main-container {
@@ -292,7 +291,7 @@ header.home {
 
 .beta-badge {
   white-space: nowrap;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   background-color: #e5a722;
   color: white;
   padding: 1px 5px;
@@ -308,7 +307,7 @@ header.home {
   h2 {
     color: white;
     font-weight: 500;
-    font-size: 12px;
+    font-size: var(--text-xs);
   }
 }
 
@@ -320,7 +319,6 @@ header.home {
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-right: 15px;
 
   .search-bar {
     margin-right: 15px;
@@ -335,7 +333,7 @@ header.home {
     :deep(a),
     :deep(a):hover {
       line-height: 1;
-      font-size: 20px;
+      font-size: var(--text-lg);
       display: block;
       white-space: nowrap;
       text-decoration: none;
@@ -348,7 +346,7 @@ header.home {
 .header-button {
   background-color: var(--p-primary-800);
   border-color: transparent;
-  font-size: 1.5rem;
+  font-size: var(--text-lg);
   margin: 0 13px;
   height: 50px;
 }
@@ -372,7 +370,7 @@ header.home {
 }
 
 .navigation-list {
-  font-size: 20px;
+  font-size: var(--text-lg);
   width: 100%;
   gap: 0;
   flex-direction: column;
@@ -385,7 +383,7 @@ header.home {
   }
   a {
     line-height: 1;
-    font-size: 20px;
+    font-size: var(--text-lg);
     display: block;
     text-decoration: none;
     color: var(--local-color);

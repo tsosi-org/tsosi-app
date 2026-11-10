@@ -54,6 +54,13 @@ CACHES = {
 # Job related settings
 TSOSI_TO_INGEST_DIR = "{REPLACE}"
 TSOSI_TRIGGER_JOBS = True
+# TSOSI_NEWS_BOARD = {
+#     "owner": "tsosi-org",
+#     "project_number": 0,
+#     "app_id": "",
+#     "installation_id": "",
+#     "private_key": "",
+# }
 # API related
 # TODO: Add UGA network IPV4 prefixes
 TSOSI_API_WHITELIST_IPS = ["127.0.0.1"]

@@ -267,7 +267,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
 <style scoped>
 .intro {
   text-align: center;
-  font-size: 1.4rem;
+  font-size: var(--text-lg);
   padding: 1rem 0;
 }
 
@@ -280,7 +280,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
   & :deep(.p-button:hover) {
     color: white;
     text-decoration: none;
-    font-size: 1.15rem;
+    font-size: var(--text-base);
   }
 }
 
@@ -288,7 +288,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
   margin: 2rem 0;
 
   & .as-heading {
-    font-size: 1.3rem;
+    font-size: var(--text-md);
     color: var(--color-heading);
   }
 

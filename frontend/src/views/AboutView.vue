@@ -23,7 +23,7 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
         <Divider layout="vertical" />
         <RouterLink to="#related-initiatives">Related initiatives</RouterLink>
       </div>
-      <p style="text-align: center; font-size: 1.5rem; padding: 1rem 0">
+      <p style="text-align: center; font-size: var(--text-lg); padding: 1rem 0">
         <!-- bigger font like a header text, try centered text also-->
         TSOSI makes support for open infrastructure visible. It shows which
         organizations financially support which open infrastructures. By making
@@ -272,7 +272,7 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
   text-decoration: none;
   color: var(--p-primary-800);
   font-weight: bold;
-  font-size: 1rem;
+  font-size: var(--text-sm);
 }
 
 .navigation-list a:hover {

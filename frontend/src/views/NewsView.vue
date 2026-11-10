@@ -5,13 +5,15 @@ import { useRoute, useRouter } from "vue-router"
 import NewsSubButtonAtom from "@/components/atoms/NewsSubButtonAtom.vue"
 import type { Post } from "@/components/NewsComponent.vue"
 import NewsComponentVue from "@/components/NewsComponent.vue"
+import { get } from "@/services/api"
 import StaticContentComponent from "@/views/StaticContentView.vue"
 
-
-interface NewsLetterApiEntry {
-  name: string
-  download_url: string
-  type: string
+// Newsletters stored hourly by the backend (`tsosi/data/newsletters.py`)
+interface NewsletterApiEntry {
+  id: string
+  date: string
+  key_points: string[]
+  html?: string
 }
 
 const newsletters = ref<Post[]>([])
@@ -20,36 +22,32 @@ const loading = ref<boolean>(true)
 const router = useRouter()
 const route = useRoute()
 
-onBeforeMount(async () => {
-  if (!import.meta.env.VITE_NEWSLETTERS_URL) {
-    loading.value = false
-    return
+function toPost(entry: NewsletterApiEntry): Post {
+  return {
+    id: entry.id,
+    date: new Date(entry.date),
+    keyPoints: entry.key_points,
+    html: entry.html,
   }
-  // Fetch newsletters from NEWSLETTERS_URL
-  const res = await fetch(
-    import.meta.env.VITE_NEWSLETTERS_URL
-  )
-  const data: NewsLetterApiEntry[] = await res.json()
-  newsletters.value = data.filter(
-    n => n.type == "file" && n.name.endsWith(".html")
-  ).map((n) => {
-    return {
-      id: n.name.replace(".html", ""),
-      date: new Date(n.name.substring(0, 7)),
-      download_url: n.download_url
-    }
-  }).sort((a, b) => b.date.getTime() - a.date.getTime())
-  // Retrieve specific newsletter if id param is present
+}
+
+onBeforeMount(async () => {
   if (route.params.id) {
-    newsletter.value = newsletters.value.find(n => n.id === route.params.id)
-    if (newsletter.value == null) {
+    const result = await get(`newsletters/${route.params.id}`, true)
+    if (result.error || !result.data) {
       router.replace({ name: "NotFound", query: { target: route.path } })
+      return
+    }
+    newsletter.value = toPost(result.data as NewsletterApiEntry)
+  } else {
+    const result = await get("newsletters", true)
+    if (!result.error && Array.isArray(result.data)) {
+      newsletters.value = (result.data as NewsletterApiEntry[]).map(toPost)
     }
   }
   loading.value = false
 })
 </script>
-
 
 <template>
   <StaticContentComponent title="Newsletter">

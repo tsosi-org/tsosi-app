@@ -117,11 +117,11 @@ const props = defineProps<{
   height: 250px;
   padding: 0;
   margin: 0;
-  border-radius: 15px;
-  box-shadow:
-    rgba(0, 0, 0, 0.2) 0px 1px 3px 0px,
-    rgba(0, 0, 0, 0.2) 0px 1px 2px -1px;
+  background-color: white;
+  border: var(--card-border);
+  border-radius: var(--card-radius);
   text-decoration: none;
+  transition: border-color 0.2s ease;
   overflow: hidden;
 }
 
@@ -133,9 +133,7 @@ const props = defineProps<{
 }
 
 a.container:hover {
-  box-shadow:
-    rgba(0, 0, 0, 0.3) 0px 4px 6px -1px,
-    rgba(0, 0, 0, 0.22) 0px 2px 4px -1px;
+  border-color: var(--card-border-color-hover);
 }
 
 .info-container {
@@ -175,7 +173,7 @@ a.container:hover {
 
 .name {
   text-align: center;
-  font-size: 1.2em;
+  font-size: var(--text-base);
 }
 
 .types-container {
@@ -187,7 +185,7 @@ a.container:hover {
 
 .p-chip {
   line-height: 1;
-  font-size: 12px;
+  font-size: var(--text-xs);
   margin: 5px;
 }
 
@@ -198,7 +196,7 @@ a.container:hover {
 
 .desc {
   text-align: justify;
-  font-size: 0.9em;
+  font-size: var(--text-xs);
   margin: 0;
 }
 
@@ -254,11 +252,11 @@ a.container:hover {
 
 .amount {
   font-weight: 700;
-  font-size: 1.2em;
+  font-size: var(--text-base);
 }
 
 .see-more {
-  font-size: 0.9em;
+  font-size: var(--text-xs);
   color: var(--p-primary-700);
   font-weight: 500;
   margin-bottom: 10px;

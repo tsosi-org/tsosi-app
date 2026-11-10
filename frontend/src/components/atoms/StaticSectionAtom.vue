@@ -91,7 +91,7 @@ function copyFragmentLink() {
 
 .section-link {
   margin: 0 0.5em;
-  font-size: 0.8em;
+  font-size: var(--text-xs);
   color: var(--p-neutral-500);
 
   &:hover,
@@ -101,13 +101,13 @@ function copyFragmentLink() {
 }
 
 .copy-indicator {
-  font-size: 1rem;
+  font-size: var(--text-sm);
   color: var(--p-neutral-500);
 }
 
 .static-section .static-section h2 {
   margin: 0.35em 0;
   margin-left: 20px;
-  font-size: 1.1em;
+  font-size: var(--text-base);
 }
 </style>

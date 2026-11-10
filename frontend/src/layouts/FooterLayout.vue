@@ -131,11 +131,11 @@ footer {
 
 .footer-wrapper {
   --after-height: 2px;
-  padding: 2em;
+  padding-block: 2em;
 
   h3 {
     color: inherit;
-    font-size: 1.8em;
+    font-size: var(--text-lg);
     margin: 0;
   }
 

@@ -51,7 +51,7 @@ const props = defineProps<{
 
 <style scoped>
 .icon-label-list {
-  font-size: 1rem;
+  font-size: var(--text-sm);
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;

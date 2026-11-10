@@ -447,12 +447,12 @@ function onPopoverShow() {
 
   &.large {
     .search-bar-input :deep(input) {
-      font-size: 1.8rem;
+      font-size: var(--text-xl);
       padding-inline-start: 2em;
     }
 
     .search-bar-icon {
-      font-size: 1.8em;
+      font-size: var(--text-xl);
       margin-top: -0.5em;
     }
   }

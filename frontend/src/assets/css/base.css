@@ -46,12 +46,32 @@ https://primevue.org/theming/styled/#colors
   --color-success: var(--p-green-500);
   --color-error: var(--p-red-500);
 
-  --container-width: 1280px;
-  --small-container-width: 950px;
+  /* Page layout: section backgrounds are full width, their content is
+  capped by .container (main.css) and kept off the edges by the gutter. */
+  --container-width: 1440px;
+  --narrow-container-width: 960px;
+  --wide-container-width: 1760px;
+  --gutter: clamp(16px, 5vw, 64px);
   --big-header-height: 150px;
   --regular-header-height: 50px;
 
   --header-height: var(--regular-header-height);
+
+  /* Text sizes: use these steps rather than other values. The base text is
+  14px (13px on small screens), 16px on the home page. */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-md: 18px;
+  --text-lg: 21px;
+  --text-xl: 28px;
+  --text-2xl: clamp(28px, 3vw, 38px);
+  --text-display: clamp(36px, 4.4vw, 56px);
+
+  /* Cards (entities, news, members, home page mosaic) */
+  --card-radius: 10px;
+  --card-border: 1.5px solid var(--p-primary-100);
+  --card-border-color-hover: #1d6c95;
 
   --font-size: 14px;
   --font-size-small: 13px;

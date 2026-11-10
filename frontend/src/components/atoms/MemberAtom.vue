@@ -34,17 +34,18 @@ const props = defineProps<{
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  border-radius: 8px;
-  box-shadow:
-    rgba(0, 0, 0, 0.2) 0px 1px 3px 0px,
-    rgba(0, 0, 0, 0.2) 0px 1px 2px -1px;
+  /* Card style of base.css, without hover */
+  background-color: white;
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  overflow: hidden;
   padding: 20px 10px;
   position: relative;
 }
 
 .name span {
   font-weight: 600;
-  font-size: 1.25rem;
+  font-size: var(--text-md);
   line-height: 1.75rem;
 }
 
@@ -52,7 +53,7 @@ const props = defineProps<{
   position: absolute;
   bottom: 10px;
   text-align: center;
-  font-size: 0.9em;
+  font-size: var(--text-xs);
 }
 
 .external-link {

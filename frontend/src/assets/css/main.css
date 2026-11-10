@@ -10,12 +10,26 @@
   font-weight: normal;
 }
 
+/* Content column: capped width, centred, with a gutter on both sides.
+- default: page sections, home, entity pages
+- .narrow: running text (static pages), for readable line lengths
+- .wide: data-heavy content (grids, tables) that benefits from width */
 .container {
   max-width: var(--container-width);
   margin: 0 auto;
+  padding-inline: var(--gutter);
 
-  &.small {
-    max-width: var(--small-container-width);
+  &.narrow {
+    max-width: var(--narrow-container-width);
+  }
+
+  &.wide {
+    max-width: var(--wide-container-width);
+  }
+
+  /* The outer container already holds the gutter */
+  & .container {
+    padding-inline: 0;
   }
 }
 
@@ -26,7 +40,7 @@
 
   .regular-content {
     width: 100%;
-    padding: min(1rem, 3vw);
+    padding-block: min(1rem, 3vw);
     /* background-color: var(--color-background-component); */
     border-radius: 10px;
     display: inline-block;
@@ -110,7 +124,7 @@ h1,
   text-transform: uppercase;
   color: var(--color-heading);
   font-weight: 900;
-  font-size: 28px;
+  font-size: var(--text-xl);
   text-wrap: balance;
 }
 
@@ -205,12 +219,12 @@ a.wikidata-inline-link::before {
  primevue styling system.
 */
 .info-box {
-  font-size: 1rem;
+  font-size: var(--text-sm);
   --info-box-color: var(--p-primary-color);
   padding: min(1em, 3vw) min(1rem, 1vw);
-  border: 3px solid;
-  border-color: var(--p-surface-200);
-  border-radius: 5px;
+  /* Card style of base.css */
+  border: var(--card-border);
+  border-radius: var(--card-radius);
   color: inherit;
   height: fit-content;
 }
@@ -225,11 +239,11 @@ a.wikidata-inline-link::before {
 
 .info-item h3 {
   color: var(--info-box-color);
-  font-size: 1.05rem;
+  font-size: var(--text-sm);
 }
 
 h2.info-box-header {
-  font-size: 1.15em;
+  font-size: var(--text-base);
   color: var(--color-heading);
 }
 
@@ -240,7 +254,7 @@ h2.info-box-header {
 .data-label {
   padding: 3px 6px;
   border-radius: 5px;
-  font-size: 0.9em;
+  font-size: var(--text-xs);
 
   &.hidden-amount {
     background: var(--p-neutral-200);

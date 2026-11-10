@@ -27,7 +27,7 @@ const props = defineProps<CountryEntityListProps>()
 
 <style scoped>
 .country-list {
-  font-size: var(--font-size);
+  font-size: var(--text-sm);
   position: relative;
 }
 

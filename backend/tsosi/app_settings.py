@@ -96,6 +96,70 @@ class AppSettings:
         return val
 
     @property
+    def NEWS_BOARD(self) -> dict | None:
+        """
+        The GitHub project board where the TSOSI team picks the news of the
+        home page (see `tsosi.data.news`). `None` disables the news refresh.
+        ```
+        {
+            "owner": The organization owning the project, ex: "tsosi-org",
+            "project_number": The project number, in its URL,
+            # Authentication, either with a GitHub App installed on the
+            # organization:
+            "app_id": The ID of the GitHub App,
+            "installation_id": The ID of its installation on the organization,
+            "private_key": The private key of the GitHub App (PEM),
+            # or with a token:
+            "token": A GitHub token,
+            # Optional
+            "linkedin_repos": Repositories whose issues with a LinkedIn URL
+                are proposed, default ["tsosi-org/newsletter"],
+            "newsletter_repo": default "tsosi-org/newsletter",
+            "issue_repo": Repository of the issues created for the blog posts
+                and newsletters, default "tsosi-org/newsletter",
+            "candidates_status": default "Candidates",
+            "shown_status": default "Live",
+            "max_items": Maximum number of news shown, default 3,
+            "propose_days": Only news published in the last `propose_days`
+                days are proposed, default 90,
+        }
+        ```
+        The App or token needs the organization permission "Projects: read
+        and write" and the repository permissions "Contents: read" and
+        "Issues: read and write" on the newsletter and LinkedIn repositories.
+        """
+        val = self._setting("NEWS_BOARD")
+        if val is None:
+            return None
+        if not isinstance(val, dict):
+            raise ImproperlyConfigured(
+                f"Wrong data type for setting `NEWS_BOARD`: {type(val)}"
+            )
+        for key in ["owner", "project_number"]:
+            if val.get(key) is None:
+                raise ImproperlyConfigured(
+                    f"Missing value for `NEWS_BOARD` required key: {key}"
+                )
+        has_app = all(
+            val.get(k) for k in ["app_id", "installation_id", "private_key"]
+        )
+        if not has_app and not val.get("token"):
+            raise ImproperlyConfigured(
+                "`NEWS_BOARD` requires either a `token` or the `app_id`, "
+                "`installation_id` and `private_key` of a GitHub App."
+            )
+        return {
+            "linkedin_repos": ["tsosi-org/newsletter"],
+            "newsletter_repo": "tsosi-org/newsletter",
+            "issue_repo": "tsosi-org/newsletter",
+            "candidates_status": "Candidates",
+            "shown_status": "Live",
+            "max_items": 3,
+            "propose_days": 90,
+            **val,
+        }
+
+    @property
     def IDENTIFIER_FETCH_RETRY(self) -> int:
         """
         The maximum number of attempts for fetching an individual identifier
