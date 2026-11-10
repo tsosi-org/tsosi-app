@@ -5,10 +5,10 @@ import cosoLogoUrl from "@/assets/img/coso_logo_couleur.svg"
 import couperinLogoUrl from "@/assets/img/couperin_logo.png"
 import doajLogoUrl from "@/assets/img/doaj_logo.svg"
 import gricadLogoUrl from "@/assets/img/logo_gricad_couleur.png"
-import ugaLogoUrl from "@/assets/img/logo_UGA_couleur.jpg"
+import ugaLogoUrl from "@/assets/img/logo_UGA_couleur.svg"
 import mesrLogoUrl from "@/assets/img/mesr_logo_couleur.png"
 import oapenDoabLogoUrl from "@/assets/img/oapen_doab_logo.png"
-import pciLogoUrl from "@/assets/img/pci_logo.jpg"
+import pciLogoUrl from "@/assets/img/pci_logo.png"
 import scipostLogoUrl from "@/assets/img/scipost_logo.png"
 import scossLogoUrl from "@/assets/img/scoss_logo.png"
 import ExternalLink from "@/components/atoms/ExternalLinkAtom.vue"
@@ -117,13 +117,13 @@ const figures = computed(() => [
     value: homeFigures.value
       ? countUp(homeFigures.value.supports, numberFormat)
       : "–",
-    label: "supports recorded",
+    label: "financial contributions",
   },
   {
     value: homeFigures.value
       ? countUp(homeFigures.value.amount_usd, amountFormat)
       : "–",
-    label: "of support recorded",
+    label: "total of all contributions",
   },
 ])
 
@@ -182,75 +182,65 @@ const leadLogos = [
   {
     name: "Université Grenoble Alpes",
     src: ugaLogoUrl,
-    href: "https://www.univ-grenoble-alpes.fr/english/",
-    size: 60,
+    href: "https://www.univ-grenoble-alpes.fr/en",
+    size: 72,
   },
   {
     name: "GRICAD",
     src: gricadLogoUrl,
     href: "https://gricad.univ-grenoble-alpes.fr/en/",
-    size: 60,
+    size: 84,
   },
   {
     name: "French Ministry of Higher Education, Research and Space",
     src: mesrLogoUrl,
     href: "https://www.enseignementsup-recherche.gouv.fr/fr",
-    size: 76,
+    size: 100,
   },
   {
     name: "French Committee for Open Science (Ouvrir la science)",
     src: cosoLogoUrl,
     href: "https://www.ouvrirlascience.fr/home/",
-    size: 34,
+    size: 46,
   },
 ]
 
-const governanceGroups = [
+const memberLogos = [
   {
-    name: "Advisory Group",
-    logos: [
-      {
-        name: "OAPEN & DOAB",
-        src: oapenDoabLogoUrl,
-        href: "https://www.doabooks.org/",
-        size: 52,
-      },
-      {
-        name: "Directory of Open Access Journals",
-        src: doajLogoUrl,
-        href: "https://doaj.org/",
-        size: 40,
-      },
-      {
-        name: "SCOSS",
-        src: scossLogoUrl,
-        href: "https://scoss.org/",
-        size: 48,
-      },
-    ],
+    name: "OAPEN & DOAB",
+    src: oapenDoabLogoUrl,
+    href: "https://www.doabooks.org/",
+    size: 58,
   },
   {
-    name: "User Group",
-    logos: [
-      {
-        name: "Peer Community In",
-        src: pciLogoUrl,
-        href: "https://peercommunityin.org/",
-        size: 76,
-      },
-      {
-        name: "SciPost",
-        src: scipostLogoUrl,
-        href: "https://scipost.org/",
-        size: 48,
-      },
-      {
-        name: "Couperin",
-        src: couperinLogoUrl,
-        href: "https://www.couperin.org/",
-        size: 68,
-      },
-    ],
+    name: "Directory of Open Access Journals",
+    src: doajLogoUrl,
+    href: "https://doaj.org/",
+    size: 44,
+  },
+  {
+    name: "SCOSS",
+    src: scossLogoUrl,
+    href: "https://scoss.org/",
+    size: 53,
+  },
+  {
+    name: "Peer Community In",
+    src: pciLogoUrl,
+    href: "https://peercommunityin.org/",
+    size: 84,
+  },
+  {
+    name: "SciPost",
+    src: scipostLogoUrl,
+    href: "https://scipost.org/",
+    size: 53,
+  },
+  {
+    name: "Couperin",
+    src: couperinLogoUrl,
+    href: "https://www.couperin.org/",
+    size: 75,
   },
 ]
 </script>
@@ -261,20 +251,22 @@ const governanceGroups = [
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-main">
         <div class="hero-text">
-          <h1 id="hero-title">See who keeps open science running</h1>
+          <h1 id="hero-title">
+            Making support for open infrastructures visible
+          </h1>
           <p class="lead">
-            TSOSI brings together the financial support given to open science
-            infrastructure, shared by its data providers, and opens it to
-            everyone.
+            TSOSI gathers financial support provided to open infrastructures,
+            organizes this data with identifiers and then makes it openly
+            available to everyone
           </p>
           <div class="hero-actions">
             <RouterLink to="/explore" class="btn btn-primary">
               Explore the data
               <font-awesome-icon :icon="['fas', 'arrow-right']" />
             </RouterLink>
-            <RouterLink to="/new-provider" class="strong-link">
+            <!-- <RouterLink to="/new-provider" class="strong-link">
               Become a data provider
-            </RouterLink>
+            </RouterLink> -->
           </div>
         </div>
         <div class="hero-mosaic">
@@ -369,10 +361,10 @@ const governanceGroups = [
         <div class="missions">
           <div class="mission">
             <font-awesome-icon :icon="['fas', 'eye']" class="mission-icon" />
-            <h3>Makes support visible</h3>
+            <h3>We make financial support for open infrastructures visible</h3>
             <p>
-              Each support links an organization to the infrastructure it funds,
-              with the year and the amount.
+              Each support links an institution to an infrastructure, with a
+              year and an amount.
             </p>
           </div>
           <div class="mission">
@@ -380,10 +372,9 @@ const governanceGroups = [
               :icon="['fas', 'scale-balanced']"
               class="mission-icon"
             />
-            <h3>Brings transparency to funding policies</h3>
+            <h3>We bring transparency to funding policies</h3>
             <p>
-              Institutions can show what they contribute and see how their
-              support compares with peers in their country.
+              Institutions can show what they contribute and see how others do.
             </p>
           </div>
           <div class="mission">
@@ -391,9 +382,9 @@ const governanceGroups = [
               :icon="['fas', 'magnifying-glass']"
               class="mission-icon"
             />
-            <h3>Lets anyone explore who funds what</h3>
+            <h3>We help users explore who funds open infrastructures</h3>
             <p>
-              Search by organization, infrastructure or country, and reuse the
+              Search by institutions, infrastructure or country, and reuse the
               data through the open API.
             </p>
           </div>
@@ -402,54 +393,50 @@ const governanceGroups = [
     </section>
 
     <!-- Governance -->
-    <section class="band" aria-labelledby="gov-title">
+    <section class="band band-light" aria-labelledby="gov-title">
       <div class="container stack">
-        <h2 id="gov-title">Guided by the open science community</h2>
-        <div class="governance">
-          <div class="governance-lead">
+        <h2 id="gov-title">Governed by the research community</h2>
+        <div class="governance-lead">
+          <div class="governance-text">
             <p>
               TSOSI is led by <b>Université Grenoble Alpes</b>, funded by the
               <b>French National Fund for Open Science</b>, and operated by
-              <b>GRICAD</b>, all members of TSOSI's steering committee.
+              <b>GRICAD</b>.
+              <RouterLink to="/pages/about#who-we-are" class="strong-link">
+                See more about our governance
+              </RouterLink>
             </p>
-            <div class="logo-row lead-logos">
-              <ExternalLink
-                v-for="logo of leadLogos"
-                :key="logo.name"
-                :href="logo.href"
-                class="logo-link"
-              >
-                <img
-                  :src="logo.src"
-                  :alt="logo.name"
-                  :style="{ height: `${logo.size}px` }"
-                />
-              </ExternalLink>
-            </div>
           </div>
-          <dl class="governance-groups">
-            <div
-              v-for="group of governanceGroups"
-              :key="group.name"
-              class="governance-group"
+          <div class="logo-row lead-logos">
+            <ExternalLink
+              v-for="logo of leadLogos"
+              :key="logo.name"
+              :href="logo.href"
+              class="logo-link"
             >
-              <dt>{{ group.name }}</dt>
-              <dd class="logo-row">
-                <ExternalLink
-                  v-for="logo of group.logos"
-                  :key="logo.name"
-                  :href="logo.href"
-                  class="logo-link"
-                >
-                  <img
-                    :src="logo.src"
-                    :alt="logo.name"
-                    :style="{ height: `${logo.size}px` }"
-                  />
-                </ExternalLink>
-              </dd>
-            </div>
-          </dl>
+              <img
+                :src="logo.src"
+                :alt="logo.name"
+                :style="{ height: `${logo.size}px` }"
+              />
+            </ExternalLink>
+          </div>
+        </div>
+        <div class="governance-members">
+          <div class="logo-row member-logos">
+            <ExternalLink
+              v-for="logo of memberLogos"
+              :key="logo.name"
+              :href="logo.href"
+              class="logo-link"
+            >
+              <img
+                :src="logo.src"
+                :alt="logo.name"
+                :style="{ height: `${logo.size}px` }"
+              />
+            </ExternalLink>
+          </div>
         </div>
       </div>
     </section>
@@ -459,10 +446,12 @@ const governanceGroups = [
       <div class="container">
         <div class="cta">
           <div class="cta-text">
-            <h2 id="cta-title">Your organization funds open infrastructure?</h2>
+            <h2 id="cta-title">
+              Does your organization support open infrastructures?
+            </h2>
             <p>
-              Share your records and join the {{ partners.length }} data
-              providers.
+              Follow the {{ partners.length }} organizations that have already
+              shared data with TSOSI, and make your support visible!
             </p>
           </div>
           <RouterLink to="/new-provider" class="btn btn-dark">
@@ -916,30 +905,33 @@ const governanceGroups = [
 }
 
 /* Governance */
-.governance {
+.governance-lead {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--block-space) 64px;
 }
 
-.governance-lead {
-  flex: 1.1 1 440px;
+.governance-text {
+  flex: 1 1 400px;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  align-items: start;
+  gap: 16px;
 
   & > p {
+    margin: 0;
     font-size: 17px;
     color: var(--home-muted);
   }
 }
 
 .lead-logos {
-  justify-content: start;
-  gap: 20px 24px;
-  margin-top: 36px;
+  flex: 1 1 480px;
+  min-width: 0;
+  justify-content: end;
+  gap: 20px 48px;
 
   & .logo-link img {
     max-width: min(240px, 100%);
@@ -953,44 +945,34 @@ const governanceGroups = [
   gap: 20px 28px;
 }
 
-.governance-groups {
-  flex: 1.2 1 520px;
-  min-width: 0;
-  margin: 0;
+.governance-members {
   display: flex;
   flex-direction: column;
-}
-
-.governance-group {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px 32px;
-  padding-block: 28px;
+  gap: 24px;
+  padding-top: 32px;
   border-top: 1px solid var(--home-border);
 
-  &:last-child {
-    border-bottom: 1px solid var(--home-border);
-  }
-
-  & dt {
-    flex: 0 0 150px;
-    white-space: nowrap;
+  & h3 {
+    margin: 0;
     font-size: 17px;
     font-weight: 700;
   }
+}
 
-  & dd {
-    flex: 1 1 300px;
-    margin: 0;
-    column-gap: 24px;
-    flex-wrap: nowrap;
+/* Logos shrink rather than wrap, wrapping only on narrow screens */
+.member-logos {
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  column-gap: 32px;
 
-    /* Logos shrink rather than wrap */
-    & .logo-link {
-      min-width: 0;
-      flex: 0 1 auto;
-    }
+  & .logo-link {
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+
+  @media (max-width: 760px) {
+    flex-wrap: wrap;
+    justify-content: start;
   }
 }
 

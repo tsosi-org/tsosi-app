@@ -365,7 +365,6 @@ const filteredEntities = computed(() => {
 .select-container {
   display: flex;
   justify-content: center;
-  margin: 0 15px;
   margin-bottom: 20px;
 }
 
@@ -382,7 +381,7 @@ const filteredEntities = computed(() => {
 }
 
 .divider {
-  margin: 15px;
+  margin-block: 15px;
   width: auto;
 }
 
@@ -390,7 +389,6 @@ const filteredEntities = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0 15px;
   margin-bottom: 40px;
 }
 
@@ -455,14 +453,24 @@ const filteredEntities = computed(() => {
   width: 100%;
 }
 
+/* Fixed-width cards (EntityCard) in columns spread over the full width, so
+the first and last columns line up with the filter row and the last row stays
+on the same columns. */
 .entities-grid {
+  --card-width: 250px;
   width: 100%;
-  height: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--card-width));
+  justify-content: space-between;
   gap: 1rem;
   margin-bottom: 20px;
+}
+
+@media screen and (max-width: 700px) {
+  .entities-grid {
+    --card-width: 150px;
+    justify-content: center;
+  }
 }
 
 .icon-right:deep(.p-togglebutton-content) {
