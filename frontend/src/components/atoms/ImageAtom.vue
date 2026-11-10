@@ -44,7 +44,7 @@ onMounted(() => {
 
 <style scoped>
 .img-container {
-  font-size: 1rem;
+  font-size: var(--text-sm);
   width: v-bind(imgWidth);
   height: v-bind(imgHeight);
   padding: v-bind(imgContainerPadding);

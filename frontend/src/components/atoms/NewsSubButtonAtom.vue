@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import ExternalLinkAtom from "./ExternalLinkAtom.vue";
-
+import ExternalLinkAtom from "./ExternalLinkAtom.vue"
 
 const subscription_url = import.meta.env.VITE_NEWSLETTERS_SUBSCRIPTION_URL
 </script>
@@ -21,11 +20,10 @@ const subscription_url = import.meta.env.VITE_NEWSLETTERS_SUBSCRIPTION_URL
   </div>
 </template>
 
-
 <style scoped>
 .container {
   text-align: center;
-  font-size: 1.5rem;
+  font-size: var(--text-lg);
   padding: 1rem 0;
 }
 
@@ -48,7 +46,7 @@ const subscription_url = import.meta.env.VITE_NEWSLETTERS_SUBSCRIPTION_URL
   text-decoration: unset;
   transition: all 0.2s ease-out;
 
-  &>.fa-icon {
+  & > .fa-icon {
     margin-left: 0.75rem;
   }
 }

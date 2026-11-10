@@ -10,7 +10,7 @@ changeMetaTitle(props.title)
 </script>
 
 <template>
-  <div class="container small">
+  <div class="container narrow">
     <div class="regular-content static-content">
       <h1 class="page-title">
         <slot name="title">{{ props.title }}</slot>
@@ -22,7 +22,7 @@ changeMetaTitle(props.title)
 
 <style scoped>
 .static-content h1.page-title {
-  font-size: 2.5rem;
+  font-size: var(--text-2xl);
   text-align: center;
   padding: 0;
   text-transform: none;
@@ -30,10 +30,10 @@ changeMetaTitle(props.title)
 
 .static-content {
   margin-bottom: 2rem;
-  font-size: 1.15rem;
+  font-size: var(--text-base);
 
   & :deep(h2) {
-    font-size: 1.5em;
+    font-size: var(--text-lg);
   }
 
   & :deep(h1),

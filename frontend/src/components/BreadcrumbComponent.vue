@@ -57,7 +57,7 @@ const props = defineProps<{ items: Array<BreadcrumbItem> }>()
 }
 
 .breadcrumb-separator {
-  font-size: 14px;
+  font-size: var(--text-sm);
   display: flex;
   align-items: center;
   color: var(--p-primary-300);

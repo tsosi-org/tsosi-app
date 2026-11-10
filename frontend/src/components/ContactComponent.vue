@@ -11,7 +11,7 @@ const { isContactModalOpen, closeContactModal } = useContactModal()
 </script>
 
 <template>
-  <div class="container">
+  <div class="contact">
     <Dialog
       v-model:visible="isContactModalOpen"
       modal
@@ -98,14 +98,14 @@ const { isContactModalOpen, closeContactModal } = useContactModal()
 }
 
 .contact-label {
-  font-size: 1.15rem;
+  font-size: var(--text-base);
   font-weight: normal;
   margin: 0;
   color: var(--color-text);
 }
 
 .contact-email {
-  font-size: 2rem;
+  font-size: var(--text-xl);
   font-weight: bold;
   text-decoration: none;
   color: var(--p-primary-600);

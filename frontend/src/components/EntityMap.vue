@@ -619,7 +619,7 @@ const legendDt = {
 .legend-item {
   display: flex;
   flex-wrap: nowrap;
-  font-size: 0.9rem;
+  font-size: var(--text-xs);
   align-items: center;
   gap: 0.5em;
   white-space: nowrap;

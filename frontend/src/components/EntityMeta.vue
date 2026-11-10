@@ -909,7 +909,7 @@ function isDoab(): boolean {
   display: inline-flex;
   align-items: center;
   gap: 0.8rem;
-  font-size: 0.9rem;
+  font-size: var(--text-xs);
   padding: 0.25rem 0.5rem 0.25rem 1rem;
   border-radius: var(--p-chip-border-radius);
   background: var(--p-chip-background);
@@ -1007,7 +1007,7 @@ function isDoab(): boolean {
 .link-edit__icon {
   display: inline-flex;
   padding: 0.5rem;
-  border: 1px solid var(--p-button-outlined-primary-border-color);
+  border: var(--card-border);
   border-radius: 50%;
 
   & img {
@@ -1030,7 +1030,7 @@ function isDoab(): boolean {
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.9rem;
-  border: 2px solid var(--p-button-outlined-primary-border-color);
+  border: var(--card-border);
   border-radius: var(--p-button-border-radius);
 
   & img {
@@ -1132,8 +1132,18 @@ div.p-button:hover {
   margin-top: 1rem;
 }
 
+/* Card style of base.css: link icons, support link and label buttons */
+.entity-header__links .p-button,
 .entity-header__buttons .p-button {
-  border-width: 2px;
+  border: var(--card-border);
+  background-color: white;
+  transition: border-color 0.2s ease;
+}
+
+.entity-header__links a.p-button:hover,
+.entity-header__buttons a.p-button:hover {
+  border-color: var(--card-border-color-hover);
+  background-color: white;
 }
 
 .entity-header__title {
@@ -1169,7 +1179,7 @@ div.p-button:hover {
   text-transform: initial;
   position: relative;
   top: 3px;
-  font-size: 3rem;
+  font-size: var(--text-display);
   line-height: 1.25;
 }
 
@@ -1179,7 +1189,7 @@ div.p-button:hover {
 }
 
 .wiki-disclaimer {
-  font-size: 0.9em;
+  font-size: var(--text-xs);
   color: var(--p-gray-500);
   text-wrap: nowrap;
 

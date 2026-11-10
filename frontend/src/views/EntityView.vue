@@ -186,7 +186,7 @@ async function onEntityChange() {
   flex-wrap: nowrap;
   gap: 0.6em;
   align-items: center;
-  font-size: 1.3em;
+  font-size: var(--text-md);
 }
 
 .data-update-date {

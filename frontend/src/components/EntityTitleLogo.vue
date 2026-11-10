@@ -37,7 +37,7 @@ const props = defineProps<EntityMapSummaryProps>()
 
 <style scoped>
 .wrapper {
-  font-size: var(--font-size);
+  font-size: var(--text-sm);
   position: relative;
   padding: 2px;
 }

@@ -2,7 +2,13 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 
 from tsosi.api.router import OptionalSlashRouter
-from tsosi.api.views import stats_view
+from tsosi.api.views import (
+    home_figures_view,
+    news_view,
+    newsletter_view,
+    newsletters_view,
+    stats_view,
+)
 from tsosi.api.viewsets import (
     AnalyticViewSet,
     CurrencyViewSet,
@@ -40,5 +46,9 @@ router.register(r"analytics", AnalyticViewSet, basename="analytic")
 urlpatterns = [
     path("api/", include(router.urls)),
     path("api/stats", stats_view),
+    path("api/home-figures", home_figures_view),
+    path("api/news", news_view),
+    path("api/newsletters", newsletters_view),
+    path("api/newsletters/<str:name>", newsletter_view),
     path("sitemap.xml", sitemap, {"sitemaps": SITEMAPS}),
 ]

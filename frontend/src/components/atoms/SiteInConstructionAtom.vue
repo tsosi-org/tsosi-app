@@ -32,7 +32,7 @@ import CodeBlockAtom from "./CodeBlockAtom.vue"
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  font-size: 2rem;
+  font-size: var(--text-xl);
   max-width: min(90vw, 800px);
   height: max(500px, 70vh);
   text-align: center;

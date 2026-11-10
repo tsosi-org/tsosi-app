@@ -18,7 +18,7 @@ import TsosiIconAtom from "@/components/atoms/TsosiIconAtom.vue"
 import EntityCard from "@/components/EntityCard.vue"
 import { getCountries, getEntities, type Entity } from "@/singletons/ref-data"
 
-const rowsPerPage = 64
+const rowsPerPage = 60
 const route = useRoute()
 const router = useRouter()
 
@@ -70,6 +70,7 @@ watch(
 watch(
   [selectedRole, selectedCountries, isPartner, isSCOSS, isPOSI, isBarcelona],
   () => {
+    currentPage.value = 1
     if (isSyncingFromRoute.value) {
       return
     }
@@ -104,12 +105,6 @@ function parseBooleanQuery(value: unknown): boolean {
   return normalized === "1" || normalized === "true"
 }
 
-function parsePageQuery(value: unknown): number {
-  const normalized = normalizeQueryValue(value)
-  const parsed = Number.parseInt(normalized, 10)
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1
-}
-
 function applyQueryToFilters() {
   isSyncingFromRoute.value = true
 
@@ -127,7 +122,6 @@ function applyQueryToFilters() {
   isSCOSS.value = parseBooleanQuery(route.query.scoss)
   isPOSI.value = parseBooleanQuery(route.query.posi)
   isBarcelona.value = parseBooleanQuery(route.query.barcelona)
-  currentPage.value = parsePageQuery(route.query.page)
 
   isSyncingFromRoute.value = false
 }
@@ -145,7 +139,7 @@ function syncFiltersToQuery() {
     scoss: isSCOSS.value ? "true" : undefined,
     posi: isPOSI.value ? "true" : undefined,
     barcelona: isBarcelona.value ? "true" : undefined,
-    page: currentPage.value > 1 ? String(currentPage.value) : undefined,
+    page: undefined,
     countries: countryCodes.length > 0 ? countryCodes.join(",") : undefined,
   }
 
@@ -211,7 +205,7 @@ const filteredEntities = computed(() => {
 </script>
 
 <template>
-  <div class="container">
+  <div class="container wide">
     <div class="container title-container">
       <h1 class="title">
         Explore the funding network of<br />open science infrastructure
@@ -358,31 +352,30 @@ const filteredEntities = computed(() => {
 
 .title {
   text-transform: none;
-  font-size: 3em;
+  font-size: var(--text-display);
   text-align: center;
 }
 
 .select-container {
   display: flex;
   justify-content: center;
-  margin: 0 15px;
   margin-bottom: 20px;
 }
 
 .select-container:deep(.p-togglebutton-label) {
-  font-size: 1.5em;
+  font-size: var(--text-lg);
   font-weight: bold;
 }
 
 @media screen and (max-width: 700px) {
   .select-container:deep(.p-togglebutton-label) {
-    font-size: 1.1em;
+    font-size: var(--text-base);
     font-weight: bold;
   }
 }
 
 .divider {
-  margin: 15px;
+  margin-block: 15px;
   width: auto;
 }
 
@@ -390,7 +383,6 @@ const filteredEntities = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0 15px;
   margin-bottom: 40px;
 }
 
@@ -420,7 +412,7 @@ const filteredEntities = computed(() => {
 .filter-title {
   display: inline;
   font-family: Mount;
-  font-size: 1.15em;
+  font-size: var(--text-base);
   color: var(--p-primary-800);
   vertical-align: middle;
   font-weight: 700;
@@ -456,13 +448,25 @@ const filteredEntities = computed(() => {
 }
 
 .entities-grid {
+  --card-min-width: 200px;
   width: 100%;
-  height: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
+  gap: 20px;
   margin-bottom: 20px;
+}
+
+.entities-grid > .container {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+@media screen and (max-width: 700px) {
+  .entities-grid {
+    --card-min-width: 140px;
+    gap: 12px;
+  }
 }
 
 .icon-right:deep(.p-togglebutton-content) {

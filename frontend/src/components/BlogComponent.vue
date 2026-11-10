@@ -57,7 +57,7 @@ const props = defineProps<Props>()
 }
 
 h2.post-title {
-  font-size: 30px;
+  font-size: var(--text-xl);
   font-weight: 800;
   padding: 0;
   margin: 0;
@@ -70,26 +70,26 @@ a > .post-title:hover {
 }
 
 .post-meta {
-  font-size: 1rem;
+  font-size: var(--text-sm);
   color: var(--p-neutral-500);
   font-style: italic;
 }
 
 .last-modified {
   margin-top: 2rem;
-  font-size: 1rem;
+  font-size: var(--text-sm);
   color: var(--p-neutral-500);
   text-align: right;
   width: 100%;
 }
 
 .post-detail > .post-meta {
-  font-size: 15px;
+  font-size: var(--text-base);
 }
 
 .post-desc {
   margin-top: 1rem;
-  font-size: 1.1rem;
+  font-size: var(--text-base);
   line-height: 1.6;
 }
 
