@@ -9,7 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from tsosi.app_settings import app_settings
 
-from .entity_mapping import ENTITY_MAPPING
+from .entity_mapping import AGENT_MAPPING, ENTITY_MAPPING
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,65 @@ def get_entity_mapping() -> pd.DataFrame:
         )
     del mapping["_key"]
     return mapping
+
+
+def apply_entity_mapping(
+    data: pd.DataFrame, prefix: str
+) -> tuple[pd.DataFrame, pd.Series]:
+    """
+    Apply our custom entity mapping to the `<prefix>_ror_id`,
+    `<prefix>_wikidata_id` and `<prefix>_website_url` columns, matched on
+    `organization_id`.
+    A mapping entry takes precedence over the identifiers given by SciPost,
+    e.g. to attribute a support to a university library rather than to its
+    university.
+
+    Return the updated dataframe and the mask of the mapped rows.
+    """
+    mapping = get_entity_mapping().rename(
+        columns={
+            "ror_id": "_map_ror_id",
+            "wikidata_id": "_map_wikidata_id",
+            "website_url": "_map_website_url",
+        }
+    )
+    mapping["_mapped"] = True
+    data = data.merge(mapping, on="organization_id", how="left")
+    mapped = data["_mapped"].eq(True)
+    for col in ["ror_id", "wikidata_id", "website_url"]:
+        data[f"{prefix}_{col}"] = data[f"{prefix}_{col}"].astype(object)
+        data.loc[mapped, f"{prefix}_{col}"] = data.loc[mapped, f"_map_{col}"]
+    data = data.drop(
+        columns=[
+            "_map_ror_id",
+            "_map_wikidata_id",
+            "_map_website_url",
+            "_mapped",
+        ]
+    )
+    return data, mapped
+
+
+def apply_agent_mapping(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Replace the agent of the collectives whose coordinator is in our
+    `AGENT_MAPPING`, matched on `organization_id`: name, ROR ID,
+    Wikidata ID and website URL.
+    """
+    mapping = pd.DataFrame.from_records(AGENT_MAPPING)
+    if mapping["organization_id"].duplicated().any():
+        raise Exception(
+            "Duplicated agent mapping entries for entities: "
+            f"{mapping[mapping["organization_id"].duplicated()]["organization_id"].to_list()}"
+        )
+    mapping = mapping.set_index("organization_id")
+    mapped = data["organization_id"].isin(mapping.index)
+    ids = data.loc[mapped, "organization_id"]
+    for col in ["name", "ror_id", "wikidata_id", "website_url"]:
+        target = "agent" if col == "name" else f"agent_{col}"
+        data[target] = data[target].astype(object)
+        data.loc[mapped, target] = ids.map(mapping[col]).to_numpy()
+    return data
 
 
 def get_trailing_url_path(s: pd.Series):
@@ -321,18 +380,8 @@ def prepare_collectives(df: pd.DataFrame) -> pd.DataFrame:
         SCOSS_REGEX, case=False
     )
 
-    # Merge custom mapping
-    mapping = get_entity_mapping()
-    data = data.merge(mapping, on="organization_id", how="left")
-    data_no_ror = data["agent_ror_id"].isna()
-    if data_no_ror.any():
-        data.loc[data_no_ror, "agent_ror_id"] = data[data_no_ror]["ror_id"]
-        data.loc[data_no_ror, "agent_wikidata_id"] = data[data_no_ror][
-            "wikidata_id"
-        ]
-        data.loc[data_no_ror, "agent_website_url"] = data[data_no_ror][
-            "website_url"
-        ]
+    data, _ = apply_entity_mapping(data, "agent")
+    data = apply_agent_mapping(data)
 
     # Explode subsidies
     exploded = data.explode("subsidies")
@@ -426,31 +475,8 @@ def prepare_data(
     # Merge custom mapping
     filtered["emitter_wikidata_id"] = None
     filtered["emitter_website_url"] = None
-    mapping = get_entity_mapping()
-    mapping["_emitter_custom_mapping"] = 1
-
-    filtered = filtered.merge(mapping, on="organization_id", how="left")
-    filtered_no_ror = filtered["emitter_ror_id"].isna()
-    if filtered_no_ror.any():
-        filtered.loc[filtered_no_ror, "emitter_match_source"] = "manual"
-        filtered.loc[filtered_no_ror, "emitter_ror_id"] = filtered[
-            filtered_no_ror
-        ]["ror_id"]
-        filtered.loc[filtered_no_ror, "emitter_wikidata_id"] = filtered[
-            filtered_no_ror
-        ]["wikidata_id"]
-        filtered.loc[filtered_no_ror, "emitter_website_url"] = filtered[
-            filtered_no_ror
-        ]["website_url"]
-        filtered.drop(
-            columns=[
-                "ror_id",
-                "wikidata_id",
-                "website_url",
-                "_emitter_custom_mapping",
-            ],
-            inplace=True,
-        )
+    filtered, mapped = apply_entity_mapping(filtered, "emitter")
+    filtered.loc[mapped, "emitter_match_source"] = "manual"
 
     # Log the organization with no enrichment data
     mask = (
