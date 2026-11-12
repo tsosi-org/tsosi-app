@@ -1,6 +1,7 @@
 from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 
+from tsosi.api.newsletter import NewsletterRequestView
 from tsosi.api.router import OptionalSlashRouter
 from tsosi.api.views import (
     home_figures_view,
@@ -15,6 +16,7 @@ from tsosi.api.viewsets import (
     EntityViewSet,
     TransferViewSet,
 )
+from tsosi.data.newsletter import NewsletterAction
 from tsosi.sitemaps import SITEMAPS
 
 app_name = "tsosi"
@@ -50,5 +52,15 @@ urlpatterns = [
     path("api/news", news_view),
     path("api/newsletters", newsletters_view),
     path("api/newsletters/<str:name>", newsletter_view),
+    path(
+        "api/newsletter/subscribe",
+        NewsletterRequestView.as_view(action=NewsletterAction.SUBSCRIBE),
+        name="newsletter-subscribe",
+    ),
+    path(
+        "api/newsletter/unsubscribe",
+        NewsletterRequestView.as_view(action=NewsletterAction.UNSUBSCRIBE),
+        name="newsletter-unsubscribe",
+    ),
     path("sitemap.xml", sitemap, {"sitemaps": SITEMAPS}),
 ]

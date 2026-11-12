@@ -249,6 +249,44 @@ class AppSettings:
         return self._setting("EDIT_ACCESS_DAYS", 7)
 
     @property
+    def NEWSLETTER_SYMPA_URL(self) -> str:
+        """Base URL of the Sympa instance hosting the newsletter's list."""
+        return self._setting(
+            "NEWSLETTER_SYMPA_URL",
+            "https://listes.univ-grenoble-alpes.fr/sympa",
+        ).rstrip("/")
+
+    @property
+    def NEWSLETTER_SYMPA_LIST(self) -> str:
+        """Name of the newsletter's Sympa mailing list."""
+        return self._setting("NEWSLETTER_SYMPA_LIST", "tsosi")
+
+    @property
+    def NEWSLETTER_SYMPA_OWNER(self) -> dict:
+        """
+        The credentials of an owner of the newsletter's Sympa list, used to
+        add and remove subscribers: `{"email": ..., "password": ...}`, with
+        the Sympa local password of that address.
+        """
+        val = self._setting("NEWSLETTER_SYMPA_OWNER", mandatory=True)
+        if not isinstance(val, dict) or not all(
+            val.get(key) for key in ["email", "password"]
+        ):
+            raise ImproperlyConfigured(
+                "`TSOSI_NEWSLETTER_SYMPA_OWNER` requires an `email` and a "
+                "`password`."
+            )
+        return val
+
+    @property
+    def NEWSLETTER_REQUEST_RATE(self) -> str:
+        """
+        Rate limit, per IP address, of the newsletter subscription and
+        unsubscription requests, which call Sympa.
+        """
+        return self._setting("NEWSLETTER_REQUEST_RATE", "5/h")
+
+    @property
     def ERROR_OUTPUT_FOLDER(self) -> str:
         """
         A directory outside of git management for temporary files.

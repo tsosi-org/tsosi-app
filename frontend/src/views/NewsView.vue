@@ -51,7 +51,7 @@ onBeforeMount(async () => {
 
 <template>
   <StaticContentComponent title="Newsletter">
-    <NewsSubButtonAtom />
+    <NewsSubButtonAtom class="subscribe" />
     <div v-if="!loading">
       <!-- Detail view -->
       <div v-if="newsletter">
@@ -69,4 +69,8 @@ onBeforeMount(async () => {
   </StaticContentComponent>
 </template>
 
-<style scoped></style>
+<style scoped>
+.subscribe {
+  margin: 1rem 0 1.5rem;
+}
+</style>

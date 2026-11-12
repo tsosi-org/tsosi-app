@@ -53,6 +53,7 @@ TSOSI_SCIPOST_AUTH = {
 #     "installation_id": "",
 #     "private_key": "",
 # }
+# TSOSI_NEWSLETTER_SYMPA_OWNER = {"email": "", "password": ""}
 TSOSI_API_WHITELIST_IPS = ["127.0.0.1"]
 CACHES = {
     "default": {
