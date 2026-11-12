@@ -58,6 +58,11 @@ TSOSI_OPTIONAL_SETTINGS = [
     # Entity edit accesses
     "TSOSI_FRONTEND_URL",
     "TSOSI_EDIT_ACCESS_DAYS",
+    # Newsletter subscriptions, through the Sympa mailing list
+    "TSOSI_NEWSLETTER_SYMPA_URL",
+    "TSOSI_NEWSLETTER_SYMPA_LIST",
+    "TSOSI_NEWSLETTER_SYMPA_OWNER",
+    "TSOSI_NEWSLETTER_REQUEST_RATE",
 ]
 
 settings_local_module = importlib.import_module("backend_site.settings_local")

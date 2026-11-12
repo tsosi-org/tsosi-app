@@ -61,3 +61,15 @@ class TsosiThrottle(AnonRateThrottle):
             return None
 
         return super().get_cache_key(request, view)
+
+
+class NewsletterRequestThrottle(AnonRateThrottle):
+    """
+    Rate limit of the newsletter (un)subscription requests, per IP address,
+    applied to every request (frontend included): each one calls Sympa.
+    """
+
+    scope = "newsletter_request"
+
+    def get_rate(self):
+        return app_settings.NEWSLETTER_REQUEST_RATE

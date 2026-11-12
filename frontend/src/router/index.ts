@@ -78,6 +78,14 @@ const router = createRouter({
       },
     },
     {
+      path: "/pages/newsletter/unsubscribe",
+      name: "newsletter-unsubscribe",
+      component: () => import("@/views/NewsletterUnsubscribeView.vue"),
+      meta: {
+        description: "Unsubscribe from the TSOSI newsletter.",
+      },
+    },
+    {
       path: "/pages/newsletter/:id",
       name: "newsletter",
       component: () => import("@/views/NewsView.vue"),
