@@ -221,18 +221,6 @@ const linkedInUrl = "https://www.linkedin.com/company/tsosi/"
 // Governance
 const leadLogos = [
   {
-    name: "Université Grenoble Alpes",
-    src: ugaLogoUrl,
-    href: "https://www.univ-grenoble-alpes.fr/en",
-    size: 72,
-  },
-  {
-    name: "GRICAD",
-    src: gricadLogoUrl,
-    href: "https://gricad.univ-grenoble-alpes.fr/en/",
-    size: 84,
-  },
-  {
     name: "French Ministry of Higher Education, Research and Space",
     src: mesrLogoUrl,
     href: "https://www.enseignementsup-recherche.gouv.fr/fr",
@@ -243,6 +231,18 @@ const leadLogos = [
     src: cosoLogoUrl,
     href: "https://www.ouvrirlascience.fr/home/",
     size: 46,
+  },
+  {
+    name: "Université Grenoble Alpes",
+    src: ugaLogoUrl,
+    href: "https://www.univ-grenoble-alpes.fr/en",
+    size: 72,
+  },
+  {
+    name: "GRICAD",
+    src: gricadLogoUrl,
+    href: "https://gricad.univ-grenoble-alpes.fr/en/",
+    size: 84,
   },
 ]
 
