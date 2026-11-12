@@ -27,4 +27,4 @@ def apply(email: str, action: NewsletterAction) -> None:
         client.add(email)
     else:
         client.delete(email)
-    logger.info(f"Newsletter {action} applied for {email}")
+    logger.info(f"Newsletter {action} applied")

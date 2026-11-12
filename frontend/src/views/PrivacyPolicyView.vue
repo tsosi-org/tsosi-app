@@ -89,6 +89,13 @@ function isOptedOut(): boolean | undefined {
             To identify and resolve any technical issues with the website, as
             well as to detect and prevent any security incidents.
           </li>
+          <li>
+            <strong>Newsletter</strong>
+            <br />
+            To send the TSOSI newsletter to the people who subscribed to it on
+            this website. This processing is based on your consent, which you
+            can withdraw at any time by unsubscribing.
+          </li>
         </ul>
       </StaticSectionAtom>
 
@@ -114,6 +121,10 @@ function isOptedOut(): boolean | undefined {
           <li>The performed action (click, download, navigation)</li>
           <li>The URL of the page where you performed the action</li>
         </ul>
+
+        <p>
+          When you subscribe to the newsletter, we collect your e-mail address.
+        </p>
       </StaticSectionAtom>
 
       <StaticSectionAtom
@@ -127,6 +138,12 @@ function isOptedOut(): boolean | undefined {
           The data is stored on the information technology servers of the
           Université Grenoble Alpes.
         </p>
+        <p>
+          The e-mail addresses of the newsletter's subscribers are stored on the
+          mailing list server of the Université Grenoble Alpes (Sympa), which
+          sends the newsletter. Only the TSOSI team members who manage the list
+          can see them. They are never shared with third parties.
+        </p>
       </StaticSectionAtom>
 
       <StaticSectionAtom id="data-retention" title="Data retention">
@@ -134,6 +151,10 @@ function isOptedOut(): boolean | undefined {
           We retain the logged data only for as long as necessary for the
           purposes stated above. This data is kept for a period not exceeding 24
           months, after which it is securely deleted.
+        </p>
+        <p>
+          Your e-mail address is kept on the newsletter's mailing list as long
+          as you are subscribed, and deleted from it when you unsubscribe.
         </p>
       </StaticSectionAtom>
 
@@ -154,6 +175,13 @@ function isOptedOut(): boolean | undefined {
           <br />
           <br />
           <a @click="openContactModal">Contact TSOSI</a>
+        </p>
+        <p>
+          You can unsubscribe from the newsletter at any time from the link in
+          each newsletter or on the
+          <RouterLink to="/pages/newsletter/unsubscribe"
+            >unsubscribe page</RouterLink
+          >.
         </p>
         <p v-if="matomoTracker">
           <br />
@@ -187,7 +215,7 @@ function isOptedOut(): boolean | undefined {
 
       <br />
 
-      <p><strong>Last updated:</strong> <i>2025-03-25</i></p>
+      <p><strong>Last updated:</strong> <i>2026-11-12</i></p>
     </template>
   </StaticContentComponent>
 </template>

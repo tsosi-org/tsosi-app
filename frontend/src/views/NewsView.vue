@@ -51,6 +51,7 @@ onBeforeMount(async () => {
 
 <template>
   <StaticContentComponent title="Newsletter">
+    <p class="frequency">Sent once every two months.</p>
     <NewsSubButtonAtom class="subscribe" />
     <div v-if="!loading">
       <!-- Detail view -->
@@ -70,7 +71,14 @@ onBeforeMount(async () => {
 </template>
 
 <style scoped>
+.frequency {
+  margin: 1rem 0 0.5rem;
+  text-align: center;
+  font-size: var(--text-base);
+  color: var(--p-neutral-600);
+}
+
 .subscribe {
-  margin: 1rem 0 1.5rem;
+  margin: 0 0 1.5rem;
 }
 </style>
