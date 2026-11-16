@@ -4,7 +4,7 @@ import AccordionContent from "primevue/accordioncontent"
 import AccordionHeader from "primevue/accordionheader"
 import AccordionPanel from "primevue/accordionpanel"
 import Button from "primevue/button"
-import { ref } from "vue"
+import { ref, watch } from "vue"
 import { RouterLink, useRoute } from "vue-router"
 
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
@@ -25,7 +25,17 @@ const query = ["name", "ror_url"]
 
 const gristFormUrl = `https://tsosi.getgrist.com/forms/3nGNWU5Pisa2byXGKbVdRq/32?style=singlePage&themeSyncWithOs=false&${query}`
 
+// A hash opens the matching FAQ panel, e.g. /new-provider#scope
 const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
+watch(
+  () => route.hash,
+  (hash) => {
+    const panel = hash.slice(1)
+    if (panel && !openPanels.value.includes(panel)) {
+      openPanels.value = [...openPanels.value, panel]
+    }
+  },
+)
 </script>
 
 <template>
@@ -45,7 +55,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
       </div>
 
       <Accordion v-model:value="openPanels" multiple class="faq">
-        <AccordionPanel value="why-join">
+        <AccordionPanel id="why-join" value="why-join">
           <AccordionHeader>
             <span class="as-heading"
               >Why become a <TsosiIconAtom /> TSOSI data provider?</span
@@ -75,7 +85,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
           </AccordionContent>
         </AccordionPanel>
 
-        <AccordionPanel value="who-can-join">
+        <AccordionPanel id="who-can-join" value="who-can-join">
           <AccordionHeader>
             <span class="as-heading"
               >Who can become a <TsosiIconAtom /> TSOSI data provider?</span
@@ -91,7 +101,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
           </AccordionContent>
         </AccordionPanel>
 
-        <AccordionPanel value="scope">
+        <AccordionPanel id="scope" value="scope">
           <AccordionHeader>
             <span class="as-heading">Which infrastructures are in scope?</span>
           </AccordionHeader>
@@ -136,7 +146,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
           </AccordionContent>
         </AccordionPanel>
 
-        <AccordionPanel value="how-it-works">
+        <AccordionPanel id="how-it-works" value="how-it-works">
           <AccordionHeader>
             <span class="as-heading">How it works?</span>
           </AccordionHeader>
@@ -209,7 +219,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
           </AccordionContent>
         </AccordionPanel>
 
-        <AccordionPanel value="data-we-need">
+        <AccordionPanel id="data-we-need" value="data-we-need">
           <AccordionHeader>
             <span class="as-heading"
               >What data is required to describe a contribution?</span
@@ -232,7 +242,7 @@ const openPanels = ref<string[]>(route.hash ? [route.hash.slice(1)] : [])
           </AccordionContent>
         </AccordionPanel>
 
-        <AccordionPanel value="license">
+        <AccordionPanel id="license" value="license">
           <AccordionHeader>
             <span class="as-heading"
               >Under which license is my data published?</span
