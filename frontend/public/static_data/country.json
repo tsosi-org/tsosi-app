@@ -17,7 +17,7 @@
     "flag_4x3": "flags/4x3/ax.svg",
     "iso": true,
     "name": "Aland Islands",
-    "coordinates": null
+    "coordinates": [19.95, 60.18]
   },
   {
     "capital": "Tirana",
@@ -300,26 +300,6 @@
     "coordinates": [-68.2935044596, 12.1808449824]
   },
   {
-    "capital": "Kralendijk",
-    "code": "bq",
-    "continent": "South America",
-    "flag_1x1": "flags/1x1/bq.svg",
-    "flag_4x3": "flags/4x3/bq.svg",
-    "iso": true,
-    "name": "Bonaire, Sint Eustatius and Saba",
-    "coordinates": [-63.2373948191, 17.6325126164]
-  },
-  {
-    "capital": "Kralendijk",
-    "code": "bq",
-    "continent": "South America",
-    "flag_1x1": "flags/1x1/bq.svg",
-    "flag_4x3": "flags/4x3/bq.svg",
-    "iso": true,
-    "name": "Bonaire, Sint Eustatius and Saba",
-    "coordinates": [-62.9782305894, 17.4919042294]
-  },
-  {
     "capital": "Sarajevo",
     "code": "ba",
     "continent": "Europe",
@@ -542,7 +522,7 @@
   {
     "capital": null,
     "code": "cp",
-    "continent": null,
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/cp.svg",
     "flag_4x3": "flags/4x3/cp.svg",
     "iso": false,
@@ -767,7 +747,7 @@
     "flag_4x3": "flags/4x3/gb-eng.svg",
     "iso": false,
     "name": "England",
-    "coordinates": null
+    "coordinates": [-1.47, 52.56]
   },
   {
     "capital": "Malabo",
@@ -818,16 +798,6 @@
     "iso": true,
     "name": "Ethiopia",
     "coordinates": [39.9149028865, 8.729389557]
-  },
-  {
-    "capital": null,
-    "code": "eu",
-    "continent": null,
-    "flag_1x1": "flags/1x1/eu.svg",
-    "flag_4x3": "flags/4x3/eu.svg",
-    "iso": false,
-    "name": "Europe",
-    "coordinates": null
   },
   {
     "capital": "Stanley",
@@ -892,7 +862,7 @@
   {
     "capital": "Cayenne",
     "code": "gf",
-    "continent": "South America",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/gf.svg",
     "flag_4x3": "flags/4x3/gf.svg",
     "iso": true,
@@ -902,7 +872,7 @@
   {
     "capital": "Papeete",
     "code": "pf",
-    "continent": "Oceania",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/pf.svg",
     "flag_4x3": "flags/4x3/pf.svg",
     "iso": true,
@@ -912,32 +882,12 @@
   {
     "capital": "Saint-Pierre, R\u00e9union",
     "code": "tf",
-    "continent": "Africa",
-    "flag_1x1": "flags/1x1/tf.svg",
-    "flag_4x3": "flags/4x3/tf.svg",
-    "iso": true,
-    "name": "French Southern Territories",
-    "coordinates": [42.7437476109, -17.0644919363]
-  },
-  {
-    "capital": "Saint-Pierre, R\u00e9union",
-    "code": "tf",
-    "continent": "Africa",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/tf.svg",
     "flag_4x3": "flags/4x3/tf.svg",
     "iso": true,
     "name": "French Southern Territories",
     "coordinates": [69.5468698472, -49.2632968711]
-  },
-  {
-    "capital": "Saint-Pierre, R\u00e9union",
-    "code": "tf",
-    "continent": "Africa",
-    "flag_1x1": "flags/1x1/tf.svg",
-    "flag_4x3": "flags/4x3/tf.svg",
-    "iso": true,
-    "name": "French Southern Territories",
-    "coordinates": [47.2909480815, -11.5662248716]
   },
   {
     "capital": "Libreville",
@@ -1042,7 +992,7 @@
   {
     "capital": "Basse-Terre",
     "code": "gp",
-    "continent": "North America",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/gp.svg",
     "flag_4x3": "flags/4x3/gp.svg",
     "iso": true,
@@ -1542,7 +1492,7 @@
   {
     "capital": "Fort-de-France",
     "code": "mq",
-    "continent": "North America",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/mq.svg",
     "flag_4x3": "flags/4x3/mq.svg",
     "iso": true,
@@ -1572,7 +1522,7 @@
   {
     "capital": "Mamoudzou",
     "code": "yt",
-    "continent": "Africa",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/yt.svg",
     "flag_4x3": "flags/4x3/yt.svg",
     "iso": true,
@@ -1712,7 +1662,7 @@
   {
     "capital": "Noum\u00e9a",
     "code": "nc",
-    "continent": "Oceania",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/nc.svg",
     "flag_4x3": "flags/4x3/nc.svg",
     "iso": true,
@@ -1807,7 +1757,7 @@
     "flag_4x3": "flags/4x3/gb-nir.svg",
     "iso": false,
     "name": "Northern Ireland",
-    "coordinates": null
+    "coordinates": [-6.69, 54.61]
   },
   {
     "capital": "Saipan",
@@ -2012,7 +1962,7 @@
   {
     "capital": "Saint-Denis",
     "code": "re",
-    "continent": "Africa",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/re.svg",
     "flag_4x3": "flags/4x3/re.svg",
     "iso": true,
@@ -2022,7 +1972,7 @@
   {
     "capital": "Gustavia",
     "code": "bl",
-    "continent": "North America",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/bl.svg",
     "flag_4x3": "flags/4x3/bl.svg",
     "iso": true,
@@ -2072,7 +2022,7 @@
   {
     "capital": "Marigot",
     "code": "mf",
-    "continent": "North America",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/mf.svg",
     "flag_4x3": "flags/4x3/mf.svg",
     "iso": true,
@@ -2082,7 +2032,7 @@
   {
     "capital": "Saint-Pierre",
     "code": "pm",
-    "continent": "North America",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/pm.svg",
     "flag_4x3": "flags/4x3/pm.svg",
     "iso": true,
@@ -2147,7 +2097,7 @@
     "flag_4x3": "flags/4x3/gb-sct.svg",
     "iso": false,
     "name": "Scotland",
-    "coordinates": null
+    "coordinates": [-4.2, 56.82]
   },
   {
     "capital": "Dakar",
@@ -2687,12 +2637,12 @@
     "flag_4x3": "flags/4x3/gb-wls.svg",
     "iso": false,
     "name": "Wales",
-    "coordinates": null
+    "coordinates": [-3.75, 52.34]
   },
   {
     "capital": "Mata-Utu",
     "code": "wf",
-    "continent": "Oceania",
+    "continent": "Europe",
     "flag_1x1": "flags/1x1/wf.svg",
     "flag_4x3": "flags/4x3/wf.svg",
     "iso": true,
