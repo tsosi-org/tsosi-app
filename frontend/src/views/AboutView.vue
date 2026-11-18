@@ -160,6 +160,7 @@ import StaticContentComponent from "@/views/StaticContentView.vue"
               orcid="https://orcid.org/0000-0002-9850-3786"
             >
             </Member>
+            <Member name="Delphine Crubellier" role="Episciences"> </Member>
           </div>
         </StaticSectionAtom>
       </StaticSectionAtom>

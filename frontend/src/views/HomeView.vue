@@ -4,6 +4,7 @@ import { computed, onBeforeMount, onMounted, onUnmounted, ref } from "vue"
 import cosoLogoUrl from "@/assets/img/coso_logo_couleur.svg"
 import couperinLogoUrl from "@/assets/img/couperin_logo.png"
 import doajLogoUrl from "@/assets/img/doaj_logo.svg"
+import episciencesLogoUrl from "@/assets/img/episciences_logo.png"
 import gricadLogoUrl from "@/assets/img/logo_gricad_couleur.png"
 import ugaLogoUrl from "@/assets/img/logo_UGA_couleur.svg"
 import mesrLogoUrl from "@/assets/img/mesr_logo_couleur.png"
@@ -282,6 +283,12 @@ const memberLogos = [
     src: couperinLogoUrl,
     href: "https://www.couperin.org/",
     size: 75,
+  },
+  {
+    name: "Episciences",
+    src: episciencesLogoUrl,
+    href: "https://www.episciences.org/",
+    size: 40,
   },
 ]
 </script>
