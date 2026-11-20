@@ -62,7 +62,6 @@ const infrastructureCount = getInfrastructures().length
 
 interface HomeFigures {
   supports: number
-  amount_usd: number
   date_data_update: string | null
 }
 
@@ -77,12 +76,6 @@ async function loadFigures() {
 }
 
 const numberFormat = new Intl.NumberFormat("en-US")
-const amountFormat = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: "compact",
-  maximumFractionDigits: 1,
-})
 
 // Figures count up from 0 once the API figures are loaded
 const COUNT_DURATION = 1400
@@ -119,12 +112,6 @@ const figures = computed(() => [
       ? countUp(homeFigures.value.supports, numberFormat)
       : "–",
     label: "financial contributions",
-  },
-  {
-    value: homeFigures.value
-      ? countUp(homeFigures.value.amount_usd, amountFormat)
-      : "–",
-    label: "total of all contributions",
   },
 ])
 

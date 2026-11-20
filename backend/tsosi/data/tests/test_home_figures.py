@@ -24,7 +24,7 @@ def test_home_figures(datasources):
     kept = TransferFactory.create(
         amounts_clc={"USD": 500.3, "EUR": 450}, data_load_sources=[dls_new]
     )
-    # A support without amount is counted, with no amount
+    # A support without amount is counted
     no_amount = TransferFactory.create(data_load_sources=[dls_old])
     no_amount.amounts_clc = None
     no_amount.save()
@@ -45,6 +45,5 @@ def test_home_figures(datasources):
     assert response.status_code == 200
     assert response.json() == {
         "supports": 3,
-        "amount_usd": 1501,
         "date_data_update": "2026-03-02",
     }

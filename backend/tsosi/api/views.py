@@ -51,17 +51,12 @@ def home_figures_view(request):
     transfers = Transfer.objects.filter(
         merged_into__isnull=True, is_future=False
     )
-    amount_usd = sum(
-        (amounts or {}).get("USD") or 0
-        for amounts in transfers.values_list("amounts_clc", flat=True)
-    )
     date_data_update = DataLoadSource.objects.aggregate(
         date=Max("date_data_obtained")
     )["date"]
     return JsonResponse(
         {
             "supports": transfers.count(),
-            "amount_usd": round(amount_usd),
             "date_data_update": date_data_update,
         }
     )
