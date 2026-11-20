@@ -20,14 +20,14 @@ from tsosi.data.preparation.cleaning_utils import clean_cell_value
 NAME = "mdc"
 RAW_FOLDER = Path(BASE_DIR) / "_no_git/data/raw" / NAME
 LOOKUP_FOLDER = Path(BASE_DIR) / "tsosi/data/preparation" / NAME
-# Date DataCite sent the file
-DATE_DATA = "2026-10-21"
+# Date DataCite sent the file (v2: CRKN members detailed)
+DATE_DATA = "2026-11-09"
 
 
 def main() -> None:
     # Spreadsheet of the donations received by DataCite and Make Data Count.
     # The "DataCite" sheet has no fees, only donations: not ingested yet.
-    raw_path = str(RAW_FOLDER / "Donations Received.xlsx")
+    raw_path = str(RAW_FOLDER / "Donations Received_v2.xlsx")
     df = pd.read_excel(raw_path, sheet_name="MDC")
     mapping = {
         "Organizations": "emitter/name",
