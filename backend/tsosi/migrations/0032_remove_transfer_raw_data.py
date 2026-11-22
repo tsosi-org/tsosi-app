@@ -3,6 +3,19 @@
 from django.db import migrations, models
 
 
+def empty_merged_raw_data(apps, schema_editor):
+    """
+    Empty the raw data of the merged transfers: a dict of their source
+    transfers' raw data by data source, kept in the source transfers.
+    Merged transfers no longer carry one (`merge_transfers`).
+    """
+    Transfer = apps.get_model("tsosi", "Transfer")
+    merged_ids = Transfer.objects.filter(merged_into__isnull=False).values(
+        "merged_into_id"
+    )
+    Transfer.objects.filter(id__in=merged_ids).update(raw_data={})
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,8 +23,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Defaults, so that the migration can be reverted: the columns are
-        # added back with empty values (the removed data is lost).
+        # Defaults, for the transfers that aren't ingested: merged transfers
+        # and Hub declarations
         migrations.AlterField(
             model_name="transfer",
             name="original_amount_field",
@@ -22,12 +35,6 @@ class Migration(migrations.Migration):
             name="raw_data",
             field=models.JSONField(default=dict),
         ),
-        migrations.RemoveField(
-            model_name="transfer",
-            name="original_amount_field",
-        ),
-        migrations.RemoveField(
-            model_name="transfer",
-            name="raw_data",
-        ),
+        # Not reversible: the emptied data is still in the source transfers
+        migrations.RunPython(empty_merged_raw_data, migrations.RunPython.noop),
     ]

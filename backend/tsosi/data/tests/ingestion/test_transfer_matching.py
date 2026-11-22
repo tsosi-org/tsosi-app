@@ -67,12 +67,18 @@ def test_merge_transfers_keeps_right_source_values(datasources):
     right = TransferFactory.create(data_load_sources=[dls_right], amount=200)
     right_original_id = right.original_id
     right_agents = set(right.agents.all())
+    right_raw_data = right.raw_data
     merged = merge_transfers(left, right)
     right_source = merged.merged_transfers.get(data_load_sources=dls_right)
     assert right_source.id != merged.id
     assert right_source.amount == 200
     assert right_source.original_id == str(right_original_id)
     assert set(right_source.agents.all()) == right_agents
+    # The raw data is kept in the source transfers only
+    assert right_source.raw_data == right_raw_data != {}
+    assert right_source.original_amount_field == "amount"
+    assert merged.raw_data == {}
+    assert merged.original_amount_field == ""
 
 
 @pytest.mark.django_db

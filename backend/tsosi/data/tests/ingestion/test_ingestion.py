@@ -196,6 +196,49 @@ def test_ingest_scope_and_history(registries, datasources, monkeypatch):
 
 
 @pytest.mark.django_db
+def test_ingest_raw_data(registries, datasources, monkeypatch):
+    monkeypatch.setattr(core, "fill_static_data", lambda: None)
+    source = dc.DataLoadSource(
+        data_source_id="pci",
+        data_load_name="raw_data",
+        date_data_obtained=datetime.date.today(),
+        full_data=False,
+    )
+    data = [
+        {
+            "emitter_name": "E_1",
+            "recipient_name": "R_1",
+            "date_payment_recipient": "2025-01-01",
+            "original_id": str(i),
+            "amount": 50,
+            "currency": "EUR",
+            "hide_amount": False,
+        }
+        for i in range(2)
+    ]
+    # The second row is from a file prepared without the raw data
+    data[0]["raw_data"] = {"Montant": 50, "Payeur": "E_1"}
+    data[0]["original_amount_field"] = "Montant"
+    config = dc.DataIngestionConfig(
+        date_generated=datetime.datetime.now(datetime.UTC).isoformat(
+            timespec="seconds"
+        ),
+        source=source,
+        count=len(data),
+        data=data,
+    )
+
+    ingest(config, send_signals=False)
+
+    with_raw_data = Transfer.objects.get(original_id="0")
+    assert with_raw_data.raw_data == {"Montant": 50, "Payeur": "E_1"}
+    assert with_raw_data.original_amount_field == "Montant"
+    without = Transfer.objects.get(original_id="1")
+    assert without.raw_data == {}
+    assert without.original_amount_field == ""
+
+
+@pytest.mark.django_db
 def test_ingest_replaced_loads_without_connected_sources(
     datasources, monkeypatch
 ):

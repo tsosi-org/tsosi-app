@@ -422,8 +422,16 @@ def create_transfers(
     """
     transfers["date_created"] = date_stamp
     transfers["date_last_updated"] = date_stamp
+    # Missing from files prepared without them
+    for col, default in [("raw_data", dict), ("original_amount_field", str)]:
+        if col not in transfers.columns:
+            transfers[col] = None
+        transfers[col] = transfers[col].apply(
+            lambda x: x if isinstance(x, default) else default()
+        )
 
     fields = [
+        "raw_data",
         "emitter_id",
         "emitter_sub",
         "recipient_id",
@@ -438,6 +446,7 @@ def create_transfers(
         "date_last_updated",
         "original_id",
         "hide_amount",
+        "original_amount_field",
     ]
     bulk_create_from_df(Transfer, transfers, fields, "transfer_id")
     data_load_source.transfers.add(*transfers["transfer_id"].to_list())

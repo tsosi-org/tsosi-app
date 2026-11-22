@@ -126,6 +126,20 @@ def is_amount_hidden(transfer: Transfer) -> bool:
     return not any(a.is_partner and not a.hide_amount for a in entities)
 
 
+def get_public_raw_data(transfer: Transfer) -> dict:
+    """
+    The transfer's raw data, without its amount when the amount is hidden.
+    Not in the API for now: the raw data is only kept in the database.
+    """
+    if not is_amount_hidden(transfer):
+        return dict(transfer.raw_data)
+    return {
+        key: value
+        for key, value in transfer.raw_data.items()
+        if key != transfer.original_amount_field
+    }
+
+
 class BaseTransferSerializer(serializers.ModelSerializer):
     """
     Base serializer for transfers. It overloads amount-related

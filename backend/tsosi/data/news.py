@@ -628,6 +628,8 @@ def store_news_items(
             current is None
             or current.image_source_url != source
             or not current.image
+            # Lost file, e.g. a database copied without its media
+            or not default_storage.exists(current.image.name)
         ):
             images[card_id] = download_image(client, source)
 

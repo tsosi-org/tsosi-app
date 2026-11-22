@@ -91,8 +91,14 @@ class Transfer(TimestampedModel):
     """
 
     objects = TransferQuerySet.as_manager()
-    history = HistoricalRecords()
+    # The raw data is fixed at ingestion: not worth a copy per history row
+    history = HistoricalRecords(
+        excluded_fields=["raw_data", "original_amount_field"]
+    )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    # The source transfer's row in the ingested file. Empty for merged
+    # transfers (their source transfers keep theirs) and Hub declarations.
+    raw_data = models.JSONField(default=dict)
     data_load_sources = models.ManyToManyField(
         DataLoadSource, related_name="transfers"
     )
@@ -129,6 +135,8 @@ class Transfer(TimestampedModel):
     original_id = models.CharField(max_length=256)
     amounts_clc = models.JSONField(null=True)
     hide_amount = models.BooleanField(default=False)
+    # The `raw_data` key holding the amount, removed when it's hidden
+    original_amount_field = models.CharField(max_length=128, default="")
     scoss = models.BooleanField(default=False)
     is_future = models.BooleanField(default=False)
     # A source transfer with the organization's own values, declared in the

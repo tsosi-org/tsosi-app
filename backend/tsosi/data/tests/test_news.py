@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 import requests
+from django.core.files.storage import default_storage
 from django.test import Client
 from django.utils import timezone
 from PIL import Image
@@ -412,6 +413,13 @@ def test_refresh_news_stores_shown_cards(fake_github):
     linkedin.refresh_from_db()
     assert linkedin.position == 0 and linkedin.image
     assert NewsItem.objects.count() == 1
+
+    # A lost image file is downloaded again
+    default_storage.delete(linkedin.image.name)
+    news.refresh_news()
+    assert len([d for d in fake.downloads if d.endswith("a.png")]) == 2
+    linkedin.refresh_from_db()
+    assert default_storage.exists(linkedin.image.name)
 
     fake.cards = [linkedin_card("L1", "Live")]
     news.refresh_news()
