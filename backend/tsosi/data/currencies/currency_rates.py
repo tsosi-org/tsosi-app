@@ -5,9 +5,9 @@ The data is taken from https://data.bis.org
 
 import json
 import logging
+from collections.abc import Iterable
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Iterable
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 
@@ -400,8 +400,7 @@ def update_currency_rates():
     t_extremas.min = date(t_extremas.min.year, 1, 1)
     t_extremas.max = date(t_extremas.max.year, 12, 31)
     today = date.today()
-    if t_extremas.max > today:
-        t_extremas.max = today
+    t_extremas.max = min(t_extremas.max, today)
 
     # Add 1 day because the last day is not included in the fetched interval.
     t_extremas.max += timedelta(days=1)
@@ -434,8 +433,7 @@ def to_int_amounts(
     amounts: pd.Series, transfer_ids: pd.Series, currency: str
 ) -> pd.Series:
     """
-    The amounts rounded to integers, NA for those that don't fit in int64 (a
-    warning is logged), instead of failing the conversion of all transfers.
+    The amounts rounded to integers
     """
     amounts = amounts.round()
     too_large = amounts.abs() >= INT64_LIMIT

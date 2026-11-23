@@ -61,13 +61,14 @@ function isOptedOut(): boolean | undefined {
         The TSOSI project's mission is to foster the sustainability of open
         science infrastructures. In this context, Université Grenoble Alpes is
         required to collect and use personal information such as IP addresses,
-        browsers, and the terminals used, as well as the e-mail addresses of the
-        members of the Data Contribution Hub.
+        browsers, and the terminals used.
         <br />
-        The personal information collected is processed in accordance with the
-        General Data Protection Regulation (EU) 2016/679 of the European
-        Parliament and of the Council of April 27, 2016 (GDPR), as well as the
-        'Informatique et libertés' law of January 6, 1978, as amended.
+        The implementation of this site has therefore undergone a compliance
+        review by the Data Protection Officer. The personal information
+        collected is processed in accordance with the General Data Protection
+        Regulation (EU) 2016/679 of the European Parliament and of the Council
+        of April 27, 2016 (GDPR), as well as the 'Informatique et libertés' law
+        of January 6, 1978, as amended.
       </p>
 
       <StaticSectionAtom
@@ -87,21 +88,6 @@ function isOptedOut(): boolean | undefined {
             <br />
             To identify and resolve any technical issues with the website, as
             well as to detect and prevent any security incidents.
-          </li>
-          <li>
-            <strong>Newsletter</strong>
-            <br />
-            To send the TSOSI newsletter to the people who subscribed to it on
-            this website. This processing is based on your consent, which you
-            can withdraw at any time by unsubscribing.
-          </li>
-          <li>
-            <strong>Data Contribution Hub</strong>
-            <br />
-            To give the members of an organization access to its space on the
-            Data Contribution Hub, where they declare its supports and edit its
-            public page, to send them their login links, and to keep track of
-            the changes they make.
           </li>
         </ul>
       </StaticSectionAtom>
@@ -128,23 +114,6 @@ function isOptedOut(): boolean | undefined {
           <li>The performed action (click, download, navigation)</li>
           <li>The URL of the page where you performed the action</li>
         </ul>
-
-        <p>
-          When you subscribe to the newsletter, we collect your e-mail address.
-        </p>
-        <p>
-          If you are a member of the Data Contribution Hub, we store your e-mail
-          address, the organization you are a member of and your access rights,
-          and the changes you make to its supports and public page, linked to
-          your account. Your IP address is also used, for one hour, to limit the
-          number of login link requests.
-        </p>
-        <p>
-          The Hub uses two cookies, needed for it to work, which require no
-          consent: a session cookie, which keeps you logged in for 24 hours at
-          most, and a security cookie (CSRF), which protects your actions
-          against cross-site request forgery.
-        </p>
       </StaticSectionAtom>
 
       <StaticSectionAtom
@@ -158,19 +127,6 @@ function isOptedOut(): boolean | undefined {
           The data is stored on the information technology servers of the
           Université Grenoble Alpes.
         </p>
-        <p>
-          The e-mail addresses of the newsletter's subscribers are stored on the
-          mailing list server of the Université Grenoble Alpes (Sympa), which
-          sends the newsletter. Only the TSOSI team members who manage the list
-          can see them. They are never shared with third parties.
-        </p>
-        <p>
-          The e-mails of the Data Contribution Hub (login links and invitations)
-          are sent through
-          <ExternalLinkAtom :href="'https://www.brevo.com'" :label="'Brevo'" />,
-          an e-mail delivery service, which processes your e-mail address and
-          the content of these e-mails on our behalf.
-        </p>
       </StaticSectionAtom>
 
       <StaticSectionAtom id="data-retention" title="Data retention">
@@ -178,16 +134,6 @@ function isOptedOut(): boolean | undefined {
           We retain the logged data only for as long as necessary for the
           purposes stated above. This data is kept for a period not exceeding 24
           months, after which it is securely deleted.
-        </p>
-        <p>
-          Your e-mail address is kept on the newsletter's mailing list as long
-          as you are subscribed, and deleted from it when you unsubscribe.
-        </p>
-        <p>
-          Your Data Contribution Hub account is kept as long as you are a member
-          of an organization on the Hub, and deleted on request. The changes you
-          made stay in the history of the published data, no longer linked to
-          your account once it is deleted.
         </p>
       </StaticSectionAtom>
 
@@ -208,13 +154,6 @@ function isOptedOut(): boolean | undefined {
           <br />
           <br />
           <a @click="openContactModal">Contact TSOSI</a>
-        </p>
-        <p>
-          You can unsubscribe from the newsletter at any time from the link in
-          each newsletter or on the
-          <RouterLink to="/pages/newsletter/unsubscribe"
-            >unsubscribe page</RouterLink
-          >.
         </p>
         <p v-if="matomoTracker">
           <br />
@@ -248,7 +187,7 @@ function isOptedOut(): boolean | undefined {
 
       <br />
 
-      <p><strong>Last updated:</strong> <i>2026-11-12</i></p>
+      <p><strong>Last updated:</strong> <i>2025-03-25</i></p>
     </template>
   </StaticContentComponent>
 </template>
