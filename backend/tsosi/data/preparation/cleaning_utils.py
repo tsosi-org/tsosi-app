@@ -6,6 +6,7 @@ from typing import Any
 import pandas as pd
 import pycountry
 
+from tsosi.data.currencies.currency_rates import SUPPORTED_CURRENCIES
 from tsosi.data.exceptions import DataValidationError
 from tsosi.data.pid_registry.ror import ROR_ID_REGEX
 from tsosi.data.pid_registry.wikidata import WIKIDATA_ID_REGEX
@@ -37,8 +38,8 @@ CURRENCY_MAPPING = {
 def currency_iso_from_value(val, error: bool = False) -> str | None:
     """
     According to the current data, the currency is always represented either by
-    its symbol ("$", "£" or "€") or it contains the ISO code with other parasite
-    inputs.
+    its symbol ("$", "£" or "€") or it contains the ISO code of a supported
+    currency with other parasite inputs.
     """
     if pd.isna(val):
         return None
@@ -56,10 +57,9 @@ def currency_iso_from_value(val, error: bool = False) -> str | None:
             return code
 
     val = val.upper()
-    match = re.search(r"[A-Z]{3}", val)
-    if match and match.group(0) in CURRENCY_MAPPING.values():
-        value = match.group(0)
-        return value
+    for code in re.findall(r"[A-Z]{3}", val):
+        if code in SUPPORTED_CURRENCIES:
+            return code
 
     msg = f"Currency ISO code could not be derived from input value `{val}`"
     if error:

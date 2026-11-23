@@ -31,6 +31,12 @@ def test_currency_iso_from_value():
         BaseTestData(args=[None], result=None),
         BaseTestData(args=[12], result=None),
         BaseTestData(args=["UUU"], result=None),
+        BaseTestData(args=["CAD"], result="CAD"),
+        BaseTestData(args=["cad"], result="CAD"),
+        BaseTestData(args=["Amount CHF"], result="CHF"),
+        BaseTestData(
+            args=["ABC"], kwargs={"error": True}, exception=DataValidationError
+        ),
         BaseTestData(
             args=["bad input"],
             kwargs={"error": True},
