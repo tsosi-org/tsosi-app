@@ -34,6 +34,7 @@ function member(values: Partial<Member> = {}): Member {
   return {
     email: "member@uni.edu",
     is_staff: false,
+    is_superuser: false,
     organization: ORGANIZATION,
     can_declare_supports: true,
     ...values,
@@ -238,5 +239,49 @@ describe("canEditEntity", () => {
     loggedInAs(member({ is_staff: true, organization: null }))
     await loadSession(true)
     expect(canEditEntity("uuid-2")).toBe(true)
+  })
+})
+
+describe("canDeclareSupports", () => {
+  const org = { id: "uuid-1", is_recipient: false }
+  const other = { id: "uuid-2", is_recipient: false }
+  const infra = { id: "uuid-3", is_recipient: true }
+
+  it("is true for the members with the option, on their organization", async () => {
+    loggedInAs(member())
+    const { canDeclareSupports, loadSession } = await hubSession()
+    expect(canDeclareSupports(org)).toBe(false)
+    await loadSession()
+    expect(canDeclareSupports(org)).toBe(true)
+    expect(canDeclareSupports(other)).toBe(false)
+
+    loggedInAs(member({ can_declare_supports: false }))
+    await loadSession(true)
+    expect(canDeclareSupports(org)).toBe(false)
+  })
+
+  it("is true for the superusers, except on beneficiaries", async () => {
+    const { canDeclareSupports, loadSession } = await hubSession()
+    loggedInAs(member({ is_staff: true, organization: null }))
+    await loadSession(true)
+    expect(canDeclareSupports(other)).toBe(false)
+
+    loggedInAs(
+      member({ is_staff: true, is_superuser: true, organization: null }),
+    )
+    await loadSession(true)
+    expect(canDeclareSupports(other)).toBe(true)
+    expect(canDeclareSupports(infra)).toBe(false)
+
+    // Also on their own organization without the option, as the backend
+    loggedInAs(
+      member({
+        is_staff: true,
+        is_superuser: true,
+        can_declare_supports: false,
+      }),
+    )
+    await loadSession(true)
+    expect(canDeclareSupports(org)).toBe(true)
   })
 })

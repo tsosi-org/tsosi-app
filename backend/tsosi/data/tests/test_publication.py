@@ -365,7 +365,7 @@ def previewed(client, entity) -> dict:
 
 
 @pytest.mark.django_db
-def test_submit(client, org, member, admin_user, infra, datasources):
+def test_submit(client, org, member, infra, datasources):
     transfer = support(org, infra, infra)
     declaration = declare(org, member, DECLARATION_KIND_CONFIRMATION, transfer)
     payload = previewed(client, org)
@@ -406,8 +406,12 @@ def test_submit(client, org, member, admin_user, infra, datasources):
     assert [s["id"] for s in client.get(submissions_url(org)).json()] == [
         submission.id
     ]
+    # Staff, not superuser: it only reads the supports
+    staff_user = get_user_model().objects.create_user(
+        "staff", "staff@tsosi.org", is_staff=True
+    )
     staff = APIClient()
-    staff.force_login(admin_user)
+    staff.force_login(staff_user)
     assert len(staff.get(submissions_url(org)).json()) == 1
     # Which can't submit
     response = staff.post(submissions_url(org), payload, format="json")

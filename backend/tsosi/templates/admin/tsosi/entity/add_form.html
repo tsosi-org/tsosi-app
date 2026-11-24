@@ -1,0 +1,42 @@
+{% extends "admin/base_site.html" %}
+
+{% comment %}
+Add an organization missing from TSOSI (`EntityAdmin.add_view`): its profile
+is then filled in its Hub's Public page tab.
+{% endcomment %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+  &rsaquo; <a href="{% url 'admin:tsosi_entity_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+  &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<p>
+  Add an organization missing from TSOSI, from its ROR or Wikidata ID if it
+  has one. It gets a TSOSI ID. Then fill its profile in its Hub's Public page
+  tab, linked from its page here. It isn't public until a transfer involving
+  it is published.
+</p>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}{{ form.non_field_errors }}{% endif %}
+  <fieldset class="module aligned">
+    {% for field in form %}
+    <div class="form-row{% if field.errors %} errors{% endif %}">
+      {{ field.errors }}
+      <div>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<div class="help">{{ field.help_text }}</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </fieldset>
+  <div class="submit-row">
+    <input type="submit" class="default" value="Add organization">
+  </div>
+</form>
+{% endblock %}

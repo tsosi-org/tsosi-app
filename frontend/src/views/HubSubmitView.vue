@@ -17,7 +17,7 @@ import {
   type DeclarationKind,
 } from "@/singletons/hub-declarations"
 import { recipientScope } from "@/singletons/hub-organizations"
-import { session } from "@/singletons/hub-session"
+import { canDeclareSupports, session } from "@/singletons/hub-session"
 import {
   getEntityPreview,
   getEntitySummary,
@@ -87,9 +87,10 @@ async function load(entityId: string) {
     })
     return
   }
-  readOnly.value = session.member?.organization?.id != result?.entity.id
+  readOnly.value = !result || !canDeclareSupports(result.entity)
   // Infrastructures and consortia only edit their profile for now
-  if (!result || (!readOnly.value && !session.member?.can_declare_supports)) {
+  const ownOrganization = session.member?.organization?.id == result?.entity.id
+  if (!result || (ownOrganization && readOnly.value)) {
     organization.value = null
     loading.value = false
     return
@@ -139,6 +140,10 @@ function getEntity(id: string | null): DeepReadonly<Entity> | undefined {
 
 // Loaded, with the drafts previewed listed
 const ready = computed(() => !loadError.value && !changedSince.value)
+
+const previewEntity = computed(
+  () => organization.value && { ...organization.value, is_partner: true },
+)
 
 const transferById = computed(
   () => new Map(transfers.value.map((t) => [t.id, t])),
@@ -357,7 +362,7 @@ async function submit() {
       <section v-else aria-labelledby="preview-title">
         <h2 id="preview-title">Preview of your public page</h2>
         <div class="preview-frame">
-          <EntityMeta :entity="organization" />
+          <EntityMeta v-if="previewEntity" :entity="previewEntity" />
           <Table v-if="previewTableProps" v-bind="previewTableProps" />
         </div>
       </section>

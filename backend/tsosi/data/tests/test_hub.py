@@ -80,6 +80,7 @@ def test_login(member, registries):
     assert response.json() == {
         "email": "member@uni.edu",
         "is_staff": False,
+        "is_superuser": False,
         "organization": {
             "id": str(organization.id),
             # The ID of its Hub's URL
@@ -326,6 +327,7 @@ def test_me_staff(admin_user):
     assert client.get(ME_URL).json() == {
         "email": admin_user.email,
         "is_staff": True,
+        "is_superuser": True,
         "organization": None,
         "can_declare_supports": False,
     }

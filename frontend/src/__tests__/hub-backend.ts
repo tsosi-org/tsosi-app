@@ -46,6 +46,7 @@ const ORG_ROUTE = /^hub\/entities\/(?:org|T123456)(?:\/(.*))?$/
 export const MEMBER: Member = {
   email: "member@uni.edu",
   is_staff: false,
+  is_superuser: false,
   organization: { id: ORG.id, tsosi_id: "T123456", name: ORG.name },
   can_declare_supports: true,
 }

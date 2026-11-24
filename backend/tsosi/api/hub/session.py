@@ -171,6 +171,7 @@ def session_data(user) -> dict:
     return {
         "email": user.email,
         "is_staff": user.is_staff,
+        "is_superuser": user.is_superuser,
         "organization": organization,
         "can_declare_supports": bool(
             membership and membership.can_declare_supports

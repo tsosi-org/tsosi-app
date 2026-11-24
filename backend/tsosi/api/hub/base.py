@@ -63,10 +63,14 @@ def get_hub_entity(user, entity_id: str) -> Entity:
 def get_declaring_entity(user, entity_id: str) -> Entity:
     """
     The organization of a Hub URL, for the users who can change its
-    supports: its members with the "Can declare supports" option. The TSOSI
-    team only reads them.
+    supports: its members with the "Can declare supports" option, and the
+    superusers for the organizations that aren't beneficiaries (the
+    published supports are emitted by the organization). The rest of the
+    TSOSI team only reads them.
     """
     entity = get_hub_entity(user, entity_id)
+    if user.is_superuser and not entity.is_recipient:
+        return entity
     membership = get_membership(user)
     if (
         membership is None

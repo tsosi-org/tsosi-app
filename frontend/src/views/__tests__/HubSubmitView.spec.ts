@@ -132,6 +132,12 @@ describe("HubSubmitView", () => {
     expect(texts.filter((t) => t.includes("undisclosed"))).toHaveLength(1)
   })
 
+  it("previews the organization as a TSOSI data provider", async () => {
+    await mountSubmit(backendWithChanges())
+    const meta = wrapper!.findComponent({ name: "EntityMeta" })
+    expect(meta.props("entity").is_partner).toBe(true)
+  })
+
   it("submits the changes previewed, with the consent", async () => {
     const backend = backendWithChanges()
     const { router } = await mountSubmit(backend)
@@ -250,6 +256,7 @@ describe("HubSubmitView", () => {
     backend.member = {
       email: "admin@tsosi.org",
       is_staff: true,
+      is_superuser: false,
       organization: null,
       can_declare_supports: false,
     }
@@ -259,6 +266,20 @@ describe("HubSubmitView", () => {
       "You're viewing this organization's changes as a TSOSI admin, in read-only mode.",
     )
     expect(text(".counts li")).toContain("2 confirmations")
+  })
+
+  it("can be submitted by a TSOSI superuser", async () => {
+    const backend = backendWithChanges()
+    backend.member = {
+      email: "admin@tsosi.org",
+      is_staff: true,
+      is_superuser: true,
+      organization: null,
+      can_declare_supports: false,
+    }
+    await mountSubmit(backend)
+    expect(wrapper!.find(".submit-box").exists()).toBe(true)
+    expect(wrapper!.text()).not.toContain("read-only mode")
   })
 
   it("isn't for the members without the declaration of supports", async () => {

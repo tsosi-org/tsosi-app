@@ -34,6 +34,27 @@ describe("HubView public page tab", () => {
     expect(page.text()).not.toContain(DATA_INFO)
   })
 
+  it.each([
+    [
+      "/hub/T123456",
+      /^These are all the support we currently list for your organization\. You can/,
+    ],
+    [
+      "/hub/T123456?tab=page",
+      /^This is how your organization appears publicly on TSOSI/,
+    ],
+  ])("explains what a member can do in %s", async (route, intro) => {
+    hubBackend()
+    await loadSession(true)
+    const mounted = await mountComponent(HubView, {
+      route,
+      stubs: { HubSupports: true },
+    })
+    wrapper = mounted.wrapper as VueWrapper
+    await flushPromises()
+    expect(wrapper.find(".p-tabpanel-active .tab-intro").text()).toMatch(intro)
+  })
+
   it("keeps the box on the public page", async () => {
     const mounted = await mountComponent(EntityMeta, {
       props: { entity: ORG },

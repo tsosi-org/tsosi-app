@@ -21,14 +21,13 @@ import {
 
 import Loader from "./atoms/LoaderAtom.vue"
 
-import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
+import ButtonAtom from "@/components/atoms/ButtonAtom.vue"
 import CountryItemList from "@/components/CountryItemList.vue"
 import EntityTitleLogo from "@/components/EntityTitleLogo.vue"
 import { isDesktop } from "@/composables/useMediaQuery"
 import { getEntitySummary, type Entity } from "@/singletons/ref-data"
 import {
   exportCSV,
-  exportJSON,
   getCountryCoordinates,
   getCountryLabel,
   parsePointCoordinates,
@@ -341,19 +340,6 @@ function cleanPopup(element: App) {
   }, 400)
 }
 
-const exportItems = [
-  {
-    label: "Export CSV",
-    icon: ["fas", "download"],
-    command: () => downloadData("csv"),
-  },
-  {
-    label: "Export JSON",
-    icon: ["fas", "download"],
-    command: () => downloadData("json"),
-  },
-]
-
 function getFileName(): string {
   let baseName = "TSOSI"
   if (props.exportTitleBase) {
@@ -367,7 +353,7 @@ function getFileName(): string {
   return baseName
 }
 
-function downloadData(format: "json" | "csv") {
+function downloadData() {
   if (!props.dataLoaded || props.supporters.length == 0) {
     return
   }
@@ -416,12 +402,7 @@ function downloadData(format: "json" | "csv") {
       type: "country",
     },
   ]
-  const fileName = getFileName()
-  if (format == "csv") {
-    exportCSV(fields, exportData, fileName)
-    return
-  }
-  exportJSON(fields, exportData, fileName)
+  exportCSV(fields, exportData, getFileName())
 }
 
 const legendDt = {
@@ -468,15 +449,12 @@ const legendDt = {
           >
             <h2>Legend</h2>
             <div v-if="!props.disableExport" class="map-export-menu">
-              <MenuButtonAtom
-                :id="`${props.id}-export-menu`"
-                :button="{
-                  id: `${props.id}-export-button`,
-                  label: 'Export',
-                  type: 'action',
-                  icon: ['fas', 'download'],
-                }"
-                :items="exportItems"
+              <ButtonAtom
+                :id="`${props.id}-export-button`"
+                label="Export CSV"
+                type="action"
+                :icon="['fas', 'download']"
+                @click.stop="downloadData"
               />
             </div>
           </div>

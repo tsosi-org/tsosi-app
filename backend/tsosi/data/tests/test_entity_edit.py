@@ -258,7 +258,7 @@ def test_edit_entity_validation(registries):
 
 
 @pytest.mark.django_db
-def test_edit_entity_logo(registries, storage, admin_user):
+def test_edit_entity_logo(registries, storage):
     entity = EntityFactory.create(is_recipient=True)
     client, _ = member_client(entity)
 
@@ -273,7 +273,7 @@ def test_edit_entity_logo(registries, storage, admin_user):
     assert entity.logo
     assert entity.manual_logo
 
-    # Only the TSOSI team changes the icon: the whole edit is refused
+    # Only the TSOSI team (staff) changes the icon: the whole edit is refused
     response = client.patch(
         edit_url(entity),
         {
@@ -290,8 +290,12 @@ def test_edit_entity_logo(registries, storage, admin_user):
     entity.refresh_from_db()
     assert entity.short_name == "E"
     assert not entity.icon
+    staff = get_user_model().objects.create_user(
+        "staff", "staff@example.org", is_staff=True
+    )
     staff_client = APIClient()
-    staff_client.force_login(admin_user)
+    staff_client.force_login(staff)
+    # Any staff, not only the superusers
     response = staff_client.patch(
         edit_url(entity), {"icon": png_file()}, format="multipart"
     )

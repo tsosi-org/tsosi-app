@@ -8,21 +8,30 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect
+from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from simple_history.admin import SimpleHistoryAdmin
 
+from tsosi.api.hub.organizations import (
+    RegistryUnavailable,
+    lookup_identifier,
+    no_record_message,
+)
 from tsosi.api.hub.session import send_invitation
 from tsosi.app_settings import app_settings
+from tsosi.data.entity_edit import create_team_entity
 from tsosi.data.hub_changes import submission_changes
 from tsosi.data.hub_publication import (
     SubmissionNotPending,
     approve_submission,
     return_submission,
 )
+from tsosi.data.pid_registry.lookup import parse_organization_id
 from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
 from tsosi.models import Entity, InfrastructureDetails, Membership, Submission
+from tsosi.models.entity import ENTITY_SCOPE_CHOICES
 from tsosi.models.membership import MEMBERSHIP_STATUS_ACTIVE
 
 admin.site.site_header = "TSOSI admin"
@@ -35,12 +44,67 @@ def entity_ref(entity: Entity) -> str:
     return tsosi_id.value if tsosi_id else str(entity.id)
 
 
+class NewEntityForm(forms.Form):
+    """
+    An organization missing from TSOSI, added by the TSOSI team: from its
+    ROR or Wikidata ID, with the values of its record, or from its name.
+    """
+
+    identifier = forms.CharField(
+        label="ROR or Wikidata ID",
+        required=False,
+        help_text="E.g. 02feahw73, Q42, or their URL. The name, country and "
+        "website come from its record.",
+    )
+    name = forms.CharField(
+        max_length=512,
+        required=False,
+        help_text="Required without ID. With an ID, it replaces the name of "
+        "its record.",
+    )
+    scope = forms.ChoiceField(
+        choices=[("", "-")] + list(ENTITY_SCOPE_CHOICES.items()),
+        required=False,
+        help_text="Of a beneficiary: an infrastructure in scope is shown on "
+        "the public site once a support to it is published.",
+    )
+    create_anyway = forms.BooleanField(
+        label="Create it even if an organization has the same name",
+        required=False,
+    )
+
+    def clean_identifier(self) -> tuple[str, str] | None:
+        value = self.cleaned_data["identifier"].strip()
+        if not value:
+            return None
+        parsed_id = parse_organization_id(value)
+        if parsed_id is None:
+            raise forms.ValidationError(
+                "Enter a ROR ID, like 02feahw73, or a Wikidata ID, like Q42."
+            )
+        return parsed_id
+
+    def clean(self):
+        data = super().clean()
+        data["name"] = data.get("name", "").strip()
+        if (
+            not data.get("identifier")
+            and not data["name"]
+            and not (self.has_error("identifier"))
+        ):
+            raise forms.ValidationError(
+                "Enter a ROR or Wikidata ID, or a name."
+            )
+        return data
+
+
 @admin.register(Entity)
 class EntityAdmin(SimpleHistoryAdmin):
     """
-    Entities come from the data pipeline: only their scope is set here, by
-    the TSOSI team. Filter on the scope to list the infrastructures to be
-    checked. Their profile is edited in their Hub's Public page tab.
+    Entities come from the data pipeline or the Hub: only their scope is set
+    here, by the TSOSI team. Filter on the scope to list the infrastructures
+    to be checked. Their profile is edited in their Hub's Public page tab.
+    The team adds a missing organization with the Add button (`add_view`).
     """
 
     list_display = [
@@ -156,8 +220,113 @@ class EntityAdmin(SimpleHistoryAdmin):
         )
         return format_html('<a href="{}">History</a>', url)
 
-    def has_add_permission(self, request) -> bool:
-        return False
+    def add_view(self, request, form_url="", extra_context=None):
+        """
+        Add an organization missing from TSOSI, then fill its profile in its
+        Hub's Public page tab, linked from its admin page.
+        """
+        if not self.has_add_permission(request):
+            raise PermissionDenied
+        form = NewEntityForm(request.POST if request.method == "POST" else None)
+        if form.is_valid():
+            response = self.create_entity(request, form)
+            if response is not None:
+                return response
+        context = {
+            **self.admin_site.each_context(request),
+            "opts": self.opts,
+            "title": "Add organization",
+            "form": form,
+        }
+        return TemplateResponse(
+            request, "admin/tsosi/entity/add_form.html", context
+        )
+
+    def create_entity(self, request, form: NewEntityForm):
+        """
+        Create the form's organization and redirect to its admin page, or
+        add the errors to the form and return None. An organization already
+        in TSOSI with the ID, or the other ID of its record, is not created
+        again: its page is shown.
+        """
+        data = form.cleaned_data
+        identifier = data["identifier"]
+        values = {"name": data["name"]}
+        if identifier is not None:
+            try:
+                existing, record = lookup_identifier(*identifier)
+            except RegistryUnavailable as e:
+                form.add_error("identifier", str(e.detail))
+                return None
+            if existing is not None:
+                messages.warning(
+                    request,
+                    f"{existing.name} is already in TSOSI with this ID: "
+                    "nothing was created.",
+                )
+                return redirect("admin:tsosi_entity_change", existing.pk)
+            if record is None:
+                form.add_error("identifier", no_record_message(identifier[0]))
+                return None
+            values = {
+                "name": data["name"] or record.name or identifier[1],
+                "country": record.country,
+                "website": record.website,
+                "identifier": identifier,
+            }
+        elif not data["create_anyway"]:
+            same_name = self.same_name_entities(data["name"])
+            if same_name:
+                form.add_error(
+                    "name",
+                    format_html(
+                        "Already in TSOSI: {}. Check the box below to create "
+                        "it anyway.",
+                        format_html_join(
+                            ", ",
+                            '<a href="{}" target="_blank">{}</a>',
+                            (
+                                (
+                                    reverse(
+                                        "admin:tsosi_entity_change",
+                                        args=[e.pk],
+                                    ),
+                                    e.name,
+                                )
+                                for e in same_name
+                            ),
+                        ),
+                    ),
+                )
+                return None
+        entity = create_team_entity(
+            request.user, scope=data["scope"] or None, **values
+        )
+        url = f"{app_settings.FRONTEND_URL}/hub/{entity_ref(entity)}?tab=page"
+        messages.success(
+            request,
+            format_html(
+                '{} was added. <a href="{}" target="_blank">Edit its public '
+                "page</a> in the Hub.",
+                entity.name,
+                url,
+            ),
+        )
+        return redirect("admin:tsosi_entity_change", entity.pk)
+
+    @staticmethod
+    def same_name_entities(name: str) -> list[Entity]:
+        """The active entities with this name, short name or other name."""
+        return list(
+            Entity.objects.filter(
+                Q(name__iexact=name)
+                | Q(short_name__iexact=name)
+                | Q(names__value__iexact=name),
+                is_active=True,
+            )
+            .distinct()
+            .order_by("name")[:10]
+        )
 
     def has_delete_permission(self, request, obj=None) -> bool:
         return False
