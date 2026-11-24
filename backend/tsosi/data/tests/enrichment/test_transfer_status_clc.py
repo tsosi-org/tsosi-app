@@ -8,7 +8,7 @@ from ..factories import TransferFactory
 
 
 @pytest.mark.django_db
-def test_transfer_status_clc(datasources, monkeypatch):
+def test_transfer_status_clc(db, monkeypatch):
     print("Testing the Transfer.is_future boolean update.")
 
     fixed_now = datetime(2026, 3, 11, 9, 0, 0, tzinfo=UTC)

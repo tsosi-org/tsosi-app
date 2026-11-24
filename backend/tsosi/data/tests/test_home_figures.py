@@ -8,7 +8,7 @@ from .factories import DataLoadSourceFactory, TransferFactory
 
 
 @pytest.mark.django_db
-def test_home_figures(datasources):
+def test_home_figures(db):
     cache.clear()
     # Every transfer gets one of these data loads: the factory's default one
     # has a random date, that could be the latest.

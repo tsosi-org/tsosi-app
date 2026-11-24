@@ -3,12 +3,10 @@ FROM mcr.microsoft.com/devcontainers/python:3.12
 # Real time output from python (stdout and stderr) without buffer
 ENV PYTHONUNBUFFERED=1
 
-# Additional OS packages. graphviz renders the models' ER diagram
-# (graph_models, run by .githooks/pre-commit)
+# Additional OS packages
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends curl \
-    git \
-    graphviz
+    git
 
 # Python deps (managed via Poetry)
 # Install poetry container-wide

@@ -32,7 +32,7 @@ def eur_transfer(amount: float):
 
 
 @pytest.mark.django_db
-def test_compute_transfer_amounts(datasources, rates):
+def test_compute_transfer_amounts(db, rates):
     transfer = eur_transfer(900)
     compute_transfer_amounts()
     transfer.refresh_from_db()
@@ -40,7 +40,7 @@ def test_compute_transfer_amounts(datasources, rates):
 
 
 @pytest.mark.django_db
-def test_huge_amounts_not_computed(datasources, rates, caplog):
+def test_huge_amounts_not_computed(db, rates, caplog):
     """
     The converted amounts out of the int64 range are left out, with a
     warning, and the other amounts and transfers are still computed.

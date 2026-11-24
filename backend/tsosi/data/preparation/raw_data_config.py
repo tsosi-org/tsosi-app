@@ -17,7 +17,6 @@ from tsosi.models.date import (
     format_date,
     parse_date_precision,
 )
-from tsosi.models.static_data import DATA_SOURCES
 
 from .cleaning_utils import (
     check_bool_value,
@@ -390,12 +389,6 @@ class RawDataConfig:
         self.input_file_name = input_file_name
         self.input_sheet_name = input_sheet_name
         self.source = source
-        if self.source.data_source_id not in DATA_SOURCES:
-            raise ValueError(
-                f"Provided source {self.source.data_source_id} "
-                "is not supported. "
-                f"Supported sources are {DATA_SOURCES}"
-            )
         self.fields = fields
         self.extract_currency_amount = extract_currency_amount
         self.date_columns = date_columns

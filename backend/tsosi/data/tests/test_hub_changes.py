@@ -47,7 +47,7 @@ def test_format_amount():
 
 
 @pytest.mark.django_db
-def test_submission_changes(org, member, infra, datasources):
+def test_submission_changes(org, member, infra, db):
     """The changes table of the submission page in the admin."""
     agent = EntityFactory.create(name="Consortium")
     confirmed = support(org, infra, infra, date="2021")

@@ -14,8 +14,8 @@ echo -e "\nInstalling Python dependencies"
 poetry install --no-root
 
 # Enable the versioned git hooks (.githooks/), unless hooks are already
-# configured for this repository. The pre-commit hook regenerates the models'
-# ER diagram (see tsosi/models/README.md)
+# configured for this repository. The post-checkout hook syncs the local
+# database's migrations after a branch switch
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
     && ! git config --local --get core.hooksPath >/dev/null; then
     echo -e "\nEnabling the git hooks of .githooks/"

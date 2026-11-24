@@ -1,23 +1,3 @@
-The following image (accessible [here](./tsosi_database.png)) shows the models used by TSOSI:
-
-![TSOSI database](./tsosi_database.png)
-
-This has been generated with the following management command from `django_extensions` package. Note that it requires the `graphviz` system library to be installed (`sudo apt install graphviz`).
-
-Regenerate it whenever models are modified, from the `backend/` directory:
-
-```bash
-poetry run python manage.py graph_models tsosi --disable-abstract-fields -o tsosi/models/tsosi_database.png -X TimestampedModel
-```
-
-The versioned pre-commit hook [`.githooks/pre-commit`](../../../.githooks/pre-commit) runs this command and adds the PNG to the commit whenever the commit changes a file of `tsosi/models/` or `tsosi/migrations/`. It's enabled by `backend/init.sh`, or by hand from the repository root:
-
-```bash
-git config core.hooksPath .githooks
-```
-
-Without `poetry` or `graphviz` (installed in the DevContainer), the hook only prints a warning and the commit goes on: regenerate the diagram by hand then.
-
 # Core
 
 The base models of our data schema are the following:
@@ -45,11 +25,11 @@ The base models of our data schema are the following:
 
   The successive versions of a PID record fetched from its registry are stored in `IdentifierVersion`.
 
-- [DataSource](./source.py) and [DataLoadSource](./source.py)
+- [DataLoadSource](./source.py)
 
-  It represents respectively allowed data source and ingested datasets.
+  It represents an ingested dataset, and its source (`data_source_id`: the infrastructure whose data was prepared, or `tsosi_portal` for the Data Contribution Hub).
 
-  They are used to flag the source of the ingested records and to prevent ingestion of already ingested datasets. See Data ingestion details.
+  It is used to flag the source of the ingested records and to prevent ingestion of already ingested datasets. See Data ingestion details.
 
 # Matching history models
 

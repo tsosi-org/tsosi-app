@@ -10,7 +10,7 @@ from ..factories import DataLoadSourceFactory
 
 
 @pytest.mark.django_db
-def test_data_load_empty_db(datasources):
+def test_data_load_empty_db(db):
     print("Testing the validation of a new data load with an empty database.")
     test = dc.DataLoadSource(
         data_source_id="pci",
@@ -38,7 +38,7 @@ def test_data_load_empty_db(datasources):
 
 
 @pytest.mark.django_db
-def test_data_load_non_empty_db(datasources):
+def test_data_load_non_empty_db(db):
     print(
         "Testing the validation of a new data load with a non-empty database."
     )
@@ -162,7 +162,7 @@ def test_data_load_non_empty_db(datasources):
 
 
 @pytest.mark.django_db
-def test_multiple_dataset_replacement(datasources):
+def test_multiple_dataset_replacement(db):
     print("Test loading fresh dataset to erase several existing ones.")
     dls_1 = DataLoadSourceFactory.create(
         data_source_id="pci",
@@ -200,7 +200,7 @@ def test_multiple_dataset_replacement(datasources):
 
 
 @pytest.mark.django_db
-def test_distinct_sources(datasources):
+def test_distinct_sources(db):
     print("Test loading fresh dataset to erase several existing ones.")
     dls_1 = DataLoadSourceFactory.create(
         data_source_id="pci",

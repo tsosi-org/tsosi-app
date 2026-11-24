@@ -10,7 +10,7 @@ from .factories import EntityFactory, IdentifierFactory, TransferFactory
 
 
 @pytest.fixture
-def transfers(datasources) -> dict[str, Transfer]:
+def transfers(db) -> dict[str, Transfer]:
     """
     One transfer to a beneficiary in scope, one to a beneficiary to be
     checked, and one to a beneficiary without scope.

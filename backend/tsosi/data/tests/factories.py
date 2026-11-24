@@ -4,7 +4,6 @@ from factory import Dict, Faker, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice
 
-from tsosi.data.preparation.raw_data_config import DATA_SOURCES
 from tsosi.models import (
     Currency,
     DataLoadSource,
@@ -100,7 +99,7 @@ class DataLoadSourceFactory(BaseTypingFactory[DataLoadSource]):
     class Meta:
         model = DataLoadSource
 
-    data_source_id = Faker("random_element", elements=DATA_SOURCES)
+    data_source_id = Faker("slug")
     data_load_name = Faker("word")
     date_data_obtained = Faker("date")
 

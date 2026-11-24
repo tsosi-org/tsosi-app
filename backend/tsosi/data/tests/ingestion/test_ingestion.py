@@ -20,7 +20,7 @@ def test_ingest_test_data(registries):
 
 
 @pytest.mark.django_db
-def test_old_data_load_deletion(datasources):
+def test_old_data_load_deletion(db):
     print("Testing the deletion of old data loads.")
     kwargs_base = {
         "data_source_id": "pci",
@@ -98,7 +98,7 @@ def test_old_data_load_deletion(datasources):
 
 @pytest.mark.django_db
 def test_ingest_existing_entities_does_not_create_new_entities(
-    datasources, monkeypatch
+    db, monkeypatch
 ):
     print("Testing ingestion when all entities already exist.")
 
@@ -147,7 +147,7 @@ def test_ingest_existing_entities_does_not_create_new_entities(
 
 
 @pytest.mark.django_db
-def test_ingest_scope_and_history(registries, datasources, monkeypatch):
+def test_ingest_scope_and_history(registries, db, monkeypatch):
     print("Testing the scope and history of ingested data.")
 
     monkeypatch.setattr(core, "fill_static_data", lambda: None)
@@ -196,7 +196,7 @@ def test_ingest_scope_and_history(registries, datasources, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_ingest_raw_data(registries, datasources, monkeypatch):
+def test_ingest_raw_data(registries, db, monkeypatch):
     monkeypatch.setattr(core, "fill_static_data", lambda: None)
     source = dc.DataLoadSource(
         data_source_id="pci",
@@ -240,7 +240,7 @@ def test_ingest_raw_data(registries, datasources, monkeypatch):
 
 @pytest.mark.django_db
 def test_ingest_replaced_loads_without_connected_sources(
-    datasources, monkeypatch
+    db, monkeypatch
 ):
     print(
         "Testing no deduplication call when replaced loads have no connections."

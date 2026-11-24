@@ -15,7 +15,7 @@ migration_0032 = importlib.import_module(
 
 
 @pytest.mark.django_db
-def test_empty_merged_raw_data(datasources):
+def test_empty_merged_raw_data(db):
     dls = [
         DataLoadSourceFactory.create(data_source_id=value)
         for value in ["rennes", "couperin"]
@@ -42,7 +42,7 @@ def test_empty_merged_raw_data(datasources):
 
 
 @pytest.mark.django_db
-def test_public_raw_data(datasources):
+def test_public_raw_data(db):
     transfer = TransferFactory.create(
         raw_data={"amount": 1000, "emitter": "E"},
         original_amount_field="amount",

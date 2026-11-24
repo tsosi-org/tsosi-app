@@ -75,7 +75,7 @@ def pair(*rows) -> frozenset:
 
 
 @pytest.mark.django_db
-def test_possible_duplicates(client, org, infra, datasources):
+def test_possible_duplicates(client, org, infra, db):
     first = support(org, infra)
     second = support(org, infra, amount=1100, source="couperin")
     support(org, infra, date="2023")
@@ -109,7 +109,7 @@ def test_possible_duplicates(client, org, infra, datasources):
 
 
 @pytest.mark.django_db
-def test_possible_duplicates_of_drafts(client, org, infra, datasources):
+def test_possible_duplicates_of_drafts(client, org, infra, db):
     """All the saved rows are compared, with their declared values."""
     published = support(org, infra)
     other = support(org, infra, date="2023")
@@ -189,7 +189,7 @@ def reconcile(client, org, kind, transfer, *others):
 
 
 @pytest.mark.django_db
-def test_merge_and_not_duplicate(client, org, infra, datasources):
+def test_merge_and_not_duplicate(client, org, infra, db):
     first, second, third = [
         support(org, infra, amount=1000 + i * 100) for i in range(3)
     ]
@@ -249,7 +249,7 @@ def test_merge_and_not_duplicate(client, org, infra, datasources):
 
 
 @pytest.mark.django_db
-def test_new_support_matched(client, org, infra, datasources):
+def test_new_support_matched(client, org, infra, db):
     """A new support becomes the confirmation or edit of its match."""
     matched = support(org, infra)
     other = support(org, infra, amount=1200)
