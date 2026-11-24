@@ -18,6 +18,8 @@ const MAX_NEXT_LENGTH = 2000
 export interface Member {
   email: string
   is_staff: boolean
+  // Changes the supports of any organization that isn't a beneficiary
+  is_superuser: boolean
   // Empty for the TSOSI team members without a membership
   organization: {
     id: string
@@ -134,6 +136,27 @@ export function canEditEntity(entityId: string): boolean {
 }
 
 /**
+ * Whether the logged in user can change the entity's supports: a member of
+ * that entity with the declaration of supports, or a TSOSI superuser for
+ * the organizations that aren't beneficiaries.
+ */
+export function canDeclareSupports(entity: {
+  id: string
+  is_recipient: boolean
+}): boolean {
+  const member = state.member
+  if (!member) {
+    return false
+  }
+  // As in the backend's `get_declaring_entity`: the superusers first, even
+  // on their own organization without the option
+  if (member.is_superuser && !entity.is_recipient) {
+    return true
+  }
+  return member.organization?.id == entity.id && member.can_declare_supports
+}
+
+/**
  * Whether the visitor may be logged in: they have the CSRF cookie, set once
  * they opened the Hub. The public pages only load the session then, so that
  * public visitors don't make an extra request.
@@ -163,7 +186,8 @@ export function extractLoginToken(to: RouteLocationNormalized) {
 
 /**
  * Router guard of the Hub pages: members on their organization's
- * Hub, and the TSOSI team on any organization's Hub, read-only. Their URLs
+ * Hub, and the TSOSI team on any organization's Hub, read-only except for
+ * the superusers (`canDeclareSupports`). Their URLs
  * have the organization's TSOSI ID (the Hub views redirect the TSOSI team's
  * other IDs).
  */

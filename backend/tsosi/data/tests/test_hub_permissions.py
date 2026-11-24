@@ -33,6 +33,8 @@ REVOKED_MEMBER = "revoked_member"
 # Logged in, without membership
 NO_MEMBERSHIP = "no_membership"
 STAFF = "staff"
+# The TSOSI team's superusers also change the supports
+SUPERUSER = "superuser"
 USERS = [
     ANONYMOUS,
     MEMBER,
@@ -41,6 +43,7 @@ USERS = [
     REVOKED_MEMBER,
     NO_MEMBERSHIP,
     STAFF,
+    SUPERUSER,
 ]
 
 
@@ -88,6 +91,9 @@ def hub(db, datasources, registries) -> Hub:
         REVOKED_MEMBER: create_user("revoked@org.edu"),
         NO_MEMBERSHIP: create_user("nobody@org.edu"),
         STAFF: create_user("staff@tsosi.org", is_staff=True),
+        SUPERUSER: create_user(
+            "admin@tsosi.org", is_staff=True, is_superuser=True
+        ),
     }
     Membership.objects.create(user=users[MEMBER], entity=org)
     Membership.objects.create(
@@ -205,15 +211,22 @@ READ = {
     REVOKED_MEMBER: 403,
     NO_MEMBERSHIP: 403,
     STAFF: 200,
+    SUPERUSER: 200,
 }
 
 
 def write(success: int) -> dict:
     """
     Changes of the organization's supports: its members with the option
-    only, the TSOSI team reads them.
+    and the superusers only, the rest of the TSOSI team reads them.
     """
-    return {**READ, MEMBER: success, MEMBER_PROFILE_ONLY: 403, STAFF: 403}
+    return {
+        **READ,
+        MEMBER: success,
+        MEMBER_PROFILE_ONLY: 403,
+        STAFF: 403,
+        SUPERUSER: success,
+    }
 
 
 EXPECTED = {
@@ -419,3 +432,21 @@ def test_other_organization_data_not_listed(hub, other_hub):
     pairs = client.get(f"{base}/declarations").json()["possible_duplicates"]
     rows = {row for pair in pairs for row in pair}
     assert str(transfer.id) not in rows and f"new-{draft.id}" not in rows
+
+
+@pytest.mark.django_db
+def test_superuser_beneficiary_supports(hub):
+    """
+    The superusers don't change the supports of a beneficiary: the
+    published supports are emitted by the organization.
+    """
+    client = client_for(hub, SUPERUSER)
+    base = f"/api/hub/entities/{hub.infra.id}"
+    assert client.get(f"{base}/transfers").status_code == 200
+    response = request(client, "post", f"{base}/declarations", new_support(hub))
+    assert response.status_code == 403
+    response = request(
+        client, "post", f"{base}/organizations", {"name": "A new one"}
+    )
+    assert response.status_code == 403
+    assert Declaration.objects.count() == 1

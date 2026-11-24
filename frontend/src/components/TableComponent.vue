@@ -26,11 +26,9 @@ import CustomButton, {
 import Country from "@/components/atoms/CountryAtom.vue"
 import EntityLinkDataAtom from "@/components/atoms/EntityLinkDataAtom.vue"
 import ExternalLinkAtom from "@/components/atoms/ExternalLinkAtom.vue"
-import MenuButtonAtom from "@/components/atoms/MenuButtonAtom.vue"
 import CurrencySelector from "@/components/CurrencySelector.vue"
 import {
   exportCSV,
-  exportJSON,
   formatDateWithPrecision,
   formatItemLabel,
   getCountryLabel,
@@ -441,30 +439,15 @@ watch(multiSortMeta, writeUrl)
 watch(first, writeUrl)
 
 /**
- * Download the filtered data.
- * @param format
+ * Download the filtered data as CSV.
  */
-async function download(format: "json" | "csv") {
-  const fileName = props.exportTitle || "TSOSI_export"
-  if (format == "csv") {
-    exportCSV(props.columns, filteredData.value, fileName)
-    return
-  }
-  exportJSON(props.columns, filteredData.value, fileName)
+function download() {
+  exportCSV(
+    props.columns,
+    filteredData.value,
+    props.exportTitle || "TSOSI_export",
+  )
 }
-
-const exportItems = [
-  {
-    label: "Export CSV",
-    icon: ["fas", "download"],
-    command: () => download("csv"),
-  },
-  {
-    label: "Export JSON",
-    icon: ["fas", "download"],
-    command: () => download("json"),
-  },
-]
 
 /**
  * Toggle the button menu element when there are multiple buttons per row.
@@ -641,6 +624,7 @@ function isColumnFiltered(column: TableColumnProps): boolean {
 <template>
   <DataTable
     class="tsosi-table"
+    :class="{ 'fixed-layout': props.fixedLayout }"
     :value="filteredData"
     :frozenValue="props.frozenData?.length ? props.frozenData : undefined"
     ref="data-table"
@@ -684,15 +668,12 @@ function isColumnFiltered(column: TableColumnProps): boolean {
         </h2>
         <div class="table-header__actions">
           <template v-if="!props.disableExport">
-            <MenuButtonAtom
-              :id="`table-export-menu-${props.id}`"
-              :button="{
-                id: `table-export-button-${props.id}`,
-                label: 'Export',
-                type: 'action',
-                icon: ['fas', 'download'],
-              }"
-              :items="exportItems"
+            <CustomButton
+              :id="`table-export-button-${props.id}`"
+              label="Export CSV"
+              type="action"
+              :icon="['fas', 'download']"
+              @click="download"
             />
           </template>
         </div>
@@ -983,15 +964,12 @@ function isColumnFiltered(column: TableColumnProps): boolean {
       Export data:
     </h3>
     <div style="display: inline-flex; gap: min(1em, 3vw); align-items: center">
-      <MenuButtonAtom
-        :id="`table-export-menu-${props.id}`"
-        :button="{
-          id: `table-export-button-${props.id}`,
-          label: 'Export',
-          type: 'action',
-          icon: ['fas', 'download'],
-        }"
-        :items="exportItems"
+      <CustomButton
+        :id="`table-export-button-${props.id}`"
+        label="Export CSV"
+        type="action"
+        :icon="['fas', 'download']"
+        @click="download"
       />
     </div>
     <div>
@@ -1056,7 +1034,6 @@ function isColumnFiltered(column: TableColumnProps): boolean {
   background: var(--p-neutral-50);
   font-size: 0.85rem;
   white-space: nowrap;
-  cursor: help;
 }
 
 .cell-icon {
@@ -1084,8 +1061,19 @@ function isColumnFiltered(column: TableColumnProps): boolean {
   color: var(--p-neutral-500);
 }
 
+.inline-container,
+.entity-links-container {
+  min-width: 0;
+}
+
+/* The names are cut to the column's width, or this one in an auto layout */
 .entity-links-container {
   display: flex;
+  max-width: 22rem;
+}
+
+.fixed-layout .entity-links-container {
+  max-width: 100%;
 }
 
 .row-buttons {

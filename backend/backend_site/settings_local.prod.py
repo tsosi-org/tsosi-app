@@ -68,6 +68,8 @@ TSOSI_TRIGGER_JOBS = True
 #     "private_key": "",
 # }
 TSOSI_NEWSLETTER_SYMPA_OWNER = {"email": "{REPLACE}", "password": "{REPLACE}"}
+
+TSOSI_TEAM_EMAILS = ["{REPLACE}"]
 # API related
 # TODO: Add UGA network IPV4 prefixes
 TSOSI_API_WHITELIST_IPS = ["127.0.0.1"]

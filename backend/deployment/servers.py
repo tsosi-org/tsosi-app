@@ -12,10 +12,10 @@ class ServerConfig:
 
 
 SERVERS = {
-    "prod": ServerConfig(name="prod", address="tsosi.fr", user="deployer"),
+    "prod": ServerConfig(name="prod", address="tsosi.u-ga.fr", user="deployer"),
     "dev": ServerConfig(
         name="dev",
-        address="dev.tsosi.fr",
+        address="tsosi-dev.u-ga.fr",
         user="deployer",
         default_branch="dev",
         frontend_mode="dev-server",

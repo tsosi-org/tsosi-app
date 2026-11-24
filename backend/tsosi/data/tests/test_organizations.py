@@ -344,3 +344,49 @@ def test_support_to_added_organization(client, org, registries):
     assert entity["is_new"] is True
     assert entity["is_public"] is False
     assert entity["scope"] is None
+
+
+def test_add_organization_tells_team(
+    client,
+    member,
+    org,
+    registries,
+    datasources,
+    record_fetch,
+    mocker,
+    settings,
+    monkeypatch,
+):
+    """The TSOSI team is e-mailed about the organizations added, once."""
+    from django.core import mail
+
+    from tsosi.api.hub import organizations
+
+    mocker.patch("tsosi.data.entity_edit.identifiers_created.send")
+    monkeypatch.setattr(organizations, "run_in_background", lambda f, *a: f(*a))
+    # No team address: no e-mail
+    settings.TSOSI_TEAM_EMAILS = []
+    client.post(add_url(org), {"name": "Quiet Infra"})
+    assert len(mail.outbox) == 0
+
+    settings.TSOSI_TEAM_EMAILS = ["team@tsosi.org"]
+    response = client.post(add_url(org), {"name": "New Infra"})
+    entity = Entity.objects.get(id=response.json()["id"])
+    tsosi_id = entity.identifiers.get(registry_id=REGISTRY_TSOSI).value
+    [email] = mail.outbox
+    assert email.to == ["team@tsosi.org"]
+    assert email.subject == "[TSOSI Hub] New organization: New Infra"
+    assert "by member@uni.edu, of" in email.body
+    assert "From its name only" in email.body
+    assert f"/admin/tsosi/entity/{entity.pk}/change/" in email.body
+    assert f"/hub/{tsosi_id}?tab=page" in email.body
+
+    mail.outbox.clear()
+    client.post(add_url(org), {"identifier": "05abcde12"})
+    [email] = mail.outbox
+    assert "From its record: ROR 05abcde12" in email.body
+    # Already in TSOSI: no e-mail
+    mail.outbox.clear()
+    response = client.post(add_url(org), {"identifier": "05abcde12"})
+    assert response.status_code == 200
+    assert len(mail.outbox) == 0

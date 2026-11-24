@@ -3,7 +3,6 @@ import type { DeepReadonly } from "vue"
 import { getCountry, type Transfer } from "@/singletons/ref-data"
 import { getStaticDataUrl } from "@/utils/url-utils"
 
-
 export const nullValues = [null, undefined]
 
 export type DataType =
@@ -110,14 +109,14 @@ export function getCountryCoordinates(
   return getCountry(countryCode).coordinates
 }
 
-type FormatTarget = "html" | "csv" | "json"
+type FormatTarget = "html" | "csv"
 
 /**
  * Format the given value according to the given `DataType`.
  * The formatting depends on the given format.
  * @param value   The value to be formatted
  * @param type    The `DataType` the value should be interpreted as
- * @param target  The formatting target: `html`, `csv` or `json`.
+ * @param target  The formatting target: `html` or `csv`.
  * @returns
  */
 export function formatValue(
@@ -126,7 +125,7 @@ export function formatValue(
   target: FormatTarget = "html",
 ): string | number | null {
   if (nullValues.includes(value)) {
-    return target == "json" ? null : ""
+    return ""
   }
   switch (type) {
     case "dateWithPrecision":
@@ -134,9 +133,6 @@ export function formatValue(
     case "date":
       return formatDateWithPrecision(value as string | Date, "day") || ""
     case "number":
-      if (target == "json") {
-        return value
-      }
       if (target == "csv") {
         return value.toString()
       }
@@ -235,12 +231,21 @@ export function formatDateWithPrecision(
   let dateFormatted = ""
   switch (precision) {
     case "day":
-      dateFormatted = dateObj!.toLocaleString("default", { day: "2-digit", timeZone: "UTC" })
+      dateFormatted = dateObj!.toLocaleString("default", {
+        day: "2-digit",
+        timeZone: "UTC",
+      })
     case "month":
-      const month = dateObj!.toLocaleString("default", { month: "2-digit", timeZone: "UTC" })
+      const month = dateObj!.toLocaleString("default", {
+        month: "2-digit",
+        timeZone: "UTC",
+      })
       dateFormatted = dateFormatted ? `${month}-${dateFormatted}` : month
     default:
-      const year = dateObj!.toLocaleString("default", { year: "numeric", timeZone: "UTC" })
+      const year = dateObj!.toLocaleString("default", {
+        year: "numeric",
+        timeZone: "UTC",
+      })
       dateFormatted = dateFormatted ? `${year}-${dateFormatted}` : year
   }
   return dateFormatted
@@ -340,34 +345,6 @@ export async function exportCSV(
   downloadFile(csvRows, "text/csv;charset=utf-8;", `${fileName}.csv`)
 }
 
-/**
- * Export and download the given data as a JSON file.
- * @param fields    The data fields to include
- * @param data      The data items
- * @param fileName  The exported file name, without extension
- */
-export async function exportJSON(
-  fields: DataFieldProps[],
-  data: Record<string, any>[],
-  fileName: string,
-) {
-  const fieldsMapping: Map<string, string> = new Map()
-  fields.forEach((field) =>
-    fieldsMapping.set(field.id, field.title.toLowerCase().replace(/\s+/g, "_")),
-  )
-  const processRow = (row: Record<string, any>) => {
-    const values: { [key: string]: string | number | null } = {}
-    fields.forEach((field) => {
-      const value = formatItemLabel(row, field, "json")
-      values[fieldsMapping.get(field.id) as string] = value
-    })
-    return values
-  }
-
-  const processedData = JSON.stringify(data.map(processRow), null, 2)
-  downloadFile(processedData, "application/json", `${fileName}.json`)
-}
-
 export function exportPNG(base64Data: string, fileName: string) {
   const link = document.createElement("a")
   link.href = base64Data
@@ -427,7 +404,6 @@ export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-
 /**
  * Build one or more row payloads for entity links.
  * The `agents` column can hold an array, while other entity links hold one item.
@@ -436,7 +412,10 @@ export function getEntityLinkRows(
   data: Record<string, any>,
   column: any,
 ): Array<Record<string, any>> {
-  if (column.type == "entityLink" && (column.field == "agents" || column.field == "sources") ) {
+  if (
+    column.type == "entityLink" &&
+    (column.field == "agents" || column.field == "sources")
+  ) {
     const entities = resolveValueFromPath(data, column.field)
     if (!Array.isArray(entities)) {
       return [data]

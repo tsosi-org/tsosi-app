@@ -6,7 +6,9 @@ looked up in ROR or Wikidata, and added when missing.
 from collections.abc import Callable
 
 from django.core.cache import cache
+from django.core.mail import send_mail
 from django.db.models import Case, Exists, OuterRef, Q, QuerySet, When
+from django.urls import reverse
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, Throttled, ValidationError
 from rest_framework.response import Response
@@ -19,6 +21,8 @@ from tsosi.api.hub.base import (
     get_declaring_entity,
     with_hub_status,
 )
+from tsosi.api.hub.session import run_in_background
+from tsosi.app_settings import app_settings
 from tsosi.data.entity_edit import create_hub_entity
 from tsosi.data.pid_registry.lookup import (
     REGISTRY_NAMES,
@@ -27,7 +31,22 @@ from tsosi.data.pid_registry.lookup import (
     fetch_organization_record,
     parse_organization_id,
 )
+from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
 from tsosi.models import Entity, Identifier
+
+NEW_ORGANIZATION_EMAIL_SUBJECT = "[TSOSI Hub] New organization: {name}"
+NEW_ORGANIZATION_EMAIL_MESSAGE = """{name} was added in the Data Contribution
+Hub by {user}, of {organization}, to use it as the beneficiary or an
+intermediary of its supports.
+
+{identifier}
+
+It's not public until a support to it is published. Approving a submission
+with it as beneficiary sets its scope to "to be checked".
+
+Admin page: {admin_url}
+Public page, in the Hub: {hub_url}
+"""
 
 
 class RegistryThrottle(UserRateThrottle):
@@ -301,8 +320,50 @@ class EntityOrganizationsView(HubView):
                     website=record.website,
                     identifier=identifier,
                 )
+        if status == 201:
+            notify_team(request, entity, organization)
         entity = with_hub_status(Entity.objects.filter(id=entity.id)).get()
         return Response(
             HubEntitySerializer(entity, context={"request": request}).data,
             status=status,
         )
+
+
+def notify_team(request, entity: Entity, organization: Entity) -> None:
+    """
+    E-mail the TSOSI team (`TSOSI_TEAM_EMAILS`) about an organization added
+    in the Hub, to check it. Sent in the background: a failure doesn't
+    prevent the addition.
+    """
+    recipients = app_settings.TEAM_EMAILS
+    if not recipients:
+        return
+    identifiers = {
+        i.registry_id: i.value
+        for i in entity.identifiers.exclude(registry_id=REGISTRY_TSOSI)
+    }
+    if identifiers:
+        identifier = "From its record: " + ", ".join(
+            f"{REGISTRY_NAMES.get(r, r)} {v}" for r, v in identifiers.items()
+        )
+    else:
+        identifier = "From its name only: no ROR or Wikidata ID."
+    tsosi_id = entity.identifiers.filter(registry_id=REGISTRY_TSOSI).first()
+    ref = tsosi_id.value if tsosi_id else entity.id
+    run_in_background(
+        send_mail,
+        NEW_ORGANIZATION_EMAIL_SUBJECT.format(name=entity.name),
+        NEW_ORGANIZATION_EMAIL_MESSAGE.format(
+            name=entity.name,
+            user=request.user.email,
+            organization=organization.name,
+            identifier=identifier,
+            admin_url=request.build_absolute_uri(
+                reverse("admin:tsosi_entity_change", args=[entity.pk])
+            ),
+            hub_url=f"{app_settings.FRONTEND_URL}/hub/{ref}?tab=page",
+        ),
+        # Sent from DEFAULT_FROM_EMAIL
+        None,
+        recipients,
+    )

@@ -243,6 +243,14 @@ class AppSettings:
         return self._setting("FRONTEND_URL", "https://tsosi.org").rstrip("/")
 
     @property
+    def TEAM_EMAILS(self) -> list[str]:
+        """
+        The TSOSI team's e-mail addresses, told of the organizations added
+        in the Data Contribution Hub.
+        """
+        return list(self._setting("TEAM_EMAILS", []))
+
+    @property
     def NEWSLETTER_SYMPA_URL(self) -> str:
         """Base URL of the Sympa instance hosting the newsletter's list."""
         return self._setting(

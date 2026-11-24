@@ -1,6 +1,6 @@
 """
 Manual edition of an entity's profile by its members or the TSOSI team, and
-creation of the entities added in the Data Contribution Hub.
+creation of the entities added in the Data Contribution Hub or by the team.
 The changes are recorded with their user by `django-simple-history`, on
 `Entity` and `InfrastructureDetails`. New identifiers are recorded by their
 `IdentifierEntityMatching`.
@@ -257,22 +257,21 @@ def apply_entity_edit(
     return changes
 
 
-@transaction.atomic
-def create_hub_entity(
-    organization: Entity,
-    user,
+def create_entity(
     name: str,
+    comments: str,
     country: str | None = None,
     website: str | None = None,
     identifier: tuple[str, str] | None = None,
+    scope: str | None = None,
 ) -> Entity:
     """
-    Create an entity missing from TSOSI, added in the Data Contribution Hub
-    by the organization: from the values of its ROR or Wikidata record, whose
-    fetching is then triggered, or from its name only. It gets a TSOSI ID,
-    like the ingested entities. It's not public until a support to it is
-    published.
+    Create an entity missing from TSOSI, outside of the ingestion: from the
+    values of its ROR or Wikidata record, whose fetching is then triggered,
+    or from its name only. It gets a TSOSI ID, like the ingested entities.
+    It's not public until a transfer involving it is published.
 
+    :param comments:    How it was added, for its identifiers' matching.
     :param identifier:  The registry and value of its ROR or Wikidata ID.
     """
     if website and len(website) > Entity._meta.get_field("website").max_length:
@@ -284,18 +283,70 @@ def create_hub_entity(
         country=country,
         raw_website=website,
         website=website,
+        scope=scope,
     )
-    entity.added_in_hub_by.add(organization)
-    comments = f"Added in the Hub by {editor_label(user)}."
     identifiers = {REGISTRY_TSOSI: generate_tsosi_id()}
     if identifier is not None:
         identifiers[identifier[0]] = identifier[1]
     _, created_registries = update_identifiers(entity, identifiers, comments)
+    registries = [r for r in created_registries if r != REGISTRY_TSOSI]
+    if registries:
+        identifiers_created.send(None, registries=registries)
+    return entity
+
+
+@transaction.atomic
+def create_hub_entity(
+    organization: Entity,
+    user,
+    name: str,
+    country: str | None = None,
+    website: str | None = None,
+    identifier: tuple[str, str] | None = None,
+) -> Entity:
+    """
+    Create an entity missing from TSOSI, added in the Data Contribution Hub
+    by the organization, as a beneficiary or intermediary of its supports.
+    See `create_entity`.
+    """
+    entity = create_entity(
+        name,
+        f"Added in the Hub by {editor_label(user)}.",
+        country=country,
+        website=website,
+        identifier=identifier,
+    )
+    entity.added_in_hub_by.add(organization)
     logger.info(
         f"Entity {entity.id} added in the Hub by {editor_label(user)}, for "
         f"{organization.id}."
     )
-    registries = [r for r in created_registries if r != REGISTRY_TSOSI]
-    if registries:
-        identifiers_created.send(None, registries=registries)
+    return entity
+
+
+@transaction.atomic
+def create_team_entity(
+    user,
+    name: str,
+    country: str | None = None,
+    website: str | None = None,
+    identifier: tuple[str, str] | None = None,
+    scope: str | None = None,
+) -> Entity:
+    """
+    Create an entity missing from TSOSI, added by the TSOSI team in the
+    Django admin, to fill its profile in its Hub's Public page tab.
+    See `create_entity`.
+    """
+    entity = create_entity(
+        name,
+        f"Added in the admin by {editor_label(user)}.",
+        country=country,
+        website=website,
+        identifier=identifier,
+        scope=scope,
+    )
+    logger.info(
+        f"Entity {entity.id} added in the admin by {editor_label(user)}."
+    )
     return entity

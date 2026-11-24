@@ -41,7 +41,7 @@ export const ROW_STATUSES: Record<RowStatus, { label: string; info: string }> =
   {
     not_confirmed: {
       label: "Not confirmed",
-      info: "Only other organizations declared this support. Confirm it, or edit it if it's not right.",
+      info: "This support was declared by others. You can confirm it or edit it.",
     },
     new: { label: "Created", info: `Added here. ${SUBMIT_HINT}` },
     edit: { label: "Edited", info: `Edited here. ${SUBMIT_HINT}` },

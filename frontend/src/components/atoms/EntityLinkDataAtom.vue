@@ -72,6 +72,7 @@ onBeforeMount(() => {
   flex-wrap: nowrap;
   align-items: center;
   justify-content: left;
+  min-width: 0;
   margin: 0;
 }
 
@@ -81,13 +82,20 @@ onBeforeMount(() => {
   flex-wrap: nowrap;
   align-items: center;
   gap: 0.5em;
-  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   height: 100%;
   padding: 2px 4px;
+  white-space: nowrap;
+}
 
-  &.icon {
-    white-space: nowrap;
-  }
+.entity-icon {
+  flex-shrink: 0;
+}
+
+.entity-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .entity-label-detail {

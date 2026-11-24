@@ -3,6 +3,7 @@ import Button from "primevue/button"
 import {
   computed,
   nextTick,
+  onBeforeUnmount,
   onMounted,
   reactive,
   ref,
@@ -18,6 +19,7 @@ import SupportRowPanel from "@/components/hub/SupportRowPanel.vue"
 import Table, { type TableColumnProps } from "@/components/TableComponent.vue"
 import { originalCurrency, selectedCurrency } from "@/singletons/currencyStore"
 import {
+  computeDateClc,
   EDITOR_FIELD_ERRORS,
   getDeclarations,
   getSubmissions,
@@ -37,10 +39,7 @@ import {
   type EntityDetails,
   type HubTransfer,
 } from "@/singletons/ref-data"
-import {
-  formatDateWithPrecision,
-  formatDateWithPrecisionObj,
-} from "@/utils/data-utils"
+import { formatDateWithPrecision } from "@/utils/data-utils"
 import {
   draftErrors,
   draftPayloadValues,
@@ -263,7 +262,7 @@ function hubColumns(): TableColumnProps[] {
       if (row.amount_hidden) {
         return {
           icon: ["fas", "eye-slash"],
-          tooltip: "Hidden on the public page",
+          tooltip: "Hidden on the public page, confirm it to make it public",
         }
       }
       return null
@@ -376,9 +375,47 @@ function cellClass(row: SupportRow, column: TableColumnProps) {
   return fieldHasError(field) ? "inline-cell has-error" : "inline-cell"
 }
 
-function toggleDates() {
-  editing.value!.dateOpen = !editing.value!.dateOpen
+// The Date cell's preview of the dates typed in the panel: the year shown on
+// the public page. Their errors are only flagged in the panel.
+const dateYear = computed(() => {
+  const draft = editing.value?.draft
+  const shown = draft && computeDateClc(valuesFromDraft(draft).dates)
+  return shown?.date.value.slice(0, 4) ?? null
+})
+
+// The dates' panel stays open when its cell is clicked again, as the other
+// cells' inputs keep the focus
+function openDates() {
+  editing.value!.dateOpen = true
 }
+
+// Within the Date cell or its panel
+function inDates(target: EventTarget | null): boolean {
+  return !!(target as Element | null)?.closest?.(".date-cell, .support-dates")
+}
+
+// The dates' panel closes when clicking or moving the focus elsewhere, as
+// the other cells' inputs. Not when the focus goes to an element around it,
+// e.g. the Hub's tab when clicking a label of the panel.
+function closeDatesOutside(event: Event) {
+  const target = event.target as Element | null
+  const around =
+    event.type == "focusin" &&
+    !!target?.contains?.(root.value?.querySelector(".support-dates") ?? null)
+  if (editing.value?.dateOpen && !inDates(target) && !around) {
+    editing.value.dateOpen = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener("pointerdown", closeDatesOutside)
+  document.addEventListener("focusin", closeDatesOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener("pointerdown", closeDatesOutside)
+  document.removeEventListener("focusin", closeDatesOutside)
+})
 
 // The errors of the row, listed in its panel: its cells only show that
 // they're invalid
@@ -685,10 +722,16 @@ function cancelEdit() {
 }
 
 // Escape cancels the row being edited, but first closes the dropdown it's
-// pressed in, if open (the search or the currency): caught before the cells
-// stop it
+// pressed in, if open (the search or the currency), or the dates' panel, the
+// focus back on its cell: caught before the cells stop it
 function onEscape(event: KeyboardEvent) {
   const target = event.target as HTMLElement | null
+  if (editing.value?.dateOpen && inDates(target)) {
+    event.preventDefault()
+    editing.value.dateOpen = false
+    root.value?.querySelector<HTMLElement>(".date-cell")?.focus()
+    return
+  }
   if (
     !editing.value ||
     target?.closest('[role="combobox"][aria-expanded="true"]')
@@ -929,11 +972,20 @@ function openSubmit() {
             selected: editing.dateOpen,
             'has-error': fieldHasError('date'),
           }"
-          :aria-label="`Dates: ${formatDateWithPrecisionObj(data.date_clc) || 'none'}`"
+          :aria-label="`Dates: ${dateYear || 'none'}`"
           :aria-expanded="editing.dateOpen"
-          @click="toggleDates"
+          @click="openDates"
         >
-          {{ formatDateWithPrecisionObj(data.date_clc) }}
+          <span v-if="dateYear" class="date-cell-text">
+            {{ dateYear }}
+          </span>
+          <span v-else class="date-cell-text date-cell-placeholder">
+            Add dates
+          </span>
+          <font-awesome-icon
+            class="date-cell-icon"
+            :icon="['fas', 'calendar']"
+          />
         </button>
         <SupportCellEditor
           v-else-if="editing"
@@ -1118,42 +1170,76 @@ function openSubmit() {
   }
 }
 
+/* The rows aren't clickable, only their links and buttons: no pointer from
+   the table's row selection */
+.hub-supports :deep(tr.p-datatable-selectable-row) {
+  cursor: auto;
+}
+
 /* Faded, all but the buttons' cell */
 .hub-supports :deep(tr.support-row.row-removed > td:not(:last-child)) {
   opacity: 0.5;
 }
 
-/* The Date cell, a button opening the dates' panel: all the same height,
-   whatever its content */
+/* The Date cell, a button opening the dates' panel, looking like the
+   other cells' inputs */
 .editable-cell {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
   box-sizing: border-box;
-  width: calc(100% + 0.8rem);
-  min-height: 2.9rem;
-  margin: -0.4rem;
-  padding: 0.4rem;
-  border: 1px dashed var(--p-neutral-400);
-  border-radius: 4px;
-  background: none;
-  color: inherit;
+  width: 100%;
+  padding: var(--p-form-field-padding-y) var(--p-form-field-padding-x);
+  border: 1px solid var(--p-form-field-border-color);
+  border-radius: var(--p-form-field-border-radius);
+  background: var(--p-form-field-background);
+  box-shadow: var(--p-form-field-shadow);
+  color: var(--p-form-field-color);
   font: inherit;
+  line-height: normal;
   text-align: start;
   cursor: pointer;
+  transition:
+    border-color var(--p-form-field-transition-duration),
+    box-shadow var(--p-form-field-transition-duration);
+
+  &:hover {
+    border-color: var(--p-form-field-hover-border-color);
+  }
 
   &:focus-visible {
-    outline: 2px solid var(--p-primary-color);
-    outline-offset: 1px;
+    outline: none;
   }
 }
 
-/* A thicker border with a shadow, so that the cell keeps its size */
-.editable-cell.selected {
-  border: 1px solid var(--p-primary-color);
-  box-shadow: inset 0 0 0 1px var(--p-primary-color);
+.date-cell-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+.date-cell-placeholder {
+  color: var(--p-form-field-placeholder-color);
+}
+
+.date-cell-icon {
+  flex-shrink: 0;
+  color: var(--p-text-muted-color);
+}
+
+/* Focused or open, as a focused input */
+.editable-cell:is(:focus-visible, .selected) {
+  border-color: var(--p-form-field-focus-border-color);
+
+  & .date-cell-icon {
+    color: var(--p-form-field-focus-border-color);
+  }
+}
+
+/* Invalid dates, as an invalid input, also once the panel is closed */
 .editable-cell.has-error {
-  border-color: var(--p-red-500);
+  border-color: var(--p-form-field-invalid-border-color);
 }
 </style>

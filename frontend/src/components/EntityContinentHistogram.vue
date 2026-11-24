@@ -23,7 +23,6 @@ import {
 } from "@/singletons/ref-data"
 import {
   exportCSV,
-  exportJSON,
   exportPNG,
   getCountryRegion,
   type DataFieldProps,
@@ -236,12 +235,7 @@ const exportItems = [
   {
     label: "Export CSV",
     icon: ["fas", "download"],
-    command: () => downloadData("csv"),
-  },
-  {
-    label: "Export JSON",
-    icon: ["fas", "download"],
-    command: () => downloadData("json"),
+    command: () => downloadData(),
   },
   {
     label: "Export PNG",
@@ -265,7 +259,7 @@ async function downloadPNG() {
   exportPNG(image, getFileName())
 }
 
-async function downloadData(format: "json" | "csv") {
+async function downloadData() {
   if (!chartData.value) {
     console.warn("Chart: No data to export!")
     return
@@ -299,11 +293,7 @@ async function downloadData(format: "json" | "csv") {
       type: "number",
     }),
   )
-  if (format == "csv") {
-    exportCSV(fields, exportData, getFileName())
-    return
-  }
-  exportJSON(fields, exportData, getFileName())
+  exportCSV(fields, exportData, getFileName())
 }
 </script>
 

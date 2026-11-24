@@ -420,7 +420,7 @@ def test_draft_locked_while_changed(client, org, infra, supports, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_declarations_access(client, member, admin_user, org, infra):
+def test_declarations_access(client, member, org, infra):
     Currency.objects.get_or_create(id="EUR")
     infra_to_check = EntityFactory.create(scope=ENTITY_SCOPE_TO_CHECK)
     response = client.post(url(org), new_support(infra_to_check), format="json")
@@ -431,8 +431,12 @@ def test_declarations_access(client, member, admin_user, org, infra):
     assert list(entities) == [str(infra_to_check.id)]
 
     # The TSOSI team only reads
+    # Staff, not superuser: it only reads the supports
+    staff_user = get_user_model().objects.create_user(
+        "staff", "staff@tsosi.org", is_staff=True
+    )
     staff = APIClient()
-    staff.force_login(admin_user)
+    staff.force_login(staff_user)
     assert len(staff.get(url(org)).json()["declarations"]) == 1
     response = staff.post(url(org), new_support(infra), format="json")
     assert response.status_code == 403

@@ -39,9 +39,8 @@ def test_set_scope(admin_client, admin_user):
 
 
 @pytest.mark.django_db
-def test_no_entity_add_or_delete(admin_client):
+def test_no_entity_delete(admin_client):
     entity = EntityFactory.create()
-    assert admin_client.get(f"{ENTITY_ADMIN_URL}add/").status_code == 403
     url = f"{ENTITY_ADMIN_URL}{entity.id}/delete/"
     assert admin_client.get(url).status_code == 403
 

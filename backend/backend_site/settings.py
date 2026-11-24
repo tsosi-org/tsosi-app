@@ -73,6 +73,7 @@ TSOSI_OPTIONAL_SETTINGS = [
     "EMAIL_HOST_PASSWORD",
     "EMAIL_USE_SSL",
     "EMAIL_USE_TLS",
+    "TSOSI_TEAM_EMAILS",
 ]
 
 # Defaults of the optional settings above, overridden by settings_local.py

@@ -390,7 +390,7 @@ describe("statusInfo", () => {
       "preview and submit",
     )
     expect(statusInfo(table, table.rowById.get("t1")!)).toMatch(
-      /^Only other organizations declared this support/,
+      /^This support was declared by others/,
     )
     expect(statusInfo(table, table.rowById.get("t2")!)).toBe("")
   })

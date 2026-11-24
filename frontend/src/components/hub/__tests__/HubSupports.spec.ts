@@ -433,7 +433,10 @@ describe("HubSupports", () => {
       expect(rowOf("t1").textContent).not.toMatch(/2\D?000/)
       await click("Add a support")
       expect(root().querySelector(".date-cell")).toBeTruthy()
+      // The dates' panel open, Escape first closes it
       await pressEscape(panel()!.querySelector("input")!)
+      expect(panel()).toBeNull()
+      await pressEscape(root().querySelector(".date-cell")!)
       expect(root().querySelector(".date-cell")).toBeNull()
       expect(changes(backend)).toEqual([])
     })
@@ -494,7 +497,7 @@ describe("HubSupports", () => {
       const row = edited()
       expect(row.querySelector(".cell-editor .error")).toBeNull()
       expect(amountInput().className).toContain("p-invalid")
-      // The dates' panel opens on their errors
+      // The dates' panel opens on their errors, the cell flagged too
       expect(row.querySelector(".date-cell")!.className).toContain("has-error")
       expect(panel()!.querySelectorAll("input")).toHaveLength(5)
       // In the cells' order, a date's named
@@ -660,6 +663,60 @@ describe("HubSupports", () => {
       await typeDate("Invoice date", "2025")
       await typeIn(amountInput(), "500")
     }
+
+    it("previews the year typed in the Date cell", async () => {
+      hubBackend({ transfers: [transfer()] })
+      await mountSupports()
+      await startAdding()
+      const dateCell = () => edited().querySelector(".date-cell")!
+      const text = () => dateCell().textContent!.trim()
+      expect(text()).toBe("Add dates")
+      // The year, as on the public page
+      await typeDate("Invoice date", "2025-06-12")
+      expect(text()).toBe("2025")
+      // An invalid date is left out, only flagged in the panel
+      await typeDate("Date received", "2024-13")
+      expect(text()).toBe("2025")
+      expect(dateCell().className).not.toContain("error")
+      // The date shown on the public page: received, before the invoice
+      await typeDate("Date received", "2024-03")
+      expect(text()).toBe("2024")
+    })
+
+    it("closes the dates' panel elsewhere, not on its cell", async () => {
+      hubBackend({ transfers: [transfer()] })
+      await mountSupports()
+      await startAdding()
+      const dateCell = edited().querySelector<HTMLButtonElement>(".date-cell")!
+      // Clicked again, it stays open
+      dateCell.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+      dateCell.click()
+      await flushPromises()
+      expect(panel()).not.toBeNull()
+      // Clicked in, it stays open
+      panel()!
+        .querySelector("label")!
+        .dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+      await flushPromises()
+      expect(panel()).not.toBeNull()
+      // Clicked elsewhere, it closes
+      root().dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+      await flushPromises()
+      expect(panel()).toBeNull()
+      expect(dateCell.getAttribute("aria-expanded")).toBe("false")
+      // Escape closes it, the focus back on the cell, the row still edited
+      dateCell.click()
+      await flushPromises()
+      panel()!
+        .querySelector("input")!
+        .dispatchEvent(
+          new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+        )
+      await flushPromises()
+      expect(panel()).toBeNull()
+      expect(document.activeElement).toBe(dateCell)
+      expect(edited().querySelector(".date-cell")).toBe(dateCell)
+    })
 
     it("saves a new support in the currency selected", async () => {
       const backend = hubBackend({

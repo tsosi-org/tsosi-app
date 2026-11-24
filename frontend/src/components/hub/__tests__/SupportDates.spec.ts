@@ -51,6 +51,20 @@ describe("SupportDates", () => {
     expect(wrapper.findAll("input")).toHaveLength(5)
   })
 
+  it("groups the dates, with what is required", async () => {
+    const wrapper = await mountDates()
+    const groups = wrapper.findAll("fieldset")
+    expect(
+      groups.map((g) => g.findAll("legend > span").map((s) => s.text())),
+    ).toEqual([
+      ["Payment date", "(At least one)"],
+      ["Agreement period", "(Optional, if multiple years are covered)"],
+    ])
+    expect(groups.map((g) => g.findAll("input").length)).toEqual([3, 2])
+    // The explanations on the labels' hover, not on (?) icons
+    expect(wrapper.find("svg").exists()).toBe(false)
+  })
+
   it("focuses the invoice date when opened", async () => {
     const wrapper = await mountDates()
     expect(document.activeElement).toBe(input(wrapper, "Invoice date").element)
