@@ -72,7 +72,7 @@ def create_user(email: str, **kwargs):
 
 
 @pytest.fixture
-def hub(db, datasources, registries) -> Hub:
+def hub(db, registries) -> Hub:
     Currency.objects.get_or_create(id="EUR")
     org, other_org = EntityFactory.create(), EntityFactory.create()
     infra = EntityFactory.create(scope=ENTITY_SCOPE_IN, is_recipient=True)

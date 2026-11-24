@@ -47,7 +47,7 @@ def infra(db):
 
 
 @pytest.fixture
-def supports(org, infra, datasources):
+def supports(org, infra, db):
     """
     A transfer declared by the infrastructure only, and one declared by the
     organization too.

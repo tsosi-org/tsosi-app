@@ -12,7 +12,7 @@ from ..factories import DataLoadSourceFactory, EntityFactory, TransferFactory
 
 
 @pytest.mark.django_db
-def test_merge_transfers(datasources):
+def test_merge_transfers(db):
     data_load_sources = [
         DataLoadSourceFactory.create(data_source_id=value)
         for value in ["rennes", "couperin", "doaj"]
@@ -38,7 +38,7 @@ def test_merge_transfers(datasources):
 
 
 @pytest.mark.django_db
-def test_merge_transfers_history(datasources):
+def test_merge_transfers_history(db):
     dls = [
         DataLoadSourceFactory.create(data_source_id=value)
         for value in ["rennes", "couperin", "doaj"]
@@ -58,7 +58,7 @@ def test_merge_transfers_history(datasources):
 
 
 @pytest.mark.django_db
-def test_merge_transfers_keeps_right_source_values(datasources):
+def test_merge_transfers_keeps_right_source_values(db):
     dls_left, dls_right = [
         DataLoadSourceFactory.create(data_source_id=value)
         for value in ["rennes", "couperin"]
@@ -82,7 +82,7 @@ def test_merge_transfers_keeps_right_source_values(datasources):
 
 
 @pytest.mark.django_db
-def test_merge_transfers_left_merged(datasources):
+def test_merge_transfers_left_merged(db):
     dls = [
         DataLoadSourceFactory.create(data_source_id=value)
         for value in ["rennes", "couperin", "doaj"]
@@ -101,7 +101,7 @@ def test_merge_transfers_left_merged(datasources):
 
 
 @pytest.mark.django_db
-def test_merge_transfers_keeps_best_values(datasources):
+def test_merge_transfers_keeps_best_values(db):
     dls_left, dls_right = [
         DataLoadSourceFactory.create(data_source_id=value)
         for value in ["rennes", "couperin"]
@@ -122,7 +122,7 @@ def test_merge_transfers_keeps_best_values(datasources):
 
 
 @pytest.mark.django_db
-def test_merge_transfers_hub_precedence(datasources):
+def test_merge_transfers_hub_precedence(db):
     """The values declared in the Hub win over the best value rule."""
     dls_left, dls_hub = [
         DataLoadSourceFactory.create(data_source_id=value)
@@ -156,7 +156,7 @@ def test_merge_transfers_hub_precedence(datasources):
 
 
 @pytest.mark.django_db
-def test_merge_transfers_hub_confirmation(datasources):
+def test_merge_transfers_hub_confirmation(db):
     """
     A confirmation in the Hub (no `hub_values`) leaves the values to the
     best value rule.
@@ -179,7 +179,7 @@ def test_merge_transfers_hub_confirmation(datasources):
 
 
 @pytest.mark.django_db
-def test_merge_transfers_resets_computed_fields(datasources):
+def test_merge_transfers_resets_computed_fields(db):
     dls_left, dls_right = [
         DataLoadSourceFactory.create(data_source_id=value)
         for value in ["rennes", "couperin"]
@@ -194,7 +194,7 @@ def test_merge_transfers_resets_computed_fields(datasources):
 
 
 @pytest.mark.django_db
-def test_deduplicate_transferss(datasources):
+def test_deduplicate_transferss(db):
     dls = DataLoadSourceFactory.create(data_source_id="uga")
     transfers = TransferFactory.create_batch(2, data_load_sources=(dls,))
     transfer = transfers[0]
@@ -217,7 +217,7 @@ def test_deduplicate_transferss(datasources):
 
 
 @pytest.mark.django_db
-def test_deduplicate_transfers_multiple_match(datasources):
+def test_deduplicate_transfers_multiple_match(db):
     dls = DataLoadSourceFactory.create(data_source_id="uga")
     transfers = TransferFactory.create_batch(1, data_load_sources=(dls,))
     transfer = transfers[0]

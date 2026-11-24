@@ -55,7 +55,6 @@ paramiko = "^5.0.0"
 # Random stuff
 termcolor = "^2.5.0"
 xlsxwriter = "^3.2.2"
-pydot = "^4.0.1" # Used to generate database graph with django_extensions command `graph_models`. It requires graphviz package
 pytest-cov = "^6.2.1"
 pytest-mock = "^3.14.1"
 

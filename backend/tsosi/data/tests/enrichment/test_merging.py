@@ -18,7 +18,7 @@ from ..factories import (
 
 
 @pytest.mark.django_db
-def test_merging(datasources):
+def test_merging(db):
     print("Testing merging process.")
     e_1 = EntityFactory.create(
         raw_country=None,

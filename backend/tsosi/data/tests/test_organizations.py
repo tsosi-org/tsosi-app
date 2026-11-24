@@ -238,7 +238,7 @@ def test_search_lookup(client, registries, record_fetch):
 
 @pytest.mark.django_db
 def test_add_organization(
-    client, member, org, registries, datasources, record_fetch, mocker
+    client, member, org, registries, db, record_fetch, mocker
 ):
     signal = mocker.patch("tsosi.data.entity_edit.identifiers_created.send")
     # From its name only
@@ -351,7 +351,7 @@ def test_add_organization_tells_team(
     member,
     org,
     registries,
-    datasources,
+    db,
     record_fetch,
     mocker,
     settings,

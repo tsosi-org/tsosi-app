@@ -7,7 +7,7 @@ from ..factories import EntityFactory, TransferFactory
 
 
 @pytest.mark.django_db
-def test_entity_active_status(datasources):
+def test_entity_active_status(db):
     print("Testing the Entity.is_active boolean update.")
 
     e_0 = EntityFactory.create()

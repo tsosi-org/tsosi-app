@@ -46,7 +46,6 @@ from tsosi.data.ingestion.transfer_matching import (
 from tsosi.data.signals import transfers_created
 from tsosi.models import (
     DataLoadSource,
-    DataSource,
     Declaration,
     Entity,
     Submission,
@@ -534,7 +533,6 @@ def create_data_load_source(
     entity: Entity, date: datetime, name: str
 ) -> DataLoadSource:
     """The partial data load of the organization's declarations."""
-    DataSource.objects.get_or_create(id=HUB_DATA_SOURCE)
     return DataLoadSource.objects.create(
         data_source_id=HUB_DATA_SOURCE,
         data_load_name=name[:128],

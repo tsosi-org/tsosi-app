@@ -17,7 +17,7 @@ from .identifier import (
 )
 from .membership import Membership
 from .news import NewsItem, NewsProposal, Newsletter
-from .source import DataLoadSource, DataSource
+from .source import DataLoadSource
 from .transfer import Transfer
 
 
@@ -33,7 +33,6 @@ def empty_db(full=False):
     DataLoadSource.objects.all().delete()
     Analytic.objects.all().delete()
     if full:
-        DataSource.objects.all().delete()
         Identifier.objects.all().delete()
         Entity.objects.all().delete()
         Registry.objects.all().delete()

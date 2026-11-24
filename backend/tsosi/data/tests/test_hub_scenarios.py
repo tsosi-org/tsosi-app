@@ -105,7 +105,7 @@ def publish(org, member, admin_user):
 
 
 @pytest.mark.django_db
-def test_reingest_after_confirmation(registries, datasources, admin_user):
+def test_reingest_after_confirmation(registries, db, admin_user):
     """
     A full re-ingest of the infrastructure's data keeps the organization as
     a source of its confirmed support, with one public support.
@@ -131,7 +131,7 @@ def test_reingest_after_confirmation(registries, datasources, admin_user):
 
 @pytest.mark.django_db
 def test_reingest_corrected_after_confirmation(
-    registries, datasources, admin_user
+    registries, db, admin_user
 ):
     """
     The infrastructure makes a support's date more precise after the
@@ -164,7 +164,7 @@ def test_reingest_corrected_after_confirmation(
     reason="Finding: a re-ingest after a Hub edit of the amount creates a "
     "duplicate (see the testing review)",
 )
-def test_reingest_after_amount_edit(registries, datasources, admin_user):
+def test_reingest_after_amount_edit(registries, db, admin_user):
     """
     The organization corrects the amount of a support in the Hub, then the
     infrastructure's full dataset is ingested again, with its own amount:
@@ -195,7 +195,7 @@ def test_reingest_after_amount_edit(registries, datasources, admin_user):
 
 
 @pytest.mark.django_db
-def test_reingest_after_agents_edit(registries, datasources, admin_user):
+def test_reingest_after_agents_edit(registries, db, admin_user):
     """
     The organization adds the intermediary of a support in the Hub, then the
     infrastructure's dataset, without it, is ingested again: the support
@@ -228,7 +228,7 @@ def test_reingest_after_agents_edit(registries, datasources, admin_user):
 
 
 @pytest.mark.django_db
-def test_reingest_after_new_support(registries, datasources, admin_user):
+def test_reingest_after_new_support(registries, db, admin_user):
     """
     A support declared in the Hub, then received in the infrastructure's
     data: the ingest merges them, the organization's values first.
@@ -306,7 +306,7 @@ def new_support(org, member, infra) -> Declaration:
 
 
 @pytest.mark.django_db
-def test_publication_task_run_twice(org, infra, admin_user, datasources):
+def test_publication_task_run_twice(org, infra, admin_user, db):
     """A task delivered twice publishes once."""
     member = member_of(org)
     new_support(org, member, infra)
@@ -320,7 +320,7 @@ def test_publication_task_run_twice(org, infra, admin_user, datasources):
 
 @pytest.mark.django_db
 def test_approve_stale_submission(
-    org, infra, admin_user, datasources, settings
+    org, infra, admin_user, db, settings
 ):
     """
     Two approvals of the same submission at once (a double click): the
@@ -344,7 +344,7 @@ def test_approve_stale_submission(
 
 
 @pytest.mark.django_db
-def test_return_stale_submission(org, infra, admin_user, datasources):
+def test_return_stale_submission(org, infra, admin_user, db):
     """
     A submission approved by another request can't be returned: its
     declarations stay approved, not drafts again.
@@ -362,7 +362,7 @@ def test_return_stale_submission(org, infra, admin_user, datasources):
 
 
 @pytest.mark.django_db
-def test_returned_submission_not_published(org, infra, admin_user, datasources):
+def test_returned_submission_not_published(org, infra, admin_user, db):
     """
     A returned submission isn't published: its declarations are drafts,
     which the members may be changing.
@@ -378,7 +378,7 @@ def test_returned_submission_not_published(org, infra, admin_user, datasources):
 
 @pytest.mark.django_db
 def test_submission_not_approved_not_published(
-    org, infra, admin_user, datasources
+    org, infra, admin_user, db
 ):
     """
     Only an approved submission is published: not one waiting for approval,
@@ -395,7 +395,7 @@ def test_submission_not_approved_not_published(
 
 
 @pytest.mark.django_db
-def test_member_revoked_while_submitted(org, infra, admin_user, datasources):
+def test_member_revoked_while_submitted(org, infra, admin_user, db):
     """
     The submission of a member revoked since is still published: it's the
     organization's data.
@@ -412,7 +412,7 @@ def test_member_revoked_while_submitted(org, infra, admin_user, datasources):
 
 
 @pytest.mark.django_db
-def test_entities_merged_while_submitted(org, admin_user, datasources):
+def test_entities_merged_while_submitted(org, admin_user, db):
     """
     The beneficiary and intermediary of a declaration are merged into other
     entities while the submission waits: the support goes to those.
@@ -438,7 +438,7 @@ def test_entities_merged_while_submitted(org, admin_user, datasources):
 
 
 @pytest.mark.django_db
-def test_two_members_change_the_same_support(org, infra, datasources):
+def test_two_members_change_the_same_support(org, infra, db):
     """
     Two members of the organization change the same support: the second
     one is told that it already has a change, without an error 500.
@@ -518,7 +518,7 @@ def delete_other(org, transfer, other):
     ],
 )
 def test_publication_conflicts(
-    org, infra, admin_user, datasources, kind, org_is_source, change, conflict
+    org, infra, admin_user, db, kind, org_is_source, change, conflict
 ):
     """
     The data changed since the submission, e.g. by an ingest: nothing is
@@ -548,7 +548,7 @@ def test_publication_conflicts(
 
 @pytest.mark.django_db
 def test_publication_unexpected_error(
-    org, infra, admin_user, datasources, monkeypatch
+    org, infra, admin_user, db, monkeypatch
 ):
     """
     An unexpected error: nothing is published, the submission waits for

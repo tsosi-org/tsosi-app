@@ -1,11 +1,8 @@
-from django.utils import timezone
-
 from tsosi.data.pid_registry.ror import ROR_ID_REGEX
 from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI, TSOSI_ID_REGEX
 from tsosi.data.pid_registry.wikidata import WIKIDATA_ID_REGEX
 
 from .registry import Registry
-from .source import DataSource
 from .utils import MATCH_SOURCE_MANUAL  # noqa: F401 (re-exported)
 
 REGISTRY_ROR = "ror"
@@ -66,72 +63,13 @@ def create_pid_registries():
         r.save()
 
 
-# These are the same IDs as the supported infrastructures.
-# We keep it separated because the project could grow with other data sources.
-DATA_SOURCES = [
-    "basel",
-    "couperin",
-    "csal",
-    "datacite",
-    "doab_oapen_library",
-    "doab_oapen_sponsor",
-    "doab_oapen",
-    "doaj_library",
-    "doaj_publisher",
-    "doaj",
-    "edch",
-    "episciences",
-    "gottingen",
-    "inrae",
-    "ird",
-    "leuven",
-    "liege",
-    "lorraine",
-    "mdc",
-    "mersenne",
-    "mirabel",
-    "olh",
-    "operas",
-    "opf",
-    "pci",
-    "pkp",
-    "rennes",
-    "reperes",
-    "rotterdam",
-    "scipost",
-    "uga",
-    "uminho",
-    "unil",
-    "urfist",
-    "utrecht",
-]
 # The supports declared by the organizations in the Data Contribution Hub,
-# published on approval of their submissions. It's no source of prepared
-# files: it's not in `DATA_SOURCES`.
+# published on approval of their submissions.
 HUB_DATA_SOURCE = "tsosi_portal"
-
-
-def create_sources():
-    """ """
-    now = timezone.now()
-    existing_sources = DataSource.objects.all().values_list("id", flat=True)
-    to_create = []
-    for source_id in [*DATA_SOURCES, HUB_DATA_SOURCE]:
-        if source_id in existing_sources:
-            continue
-        source = DataSource()
-        source.id = source_id
-        source.date_created = now
-        source.date_last_updated = now
-        to_create.append(source)
-    if len(to_create) == 0:
-        return
-    DataSource.objects.bulk_create(to_create)
 
 
 def fill_static_data():
     """
-    Fill static data in the database: PID registries and data sources.
+    Fill static data in the database: the PID registries.
     """
     create_pid_registries()
-    create_sources()

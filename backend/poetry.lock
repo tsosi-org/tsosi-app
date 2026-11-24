@@ -3257,28 +3257,6 @@ files = [
 markers = {main = "(platform_python_implementation != \"PyPy\" or sys_platform == \"darwin\") and implementation_name != \"PyPy\"", dev = "(platform_python_implementation != \"PyPy\" or implementation_name == \"pypy\") and implementation_name != \"PyPy\""}
 
 [[package]]
-name = "pydot"
-version = "4.0.1"
-description = "Python interface to Graphviz's Dot"
-optional = false
-python-versions = ">=3.8"
-groups = ["dev"]
-files = [
-    {file = "pydot-4.0.1-py3-none-any.whl", hash = "sha256:869c0efadd2708c0be1f916eb669f3d664ca684bc57ffb7ecc08e70d5e93fee6"},
-    {file = "pydot-4.0.1.tar.gz", hash = "sha256:c2148f681c4a33e08bf0e26a9e5f8e4099a82e0e2a068098f32ce86577364ad5"},
-]
-
-[package.dependencies]
-pyparsing = ">=3.1.0"
-
-[package.extras]
-dev = ["chardet", "parameterized", "pydot[lint]", "pydot[types]"]
-lint = ["ruff"]
-release = ["zest.releaser[recommended]"]
-tests = ["pydot[dev]", "pytest", "pytest-cov", "pytest-xdist[psutil]", "tox"]
-types = ["mypy"]
-
-[[package]]
 name = "pygithub"
 version = "2.10.0"
 description = "Use the full Github API v3"
@@ -3371,21 +3349,6 @@ cffi = {version = ">=2.0.0", markers = "platform_python_implementation != \"PyPy
 [package.extras]
 docs = ["sphinx (<7)", "sphinx_rtd_theme"]
 tests = ["hypothesis (>=3.27.0)", "pytest (>=7.4.0)", "pytest-cov (>=2.10.1)", "pytest-xdist (>=3.5.0)"]
-
-[[package]]
-name = "pyparsing"
-version = "3.2.3"
-description = "pyparsing module - Classes and methods to define and execute parsing grammars"
-optional = false
-python-versions = ">=3.9"
-groups = ["dev"]
-files = [
-    {file = "pyparsing-3.2.3-py3-none-any.whl", hash = "sha256:a749938e02d6fd0b59b356ca504a24982314bb090c383e3cf201c95ef7e2bfcf"},
-    {file = "pyparsing-3.2.3.tar.gz", hash = "sha256:b9c13f1ab8b3b542f72e28f634bad4de758ab3ce4546e4301970ad6fa77c38be"},
-]
-
-[package.extras]
-diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pyproject-hooks"
@@ -4406,4 +4369,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "7f3e7dc677ed22a55cd89c2f35c0456b06d8191b56f5dc586d7277acd419a14c"
+content-hash = "46401b742c4a8725f03c8df56c765505a5d71cf2ecbaa8cf662f93cacebb47d9"

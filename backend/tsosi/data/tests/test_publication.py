@@ -136,7 +136,7 @@ def hub_source(transfer: Transfer) -> Transfer:
 
 
 @pytest.mark.django_db
-def test_publish_new(org, member, admin_user, datasources):
+def test_publish_new(org, member, admin_user, db):
     new_infra = EntityFactory.create()
     consortium = EntityFactory.create()
     declaration = declare(
@@ -173,7 +173,7 @@ def test_publish_new(org, member, admin_user, datasources):
 
 
 @pytest.mark.django_db
-def test_publish_confirmation(org, member, admin_user, infra, datasources):
+def test_publish_confirmation(org, member, admin_user, infra, db):
     transfer = support(org, infra, infra)
     declaration = declare(org, member, DECLARATION_KIND_CONFIRMATION, transfer)
     publish(org, member, admin_user)
@@ -192,7 +192,7 @@ def test_publish_confirmation(org, member, admin_user, infra, datasources):
 
 
 @pytest.mark.django_db
-def test_publish_edit(org, member, admin_user, infra, datasources):
+def test_publish_edit(org, member, admin_user, infra, db):
     declared_by_infra = support(org, infra, infra)
     declared_by_org = support(org, infra, org, date="2023", source="rennes")
     previous_dls = declared_by_org.data_load_sources.get()
@@ -234,7 +234,7 @@ def test_publish_edit(org, member, admin_user, infra, datasources):
 
 
 @pytest.mark.django_db
-def test_publish_removal(org, member, admin_user, infra, datasources):
+def test_publish_removal(org, member, admin_user, infra, db):
     only_org = support(org, infra, org, source="rennes")
     with_infra = support(org, infra, infra, date="2023")
     # Confirmed by the organization
@@ -266,7 +266,7 @@ def test_publish_removal(org, member, admin_user, infra, datasources):
 
 
 @pytest.mark.django_db
-def test_publish_merge(org, member, admin_user, infra, datasources):
+def test_publish_merge(org, member, admin_user, infra, db):
     consortium = EntityFactory.create()
     first = support(org, infra, infra)
     second = support(org, infra, consortium, amount=1100, source="couperin")
@@ -294,7 +294,7 @@ def test_publish_merge(org, member, admin_user, infra, datasources):
 
 @pytest.mark.django_db
 def test_publish_not_duplicate(
-    client, org, member, admin_user, infra, datasources
+    client, org, member, admin_user, infra, db
 ):
     first = support(org, infra, infra)
     second = support(org, infra, infra, amount=1100)
@@ -317,7 +317,7 @@ def test_publish_not_duplicate(
 
 
 @pytest.mark.django_db
-def test_publication_conflict(org, member, admin_user, infra, datasources):
+def test_publication_conflict(org, member, admin_user, infra, db):
     confirmed = support(org, infra, infra)
     declare(org, member, DECLARATION_KIND_CONFIRMATION, confirmed)
     declare(org, member, DECLARATION_KIND_NEW, **new_values(infra))
@@ -365,7 +365,7 @@ def previewed(client, entity) -> dict:
 
 
 @pytest.mark.django_db
-def test_submit(client, org, member, infra, datasources):
+def test_submit(client, org, member, infra, db):
     transfer = support(org, infra, infra)
     declaration = declare(org, member, DECLARATION_KIND_CONFIRMATION, transfer)
     payload = previewed(client, org)
@@ -421,7 +421,7 @@ def test_submit(client, org, member, infra, datasources):
 
 
 @pytest.mark.django_db
-def test_submit_previewed_changes_only(client, org, member, infra, datasources):
+def test_submit_previewed_changes_only(client, org, member, infra, db):
     """
     The consent is for the changes previewed: a draft added or undone since,
     e.g. by another member, makes the submission fail, nothing submitted.
@@ -443,7 +443,7 @@ def test_submit_previewed_changes_only(client, org, member, infra, datasources):
 
 
 @pytest.mark.django_db
-def test_submit_previewed_values_only(client, org, member, infra, datasources):
+def test_submit_previewed_values_only(client, org, member, infra, db):
     """
     A draft edited since the preview, e.g. by another member, makes the
     submission fail, though the drafts are the same (C2).
@@ -480,7 +480,7 @@ def test_submit_previewed_values_only(client, org, member, infra, datasources):
 
 
 @pytest.mark.django_db
-def test_drafts_hash(org, member, infra, datasources):
+def test_drafts_hash(org, member, infra, db):
     """The hash changes with every value submitted, in any order."""
     transfer = support(org, infra, infra)
     new = declare(org, member, DECLARATION_KIND_NEW, **new_values(infra))
@@ -524,7 +524,7 @@ def test_drafts_hash(org, member, infra, datasources):
 
 
 @pytest.mark.django_db
-def test_publication_preview(client, org, member, infra, datasources):
+def test_publication_preview(client, org, member, infra, db):
     confirmed = support(org, infra, infra)
     removed = support(org, infra, org, date="2023", source="rennes")
     declare(org, member, DECLARATION_KIND_CONFIRMATION, confirmed)
@@ -557,7 +557,7 @@ def test_publication_preview(client, org, member, infra, datasources):
 
 @pytest.mark.django_db
 def test_publication_preview_hidden_amounts(
-    client, org, member, infra, datasources
+    client, org, member, infra, db
 ):
     """
     Hidden amounts are left out of the preview, as on the public page: those
@@ -593,7 +593,7 @@ SUBMISSION_ADMIN_URL = "/admin/tsosi/submission/"
 
 @pytest.mark.django_db
 def test_admin_approve(
-    admin_client, admin_user, org, member, infra, datasources, settings
+    admin_client, admin_user, org, member, infra, db, settings
 ):
     new_infra = EntityFactory.create()
     new_infra.added_in_hub_by.add(org)
@@ -660,7 +660,7 @@ def test_admin_approve(
 
 @pytest.mark.django_db
 def test_admin_approve_task(
-    admin_user, org, member, infra, datasources, monkeypatch
+    admin_user, org, member, infra, db, monkeypatch
 ):
     from tsosi import tasks
 
@@ -679,7 +679,7 @@ def test_admin_approve_task(
 
 
 @pytest.mark.django_db
-def test_admin_return(admin_client, client, org, member, infra, datasources):
+def test_admin_return(admin_client, client, org, member, infra, db):
     transfer = support(org, infra, infra)
     declaration = declare(org, member, DECLARATION_KIND_CONFIRMATION, transfer)
     submission = submit_declarations(org, member)

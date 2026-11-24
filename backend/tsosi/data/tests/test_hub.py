@@ -371,7 +371,7 @@ def test_entity_preview(member, admin_user, registries):
 
 
 @pytest.mark.django_db
-def test_entity_transfers(member, admin_user, datasources):
+def test_entity_transfers(member, admin_user, db):
     org = member.memberships.get().entity
     infra = EntityFactory.create(scope=ENTITY_SCOPE_IN)
     infra_to_check = EntityFactory.create(scope=ENTITY_SCOPE_TO_CHECK)
