@@ -1,10 +1,12 @@
 import pytest
 from rest_framework.test import APIClient
+
 from tsosi.data.enrichment import compute_analytics, update_entity_roles_clc
+from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
 from tsosi.models import Analytic, Entity, Transfer
 from tsosi.models.entity import ENTITY_SCOPE_IN, ENTITY_SCOPE_TO_CHECK
 
-from .factories import EntityFactory, TransferFactory
+from .factories import EntityFactory, IdentifierFactory, TransferFactory
 
 
 @pytest.fixture
@@ -57,3 +59,32 @@ def test_analytics_of_public_transfers(transfers):
     compute_analytics()
     recipient_ids = set(Analytic.objects.values_list("recipient_id", flat=True))
     assert recipient_ids == {transfers[ENTITY_SCOPE_IN].recipient_id}
+
+
+@pytest.mark.django_db
+def test_merged_entity_redirects_to_retained_one(transfers, registries):
+    """
+    The page of a merged entity, missing from the frontend's reference data,
+    loads the retained entity's: the API redirects its IDs to it.
+    """
+    update_entity_roles_clc()
+    retained = transfers[ENTITY_SCOPE_IN].recipient
+    merged = EntityFactory.create(
+        merged_with=retained, merged_criteria="test", is_active=False
+    )
+    IdentifierFactory.create(
+        entity=retained, registry_id=REGISTRY_TSOSI, value="T000002"
+    )
+    IdentifierFactory.create(
+        entity=merged, registry_id=REGISTRY_TSOSI, value="T000001"
+    )
+
+    client = APIClient()
+    # As the frontend requests it
+    for merged_id in ["T000001", str(merged.id)]:
+        response = client.get(f"/api/entities/{merged_id}?format=json")
+        assert response.status_code == 302
+        assert response["Location"] == "/api/entities/T000002?format=json"
+    response = client.get("/api/entities/T000001?format=json", follow=True)
+    assert response.status_code == 200
+    assert response.json()["id"] == str(retained.id)

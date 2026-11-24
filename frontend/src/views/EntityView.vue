@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { onBeforeMount, ref, shallowRef, type Ref, type ShallowRef } from "vue"
+import {
+  onBeforeMount,
+  ref,
+  shallowRef,
+  type DeepReadonly,
+  type Ref,
+  type ShallowRef,
+} from "vue"
 import { useRoute, useRouter } from "vue-router"
 import Tab from "primevue/tab"
 import TabList from "primevue/tablist"
@@ -66,26 +73,41 @@ const previewMessages: Record<PreviewReason, string> = {
     "It will be published with the organization's first public support.",
 }
 
+function redirectToTsosiId(
+  identifiers: DeepReadonly<EntityDetails["identifiers"]> | undefined,
+): boolean {
+  const tsosiId = identifiers?.find((i) => i.registry === "tsosi")?.value
+  if (!tsosiId || tsosiId === route.params.id) {
+    return false
+  }
+  router.replace({
+    name: "entity",
+    params: { id: tsosiId },
+    query: route.query,
+    hash: route.hash,
+  })
+  return true
+}
+
 onBeforeMount(async () => {
-  const entityId = resolveEntityRoute(route.params.id as string)
+  const id = route.params.id as string
+  const entityId = resolveEntityRoute(id)
   const result = entityId ? getEntitySummary(entityId) : undefined
-  const tsosiId = result?.identifiers.find((i) => i.registry === "tsosi")?.value
-  if (tsosiId && tsosiId !== route.params.id) {
-    // The page is remounted on the new path
-    router.replace({
-      name: "entity",
-      params: { id: tsosiId },
-      query: route.query,
-      hash: route.hash,
-    })
+  if (redirectToTsosiId(result?.identifiers)) {
     return
   }
-  // The session is only checked for visitors who may be logged in (see
-  // `mayHaveSession`)
   const checkSession = mayHaveSession()
-  if (result != null) {
-    entity.value = (await getEntityDetails(result.id)) as EntityDetails
-  } else if (checkSession && (await loadSession())) {
+  const details = await getEntityDetails(result?.id ?? id)
+  if (
+    result == null &&
+    details != null &&
+    redirectToTsosiId(details.identifiers)
+  ) {
+    return
+  }
+  if (details != null) {
+    entity.value = details as EntityDetails
+  } else if (result == null && checkSession && (await loadSession())) {
     await loadPreview(route.params.id as string)
   }
   loading.value = false
