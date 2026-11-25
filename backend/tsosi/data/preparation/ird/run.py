@@ -43,6 +43,12 @@ def main() -> None:
     df = df.map(clean_cell_value)
     df = df[df["recipient/name"].notna() & df["amount"].notna()]
 
+    # The Zotero storage subscription is paid to the Corporation for Digital
+    # Scholarship, Zotero's host, not an intermediary.
+    mask = df["recipient/name"] == "Zotero stockage illimité"
+    df.loc[mask, "recipient/name"] = "Zotero"
+    df.loc[mask, "intermediary/name"] = None
+
     # Add infra identifiers
     infrastructure_path = (
         Path(BASE_DIR)

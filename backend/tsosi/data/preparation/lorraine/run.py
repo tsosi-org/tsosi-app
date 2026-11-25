@@ -28,7 +28,6 @@ EXCLUDED_RECIPIENTS = [
     "SPARC Europe",
     "EOSC",
     "Fair Open Access Alliance",
-    "Retraction watch",
     "Wikimedia France",
 ]
 

@@ -42,6 +42,21 @@ def main() -> None:
     }
     df = df.rename(columns=mapping)[mapping.values()]
     df = df[df["amount"].notna() & (df["recipient/name"].notna())]
+
+    # The dates entered as Excel dates were typed as DD-MM and read as MM-DD:
+    # the invoices of the 2025 grants are of early December 2025, paid from
+    # 8 to 15 December. Swap back the day and month when the day is <= 12.
+    def fix_swapped_date(value):
+        if not isinstance(value, str) or not value.endswith(" 00:00:00"):
+            return value
+        year, month, day = value[:10].split("-")
+        if int(day) <= 12:
+            month, day = day, month
+        return f"{year}-{month}-{day}"
+
+    for col in ["date_invoice", "date_sent"]:
+        df[col] = df[col].map(fix_swapped_date)
+
     df = df.map(clean_cell_value)
 
     # Add infra identifiers
