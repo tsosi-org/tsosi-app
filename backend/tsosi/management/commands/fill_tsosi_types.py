@@ -1,7 +1,17 @@
 import pandas as pd
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
+from tsosi.data.pid_registry.tsosi import REGISTRY_TSOSI
 from tsosi.models import Entity
+
+TSOSI_TYPES = [
+    "infrastructure",
+    "lib_consort",
+    "funder",
+    "company",
+    "rpo",
+    "other",
+]
 
 
 class Command(BaseCommand):
@@ -10,7 +20,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "filepath",
-            help="TSOSI-type-entities.csv",
+            help="tsosi-entity-types.csv (tsosi_id, tsosi_type, ...)",
         )
 
     def handle(self, *args, **options):
@@ -18,29 +28,23 @@ class Command(BaseCommand):
 
 
 def fill_types(filepath: str) -> None:
-    df = pd.read_csv(filepath)
-    # Entities that have ror type company are marked "company"
-    Entity.objects.filter(ror_types=["company"]).update(tsosi_type="company")
-    # Entities that are recipients are marked "infrastructure"
-    Entity.objects.filter(is_recipient=True, is_agent=False).update(
-        tsosi_type="infrastructure"
-    )
-    # Entities manually tagged in the TSOSI-type-entities.csv file are marked accordingly based on their ror_id or wiki_id
-    for tsosi_type in ["lib_consort", "funder"]:
-        mask = df["tsosi_type"] == tsosi_type
-        ror_mask = df["ror_id"].notnull()
-        wiki_mask = df["wiki_id"].notnull()
-        ror_ids = df.loc[ror_mask & mask, "ror_id"].tolist()
-        wikidata_ids = df.loc[wiki_mask & mask, "wiki_id"].tolist()
-        count = Entity.objects.filter(identifiers__value__in=ror_ids).update(
-            tsosi_type=tsosi_type
+    df = pd.read_csv(filepath, dtype=str).fillna("")
+    unknown = sorted(set(df["tsosi_type"]) - set(TSOSI_TYPES))
+    if unknown:
+        raise CommandError(
+            f"Unknown tsosi_type {unknown}, expected {TSOSI_TYPES}"
         )
-        count += Entity.objects.filter(
-            identifiers__value__in=wikidata_ids
+
+    # Entities are matched on their TSOSI id
+    for tsosi_type, rows in df.groupby("tsosi_type"):
+        count = Entity.objects.filter(
+            identifiers__registry_id=REGISTRY_TSOSI,
+            identifiers__value__in=rows["tsosi_id"].tolist(),
         ).update(tsosi_type=tsosi_type)
         print(f"Updated {count} entities to tsosi_type '{tsosi_type}'")
-    # Update all remaining to "other"
+
+    # Entities not typed yet (still to review) are marked "other"
     count = Entity.objects.filter(tsosi_type__isnull=True).update(
         tsosi_type="other"
     )
-    print(f"Updated {count} entities to tsosi_type 'other'")
+    print(f"Updated {count} entities without type to tsosi_type 'other'")
