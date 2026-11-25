@@ -293,9 +293,7 @@ def test_publish_merge(org, member, admin_user, infra, db):
 
 
 @pytest.mark.django_db
-def test_publish_not_duplicate(
-    client, org, member, admin_user, infra, db
-):
+def test_publish_not_duplicate(client, org, member, admin_user, infra, db):
     first = support(org, infra, infra)
     second = support(org, infra, infra, amount=1100)
     url = f"/api/hub/entities/{org.id}/declarations"
@@ -418,6 +416,42 @@ def test_submit(client, org, member, infra, db):
     assert response.status_code == 403
     other = EntityFactory.create()
     assert client.get(submissions_url(other)).status_code == 404
+
+
+@pytest.mark.django_db
+def test_submit_tells_team(
+    client, org, member, infra, settings, monkeypatch, db
+):
+    """The TSOSI team is e-mailed about the submissions."""
+    from django.core import mail
+
+    from tsosi.api.hub import submissions
+
+    monkeypatch.setattr(submissions, "run_in_background", lambda f, *a: f(*a))
+    transfer = support(org, infra, infra)
+    declare(org, member, DECLARATION_KIND_CONFIRMATION, transfer)
+    # No team address: no e-mail
+    settings.TSOSI_TEAM_EMAILS = []
+    response = client.post(
+        submissions_url(org), previewed(client, org), format="json"
+    )
+    assert response.status_code == 201, response.json()
+    assert len(mail.outbox) == 0
+
+    settings.TSOSI_TEAM_EMAILS = ["team@tsosi.org"]
+    declare(org, member, DECLARATION_KIND_NEW, **new_values(infra))
+    declare(org, member, DECLARATION_KIND_NEW, **new_values(infra, 700))
+    response = client.post(
+        submissions_url(org), previewed(client, org), format="json"
+    )
+    assert response.status_code == 201, response.json()
+    [email] = mail.outbox
+    assert email.to == ["team@tsosi.org"]
+    assert email.subject == f"[TSOSI Hub] New submission: {org.name}"
+    assert "member@uni.edu submitted 2 changes" in email.body
+    assert "- New support: 2" in email.body
+    submission_id = response.json()["id"]
+    assert f"/admin/tsosi/submission/{submission_id}/change/" in email.body
 
 
 @pytest.mark.django_db
@@ -556,9 +590,7 @@ def test_publication_preview(client, org, member, infra, db):
 
 
 @pytest.mark.django_db
-def test_publication_preview_hidden_amounts(
-    client, org, member, infra, db
-):
+def test_publication_preview_hidden_amounts(client, org, member, infra, db):
     """
     Hidden amounts are left out of the preview, as on the public page: those
     of the supports of the organization's children too (F23).
@@ -659,9 +691,7 @@ def test_admin_approve(
 
 
 @pytest.mark.django_db
-def test_admin_approve_task(
-    admin_user, org, member, infra, db, monkeypatch
-):
+def test_admin_approve_task(admin_user, org, member, infra, db, monkeypatch):
     from tsosi import tasks
 
     queued = []

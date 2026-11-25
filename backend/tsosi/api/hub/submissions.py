@@ -3,8 +3,10 @@ The submission of the organization's drafts for approval, and the preview
 of their publication.
 """
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 
+from django.core.mail import send_mail
+from django.urls import reverse
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -21,13 +23,27 @@ from tsosi.api.hub.entities import (
     transfers_entity_ids,
     with_table_values,
 )
+from tsosi.api.hub.session import run_in_background
+from tsosi.app_settings import app_settings
 from tsosi.data.hub_publication import (
     DraftsChanged,
     simulate_publication,
     submit_declarations,
 )
 from tsosi.models import Declaration, Submission, Transfer
-from tsosi.models.declaration import SUBMISSION_STATUSES_PENDING
+from tsosi.models.declaration import (
+    DECLARATION_KIND_CHOICES,
+    SUBMISSION_STATUSES_PENDING,
+)
+
+NEW_SUBMISSION_EMAIL_SUBJECT = "[TSOSI Hub] New submission: {name}"
+NEW_SUBMISSION_EMAIL_MESSAGE = """{user} submitted {count} for {name}
+in the Data Contribution Hub, waiting for approval:
+
+{changes}
+
+Admin page, to approve or return it: {admin_url}
+"""
 
 
 class SubmitSerializer(serializers.Serializer):
@@ -109,7 +125,40 @@ class EntitySubmissionsView(HubView):
             ) from None
         if submission is None:
             raise ValidationError({"detail": "There are no changes to submit."})
+        notify_team(request, submission)
         return Response(SubmissionSerializer(submission).data, status=201)
+
+
+def notify_team(request, submission: Submission) -> None:
+    """
+    E-mail the TSOSI team (`TSOSI_TEAM_EMAILS`) about a submission waiting
+    for approval. Sent in the background: a failure doesn't prevent the
+    submission.
+    """
+    recipients = app_settings.TEAM_EMAILS
+    if not recipients:
+        return
+    kinds = Counter(submission.declarations.values_list("kind", flat=True))
+    changes = "\n".join(
+        f"- {DECLARATION_KIND_CHOICES.get(kind, kind)}: {count}"
+        for kind, count in kinds.most_common()
+    )
+    run_in_background(
+        send_mail,
+        NEW_SUBMISSION_EMAIL_SUBJECT.format(name=submission.entity.name),
+        NEW_SUBMISSION_EMAIL_MESSAGE.format(
+            user=request.user.email,
+            count=(f"{kinds.total()} change{'s' if kinds.total() > 1 else ''}"),
+            name=submission.entity.name,
+            changes=changes,
+            admin_url=request.build_absolute_uri(
+                reverse("admin:tsosi_submission_change", args=[submission.pk])
+            ),
+        ),
+        # Sent from DEFAULT_FROM_EMAIL
+        None,
+        recipients,
+    )
 
 
 class EntityPublicationPreviewView(HubView):

@@ -245,8 +245,7 @@ class AppSettings:
     @property
     def TEAM_EMAILS(self) -> list[str]:
         """
-        The TSOSI team's e-mail addresses, told of the organizations added
-        in the Data Contribution Hub.
+        The TSOSI team's e-mail addresses.
         """
         return list(self._setting("TEAM_EMAILS", []))
 
