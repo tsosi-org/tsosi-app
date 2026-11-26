@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process"
 import { fileURLToPath, URL } from "node:url"
 import { defineConfig } from "vite"
 import vue from "@vitejs/plugin-vue"
@@ -19,6 +20,10 @@ function manualChunks(id: string): string | undefined {
   if (id.includes("chart.js") || id.includes("chartjs")) {
     return "chart-js"
   }
+  // Loaded after the app starts, cf. utils/error-tracking.ts
+  if (id.includes("@sentry") || id.includes("web-vitals")) {
+    return "error-tracking"
+  }
   if (id.includes("primevue/datatable")) {
     return "vendor-datatable"
   }
@@ -28,9 +33,27 @@ function manualChunks(id: string): string | undefined {
   return undefined
 }
 
+/**
+ * The built commit, the release of the errors sent to GlitchTip, as the
+ * backend's (`read_release`, from the `deployment.json` of the build).
+ */
+function gitRelease(): string {
+  try {
+    return execSync("git rev-parse HEAD", { stdio: ["ignore", "pipe", "ignore"] })
+      .toString()
+      .trim()
+      .slice(0, 12)
+  } catch {
+    return ""
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    "import.meta.env.VITE_RELEASE": JSON.stringify(gitRelease()),
+  },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

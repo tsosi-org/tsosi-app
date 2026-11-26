@@ -18,6 +18,7 @@ from tsosi.api.hub.submissions import (
 from tsosi.api.newsletter import NewsletterRequestView
 from tsosi.api.router import OptionalSlashRouter
 from tsosi.api.views import (
+    health_view,
     home_figures_view,
     news_view,
     newsletter_view,
@@ -62,6 +63,7 @@ router.register(r"analytics", AnalyticViewSet, basename="analytic")
 urlpatterns = [
     path("api/", include(router.urls)),
     path("api/stats", stats_view),
+    path("api/health", health_view),
     path("api/home-figures", home_figures_view),
     path("api/news", news_view),
     path("api/newsletters", newsletters_view),

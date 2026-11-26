@@ -66,8 +66,10 @@ import VueMatomo from "vue-matomo";
 
 import App from "@/App.vue";
 import router from "@/router";
+import { initErrorTracking } from "@/utils/error-tracking";
 
 const app = createApp(App)
+initErrorTracking(app)
 
 // Register PrimeVue library
 const MyPreset = definePreset(Aura, {

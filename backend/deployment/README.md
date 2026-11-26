@@ -194,6 +194,26 @@ It is prepared as in **Server preparation** above, with these differences:
     rsync -a backend/_no_git/tsosi_media/ deployer@tsosi-dev.u-ga.fr:/tsosi_media/
     ```
 * Celery Beat runs the same schedule as prod (enrichment, data updates from external sources).
+* It also hosts GlitchTip, the monitoring of prod and dev (https://monitoring.tsosi.org), cf. **Monitoring** below.
+
+## Monitoring
+
+Errors, performance samples, the Celery heartbeat and the uptime of prod and dev go to the team's GlitchTip (Sentry compatible), https://monitoring.tsosi.org, self-hosted on the dev server: its install, projects, alerts and uptime monitors are in the [tsosi-org/monitoring](https://github.com/tsosi-org/monitoring) repo. Its web interface, as the dev server, is only reachable from the UGA network or its VPN.
+
+* Backend (`tsosi/monitoring.py`), in `settings_local.py` of prod (and of the dev server, with `TSOSI_MONITORING_ENVIRONMENT = "dev"`): no error tracking without a DSN.
+    ```python
+    # Monitoring (GlitchTip), cf. deployment/README.md - Monitoring
+    TSOSI_MONITORING_DSN = "https://<key>@monitoring.tsosi.org/<backend project id>"
+    TSOSI_MONITORING_ENVIRONMENT = "production"
+    # GlitchTip heartbeat monitor pinged after each successful run of a task, by task name
+    TSOSI_HEARTBEATS = {
+        "tsosi.tasks.celery_heartbeat": "https://monitoring.tsosi.org/api/0/organizations/<org>/heartbeat_check/<uuid>/",
+    }
+    ```
+    The `celery_heartbeat` task runs every 10 minutes: its monitor alerts when the worker or Beat stops. Any other task can get a monitor of its own (e.g. `tsosi.tasks.currency_rates_workflow`, weekly). The errors of the tasks are reported anyway. `TSOSI_MONITORING_TRACES_SAMPLE_RATE` (5 % by default) is the share of the requests and tasks whose performance is recorded.
+* `/api/health`: 200 when the database, Redis and the Celery heartbeat (less than 30 minutes old) are fine, 503 otherwise. Polled by the uptime monitors of GlitchTip.
+* Frontend (`frontend/src/utils/error-tracking.ts`): the public DSN of the frontend project in `frontend/.env.production` (`VITE_MONITORING_DSN`). Browsers send their reports to `/api/monitoring` on tsosi.org, relayed by the prod nginx to GlitchTip, without the visitors' IP addresses (location `/api/monitoring` of [tsosi-app.nginx.config](./tsosi-app.nginx.config), with the frontend project's id and public key). After a change of this location, copy the config to `/etc/nginx/sites-available/tsosi-app`, then `sudo nginx -t && sudo systemctl reload nginx`.
+* Release: the deployed commit, read by the backend from the `deployment.json` of the frontend build, and by the frontend from the build.
 
 ## SSL certificates
 

@@ -5,6 +5,7 @@ from django.http import Http404, JsonResponse
 from django.views.decorators.cache import cache_page
 
 from tsosi.models import DataLoadSource, Entity, NewsItem, Newsletter, Transfer
+from tsosi.monitoring import health_checks
 
 
 def stats_view(request):
@@ -110,4 +111,16 @@ def newsletter_view(request, name: str):
         raise Http404()
     return JsonResponse(
         {**newsletter_data(newsletter), "html": newsletter.html}
+    )
+
+
+def health_view(request):
+    """
+    State of the services the app needs, polled by the uptime monitors.
+    """
+    checks = health_checks()
+    healthy = all(checks.values())
+    return JsonResponse(
+        {"status": "ok" if healthy else "error", "checks": checks},
+        status=200 if healthy else 503,
     )
