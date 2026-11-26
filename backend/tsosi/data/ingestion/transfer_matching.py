@@ -89,12 +89,15 @@ def date_is_matching(date_left: Date, date_right: Date) -> bool:
     return date_left_precised == date_right_precised
 
 
-def get_date_clc(transfer: Transfer) -> Date | None:
-    for field in [
-        "date_payment_recipient",
-        "date_payment_emitter",
-        "date_invoice",
-    ]:
+def get_date_clc(transfer: Transfer, skip_receipt: bool = False) -> Date | None:
+    """
+    The transfer's main date, as `Transfer.date_clc`. `skip_receipt`: without
+    the beneficiary's receipt date (see `late_receipt`).
+    """
+    fields = ["date_payment_emitter", "date_invoice"]
+    if not skip_receipt:
+        fields.insert(0, "date_payment_recipient")
+    for field in fields:
         if getattr(transfer, field) is not None:
             return getattr(transfer, field)
     if transfer.date_start is not None:
@@ -103,6 +106,75 @@ def get_date_clc(transfer: Transfer) -> Date | None:
             "precision": DATE_PRECISION_YEAR,
         }
     return None
+
+
+def agent_ids(transfer: Transfer) -> set:
+    """The transfer's intermediaries, none for an unsaved transfer."""
+    if transfer._state.adding:
+        return set()
+    return {agent.pk for agent in transfer.agents.all()}
+
+
+def late_receipt(transfer: Transfer) -> bool:
+    """
+    Whether the transfer's receipt date is left out of the comparison with
+    the other transfer's dates: through a shared intermediary, the
+    beneficiary may receive the money long after the emitter paid it (e.g. a
+    consortium paying a 2025 support in 2026). Only when the transfer has
+    another date, else it would match the supports of any year.
+    """
+    return transfer.date_payment_recipient is not None and any(
+        getattr(transfer, f) is not None
+        for f in ["date_invoice", "date_payment_emitter", "date_start"]
+    )
+
+
+def main_dates_matching(
+    transfer_left: Transfer,
+    transfer_right: Transfer,
+    skip_left_receipt: bool = False,
+    skip_right_receipt: bool = False,
+) -> tuple[bool, str | None]:
+    """
+    Check the main dates of two transfers: their `date_clc`, and their dates
+    within the other one's contract. `skip_*_receipt`: without that
+    transfer's receipt date (see `late_receipt`).
+    """
+    skip_receipt = {
+        transfer_left.pk: skip_left_receipt,
+        transfer_right.pk: skip_right_receipt,
+    }
+    if not date_is_matching(
+        get_date_clc(transfer_left, skip_left_receipt),
+        get_date_clc(transfer_right, skip_right_receipt),
+    ):
+        return False, CRITERIA_DATE_CLC
+
+    # Check the first date of each transfer within the other's contract
+    for a, b in [
+        (transfer_left, transfer_right),
+        (transfer_right, transfer_left),
+    ]:
+        date_fields = [
+            ("date_invoice", CRITERIA_DATE_INVOICE),
+            ("date_payment_emitter", CRITERIA_DATE_PAYMENT_EMITTER),
+        ]
+        if not skip_receipt[b.pk]:
+            date_fields.append(
+                ("date_payment_recipient", CRITERIA_DATE_PAYMENT_RECIPIENT)
+            )
+        for date_field, criteria in date_fields:
+            if not (
+                date_contains(
+                    a.date_start,
+                    a.date_end,
+                    getattr(b, date_field),
+                )
+            ):
+                return False, criteria
+            elif getattr(b, date_field) is not None:
+                break
+    return True, None
 
 
 def transfer_is_matching(
@@ -131,33 +203,20 @@ def transfer_is_matching(
         ):
             return False, criteria
 
-    # Check date clc
-    if not date_is_matching(
-        get_date_clc(transfer_left),
-        get_date_clc(transfer_right),
-    ):
-        return False, CRITERIA_DATE_CLC
-
-    # Check date ranges
-    for a, b in [
-        (transfer_left, transfer_right),
-        (transfer_right, transfer_left),
-    ]:
-        for date_field, criteria in [
-            ("date_invoice", CRITERIA_DATE_INVOICE),
-            ("date_payment_emitter", CRITERIA_DATE_PAYMENT_EMITTER),
-            ("date_payment_recipient", CRITERIA_DATE_PAYMENT_RECIPIENT),
-        ]:
-            if not (
-                date_contains(
-                    a.date_start,
-                    a.date_end,
-                    getattr(b, date_field),
-                )
-            ):
-                return False, criteria
-            elif getattr(b, date_field) is not None:
-                break
+    # Check date clc and date ranges. Through a shared intermediary, a late
+    # receipt may not match the other dates: check them again without it.
+    is_matching, criteria = main_dates_matching(transfer_left, transfer_right)
+    if not is_matching:
+        skip_left = late_receipt(transfer_left)
+        skip_right = late_receipt(transfer_right)
+        if (skip_left or skip_right) and (
+            agent_ids(transfer_left) & agent_ids(transfer_right)
+        ):
+            is_matching, _ = main_dates_matching(
+                transfer_left, transfer_right, skip_left, skip_right
+            )
+    if not is_matching:
+        return False, criteria
 
     # # Check sub-emitter
     # if transfer_left.emitter_sub != transfer_right.emitter_sub:

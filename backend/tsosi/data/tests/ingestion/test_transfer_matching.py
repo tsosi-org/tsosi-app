@@ -2,8 +2,10 @@ import pytest
 
 from tsosi.data.exceptions import DataException
 from tsosi.data.ingestion.transfer_matching import (
+    CRITERIA_DATE_CLC,
     deduplicate_transfers,
     merge_transfers,
+    transfer_is_matching,
 )
 from tsosi.models import Transfer
 from tsosi.models.static_data import HUB_DATA_SOURCE
@@ -246,3 +248,107 @@ def test_deduplicate_transfers_multiple_match(db):
     )
     with pytest.raises(DataException):
         deduplicate_transfers(dls)
+
+
+def day(value: str) -> dict:
+    return {"value": value, "precision": "day"}
+
+
+def year(value: str) -> dict:
+    return {"value": f"{value}-01-01", "precision": "year"}
+
+
+def consortium_supports(agents_left, agents_right, right_dates):
+    """
+    A 2025 support invoiced by the emitter, and the same support with the
+    given dates, e.g. reported by the beneficiary.
+    """
+    emitter, recipient = EntityFactory.create(), EntityFactory.create()
+    values = dict(emitter=emitter, recipient=recipient, amount=1500)
+    left = TransferFactory.create(
+        **values,
+        agents=agents_left,
+        currency=None,
+        currency_id="EUR",
+        date_invoice=day("2025-07-18"),
+        date_payment_emitter=None,
+        date_payment_recipient=None,
+        date_start=day("2025-01-01"),
+        date_end=day("2025-12-31"),
+    )
+    right_values = dict(
+        date_invoice=None,
+        date_payment_emitter=None,
+        date_payment_recipient=None,
+    )
+    right = TransferFactory.create(
+        **values,
+        agents=agents_right,
+        currency=left.currency,
+        currency_id="EUR",
+        **{**right_values, **right_dates},
+    )
+    return left, right
+
+
+@pytest.mark.django_db
+def test_matching_late_receipt_through_intermediary(db):
+    """
+    Through a shared intermediary, a support received after its contract
+    matches the emitter's support of the contract.
+    """
+    agent = EntityFactory.create()
+    left, right = consortium_supports(
+        [agent],
+        [agent],
+        dict(
+            date_payment_recipient=day("2026-06-02"),
+            date_start=year("2025"),
+            date_end=year("2025"),
+        ),
+    )
+    assert transfer_is_matching(left, right) == (True, None)
+    assert transfer_is_matching(right, left) == (True, None)
+
+
+@pytest.mark.django_db
+def test_matching_late_receipt_without_shared_intermediary(db):
+    left, right = consortium_supports(
+        [EntityFactory.create()],
+        [EntityFactory.create()],
+        dict(
+            date_payment_recipient=day("2026-06-02"),
+            date_start=year("2025"),
+            date_end=year("2025"),
+        ),
+    )
+    assert transfer_is_matching(left, right) == (False, CRITERIA_DATE_CLC)
+
+
+@pytest.mark.django_db
+def test_matching_late_receipt_other_contract(db):
+    """The late receipt of the 2026 contract doesn't match the 2025 one."""
+    agent = EntityFactory.create()
+    left, right = consortium_supports(
+        [agent],
+        [agent],
+        dict(
+            date_payment_recipient=day("2026-06-02"),
+            date_start=year("2026"),
+            date_end=year("2026"),
+        ),
+    )
+    assert transfer_is_matching(left, right)[0] is False
+
+
+@pytest.mark.django_db
+def test_matching_receipt_only_through_intermediary(db):
+    """
+    A receipt alone is still compared to the other dates: without it, the
+    transfer would match the supports of any year.
+    """
+    agent = EntityFactory.create()
+    left, right = consortium_supports(
+        [agent], [agent], dict(date_payment_recipient=day("2026-06-02"))
+    )
+    assert transfer_is_matching(left, right) == (False, CRITERIA_DATE_CLC)
