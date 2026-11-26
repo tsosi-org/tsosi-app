@@ -14,6 +14,10 @@ interface ImportMetaEnv {
   readonly VITE_MATOMO_SITE_ID?: string
   readonly VITE_WELCOME_POPUP?: "true"
   readonly VITE_INFRA_HISTOGRAM_OPT_OUT?: string
+  readonly VITE_MONITORING_DSN?: string
+  readonly VITE_MONITORING_TUNNEL?: string
+  readonly VITE_MONITORING_ENVIRONMENT?: string
+  readonly VITE_RELEASE?: string
 }
 
 interface ImportMeta {

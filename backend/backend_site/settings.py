@@ -16,6 +16,8 @@ from pathlib import Path
 from celery.schedules import crontab
 from corsheaders.defaults import default_headers
 
+from tsosi.monitoring import init_error_tracking, read_release
+
 from .settings_local import (
     ALLOWED_HOSTS,
     CACHES,
@@ -74,11 +76,25 @@ TSOSI_OPTIONAL_SETTINGS = [
     "EMAIL_USE_SSL",
     "EMAIL_USE_TLS",
     "TSOSI_TEAM_EMAILS",
+    # Monitoring (GlitchTip), cf. deployment/README.md - Monitoring
+    "TSOSI_MONITORING_DSN",
+    "TSOSI_MONITORING_ENVIRONMENT",
+    "TSOSI_MONITORING_TRACES_SAMPLE_RATE",
+    "TSOSI_HEARTBEATS",
 ]
 
 # Defaults of the optional settings above, overridden by settings_local.py
 # E-mails are printed in the console unless an SMTP server is set.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# No error tracking without a DSN (local development, tests).
+TSOSI_MONITORING_DSN = None
+TSOSI_MONITORING_ENVIRONMENT = "production"
+# Share of the requests and tasks whose performance is recorded
+TSOSI_MONITORING_TRACES_SAMPLE_RATE = 0.05
+# GlitchTip heartbeat monitor URL to ping after each successful run of a
+# Celery task, by task name, e.g.
+# {"tsosi.tasks.celery_heartbeat": "https://monitoring.tsosi.org/api/0/..."}
+TSOSI_HEARTBEATS = {}
 
 settings_local_module = importlib.import_module("backend_site.settings_local")
 for setting_name in TSOSI_OPTIONAL_SETTINGS:
@@ -91,6 +107,15 @@ for setting_name in TSOSI_OPTIONAL_SETTINGS:
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Errors and performance samples sent to GlitchTip, tagged with the deployed
+# commit
+init_error_tracking(
+    dsn=TSOSI_MONITORING_DSN,
+    environment=TSOSI_MONITORING_ENVIRONMENT,
+    release=read_release(BASE_DIR / TSOSI_PUBLIC_RELPATH),
+    traces_sample_rate=TSOSI_MONITORING_TRACES_SAMPLE_RATE,
+)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -316,6 +341,12 @@ TSOSI_CELERY_TASK_SERIALIZER = "json"
 TSOSI_CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 TSOSI_CELERY_BEAT_SCHEDULER = "tsosi.scheduler:DatabaseSchedulerWithCleanup"
 TSOSI_CELERY_BEAT_SCHEDULE = {
+    # Proof that the Celery worker and Beat run, for the health check and the
+    # GlitchTip heartbeat monitor
+    "celery-heartbeat": {
+        "task": "tsosi.tasks.celery_heartbeat",
+        "schedule": crontab(minute="*/10"),
+    },
     # Hourly
     "hourly-clc-fields-updates": {
         "task": "tsosi.tasks.update_clc_fields_hourly",

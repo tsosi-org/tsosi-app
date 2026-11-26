@@ -1,14 +1,17 @@
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import redis
 from celery import shared_task
 from celery.contrib.django.task import DjangoTask
 from celery.exceptions import Ignore
+from celery.signals import task_success
 from celery.utils.log import get_task_logger
+from django.conf import settings
 from redis.lock import Lock
 
+from . import monitoring
 from .app_settings import app_settings
 from .data import data_updates, enrichment, hub_publication, ingestion, news
 from .data.currencies import currency_rates
@@ -294,6 +297,19 @@ def refresh_barcelona_data():
 @shared_task(base=TsosiLockedTask)
 def refresh_news():
     news.refresh_news()
+
+
+@shared_task(base=TsosiTask)
+def celery_heartbeat():
+    monitoring.record_celery_heartbeat()
+
+
+@task_success.connect
+def ping_task_heartbeat(sender, **kwargs):
+    heartbeats = getattr(settings, "TSOSI_HEARTBEATS", None) or {}
+    url = heartbeats.get(sender.name) if sender is not None else None
+    if url:
+        monitoring.ping_heartbeat(url)
 
 
 ## Signal handlers to trigger related tasks

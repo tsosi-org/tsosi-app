@@ -76,3 +76,9 @@ TSOSI_API_WHITELIST_IPS = ["127.0.0.1"]
 DRF_NUM_PROXIES = 1
 TSOSI_FRONTEND_CUSTOM_HEADER = "X-Frontend-Origin"
 TSOSI_PUBLIC_RELPATH = "../public/"
+# Monitoring (GlitchTip), cf. deployment/README.md - Monitoring
+# TSOSI_MONITORING_DSN = "https://{REPLACE}@monitoring.tsosi.org/{REPLACE}"
+# TSOSI_MONITORING_ENVIRONMENT = "production"
+# TSOSI_HEARTBEATS = {
+#     "tsosi.tasks.celery_heartbeat": "https://monitoring.tsosi.org/api/0/organizations/{REPLACE}/heartbeat_check/{REPLACE}/",
+# }
