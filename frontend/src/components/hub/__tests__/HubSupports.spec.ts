@@ -897,4 +897,60 @@ describe("HubSupports", () => {
       ).toBe(false)
     })
   })
+
+  describe("another member's change on the row being edited", () => {
+    // Bob edits a support that Alice changed meanwhile, unseen in his table:
+    // the backend refuses his new change (one pending change per support)
+    async function saveOverAlicesChange() {
+      const backend = hubBackend({ transfers: [transfer()] })
+      await mountSupports()
+      await act("t1", "Edit")
+      await typeIn(amountInput(), "1500")
+      backend.beforeRequest = (request) => {
+        if (request.method != "POST") {
+          return
+        }
+        backend.declarations.push(
+          declaration({
+            id: 50,
+            kind: "edit",
+            recipient_id: "doaj",
+            amount: 5000,
+            currency: "EUR",
+            date_payment_recipient: apiDate("2024"),
+            author: "alice@uni.edu",
+          }),
+        )
+        backend.failures[`POST ${DECLARATIONS_ROUTE}`] = {
+          status: 400,
+          body: {
+            transfer_id: [
+              "This support already has a change not published yet.",
+            ],
+          },
+        }
+        backend.beforeRequest = null
+      }
+      await click("Save", edited())
+      return backend
+    }
+
+    it("keeps the row open with the error, the table reloaded", async () => {
+      const backend = await saveOverAlicesChange()
+      expect(changes(backend)).toEqual(["POST declarations"])
+      expect(panel()!.textContent).toContain(
+        "This support already has a change not published yet.",
+      )
+      // Bob's values kept for the next try
+      expect((amountInput() as HTMLInputElement).value).toBe("1500")
+    })
+
+    // H4: Alice's change is neither shown nor named, and a second Save
+    // replaces it (PUT of her draft). Expected to fail until fixed.
+    it.fails("doesn't replace it without showing it", async () => {
+      const backend = await saveOverAlicesChange()
+      await click("Save", edited())
+      expect(backend.declarations).toMatchObject([{ id: 50, amount: 5000 }])
+    })
+  })
 })
